@@ -1,258 +1,132 @@
 <!doctype html>
 <html>
-  <head>
-    <title>RestoBar</title>
-	<meta http-equiv="content-type" content="text/html; charset=UTF-8;">
-	<meta http-equiv="Content-Language" content="es"/>
-	<meta name="viewport" content="width=device-width, minimum-scale=1.0, initial-scale=1, user-scalable=yes">
-	<meta name="apple-mobile-web-app-capable" content="yes"/>
-	<meta name="mobile-web-app-capable" content="yes"/>
-
-	<!--link rel="stylesheet" href="../../css/load_normalize.css"-->
-	<link rel="stylesheet" href="../../css/load_style.css">
-
-	<!--script src="../../js/jquery.js"></script-->
-	<link rel="stylesheet" href="../../css/daterangepicker.css">
-	<link rel="stylesheet" href="../../js/jquery-ui.min.11.4.css">
-	<script src="../../js/jquery_external.js"></script>
-	<script src="../../js/jquery-ui.min.11.4.js"></script>
-	<!-- <script src="../../app/view/config.const.js"></script> -->
-	
-	<!--chart google-->
-	<!--script src="../../js/loader_chart_gstatic.js"></script-->
-	
-	<!--link rel="stylesheet" href="../../css/dc.css"/-->
-	
-	<script rel="preload" src="../web_components/webcomponentsjs/webcomponents-lite.js"></script>
-	<link rel="import" href="../web_components/polymer/polymer.html">
-	<link rel="import" href="../web_components/paper-button/paper-button.html">
-	<link rel="import" href="../web_components/paper-input/paper-input.html">
-	<link rel="import" href="../web_components/paper-input/paper-textarea.html">
-	<link rel="import" href="../web_components/paper-styles/paper-styles.html">
-	<link rel="import" href="../web_components/neon-animation/neon-animated-pages.html">
-    <link rel="import" href="../web_components/neon-animation/neon-animatable.html">
-	<link rel="import" href="../web_components/neon-animation/neon-animations.html">
-	<link rel="import" href="../web_components/paper-spinner/paper-spinner.html">
-	<link rel="import" href="../web_components/paper-drawer-panel/paper-drawer-panel.html">
-
-	<link rel="import" href="../web_components/paper-toolbar/paper-toolbar.html">
-	<link rel="import" href="../web_components/paper-icon-button/paper-icon-button.html">
-	<link rel="import" href="../web_components/iron-icons/iron-icons.html">
-	<link rel="import" href="../web_components/paper-card/paper-card.html">
-	<link rel="import" href="../web_components/paper-fab/paper-fab.html">
-	<link rel="import" href="../web_components/paper-menu/paper-menu.html">
-  <link rel="import" href="../web_components/paper-item/paper-item.html">
-  <link rel="import" href="../web_components/paper-dialog-scrollable/paper-dialog-scrollable.html">
-  <link rel="import" href="../web_components/paper-checkbox/paper-checkbox.html">
-	<link rel="import" href="../web_components/paper-dropdown-menu/paper-dropdown-menu.html">
-	<link rel="import" href="../web_components/iron-dropdown/iron-dropdown.html">
-	<link rel="import" href="../web_components/iron-pages/iron-pages.html">
-	<link rel="import" href="../web_components/paper-radio-button/paper-radio-button.html">
-	<link rel="import" href="../web_components/paper-slider/paper-slider.html">
-	<link rel="import" href="../web_components/paper-tabs/paper-tabs.html">
-	<link rel="import" href="../web_components/paper-tooltip/paper-tooltip.html">
-	<link rel="import" href="../web_components/paper-toggle-button/paper-toggle-button.html">
-	<link rel="import" href="../web_components/paper-badge/paper-badge.html">
-	<link rel="import" href="../web_components/paper-progress/paper-progress.html">
-	<link rel="import" href="../web_components/paper-toast/paper-toast.html">
-
-	<!--router-->
-	<link rel="import" href="../web_components/iron-icons/maps-icons.html">
-
-
-	<link rel="import" href="../web_components/x-dialog/x-dialog.html">
-	<link rel="import" href="../web_components/app-router/app-router.html">
-	<link rel="import" href="../web_components/x-router/x-router.html">
-	<link rel="import" href="../web_components/x-pass/x-pass.html">
-	<link rel="import" href="../web_components/x-pago/x-pago.html">
-	<link rel="import" href="../x-componentes/x-comp-sede-toolbar/x-comp-sede-toolbar.html">
-
-	<!--router-->
-
-	<!--link rel="import" href="../web_components/x-slider-count/x-slider-count.html"-->
-
-
-
-	<!--link rel="stylesheet" href="../../css/micss.css?v=" + File.GetLastWriteTime(HttpContext.Current.Request.PhysicalApplicationPath + filename).ToString("yyMMddHHHmmss")-->	
-	<link rel="stylesheet" href="../../css/micss.css">
-	<!--link rel="stylesheet" href="../../css/perfect-scrollbar.css"-->
-	<link type="image/x-icon" href="../../images/ico_app.png" rel="shortcut icon"/>
-
-
-	<style is="custom-style">
-    	body{ width: 100%; margin:0; padding: 0;background-color: #FAFAFA;}
-    	paper-toolbar {
-	    	--paper-toolbar-background: #424242;
-	    	top:0;
-	    	left: 0;
-	    	right: 0;
-	    	position: absolute;
-	    	height: 60px;
-	    	z-index: 2;
-	    }
-	    paper-card {
-	    	margin-bottom: 16px;
-	    	min-width: 700px;
-	    }
-	   /* paper-drawer-panel {
-		  	--paper-drawer-panel-left-drawer-container: {
-		    	background-color: #303030;
-		    	color: #E0E0E0;
-		  	};
-		}	*/
-
-		.content{
-	    	position:absolute;
-	    	width: 95%;
-    		top: 60px;
-	    }
-
-	    paper-drawer-panel {
-	    	/*z-index: 4;*/
-	    	/*position: absolute;
-	    	top:0;
-	    	left: 0;
-	    	right: 0;
-	    	margin 0 0 0 0;
-	    	overflow-y:auto;   */
-	    	position: fixed;
-	    	height: 100%;
-	    	/*overflow:none;*/
-		  	--paper-drawer-panel-left-drawer-container: {
-		    	background-color: #303030;
-		    	color: #E0E0E0;
-		    	position: fixed;
-		    	height: 100%;
-	    		/*overflow:none;
-		    	/*
-		    	top: 0;
-		    	bottom: 0;		    	*/
-		  	};
-		}
-
-		.xHeadertoolbar{
-		  		background-color: #212121;
-		  	}
-		.xBtnPanel{
-			display:block; text-align: left;margin-bottom: 90px;
-		}
-		.xBtnPanel paper-button{width: 100%;margin-left:0px;  padding: 5px; text-align: left; display: block;}
-		.xBtnPanel paper-button:hover {
-	      background:#383838;
-	    }
-		paper-drawer-panel #navbarmenu1 {
-		    display: none;
-		}
-		.xMarginAlinear{ margin-right: 4%;}
-
-		#dialog_us{border-radius:5px; width: 250px; position: fixed; top: 10px; right: 10px;}
-  	</style>
-  </head>
-  <!-- <?php
-  	function latest_version($file_name){
-    echo $file_name."?".filemtime($_SERVER['DOCUMENT_ROOT'] .$file_name);
-	}
-  ?> -->
+<head>
+<title>RestoBar</title>
+<meta http-equiv=content-type content="text/html; charset=UTF-8;">
+<meta http-equiv=Content-Language content="es"/>
+<meta name=viewport content="width=device-width, minimum-scale=1.0, initial-scale=1, user-scalable=yes">
+<meta name=apple-mobile-web-app-capable content="yes"/>
+<meta name=mobile-web-app-capable content="yes"/>
+<link rel=stylesheet href=../../css/load_style.css>
+<link rel=stylesheet href=../../css/daterangepicker.css>
+<link rel=stylesheet href=../../js/jquery-ui.min.11.4.css>
+<script src=../../js/jquery_external.js></script>
+<script src=../../js/jquery-ui.min.11.4.js></script>
+<script rel=preload src=../web_components/webcomponentsjs/webcomponents-lite.js></script>
+<link rel=import href=../web_components/polymer/polymer.html>
+<link rel=import href=../web_components/paper-button/paper-button.html>
+<link rel=import href=../web_components/paper-input/paper-input.html>
+<link rel=import href=../web_components/paper-input/paper-textarea.html>
+<link rel=import href=../web_components/paper-styles/paper-styles.html>
+<link rel=import href=../web_components/neon-animation/neon-animated-pages.html>
+<link rel=import href=../web_components/neon-animation/neon-animatable.html>
+<link rel=import href=../web_components/neon-animation/neon-animations.html>
+<link rel=import href=../web_components/paper-spinner/paper-spinner.html>
+<link rel=import href=../web_components/paper-drawer-panel/paper-drawer-panel.html>
+<link rel=import href=../web_components/paper-toolbar/paper-toolbar.html>
+<link rel=import href=../web_components/paper-icon-button/paper-icon-button.html>
+<link rel=import href=../web_components/iron-icons/iron-icons.html>
+<link rel=import href=../web_components/paper-card/paper-card.html>
+<link rel=import href=../web_components/paper-fab/paper-fab.html>
+<link rel=import href=../web_components/paper-menu/paper-menu.html>
+<link rel=import href=../web_components/paper-item/paper-item.html>
+<link rel=import href=../web_components/paper-dialog-scrollable/paper-dialog-scrollable.html>
+<link rel=import href=../web_components/paper-checkbox/paper-checkbox.html>
+<link rel=import href=../web_components/paper-dropdown-menu/paper-dropdown-menu.html>
+<link rel=import href=../web_components/iron-dropdown/iron-dropdown.html>
+<link rel=import href=../web_components/iron-pages/iron-pages.html>
+<link rel=import href=../web_components/paper-radio-button/paper-radio-button.html>
+<link rel=import href=../web_components/paper-slider/paper-slider.html>
+<link rel=import href=../web_components/paper-tabs/paper-tabs.html>
+<link rel=import href=../web_components/paper-tooltip/paper-tooltip.html>
+<link rel=import href=../web_components/paper-toggle-button/paper-toggle-button.html>
+<link rel=import href=../web_components/paper-badge/paper-badge.html>
+<link rel=import href=../web_components/paper-progress/paper-progress.html>
+<link rel=import href=../web_components/paper-toast/paper-toast.html>
+<link rel=import href=../web_components/iron-icons/maps-icons.html>
+<link rel=import href=../web_components/x-dialog/x-dialog.html>
+<link rel=import href=../web_components/app-router/app-router.html>
+<link rel=import href=../web_components/x-router/x-router.html>
+<link rel=import href=../web_components/x-pass/x-pass.html>
+<link rel=import href=../web_components/x-pago/x-pago.html>
+<link rel=import href=../x-componentes/x-comp-sede-toolbar/x-comp-sede-toolbar.html>
+<link rel=stylesheet href=../../css/micss.css>
+<link type=image/x-icon href=../../images/ico_app.png rel="shortcut icon"/>
+<style is=custom-style>body{width:100%;margin:0;padding:0;background-color:#fafafa}paper-toolbar{--paper-toolbar-background:#424242;top:0;left:0;right:0;position:absolute;height:60px;z-index:2}paper-card{margin-bottom:16px;min-width:700px}.content{position:absolute;width:95%;top:60px}paper-drawer-panel{position:fixed;height:100%;--paper-drawer-panel-left-drawer-container:{background-color:#303030;color:#e0e0e0;position:fixed;height:100%}}.xHeadertoolbar{background-color:#212121}.xBtnPanel{display:block;text-align:left;margin-bottom:90px}.xBtnPanel paper-button{width:100%;margin-left:0;padding:5px;text-align:left;display:block}.xBtnPanel paper-button:hover{background:#383838}paper-drawer-panel #navbarmenu1{display:none}.xMarginAlinear{margin-right:4%}#dialog_us{border-radius:5px;width:250px;position:fixed;top:10px;right:10px}</style>
+</head>
 <body oncontextmenu="return false" unresolved class="fullbleed layout vertical">
-  <div class="xInvisible">
-    <audio id="sonido_notifica_despacho" autobuffer>
-      <source src="../../sound/notifica1.ogg" type="audio/ogg"/>
-      <source src="../../sound/notifica1.mp3" type="audio/mpeg"/>
-    </audio>
-  </div>
-	<x-dialog id="xLoad"></x-dialog>
-
-	<paper-dialog id="dialog_us" entry-animation="scale-up-animation" exit-animation="fade-out-animation">
-		<div class="xContent">
-			<div id="datosGeneralesUs">			
-				<div>
-					<img class="xIzquierda xpadingLateralDe xBordeDe" src="../../images/usuario.png">
-					<p class="xColorRow_Plomo xfont12" id="xnomu">Marcel Ramirez</p>
-					<p class="xColorRow_Plomo xfont12" id="xcargou">Administrador</p>
-				</div>
-				<br>
-				<div class="xLinea2"></div>
-				<br>
-				<a href="#" class="xfont12 xpadingLateralDe" onclick="xCerrarSession();" inline>Cerrar Sesion</a><a href="#" class="xfont12" onclick="showCambiarClave();" inline>Cambiar Clave</a>
-			</div>		
-			<div class="xInvisible" id="cambioClaveUs">
-				<p>Cambio de clave.</p>
-				<br>
-				<input type="password" class="xMiInput" placeholder="Clave actual" id="txtpa"><br><br>
-				<input type="password" class="xMiInput" placeholder="Nueva clave" id="txtpn">
-				<br>				
-				<div class="xLinea2"></div>
-				<span class="xColorRow_Rojo xInvisible" id="msj_1">Clave incorrecta.</span>
-				<span class="xColorRow_Azul xInvisible" id="msj_2">Se cambio la clave.</span>
-				<br>
-				<br>
-				<a href="#" class="xfont12" onclick="cambiarClaveUs();" inline>Cambiar Clave</a>
-			</div>
-	</div>
-	</paper-dialog>
-	<div class="wrapper">
-	  <div id="loader-wrapper">
-	    <div id="loader"></div>
-	    <div class="loader-section section-left"></div>
-	    <div class="loader-section section-right"></div>
-	  </div>
-	</div>
-
-
-		<!--paper-drawer-panel force-narrow hasTransform id="PanelDe">
-			<paper-header-panel drawer>
-		   		<paper-toolbar class="xHeadertoolbar">
-		   			<div>SAN CARLOS</div>
-		   		</paper-toolbar>
-			   	<div main class="xBtnPanel ul_menu">
-			   		<br><br><br>
-				      <ul>
-				      </ul>
-			   	</div>
-			</paper-header-panel>
-		 </paper-drawer-panel-->
-		<paper-header-panel main>
-          <paper-toolbar id="panel_toolbar">
-						<paper-icon-button paper-drawer-toggle icon="menu" onclick="xOpenPanelDe();"></paper-icon-button>
-						<x-comp-sede-toolbar class="xtitulo_bar text_puntos_2" id="xtitulo_bar"></x-comp-sede-toolbar>
-						<span class="title xtitulo_bar" id="xtitulo_bar"></span>						
-
-						
-						<div class="xIzquierda">
-							<h2 class="xboldEncabezado xNoVisibleMenos920 text_puntos_2" id="Titulo_page"></h2>
-						</div>
-						<div class="xAlinearce">
-							<div class="xAlinearce">
-								<paper-icon-button id="BtnUs" icon="account-box" title="Usuario" onclick="xAbrirDialogUs(this)"></paper-icon-button>
-							</div>
-						</div>
-          </paper-toolbar>
-	        <div fit layout vertical class="content xContent">
-	        	<div class="xInvisible"></div>
-							<x-router></x-router>
-							<paper-toast id="toast" duration=0 text="Hello world!">
-								<paper-progress id="loading" indeterminate style="width: 100%; float: left;"></paper-progress>
-							</paper-toast>
-	        </div>
-       	</paper-header-panel>
-
-	
-  <script src="../view/xm_all.js" async></script>
-
-	<!--script type="text/javascript" src="../../js/d3.min.js"></script-->
-	<!--script type="text/javascript" src="../../js/crossfilter.min.js"></script-->
-	<!--script type="text/javascript" src="../../js/dc.min.js"></script-->
-
-	<script type="text/javascript" src="../../js/raphael.2.1.4.min.js"></script>
-	<script type="text/javascript" src="../../js/justgage.js"></script>
-	<script src="../../js/moment.min.js"></script>
-	<script src="../../js/isotope.pkgd.min.js"></script>
-	<script src="../../js/jquery.daterangepicker.js"></script>	
-	<!--script src="../../js/perfect-scrollbar.min.js"></script-->
-
-
-	<script src='../../js/mifuncion_web.js'></script>
-	<script src="../view/m_panel.js"></script>
-	<script src="../view/item_pedidos.js"></script>
-	<script src="../view/config.const.js"></script>
+<div class=xInvisible>
+<audio id=sonido_notifica_despacho autobuffer>
+<source src=../../sound/notifica1.ogg type="audio/ogg"/>
+<source src=../../sound/notifica1.mp3 type="audio/mpeg"/>
+</audio>
+</div>
+<x-dialog id=xLoad></x-dialog>
+<paper-dialog id=dialog_us entry-animation=scale-up-animation exit-animation=fade-out-animation>
+<div class=xContent>
+<div id=datosGeneralesUs>
+<div>
+<img class="xIzquierda xpadingLateralDe xBordeDe" src=../../images/usuario.png>
+<p class="xColorRow_Plomo xfont12" id=xnomu>Marcel Ramirez</p>
+<p class="xColorRow_Plomo xfont12" id=xcargou>Administrador</p>
+</div>
+<br>
+<div class=xLinea2></div>
+<br>
+<a href=# class="xfont12 xpadingLateralDe" onclick=xCerrarSession() inline>Cerrar Sesion</a><a href=# class=xfont12 onclick=showCambiarClave() inline>Cambiar Clave</a>
+</div>
+<div class=xInvisible id=cambioClaveUs>
+<p>Cambio de clave.</p>
+<br>
+<input type=password class=xMiInput placeholder="Clave actual" id=txtpa><br><br>
+<input type=password class=xMiInput placeholder="Nueva clave" id=txtpn>
+<br>
+<div class=xLinea2></div>
+<span class="xColorRow_Rojo xInvisible" id=msj_1>Clave incorrecta.</span>
+<span class="xColorRow_Azul xInvisible" id=msj_2>Se cambio la clave.</span>
+<br>
+<br>
+<a href=# class=xfont12 onclick=cambiarClaveUs() inline>Cambiar Clave</a>
+</div>
+</div>
+</paper-dialog>
+<div class=wrapper>
+<div id=loader-wrapper>
+<div id=loader></div>
+<div class="loader-section section-left"></div>
+<div class="loader-section section-right"></div>
+</div>
+</div>
+<paper-header-panel main>
+<paper-toolbar id=panel_toolbar>
+<paper-icon-button paper-drawer-toggle icon=menu onclick=xOpenPanelDe()></paper-icon-button>
+<x-comp-sede-toolbar class="xtitulo_bar text_puntos_2" id=xtitulo_bar></x-comp-sede-toolbar>
+<span class="title xtitulo_bar" id=xtitulo_bar></span>
+<div class=xIzquierda>
+<h2 class="xboldEncabezado xNoVisibleMenos920 text_puntos_2" id=Titulo_page></h2>
+</div>
+<div class=xAlinearce>
+<div class=xAlinearce>
+<paper-icon-button id=BtnUs icon=account-box title=Usuario onclick=xAbrirDialogUs(this)></paper-icon-button>
+</div>
+</div>
+</paper-toolbar>
+<div fit layout vertical class="content xContent">
+<div class=xInvisible></div>
+<x-router></x-router>
+<paper-toast id=toast duration=0 text="Hello world!">
+<paper-progress id=loading indeterminate style=width:100%;float:left></paper-progress>
+</paper-toast>
+</div>
+</paper-header-panel>
+<script src=../view/xm_all.js async></script>
+<script type=text/javascript src=../../js/raphael.2.1.4.min.js></script>
+<script type=text/javascript src=../../js/justgage.js></script>
+<script src=../../js/moment.min.js></script>
+<script src=../../js/isotope.pkgd.min.js></script>
+<script src=../../js/jquery.daterangepicker.js></script>
+<script src=../../js/mifuncion_web.js></script>
+<script src=../view/m_panel.js></script>
+<script src=../view/item_pedidos.js></script>
+<script src=../view/config.const.js></script>
 </body>

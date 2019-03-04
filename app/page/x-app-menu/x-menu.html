@@ -1,232 +1,29 @@
 <dom-module id="x-menu">
-  <template>
-    <!--
-      neon-animated-pages id="pages" class="flex" selected="[[selected]]" entry-animation="slide-up-animation" exit-animation="slide-from-bottom-animation"
-    -->
-    <div class="xMenu_content" id="CartaDetalle">
-      <div class="xMenu_Encabezado">
-        <span class="xtitulo">[[xt_nombre_sede]]</span>
-        <div class="xsub_titulo">[[xt_eslogan]]</div>
-      </div>
-      <div class="xMenu_body noselect">
-        <div class="xAlinearCentro spinner">
-          <paper-spinner active></paper-spinner>
-        </div>
-        <!--
-          div class="xmenu_item xPading15">
-          	<p class="xtitulo_item">ENTRADA</p>
-          	<span class="xsub_titulo_item">Flan, masamorra, sopa de pollo, ensalada r...</span>
-          </div>
-          <div class="xmenu_item xPading15">
-          	<p class="xtitulo_item">PLATOS DE FONDO</p>
-          	<span class="xsub_titulo_item">Aji de gallina, lomito saltado, cencina a lo pobre...</span>
-          </div>
-          <div class="xmenu_item xPading15">
-          	<p class="xtitulo_item">PLATOS A LA CARTA</p>
-          	<span class="xsub_titulo_item">Bistec a lo pobre, milanesa de pollo, majas al hor...</span>
-          </div
-        -->
-      </div>
-    </div>
-    <!-- /neon-animated-pages -->
-  </template>
+<template>
+<div class="xMenu_content" id="CartaDetalle">
+<div class="xMenu_Encabezado">
+<span class="xtitulo">[[xt_nombre_sede]]</span>
+<div class="xsub_titulo">[[xt_eslogan]]</div>
+</div>
+<div class="xMenu_body noselect">
+<div class="xAlinearCentro spinner">
+<paper-spinner active></paper-spinner>
+</div>
+</div>
+</div>
+</template>
 </dom-module>
 <style type="text/css"></style>
-<script>
-  var xThisMenu;
-  //var xidCategoria=1;//cambiar luego desayuno/1:almuerzo/cena/
-  function xIniMenu() {
-    //xVerificarSession();
-    xm_LogChequea(function() {
-      xm_log_get("ini_us");
-      $("body").addClass("loaded");
-      
-      $("#xtitulo_bar").text("");
-      var xDatos_p = xm_log_get("sede_generales"); //$.parseJSON(window.localStorage.getItem("::app3_sys_dta_prt"));
-      xCount_cant_ico = window.localStorage.getItem("::app3_sys_dta_count_ico");
-      if (xCount_cant_ico == null) {
-        xCount_cant_ico = 0;
-      }
-      if (xCount_cant_ico > 0) {
-        $(".xIco_MiPedido .xCantPedio_ico").text(xCeroIzq(xCount_cant_ico, 2));
-        $(".xIco_MiPedido .xCantPedio_ico").removeClass("xInvisible");
-      } else {
-        $(".xIco_MiPedido .xCantPedio_ico").addClass("xInvisible");
-      }
-
-      xThisMenu.xt_nombre_sede = xDatos_p[0].des_sede;
-      xThisMenu.xt_eslogan = xDatos_p[0].eslogan;
-      xLoadCarta();
-      xArmarMenuLateral(1);
-    });
-  }
-  function xPasarDetalle(obj) {
-    // alert('menu');
-    var xdt = $(obj)
-      .find(".xtitulo_item")
-      .text();
-    //var xidt=$(obj).attr('data-id');
-    //xidCategoriaSeccion=$(obj).attr('data-id');
-    xidCategoriaSeccion = $(obj).attr("data-id");
-    xidCatProcedencia = $(obj).attr("data-procede");
-    window.localStorage.setItem("::app3_sys_dt_c", xdt);
-    //var xParamU='?c='+xidCategoria+'?it='+xidt;
-    xOpenPageCarta(2);
-  }
-  async function xLoadCarta() {
-    xidCategoria = localStorage.getItem("::app3_sys_descat");
-    //$(".xMenu_body #xContenedoPaginas").html('<div class="xCentradoVerticalHorizontal spinner"><paper-spinner active></paper-spinner></div>').trigger('create');
-    //$.ajax({ type: 'POST', url: '../../bdphp/log.php?op=205', data:{i:xidCategoria},cache:true})
-    //.done( function (dtCAct) {
-    //if(xGeneralNumPedidosActual!=0){xLoadDesdeCache();return;}
-    //xGeneralLoadItems(function(){
-    await xGeneralSeccionMiPedido(xidCategoria, function(xrpt) {
-      //var xdtCAct=$.parseJSON(dtCAct);
-      //xdtCAct=xdtCAct.datos;
-
-      var xCadenaCarta = "";
-      var xSeccionArray = new Array();
-      var xidSeccionArray = "";
-      var xDetalleItemCarta = "";
-      var xCountArray = 0;
-
-      for (var i = 0; i < xGeneralDataSeccion.length; i++) {
-        //xDetalleItemCarta='';
-        if (xidSeccionArray != xGeneralDataSeccion[i].idseccion) {
-          xidSeccionArray = xGeneralDataSeccion[i].idseccion;
-          xDetalleItemCarta = "";
-          for (var y = 0; y < xGeneralDataSeccion.length; y++) {
-            if (xidSeccionArray == xGeneralDataSeccion[y].idseccion) {
-              if (
-                parseInt(xGeneralDataSeccion[i].cantidad) > 0 ||
-                xGeneralDataSeccion[i].cantidad == "ND"
-              ) {
-                xDetalleItemCarta =
-                  xDetalleItemCarta + xGeneralDataSeccion[y].des_item + ", ";
-              }
-            }
-          }
-          xDetalleItemCarta = xDetalleItemCarta.slice(0, -2);
-          xDetalleItemCarta = xMayusculaPrimera(
-            xSoloMinuscula(xDetalleItemCarta)
-          );
-
-          xSeccionArray[xCountArray] = {
-            des: xGeneralDataSeccion[i].des_seccion,
-            id: xGeneralDataSeccion[i].idseccion,
-            detalle: xGeneralDataSeccion[i].all_items,
-            procede: xGeneralDataSeccion[i].procede
-          };
-          window.localStorage.setItem(
-            "::app3_sys_dt_mlm",
-            JSON.stringify(xSeccionArray)
-          );
-          xCountArray++;
-        }
-      }
-      for (var z = 0; z < xSeccionArray.length; z++) {
-        xCadenaCarta = String(
-          xCadenaCarta +
-            '<div class="xmenu_item xPading15" data-id="' +
-            xSeccionArray[z].id +
-            '" data-procede="' +
-            xSeccionArray[z].procede +
-            '" onclick="xPasarDetalle(this);">' +
-            '<p class="xtitulo_item">' +
-            xSeccionArray[z].des +
-            "</p>" +
-            '<span class="xsub_titulo_item">' +
-            xSeccionArray[z].detalle +
-            "</span>" +
-            "</div>"
-        );
-      }
-
-      $(".xMenu_body div").remove();
-      $(".xMenu_body .spinner").remove();
-      $(".xMenu_body")
-        .append(xCadenaCarta)
-        .trigger("create");
-
-      //xDisparaEventoLoadItemCambioBd()
-
-      // al regresar ir a la posicion de donde vino
-      $(window).scrollTop(
-        window.localStorage.getItem("::app3_sys_scroll_pos") || 0
-      );
-    });
-  }
-  /*
-function xLoadDesdeCache(){
-	var xCadenaCarta='';
-		var xSeccionArray = new Array();
-		var xidSeccionArray='';
-		var xDetalleItemCarta='';
-		var xCountArray=0;
-
-		for (var i = 0; i < xGeneralDataCarta.length; i++) {
-			//xDetalleItemCarta='';
-			if(xidSeccionArray!=xGeneralDataCarta[i].idseccion){
-				xidSeccionArray=xGeneralDataCarta[i].idseccion;
-				xDetalleItemCarta='';
-				for (var y = 0; y < xGeneralDataCarta.length; y++) {
-					if(xidSeccionArray==xGeneralDataCarta[y].idseccion){
-						if(parseInt(xGeneralDataCarta[i].cantidad)>0 || xGeneralDataCarta[i].cantidad=='ND'){
-							xDetalleItemCarta=xDetalleItemCarta+xGeneralDataCarta[y].des_item+', ';
-						}
-					}
-				}
-				xDetalleItemCarta=xDetalleItemCarta.slice(0,-2);
-				xDetalleItemCarta=xMayusculaPrimera(xSoloMinuscula(xDetalleItemCarta));
-
-				xSeccionArray[xCountArray]={'des':xGeneralDataCarta[i].des_seccion, 'id':xGeneralDataCarta[i].idseccion_index, 'detalle':xGeneralDataCarta[i].all_items, 'procede':xGeneralDataCarta[i].procede};
-			window.localStorage.setItem("::app3_sys_dt_mlm",JSON.stringify(xSeccionArray));
-				xCountArray++;
-			}
-		}
-		for (var z = 0; z < xSeccionArray.length; z++) {
-			xCadenaCarta=String(xCadenaCarta+'<div class="xmenu_item xPading15" data-id="'+xSeccionArray[z].id+'" data-procede="'+xSeccionArray[z].procede+'" onclick="xPasarDetalle(this);">'+
-						'<p class="xtitulo_item">'+xSeccionArray[z].des+'</p>'+
-						'<span class="xsub_titulo_item">'+xSeccionArray[z].detalle+'</span>'+
-					'</div>')
-		};
-
-		$(".xMenu_body div").remove();
-		//$(".xMenu_body .spinner").remove();
-		$(".xMenu_body").append(xCadenaCarta).trigger('create');
-}
-/*function xVerUrl(){
-	var xUlr=window.location.href;
-	var xPage=xUlr.substr(xUlr.indexOf('#'));
-	$("#xtolbar_top").addClass('xInvisible');
-	switch(xPage){
-		case '#/menu':xThis.selected=0;break;
-		case '#/sub_menu':
-			$("#xtolbar_top").removeClass('xInvisible');
-			xThis.selected=1;
-		break;
-	}
-}
-function xColocarUrl(xpath){
-	var xUlr=window.location.href;
-	xUlr=xUlr.substr(xUlr.indexOf('#'));
-	xUlr=xUlr.replace(xUlr.substr(xUlr.indexOf('#')),'#/'+xpath)
-	window.history.pushState("", "", xUlr);
-	xVerUrl();
-}*/
-  Polymer({
-    is: "x-menu",
-    properties: {
-      xt_org: Number,
-      xt_idsede: Number,
-      xt_idus: Number,
-      xt_nombre_sede: String,
-      xt_eslogan: String
-    },
-    attached: function() {
-      xThisMenu = this;
-      //this.selected=0;
-      xIniMenu();
-    }
-  });
-</script>
+<script>/*<![CDATA[*/var xThisMenu;function xIniMenu(){xm_LogChequea(function(){xm_log_get("ini_us");$("body").addClass("loaded");$("#xtitulo_bar").text("");var xDatos_p=xm_log_get("sede_generales");xCount_cant_ico=window.localStorage.getItem("::app3_sys_dta_count_ico");if(xCount_cant_ico==null){xCount_cant_ico=0;}
+if(xCount_cant_ico>0){$(".xIco_MiPedido .xCantPedio_ico").text(xCeroIzq(xCount_cant_ico,2));$(".xIco_MiPedido .xCantPedio_ico").removeClass("xInvisible");}else{$(".xIco_MiPedido .xCantPedio_ico").addClass("xInvisible");}
+xThisMenu.xt_nombre_sede=xDatos_p[0].des_sede;xThisMenu.xt_eslogan=xDatos_p[0].eslogan;xLoadCarta();xArmarMenuLateral(1);});}
+function xPasarDetalle(obj){var xdt=$(obj).find(".xtitulo_item").text();xidCategoriaSeccion=$(obj).attr("data-id");xidCatProcedencia=$(obj).attr("data-procede");window.localStorage.setItem("::app3_sys_dt_c",xdt);xOpenPageCarta(2);}
+async function xLoadCarta(){xidCategoria=localStorage.getItem("::app3_sys_descat");await xGeneralSeccionMiPedido(xidCategoria,function(xrpt){var xCadenaCarta="";var xSeccionArray=new Array();var xidSeccionArray="";var xDetalleItemCarta="";var xCountArray=0;for(var i=0;i<xGeneralDataSeccion.length;i++){if(xidSeccionArray!=xGeneralDataSeccion[i].idseccion){xidSeccionArray=xGeneralDataSeccion[i].idseccion;xDetalleItemCarta="";for(var y=0;y<xGeneralDataSeccion.length;y++){if(xidSeccionArray==xGeneralDataSeccion[y].idseccion){if(parseInt(xGeneralDataSeccion[i].cantidad)>0||xGeneralDataSeccion[i].cantidad=="ND"){xDetalleItemCarta=xDetalleItemCarta+xGeneralDataSeccion[y].des_item+", ";}}}
+xDetalleItemCarta=xDetalleItemCarta.slice(0,-2);xDetalleItemCarta=xMayusculaPrimera(xSoloMinuscula(xDetalleItemCarta));xSeccionArray[xCountArray]={des:xGeneralDataSeccion[i].des_seccion,id:xGeneralDataSeccion[i].idseccion,detalle:xGeneralDataSeccion[i].all_items,procede:xGeneralDataSeccion[i].procede};window.localStorage.setItem("::app3_sys_dt_mlm",JSON.stringify(xSeccionArray));xCountArray++;}}
+for(var z=0;z<xSeccionArray.length;z++){xCadenaCarta=String(xCadenaCarta+'<div class="xmenu_item xPading15" data-id="'+
+xSeccionArray[z].id+'" data-procede="'+
+xSeccionArray[z].procede+'" onclick="xPasarDetalle(this);">'+'<p class="xtitulo_item">'+
+xSeccionArray[z].des+"</p>"+'<span class="xsub_titulo_item">'+
+xSeccionArray[z].detalle+"</span>"+"</div>");}
+$(".xMenu_body div").remove();$(".xMenu_body .spinner").remove();$(".xMenu_body").append(xCadenaCarta).trigger("create");$(window).scrollTop(window.localStorage.getItem("::app3_sys_scroll_pos")||0);});}
+Polymer({is:"x-menu",properties:{xt_org:Number,xt_idsede:Number,xt_idus:Number,xt_nombre_sede:String,xt_eslogan:String},attached:function(){xThisMenu=this;xIniMenu();}});/*]]>*/</script>

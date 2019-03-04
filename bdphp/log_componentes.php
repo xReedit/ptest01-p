@@ -25,7 +25,7 @@
 			from tipo_comprobante_serie tpcs
 				inner join tipo_comprobante tp using(idtipo_comprobante)
 				inner join sede s on s.idsede = tpcs.idsede
-            where (tpcs.idorg=".$_SESSION['ido'].") and tpcs.estado=0
+            where (tpcs.idorg=".$_SESSION['ido']." and tpcs.idorg=".$_SESSION['idsede'].") and tpcs.estado=0
             ";            
             $bd->xConsulta($sql);
             break;

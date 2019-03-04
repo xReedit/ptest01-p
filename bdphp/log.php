@@ -2824,7 +2824,8 @@ function encode_dataUS(){
 				'otros_print_doc'=>xDtUS(301) //otras impresoras para otros documentos boleta, factura
 			],
 		'sistema'=>[
-				'url'=>xDtUS(309)
+				'url'=>xDtUS(309),
+				'constantes'=>xDtUS(3014)
 			],
 		'carta'=>[
 					'regla_carta'=>xDtUS(306),
@@ -2925,6 +2926,9 @@ function xDtUS($op_us){
 			break;
 		case 3013: // load datos del org sede 
 			$sql_us = "SELECT * from sede where idorg = ".$_SESSION['ido']." and estado=0";
+			break;
+		case 3014: // load sys const
+			$sql_us = "SELECT * FROM sys_const where estado=0";
 			break;
 	}
 	$rows = [];
