@@ -1,0 +1,155 @@
+<dom-module id="x-medida-comprobante">
+	<template>
+		<div class="xContent">			
+				<p><b>Fije la posicion de los elemetos a imprimir segun comprobamte. La unidad de medida es centimetros.</b></p>
+				<select id="SelTipoComprobante"></select>
+				<br>
+				<table width="50%" id="tb_posicion">
+					<thead>
+						<th>Elemento</th>
+						<th>alto</th>
+						<th>margen</th>
+					</thead>
+					<tr>
+						<td>Nombre/Razon Social</td>
+						<td><input type="number" class="xMiInput" pattern="[0-9]+([\.,][0-9]+)?" step="0.1" id="nombre_a" name="nombre_a" min="1" placeholder="centimetros" value="4"></td>
+						<td><input type="number" class="xMiInput" pattern="[0-9]+([\.,][0-9]+)?" step="0.1" id="nombre_m" name="nombre_m" min="1" placeholder="centimetros" value="3.3"></td>
+					</tr>
+					<tr>
+						<td>Direccion</td>
+						<td><input type="number" class="xMiInput" pattern="[0-9]+([\.,][0-9]+)?" step="0.1" id="direccion_a" name="direccion_a" min="1" placeholder="centimetros" value="5"></td>
+						<td><input type="number" class="xMiInput" pattern="[0-9]+([\.,][0-9]+)?" step="0.1" id="direccion_m" name="direccion_m" min="1" placeholder="centimetros" value="3.3"></td>
+					</tr>
+					<tr>
+						<td>DNI/RUC</td>
+						<td><input type="number" class="xMiInput" pattern="[0-9]+([\.,][0-9]+)?" step="0.1" id="dni_a" name="dni_a" min="1" placeholder="centimetros" value="5.5"></td>
+						<td><input type="number" class="xMiInput" pattern="[0-9]+([\.,][0-9]+)?" step="0.1" id="dni_m" name="dni_m" min="1" placeholder="centimetros" value="3.3"></td>
+					</tr>					
+					<tr>
+						<td colspan="3">Fecha de emision: formato:
+							<select id="SelFecha">
+								<option value="1">dd/mm/yyyy</option>
+								<option value="2">dd/mm/yy</option>								
+								<option value="3">dd/mmmm/yyyy</option>
+								<option value="4">dd/mmmm/yy</option>								
+								<option value="5">dd mm yyyy</option>
+								<option value="6">dd mm yy</option>
+								<option value="7">dd mm y</option>
+								<option value="8">dd mmmm yyyy</option>
+								<option value="9">dd mmmm yy</option>								
+							</select>
+							<p>Ejemplo: <span id="ejF"></p>
+						</td>
+					</tr>
+					<tr>
+						<td>DIA <br> MES <br>AÑO</td>
+						<td>							
+							<input type="number" class="xMiInput" pattern="[0-9]+([\.,][0-9]+)?" step="0.1" id="dia_a" name="dia_a" min="1" placeholder="centimetros" value="5.5">
+							<input type="number" class="xMiInput" pattern="[0-9]+([\.,][0-9]+)?" step="0.1" id="mes_a" name="mes_a" min="1" placeholder="centimetros" value="5.5">
+							<input type="number" class="xMiInput" pattern="[0-9]+([\.,][0-9]+)?" step="0.1" id="yy_a" name="yy_a" min="1" placeholder="centimetros" value="5.5">
+						</td>
+						<td>							
+							<input type="number" class="xMiInput" pattern="[0-9]+([\.,][0-9]+)?" step="0.1" id="dia_m" name="dia_m" min="1" placeholder="centimetros" value="16">
+							<input type="number" class="xMiInput" pattern="[0-9]+([\.,][0-9]+)?" step="0.1" id="mes_m" name="mes_m" min="1" placeholder="centimetros" value="18.5">
+							<input type="number" class="xMiInput" pattern="[0-9]+([\.,][0-9]+)?" step="0.1" id="yy_m" name="yy_m" min="1" placeholder="centimetros" value="21">
+						</td>
+					</tr>
+					<tr>
+						<td>USUARIO Y HORA</td>
+						<td><input type="number" class="xMiInput" pattern="[0-9]+([\.,][0-9]+)?" step="0.1" id="usuario_a" name="usuario_a" min="1" placeholder="centimetros" value="15"></td>
+						<td><input type="number" class="xMiInput" pattern="[0-9]+([\.,][0-9]+)?" step="0.1" id="usuario_m" name="usuario_m" min="1" placeholder="centimetros" value="1.2"></td>
+					</tr>
+				</table>
+				<br>
+				<paper-button tabindex="0" raised class="xverde xDerecha" id="btn_imprimir" onclick="xPrintPrueba();">Imprimir Prueba</paper-button>
+				<paper-button tabindex="0" raised class="colorful xDerecha" id="btn_guardar" onclick="">Guardar Cambios</paper-button>
+				<br><br>
+		</div>
+		<div id="print_prueba" class="container xInvisible">			
+			<div class="xpage">				
+				<span id="nombre">PAPAYA.COM.PE SOFTWARE FACIL</span>
+				<span id="direccion">SISTEMA SOLAR / TIERRA / AMERICA DEL SUR / PERU</span>
+				<span id="dni">0000011122252</span>
+				<span id="dia">23</span>
+				<span id="mes">03</span>
+				<span id="yy">2016</span>
+				<span id="usuario">MRAMIREZ 16:45:00</span>
+			</div>
+		</div>
+	</template>
+</dom-module>
+<style type="text/css">
+	paper-button[raised].colorful {background: #4285f4;color: #fff;}
+	paper-button[raised].xverde {background: #43a047;color: #fff;}		    		
+</style>
+<script>
+var xThis;
+var xejF='';
+function xIniMedidaComprobante(){
+	xejF=xDevolverFecha();
+	$("#fecha").val(xejF);
+	$("#ejF").text(xejF);
+	$("#SelFecha").on('change',function(){		
+		xVerFormatoFecha()
+	});
+}
+function xVerFormatoFecha(){
+	debugger
+	var dd=xDevolverFechaParte('dd');
+	var mm=xDevolverFechaParte('mm');	
+	var mmmm=xDevolverFechaParte('mmmm');
+	var xyear=String(xDevolverFechaParte("yy"));
+	switch($("#SelFecha").val()){
+		case '1':dd=dd+'/';mm=mm+'/';break;
+		case '2':
+			xyear=xyear.substr(xyear.length-2,2);
+			dd=dd+'/';mm=mm+'/';break;
+		case '3':dd=dd+' de ';mm=mmmm+' de ';break;
+		case '4':
+			xyear=xyear.substr(xyear.length-2,2);
+			dd=dd+' de ';mm=mmmm+' de ';
+		case '5':break;
+		case '6':xyear=xyear.substr(xyear.length-2,2);break;
+		case '7':xyear=xyear.substr(xyear.length-1,1);break;
+		case '8':mm=mmmm;break;
+		case '9':xyear=xyear.substr(xyear.length-2,2); mm=mmmm;break;		
+	}
+	$("#dia").text(dd);
+	$("#mm").text(mm);
+	$("#yy").text(xyear);
+	xejF=dd+' '+mm+' '+xyear;
+	$("#ejF").text(xejF);
+}
+function xPrintPrueba(){
+	debugger
+	
+	$("#nombre").css('margin-top',xDevolverPosicion("nombre_a"));
+	$("#nombre").css('margin-left',xDevolverPosicion("nombre_m"));
+	$("#direccion").css('margin-top',xDevolverPosicion("direccion_a"));
+	$("#direccion").css('margin-left',xDevolverPosicion("direccion_m"));
+	$("#dni").css('margin-top',xDevolverPosicion("dni_a"));
+	$("#dni").css('margin-left',xDevolverPosicion("dni_m"));
+	
+	$("#dia").css('margin-top',xDevolverPosicion("dia_a"));
+	$("#dia").css('margin-left',xDevolverPosicion("dia_m"));
+	$("#mes").css('margin-top',xDevolverPosicion("mes_a"));
+	$("#mes").css('margin-left',xDevolverPosicion("mes_m"));
+	$("#yy").css('margin-top',xDevolverPosicion("yy_a"));
+	$("#yy").css('margin-left',xDevolverPosicion("yy_m"));
+
+	$("#usuario").css('margin-top',xDevolverPosicion("usuario_a"));
+	$("#usuario").css('margin-left',xDevolverPosicion("usuario_m"));
+	xImprSelec3('print_prueba');
+}
+function xDevolverPosicion(elemento,xy){
+	debugger
+	return $("#tb_posicion").find("#"+elemento).val()+'cm';
+}
+Polymer({
+	is: 'x-medida-comprobante',
+	attached:function(){
+		xThis=this;
+		xIniMedidaComprobante();
+	}
+});
+</script>

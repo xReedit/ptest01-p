@@ -1,0 +1,87 @@
+<dom-module id="x-admin">
+	<template>
+		<br>
+		<div class="xMiCard xradius" style="width:calc(100% - 10%)">
+			<div class="xEncanezadoCard xFondoRowAmarillo4">				
+				Listado de restaurantes.
+			</div>
+			<div class="xContentCard">				
+				<div class="xDerecha">
+					<button class="xBoton2 xAzul" onclick="xAdmGoNew();">Nuevo</button>
+				</div>
+				<br><br><br>
+				<hr>
+				<table width="100%" id="tb_pedidos_borrados">
+					<thead>
+						<th>#</th>
+						<th>Razon Social</th>
+						<th>Sede</th>						
+						<th>Ciudad</th>
+						<th>Tipo</th>						
+						<th>F. Inicio</th>						
+						<th>Estado</th>
+						<th></th>
+					</thead>
+					<tbody>
+						<template is="dom-repeat" items="{{ListSedes}}" as="item">
+							<tr data-id="{{index}}">
+								<td>{{displayIndex(index)}}</td>
+								<td>{{item.razonsocial}}</td>
+								<td>{{item.nomsede}}</td>
+								<td>{{item.ciudad}}</td>
+								<td>{{item.tipo}}</td>
+								<td>{{item.finicio}}</td>
+								<td>Activo</td>
+								<td title="Modificar" onClick="xAdmModificarOrg(this)"><span class="xIconRow xCursor"><img src="../../../images/edit.png"></span></td>
+							</tr>
+						</template>
+					</tbody>
+				</table>
+			</div>
+		</div>
+	</template>
+</dom-module>
+<script>
+var xThisAdmin, xPopupLoad, arrSede=[];
+
+    function xIniAdmin() {
+		xLoadSedes();
+	}
+
+	function xLoadSedes(){
+		$.ajax({ url: '../../bdphp/log_004.php?op=1' })
+		.done((res) => {
+			const _res = $.parseJSON(res);
+			xThisAdmin.ListSedes = _res.datos;
+			console.log(_res.datos);
+		});
+	}
+
+	function xAdmModificarOrg(obj) {
+		const index =  obj.parentElement.dataId;
+		localStorage.setItem('::app3_woOAdm', JSON.stringify(xThisAdmin.ListSedes[index]));
+		
+		router.go('/adm_dashboard-new');
+	}
+
+	function xAdmGoNew() {
+		localStorage.removeItem('::app3_woOAdm');
+		router.go('/adm_dashboard-new');
+	}
+
+
+	Polymer({
+			is: 'x-admin',
+			properties: {
+				ListSedes: [],
+				// hayDatosRestaurar: boolean = true,
+			},
+			attached: function () {				
+				xThisAdmin = this;
+				xIniAdmin();
+			},
+			displayIndex: function (index) {
+				return xCeroIzq(index + 1, 1);
+			},
+		})
+</script>

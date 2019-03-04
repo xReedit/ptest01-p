@@ -1,0 +1,200 @@
+<dom-module id="x-pedido-detalle">
+	<template>
+		<x-pass id="pass_us" titulo="Usuario autorizado" val="A"></x-pass>			
+		<paper-dialog id="dialog_erro_print" modal style="min-width: 330px;" modal entry-animation="scale-up-animation" exit-animation="fade-out-animation">										
+			<h4>Error en impresora</h4>
+			<p id="print_error"></p>
+			<br>
+			<div class="xBoton2 xVerde" style="margin-left:23px;" onclick="xReImprimir();">Intentar Nuevamente</div>
+			<div class="xBoton2 xPlomo" style="margin-left:23px;" dialog-dismiss onclick="dialog_detalle.close();">No imprimir</div>		
+			<br><br><br>
+		</paper-dialog>
+		<paper-dialog style="min-width:290px; background: #212121; color: #fff;" id="dialog_borrar_item" entry-animation="scale-up-animation" exit-animation="fade-out-animation" with-backdrop>
+			<div class="xContent">
+				<h3>BORRAR REGISTRO?</h3>
+				<br>
+				<div class="xBoton2 xVerde" dialog-confirm  onclick="xBorrar_item();"> SI </div>
+				<div class="xBoton2 xRojo" dialog-dismiss>Cancelar</div>
+				<br><br>
+			</div>
+		</paper-dialog>
+		<paper-dialog style="min-width:290px; width:80%" id="dialog_add_item" entry-animation="scale-up-animation" exit-animation="fade-out-animation" with-backdrop>
+			<div class="xContent">				
+				<br>
+				<div>
+					<input type="text" class="xMiInput" placeholder="buscar..." style="width:70%"  inline id="txt_bus_item">
+					<input type="number" class="xMiInput" placeholder="cantidad" style="width:20%" value="1" pattern="[0-9]+([\.,][0-9]+)?" step="any" min="1" inline id="cant_item">
+				</div>
+				<br><br><br>
+				<div class="xBoton2 xVerde" dialog-confirm  onclick="xBorrar_item();"> SI </div>
+				<div class="xBoton2 xRojo" dialog-dismiss>Cancelar</div>
+				<br><br>
+			</div>
+		</paper-dialog>
+		<paper-dialog id="dialog_cambiar_item" style="border: 1px solid #bdbdbd;" entry-animation="scale-up-animation" exit-animation="fade-out-animation" with-backdrop>
+			<h3>CAMBIAR POR</h3>
+			<div>								
+				<input type="text" class="xMiInput xfont18 xPasarEnter2" placeholder="Buscar" id="list_bus_item" inline autofocus espaciar>
+				<input type="number" min="1" max="2" onkeyup="xValidarCant_change(this)" onchange="xValidarCant_change(this)" class="xMiInput xfont18 xPasarEnter2 xtxtCentro" placeholder="Cantidad" id="txt_bus_cant" value="1" inline espaciar>
+				<input type="text" class="xMiInput xPasarEnter2" placeholder="Especificaciones..." id="txt_espcificacion" inline autofocus espaciar>
+				<form id="frm_change_item" method="post" class="xInvisible">
+					<input type="text" id="idpedido_detalle" name="idpedido_detalle">
+					<input type="text" id="idpedido" name="idpedido">
+					<input type="text" id="idtipo_consumo" name="idtipo_consumo">
+					<input type="text" id="idcategoria" name="idcategoria">
+					<input type="text" id="idcarta_lista" name="idcarta_lista">
+					<input type="text" id="iditem" name="iditem">					
+					<input type="text" id="idseccion" name="idseccion">
+					<input type="text" id="cantidad" name="cantidad">
+					<input type="text" id="punitario" name="punitario">
+					<input type="text" id="ptotal" name="ptotal">
+					<input type="text" id="descripcion" name="descripcion">					
+				</form>
+				<br>
+				<br>
+				<div class="xBoton2 xVerde" dialog-confirm  onclick="xCambiar_item();"> Listo </div>
+				<div class="xBoton2 xRojo" dialog-dismiss>Cancelar</div>
+				<br>
+			</div>						
+		</paper-dialog>
+
+
+
+		<div id="div_detalle_pedido">
+						<div style="line-height: 7px;">
+							<div class="xDerecha">
+								<paper-fab icon="add" onclick="dialog_add_item.open()" title="Agregar item" tabindex="0" class="btnAdd2"></paper-fab>
+							</div>
+							<h3 id="p_mesa">MESA 02</h3><div class="xfont11"><span id="p_correlativo"> CO: 00112</span><span id="p_referencia"> DR VALDES</span><span id="p_antendido"> | ATENDIDO POR: ORLANDO</span></div>					
+							<br>							
+						</div>						
+						<div class="xLinea"></div>
+						<br>
+						<table width="100%" class="xtable4">					
+							<tr class="xSinBorde_tr" valign="top">
+								<td width="40%" style="padding-right:10px;">
+									<div class="xtd_derecha">
+									<table width="100%" id="tb_pedidos" class="xRowPading4">
+										<thead><th colspan="4" align="left">Pedidos</th></thead>
+										<tr class="row selected1 xCursor check_item_p" data-idpedido="1">
+											<td><paper-checkbox checked class="check_item"></paper-checkbox>1</td>
+											<td>Pedido 00102</td>
+											<td>13:15:02</td>
+											<td align="right" class="td_importe" id="td_importe">120.00</td>
+										</tr>
+										<tr class="row selected1 xCursor check_item_p" data-idpedido="2">
+											<td><paper-checkbox checked class="check_item"></paper-checkbox>2</td>
+											<td>Pedido 00102</td>
+											<td>13:15:02</td>
+											<td align="right" class="td_importe" id="td_importe">120.00</td>
+										</tr>
+										<tr class="row selected1 xCursor check_item_p" data-idpedido="3">
+											<td><paper-checkbox checked class="check_item"></paper-checkbox>3</td>
+											<td>Pedido 00102</td>
+											<td>13:15:02</td>
+											<td align="right" class="td_importe" id="td_importe">120.00</td>
+										</tr>								
+									</table>							
+									</div>
+								</td>						
+								<td class="xBordeIzq" style="padding-left:10px;">
+									<div class="xtd_derecha" id="xBody">
+									<div>
+									<table width="100%" id="tb_det_pedidos" class="xRowPading4">
+										<!--thead><th colspan="6" align="left">Detalle del pedido | <div class="xBoton_flat xPlomo">Local (2)</div><div class="xBoton_flat xPlomo">Para LLevar (3)</div></th></thead-->								
+										<tr>
+											<td colspan="5" class="xFondoRowPlomo">CONSUMIR EN EL LOCAL</td>
+										</tr>
+										<tr>
+											<td colspan="5"><h4>ENTRADAS</h4></td>
+										</tr>
+										<tr class="row xCursor" data-idpedidodetalle="1" data-idpedido="1" data-punitario="1.00" data-idtipoconsumo="1" data-idcategoria="1" data-idcartalista="117422605116">		
+											<td width="50px" class="click_row_dt_p" id="td_cant"><paper-checkbox  class="check_item"></paper-checkbox>03</td>
+											<td class="click_row_dt_p">COCO RALLADO</td>
+											<td class="click_row_dt_p" align="right" id="td_importe">0.00</td>
+											<td align="center" class="td_op" data-op="cambiar"><img src="../../images/_change.png" title="Cambiar"></td>
+											<td align="center" class="td_op" data-op="borrar"><img src="../../images/_delete3.png" title="Borrar"></td>
+										</tr>
+										<tr class="row xCursor" data-idpedidodetalle="2" data-idpedido="1" data-punitario="2.00" data-idtipoconsumo="1" data-idcategoria="1" data-idcartalista="11122605116">
+											<td width="50px" class="click_row_dt_p" id="td_cant"><paper-checkbox  class="check_item"></paper-checkbox>02</td>
+											<td class="click_row_dt_p">GELATINA</td>
+											<td class="click_row_dt_p" align="right" id="td_importe">2.00</td>
+											<td align="center" class="td_op" data-op="cambiar"><img src="../../images/_change.png" title="Cambiar"></td>
+											<td align="center" class="td_op" data-op="borrar"><img src="../../images/_delete3.png" title="Borrar"></td>
+										</tr>								
+									</table>
+									</div>
+									</div>
+								</td>
+							</tr>
+						</table>
+						<div class="xLinea"></div>
+						<br>
+						<div class="xBoton2 xAzul" onclick="xIrPage(1);">Listo, pagar</div>
+						<div class="xBoton2 xPlomo" dialog-dismiss>Cerrar</div>
+		</div>
+		<div id="div_pago">
+						<x-pago id="component_pago"></x-pago>
+						<div class="xLinea"></div>
+						<br>
+						<div class="xBoton2 xAzul" onclick="xRegistrarClientePago();" id="btn_pago">Listo, registrar pago</div>
+						<div class="xBoton2 xPlomo" onclick="xIrPage(0);">Regresar</div>
+		</div>
+
+	</template>
+</dom-module>
+<script>
+var xThis;
+var xidm;
+var xidp;
+var xnump;
+function xIniDetallePedido(){
+	if(xIdOrg=='' || xIdOrg==undefined){xIdOrg=window.localStorage.getItem('::app3_wo');}	
+	if(xIdUsuario=='' || xIdUsuario==undefined){xIdUsuario=window.localStorage.getItem('::app3_woU');}
+	$("#Titulo_page").text("Detalle de Pedido");	
+	xThis.xt_org=xIdOrg;
+	xThis.xt_idsede=xIdSede;
+	xThis.xt_idus=xIdUsuario;
+	//xLoadDetallePedido();
+
+	$(".btn_op_p").on('click',function(e){		
+		$("#miPopupMenu").css({display: 'block'})				
+		$("#miPopupMenu").offset({left:e.pageX, top:e.pageY});
+		$(this).parents('.xPedidoEnCaja').addClass("activo_pc");
+		e.preventDefault();
+	})
+	
+	$(document).on('click','body',function(){$("#miPopupMenu").css({display:'none'});})
+	$(document).on('click', '.xPedidoEnCaja', function(e) {	
+		xPedidoSelect=$(this);
+		if($(this).find('input:radio')[0].checked==true){
+			event.stopPropagation();
+			e.stopPropagation();
+			e.stopImmediatePropagation()
+			return false;	
+		}
+		$("#miPopupMenu").css({display:'none'});
+		$(this).find('input:radio')[0].checked = true;    		
+		xVerificarCheckItem()
+
+		event.stopPropagation();
+		e.stopPropagation();
+		e.stopImmediatePropagation()
+		return false;	
+	});
+}
+
+Polymer({
+	is:'x-pedido-detalle',	
+	properties:{
+		xt_org:Number,
+		xt_idsede:Number,
+		xt_idus:Number,
+		dt_pedido: Object		
+	},
+	attached:function(){				
+    	xThis=this;        	
+    	xIniPedidoDetalle();
+    }    
+})
+</script>

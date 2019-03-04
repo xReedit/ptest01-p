@@ -1,0 +1,206 @@
+<link rel="import" href="../x-dialog/x-dialog.html">
+<link rel="import" href="../paper-input/paper-input.html">
+<link rel="import" href="../paper-button/paper-button.html">
+<link rel="import" href="../paper-dialog/paper-dialog.html">
+<link rel="import" href="../iron-icons/iron-icons.html">
+<dom-module id="x-user-login">
+<style type="text/css">
+	paper-button[raised].colorful {
+      background: #ff4081;
+      color: #fff;
+    }
+	paper-button.colorful {
+      color: #ff4081;
+      width: 100%;
+      margin: 0;
+      font-size: 18px;
+    }
+    .xContentLogin{    		
+			width: 260px; background: #FAFAFA; padding: 25px;
+			padding-top: 90px; 
+			border-radius: 4px;
+			overflow:hidden;
+			height: 355px;			 
+		}
+
+    .aIzq{ float: right; }
+    .xInvisible{visibility:hidden;}    
+    .xVisible{opacity: 1;}
+    .xTransicion3s{-webkit-transition: all 0.3s ease;-o-transition: all 0.3s ease;-ms-transition: all 0.3s ease;-moz-transition: all 0.3s ease;  transition: all 0.3s ease;}
+    .xTituloUser{font-weight: 500;}
+    /*.xcontentUser{    	
+    	height: 260px;
+    }*/
+
+    a{color:#2979ff;font-weight:600;text-decoration: none;}
+	a:hover{ color:#F0C;}
+</style>
+	<template>	
+
+		<paper-dialog id="dialogMSj" entry-animation="scale-up-animation" exit-animation="fade-out-animation" with-backdrop>
+	      <h2>{{xDialogTitulo}}</h2>
+	      <p>{{xDialogDetalle}}</p>	      	      
+	    </paper-dialog>
+
+		<div class="xContentLogin xCentradoVerticalHorizontal xSombraDiv xTransicion3s">
+		<div class="xrunalogo size1 xCentradoVertical"></div>
+			<div class="xOlvideClaveUser xTransicion3s xInvisible" id="div1">
+				<div class="xCentrado">
+					<h2 class="xTituloUser">Se te olvido tu clave</h2>
+					<p>Puedes restablecerla</p>
+				</div><br>				
+					<paper-input label="Correo de registro" type="email" required auto-validate id="correo"></paper-input>				
+					<br>
+					<paper-button tabindex="0" raised class="colorful" onclick="xEnviar('div1')";>Enviar</paper-button>				
+					<br><br>
+					<div>						
+						<a href="#" onclick="xPasarA(2,this);" class="Btn_div2">Logguearse</a>					
+					</div>				
+				<br><br><br>
+			</div>			
+			<div class="xLoginUser xTransicion3s" id="div2">			
+				<div class="xCentrado">					
+					<h2 class="xTituloUser">{{xtitulo}}</h2>
+					<p>Logueese</p>
+				</div><br>								
+					<paper-input label="Usuario" required auto-validate id="usuario"></paper-input>
+					<paper-input label="Clave" type="password" required auto-validate id="pass"></paper-input>
+					<br><br>
+					<paper-button tabindex="0" raised class="colorful" onclick="xEnviar('div2')";>Ingresar</paper-button>
+					<br><br><br>
+					<div>						
+						<a href="#" onclick="xPasarA(1,this);" class="Btn_div1">Olvide mi clave</a>
+						<a href="#" class="aIzq Btn_div3" onclick="xPasarA(3,this);">Registrarme</a>
+					</div>				
+				<br><br><br>
+			</div>			
+			<div class="xRegistrarUser xInvisible xTransicion3s" id="div3">
+				<div class="xCentrado">
+					<h2 class="xTituloUser">Registro</h2>
+					<p>Comienza a utilizar nuestros servicios ahora!.</p>
+				</div><br>								
+					<paper-input label="Usuario  Ej: jperez" required auto-validate id="usuario"></paper-input>
+					<paper-input label="Correo" type="email" required auto-validate id="correo"></paper-input>
+					<paper-input label="Clave" type="password" required auto-validate id="pass"></paper-input>
+					<paper-input label="Repita su clave" type="password" required auto-validate id="pass2"></paper-input>
+					<br><br>
+					<paper-button tabindex="0" raised class="colorful" onclick="xEnviar('div3')";>Listo</paper-button>
+					<br><br>
+					<div>						
+						<a href="#" onclick="xPasarA(2,this);" class="Btn_div2">Ya soy usuario</a>
+					</div>				
+			</div>
+		</div>
+	</template>
+</dom-module>
+<script>
+var xThis;
+var xRpts;
+
+function xPasarA(op,xObjOrigen){	
+	var xDiv;	
+	xThis.xop=op;
+	switch(op){
+		case 1:xDiv='#div1';xAlto='290px';break;
+		case 2:xDiv='#div2';xAlto='352px';break;
+		case 3:xDiv='#div3';xAlto='472px';break;
+	}
+	$(xObjOrigen).parent().parent().fadeOut(900,function(){
+		$(xDiv).removeClass('xInvisible');
+		$(".xContentLogin").css('height',xAlto);		
+		$(xDiv).fadeIn(500);		
+	});
+}
+
+function xEnviar(xfrm){
+	xRpts=new Array();
+	var us='';
+	var p='';
+	var p2='';
+	var correo='';
+	
+	xvalidateForm(xfrm,function(a){
+		if(a===false){return;}		
+		switch (xThis.xop){
+			case 1:
+				correo=$('#div1 #correo').val();
+				break;
+			case 2:
+				us=$('#div2 #usuario').val();
+				p=$('#div2 #pass').val();
+				break;
+			case 3:
+				correo=$('#div3 #correo').val();
+				us=$('#div3 #usuario').val();
+				p=$('#div3 #pass').val();
+				p2=$('#div3 #pass2').val();
+				
+				if(p!=p2){p2='';$('#div3 #pass2').val('');return}
+				break;
+			}
+
+		xRpts.push({'us':us,'p':p, 'co':correo});				
+		xThis.fire('xSend', {xRpts});
+	});	
+}
+
+Polymer({
+    is: 'x-user-login',
+    properties:{
+    	xdiv_visibles:{type:Array,value:[1,1,1]},    	
+    	xDialogTitulo:{type:String, value:'Incorrecto'},
+    	xDialogDetalle:{type:String, value:'Usuario o clave incorrecto'},
+    	xop:2,
+    	xtitulo:{type:String, value:'Runamula'}
+    },
+    ready:function(){
+    	this.xop=2;
+    	var xDivValVisible;
+
+    	for (var i = 0; i < this.xdiv_visibles.length; i++) {
+    		xDivValVisible=this.xdiv_visibles[i];
+    		switch (i){
+    			case 0://div1 - recuperar clave
+    				if(xDivValVisible===0){//no visible
+    					$("#div1").remove();
+    					$('.Btn_div1').remove();
+    				}
+    				break;
+    			case 1://div1 - login
+    				if(xDivValVisible===0){//no visible
+    					$("#div2").remove();
+    					$('.Btn_div2').remove();
+    				}
+    				break;
+    			case 2://div2 - registrarme
+    				if(xDivValVisible===0){//no visible
+    					$("#div3").remove();
+    					$('.Btn_div3').remove();
+    				}
+    				break;
+    		}
+    	};
+    	xThis=this;    	
+    },
+    xocurrencia:function(op){
+    	var dialogMSj=document.getElementById('dialogMSj');    	
+    	switch(op){
+    		case 0://clave o usuario incorrecto;
+    			$("#div2 #pass").val('');
+    			$("#div2 #pass").focus();
+    			this.xDialogTitulo='Incorrecto';
+    			this.xDialogDetalle='Usuario o clave incorrecto';
+				dialogMSj.open();
+    			break;
+    		case 1://usuario no disponible
+    			var xUsuNodisponible=$("#div3 #usuario").val();
+    			$("#div3 #usuario").val('');
+    			$("#div3 #usuario").focus();
+    			this.xDialogTitulo='No Disponible';
+    			this.xDialogDetalle='El usuario '+xUsuNodisponible+' no se encuentra disponible.';
+				dialogMSj.open();
+    			break;
+    	}
+    }
+});
+</script>

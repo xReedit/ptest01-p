@@ -1,0 +1,68 @@
+<link rel="import" href="../../web_components/polymer/polymer.html">
+<link rel="import" href="../../web_components/paper-dropdown-menu/paper-dropdown-menu.html">
+<link rel="import" href="../../web_components/iron-dropdown/iron-dropdown.html">
+
+
+<dom-module id="x-comp-find-sede">
+    <template>        
+        <div>       
+          <select id="compFindListSede" class="xTextRow2 xCursor" onchange="selectOptionSede()">
+            <template is="dom-repeat" items="{{listSede}}" as="sede">
+              <option value="[[index]]">[[sede.nombre]] </option>
+            </template>
+          </select>
+        </div>
+
+    </template>
+    <script>
+        var xThisComSede;
+
+        function getAllSedes() {
+            $.ajax({ type: 'POST', url: '../../bdphp/log_componentes.php?op=1'})
+	        .done( function (dtSede) {
+                dtSede=$.parseJSON(dtSede);	
+                xThisComSede.listSede=dtSede.datos;
+                xThisComSede.sedes = xThisComSede.listSede[0];
+                xThisComSede.getValorIncial(xThisComSede.sedes);
+            });
+        }
+
+        function selectOptionSede() {
+            const index = xThisComSede.$.compFindListSede.value;
+            xThisComSede.sedes = xThisComSede.listSede[index];
+        }
+        
+
+        Polymer({
+        is: 'x-comp-find-sede',
+        properties: {
+            listSede: [],
+            sedes: {
+                type: Object,
+                // value : {},
+                reflectToAttribute: true,
+                notify: true, 
+                value: function() { return {}; },
+                observer: 'sedeNameChanged'
+            },
+        },
+        listeners: {
+            'onchange': 'getSede'
+        },
+        sedeNameChanged: function(sede) {
+            return sede;
+        }, 
+        getSede() {
+            return this.sedes;
+        },
+        attached: function() {
+            xThisComSede=this;	
+            getAllSedes();
+        },
+        getValorIncial: function(sede) {
+            this.fire('getValorIncial', {sedes: sede});
+        }
+    })
+    </script>
+
+</dom-module>

@@ -1,0 +1,520 @@
+<dom-module id="x-comprobante">
+	<template>
+		<meta content="no-cache"/>
+		<paper-dialog id="dialog_cotent_comprobante" class="xDialogContentFa" entry-animation="scale-up-animation" exit-animation="fade-out-animation">
+			<div>
+				<div class="xMiBoton_icon_lateral xDerecha" id="btn_facturacion" onclick="xGuardarFactura();"><img src="../../../images/_imprimir.png"><p>Imprimir</p></div>
+				<h3 id="titulo">Facturacion</h3>											
+				<div class="xLinea2"></div>
+				<div class="xContentDivs xFlex">
+					<div class="xdiv_content div_iz xBordeDe">
+						<table class="xtable1 xfont10x xCursor" width="100%" id="tb_habitacion">								
+							<thead>
+								<th width="85%"></th>
+								<th></th>
+							</thead>
+							<tr class="row" onclick="xSelectRow(this)">
+								<td width="70%">qqq HAB. 103 MATRIMONIAL aaa</td>
+								<td align="right">360.00</td>
+							</tr>
+						</table>
+						<br>
+						<h3 class="xCursor" onclick="xAddQuitarAllItem(this);">Consumos</h3>						
+						<table class="xtable1 xfont9x xRowPading5 xCursor" id="tb_consumo" width="100%">	
+							<thead>
+								<th width="85%"></th>
+								<th></th>
+							</thead>
+							<tr class="row" onclick="xSelectRow(this)" data-id="1" data-i="0">
+								<td>aa</td>
+								<td align="right">360.00</td>										
+							</tr>
+							<tr class="row" onclick="xSelectRow(this)" data-id="2" data-i="1">
+								<td>3 FANTA INGLESA</td>
+								<td align="right">10.00</td>
+							</tr>						
+						</table>													
+					</div>				
+					<div class="xdiv_content div_de">						
+						<form method="post" id="frm_encabezado">
+							<div>
+							<select id="SelTipoPersona">
+								<option value="0">PERSONA NATURAL</option>
+								<option value="1">PERSONA JURIDICA</option>
+							</select>
+							<select id="SelComprobante">
+								<option>FACTURA</option>
+								<option>BOLETA</option>
+							</select>
+							<input type="number" pattern="[0-9]+([\.,][0-9]+)?" step="any" id="comp_serie" name="comp_serie" onkeyup="xValidarSerie();"  onchange="xValidarSerie();" class="xMiInput xAlinearDerecha xPasarEnter2" placeholder="Serie" inline>
+							<input type="number" pattern="[0-9]+([\.,][0-9]+)?" step="any" id="comp_num" name="comp_num" onchange="xValidarNumComp(this)" class="xMiInput xAlinearDerecha" placeholder="Numero" inline>						
+							</div>							
+							<div id="info_cliente">
+								<span class="xfont11 xColorRow_Azul xDerecha xCursor" onclick="xDatosClienteIni();">Datos del cliente de origne</span>	
+								<input type="text" class="xMiInput xPasarEnter2" placeholder="Nombre/Razon Social" id="txt_clie_emp" name="txt_clie_emp">							
+								<input type="text" class="xMiInput xPasarEnter2" placeholder="Direccion" id="txt_clie_direccion" name="txt_clie_direccion">
+								<input type="text" class="xMiInput" placeholder="DNI/RUC" id="txt_clie_dni" name="txt_clie_dni">
+							</div>
+							<div class="xInvisible">								
+								<input type="text" id="idorg" name="idorg" value="[[xt_org]]">
+								<input type="text" id="idsede" name="idsede" value="[[xt_idsede]]">
+								<input type="text" id="idusuario" name="idusuario" value="[[xt_idus]]">
+								<input type="text" id="idcomprobante_tipo" name="idcomprobante_tipo">								
+								<input type="text" id="fecha" name="fecha">
+								<input type="text" id="hora" name="hora">
+								<input type="text" id="idcliente_pn_pj" name="idcliente_pn_pj">
+								<input type="text" id="tipo_p" name="tipo_p">
+								<input type="text" id="total" name="total">
+							</div>							
+						</form>						
+						<br>
+						<div>
+							<table class="xtable3 _xfont11x xfont12x xRowPading3" width="100%" id="tb_pro_facturar" data-TablaName="comprobante_detalle">
+								<thead>									
+									<th width="60%" align="left">DESCRIPCION <span class="xbtnRowAll xfont11 xpadingLateralIz xColorRow_Azul" onclick="xQuitarTodoConsumoGrid();">No detallar consumo</span></th>
+									<th align="right">P.UNITARIO</th>
+									<th align="right">IMPORTE</th>
+								</thead>								
+							</table>
+						</div>
+					</div>					
+				</div>				
+			</div>
+			<div class="xdiv_pie">
+				<div class="xLinea2"></div>								
+				<p class="x_total">IMPORTE A FACTURAR: <span id="total_tb">----</span></p>				
+			</div>
+		</paper-dialog>
+	</template>
+</dom-module>
+<style>	
+	.xContentDivs{position: absolute;width: calc(100% - 4em); top:67px;bottom:65px;}
+	.xdiv_content{		
+		display:inline;
+		position: relative;
+		/*position:absolute;*/
+		/*min-height:80%;*/		
+		/*height:100%;*/
+		/*bottom: 65px;
+		top: 67px;*/		
+		top:0px;			
+		overflow-y:auto;		
+	}
+	.div_iz{width: 25%;background: #f5f5f5;}	
+	.div_de{left:0px;width: 100%; padding: 10px;}
+	.xdiv_pie{		
+		position : absolute;
+	    bottom : 0;
+	    right: 0px;
+	    left: 0px;    
+	    height : 40px;
+	    margin-top : 40px;
+	    clear: both;
+	    padding-top: -10px;	
+	    text-align: right;
+		}
+	/*.xContentConsumo{ display:block;height:70%; overflow-y:scroll;}*/
+	._xfont10x tr td{font-size:10px;}		
+	._xfont10x thead th{font-size:10px;}		
+	._xfont11x tr td{font-size:11px;}		
+	._xfont11x thead th{font-size:11px;}			
+	.xDialogContentFa{ border-radius: 5px; padding: 5px; width: 95%; height: 95%;}
+	table tr.xselected_row{background:#FFF9C4;}
+	table tr.xselected_row:hover{background:#FFF9C4;}
+	.x_total{font-size: 18px; font-weight: 500; color: #616161; padding: 15px;}
+</style>
+<script>
+var xThis;
+var xIdcomprobante;
+var xSerie_comprobante;
+var xNum_comprobante;
+var xValIdSelCom=0;
+var xIdClienteComprobante;
+var xidcliente_pn_pj;
+var xTipo_P='';
+var xImporteTotalFacturar;
+function xIiniComprobante(){	
+	//
+	xValIdSelCom=0;
+	xLoadComprobante();
+	xLoadCliente();
+	xAddItemNoRow();	
+
+	$('.xPasarEnter2').on('keyup',function(e){				
+		var code=e.which;
+		if ( code==13||code==186 ) {			
+			var inputs = $('input'); // storage a array of Inputs
+		    var a = inputs.index(document.activeElement); 		    
+		    if (inputs[a + 1] !== null)
+		    {		      
+		      var nextBox = inputs[a + 1];
+		      if(nextBox.disabled){nextBox = inputs[a + 2]} 
+		      nextBox.focus();
+		  	  nextBox.select();
+		      //event.preventDefault();
+		    }		   
+		    return false;
+  		}
+	});
+	$("#txt_norow_importe").on('keyup',function(e){			
+		var code=e.which;
+		if ( code==13||code==186 ) {xAddContenItemNoRow();}
+	});
+	$("#SelComprobante").on('change',function(e){
+		xValIdSelCom=$(this).val();
+		xSelectComprobanteOption()
+	});
+	$("#SelTipoPersona").on('change',function(e){
+		xParametroBuscar();
+		xDatosClienteMostrar();
+	});	
+}
+function xGuardarFactura(){
+	//datos numero del comprobante 
+	xGuardarComprobante();
+	//encabezado del comprobante	
+	$("#frm_encabezado #idcomprobante_tipo").val(xIdcomprobante);
+	$("#frm_encabezado #fecha").val(xDevolverFecha());
+	$("#frm_encabezado #hora").val(xDevolverHora());
+	$("#frm_encabezado #idcliente_pn_pj").val(xidcliente_pn_pj);
+	$("#frm_encabezado #tipo_p").val(xTipo_P);
+	$("#frm_encabezado #total").val(xImporteTotalFacturar);
+	xPopupLoad.xopen();	
+	$.post("../../bdphp/ManejoBD_IUD.php?tb=comprobante",$("#frm_encabezado").serialize(),function(xUltimoId){
+		//armar body factura
+		debugger		
+		var xArmaBodyFac=xArmarInsertDetalle($("#tb_pro_facturar"),'idcomprobante',xUltimoId,'','');
+		debugger
+		$.ajax({ type: 'POST', url: '../../bdphp/log.php?op=100', data:{xsql:xArmaBodyFac}})
+			.done( function (a) {
+				debugger
+				xPopupLoad.xclose();
+			});		
+	});
+	//
+
+}
+function xLoadCliente(){
+	$.ajax({ type: 'POST', url: '../../bdphp/log.php?op=8014'})
+	.done( function (dtCl) {		
+		var xDttClie=$.parseJSON(dtCl);
+		xThis.dataCliente=xDttClie.datos;	
+		xParametroBuscar();		
+	});
+}
+function xDatosClienteMostrar(){	
+	if(xIdClienteComprobante==""){return};
+	var rptIni=xThis.dataCliente.filter(function(a){return a.idcliente==xIdClienteComprobante;})
+	rptIni=rptIni[0];	
+	$("#txt_clie_emp").attr('data-idcliente',rptIni.idcliente);
+	$("#txt_clie_emp").attr('data-idempresa',rptIni.idcliente_empresa);
+	switch($("#SelTipoPersona").val()){
+		case "0":
+			xidcliente_pn_pj=rptIni.idcliente;			
+			xTipo_P='PN';
+			$("#txt_clie_emp").val(rptIni.nombre);
+			$("#txt_clie_direccion").val(rptIni.procedencia);
+			$("#txt_clie_dni").val(rptIni.dni);
+			break;
+		case "1":
+			xidcliente_pn_pj=rptIni.idcliente_empresa;
+			xTipo_P='PJ';
+			$("#txt_clie_emp").val(rptIni.empresa);					                		     
+			$("#txt_clie_direccion").val(rptIni.direccion);
+			$("#txt_clie_dni").val(rptIni.ruc);
+			break;
+	}
+}
+function xDatosClienteIni(){
+	xIdClienteComprobante=xThis.dtIdCliente;
+	xDatosClienteMostrar();	
+}
+function xParametroBuscar(){
+	var xParamBuscar='';
+	var xdttCliente;		
+		switch($("#SelTipoPersona").val()){
+			case "0":xdttCliente=eval((JSON.stringify(xThis.dataCliente).replace(/nombre/g,'label')));break;
+			case "1":
+				//agrupa por empresa
+				var result = xThis.dataCliente.reduce(function(res, obj) {					
+			    if (!(obj.empresa in res))
+			        res.__array.push(res[obj.empresa] = obj);
+			    else {
+			        res[obj.empresa].hits += obj.hits;
+			        res[obj.empresa].bytes += obj.bytes;
+			    }
+			    return res;
+				}, {__array:[]}).__array
+			    .sort(function(a,b) { return a.empresa; });				
+				xdttCliente=eval(((JSON.stringify(result).replace(/empresa/g,'label')).replace(/ruc/g,'dni')).replace(/direccion/g,'procedencia'));
+			break;
+		}
+				
+		$("#txt_clie_emp").autocomplete({
+			autoFocus:true,
+			source:xdttCliente,			
+			select: function( event, ui ) {        
+				$("#txt_clie_emp").val(ui.item.label);
+		        $("#txt_clie_emp").attr('data-idcliente',ui.item.idcliente);		        
+		        $("#txt_clie_emp").attr('data-idempresa',ui.item.idcliente_empresa);		                		      
+		        $("#txt_clie_direccion").val(ui.item.procedencia);
+		        $("#txt_clie_dni").val(ui.item.dni);
+		        xIdClienteComprobante=ui.item.idcliente;
+		        return false;
+		    },
+		    focus:function(event, ui){return false;},
+		    change:function( event, ui ) {		    	
+		    	if(ui.item===null){
+		    		$("#txt_clie_emp").attr('data-idcliente',"");$("#txt_clie_emp").attr('data-idempresa',"");
+		    		xIdClienteComprobante=="";
+		    	}
+		    	return false;
+		    }
+		});	
+}
+function xGuardarComprobante(){	
+	//xValIdSelCom=$("#SelComprobante").val();
+	xSerie_comprobante=$("#comp_serie").val();
+	xNum_comprobante=$("#comp_num").val();
+	$.ajax({ type: 'POST', url: '../../bdphp/log.php?op=8013', data:{i:xIdcomprobante,serie:xSerie_comprobante,num:xNum_comprobante}})
+	.done( function (dtRptC) {
+		xNum_comprobante++;
+		$("#comp_num").val(xNum_comprobante);
+		$("#comp_num").attr('min',xNum_comprobante);		
+		xLoadComprobante();		
+	});
+}
+function xValidarSerie(){	
+	var xnum_serie_validar=$("#comp_serie").val()
+	if(parseFloat(xnum_serie_validar)!=parseFloat(xThis.dataComprobante[xValIdSelCom].serie)){
+		xNum_comprobante=0;
+		xNum_comprobante=parseFloat(xNum_comprobante)+1;		
+		}
+	else{
+		if(parseFloat(xThis.dataComprobante[xValIdSelCom].serie)==0){return;}
+		$("#comp_serie").val(xThis.dataComprobante[xValIdSelCom].serie)
+		xNum_comprobante=xThis.dataComprobante[xValIdSelCom].num;
+		xNum_comprobante=parseFloat(xNum_comprobante)+1;		
+	}
+	$("#comp_num").val(xNum_comprobante); $("#comp_num").attr('min',xNum_comprobante); 
+}
+function xValidarNumComp(obj){		
+	var xValMin=parseFloat($(obj).attr('min'));
+	var xValObj=parseFloat($(obj).val());
+	if(isNaN(xValObj)){xValObj=0}
+	if(xValObj<xValMin){$(obj).val(xValMin)}
+}
+function xSelectComprobanteOption(){	
+	var i=xValIdSelCom;
+	xIdcomprobante=xThis.dataComprobante[i].idcomprobante_tipo;
+	xSerie_comprobante=xThis.dataComprobante[i].serie;
+	xNum_comprobante=xThis.dataComprobante[i].num;
+	xNum_comprobante=parseFloat(xNum_comprobante)+1;
+	$("#comp_serie").val(xSerie_comprobante);
+	$("#comp_num").val(xNum_comprobante);
+	$("#comp_num").attr('min',xNum_comprobante);
+}
+function xLoadComprobante(){
+	$.ajax({ type: 'POST', url: '../../bdphp/log.php?op=8012'})
+	.done( function (dtComp) {	
+		var xcadenaComp='';
+		var xdtComp=$.parseJSON(dtComp);	
+		xThis.dataComprobante=xdtComp.datos;
+		for (var i = 0; i < xdtComp.datos.length; i++) {
+			xcadenaComp=xcadenaComp+'<option value="'+i+'">'+xdtComp.datos[i].descripcion+'</option>';
+		};
+		$("#SelComprobante option").remove();
+		$("#SelComprobante").append(xcadenaComp).trigger('create');	
+		$("#SelComprobante").val(xValIdSelCom);
+		xSelectComprobanteOption();
+	});
+}
+function xload_Data_Consumo(){	
+	var xCadena_consumo='';
+	var xDttC=xThis.dataconsumo;
+	var xdescripcion_pro='';
+	var xTotalSumComsumo=0;	
+	for (var i = 0; i < xDttC.length; i++) {
+		xdescripcion_pro=xThis.dataconsumo[i].descripcion;	
+		if(xdescripcion_pro.indexOf('|')!=-1){xdescripcion_pro=xdescripcion_pro.split('|');xdescripcion_pro=xdescripcion_pro[1];}				
+		if(xThis.dataconsumo[i].escuenta_otrahab==0){
+			xTotalSumComsumo=parseFloat(xTotalSumComsumo)+parseFloat(xDttC[i].total);
+			xCadena_consumo=String(xCadena_consumo+'<tr onclick="xSelectRow(this)" class="row" data-id="'+xDttC[i].idservicio_registro+'" data-i="'+i+'">'+
+				'<td>'+xCeroIzq(xDttC[i].cantidad,2)+' '+xdescripcion_pro+'</td>'+
+				'<td class="total" align="right">'+parseFloat(xDttC[i].total).toFixed(2)+'</td>'+
+				'</tr>'
+				);
+		}else{//traspaso de cuenta de otra habitacion								
+			if(xThis.datahabitacion.map(function(e) { return e.descripcion; }).indexOf(xdescripcion_pro)!=-1){continue;}
+			var xAAEE={"descripcion":xdescripcion_pro,"total":parseFloat(xDttC[i].total).toFixed(2)};	
+			xThis.datahabitacion.push(xAAEE);			
+		}
+	}
+	xTotalSumComsumo=parseFloat(xTotalSumComsumo).toFixed(2)
+	xCadena_consumo=xCadena_consumo+'<tr class="total xSinBorde"><td colspan="2" align="right">'+xTotalSumComsumo+'</td></tr>';
+	$("#tb_pro_facturar .row").remove();
+	$("#tb_consumo .row").remove();
+	$("#tb_consumo .total").remove();
+	$("#tb_consumo").append(xCadena_consumo).trigger('create');
+
+	//habitaciones
+	xTotalSumComsumo=0;	
+	var xCadenaHab='';
+	for (var i = 0; i < xThis.datahabitacion.length; i++) {
+		xTotalSumComsumo=parseFloat(xTotalSumComsumo)+parseFloat(xThis.datahabitacion[i].total);	
+		xCadenaHab=String(xCadenaHab+'<tr class="row" data-i="HAB'+i+'" onclick="xSelectRowHab(this)"><td>'+xThis.datahabitacion[i].descripcion+'</td><td class="total" align="right">'+xThis.datahabitacion[i].total+'</td></tr>');
+	};
+	xTotalSumComsumo=parseFloat(xTotalSumComsumo).toFixed(2)
+	xCadenaHab=xCadenaHab+'<tr class="total xSinBorde"><td colspan="2" align="right">'+xTotalSumComsumo+'</td></tr>';
+	$("#tb_habitacion .row").remove();
+	$("#tb_habitacion .total").remove();
+	$("#tb_habitacion").append(xCadenaHab).trigger('create');
+
+}
+function xSelectRowHab(obj){	
+	var xIdItem=$(obj).attr('data-i');
+	if(obj.className.indexOf('xselected_row')!=-1){
+		$(obj).removeClass('xselected_row');
+		xQuitarItemHab(xIdItem);
+	}
+	else{
+		$(obj).addClass('xselected_row');
+		xAddItemHab(xIdItem);
+	}	
+}
+function xSelectRow(obj){	
+	var xIdItem=$(obj).attr('data-i');
+	if(obj.className.indexOf('xselected_row')!=-1){
+		$(obj).removeClass('xselected_row');
+		xQuitarItem(xIdItem);
+	}
+	else{
+		$(obj).addClass('xselected_row');
+		xAddItem(xIdItem);
+	}	
+}
+function xSumarTotal(){
+	xImporteTotalFacturar=xMoneda(xSumaCantRow($("#tb_pro_facturar"),'.total'));
+	$("#total_tb").text(xImporteTotalFacturar);
+}
+function xAddContenItemNoRow(){
+	if($("#txt_norow_des").val()==''){$("#txt_norow_des").attr('requerid'); return;}
+	var xCadenaNoRow='<tr class="row">'+	
+	'<td><span class="xDeleteRowNeutro" title="Borrar" onclick="xxBorrarItemLocal(this);"></span>'+$("#txt_norow_des").val()+'</td>'+
+	'<td align="right" data-ColumName="pu">'+$("#txt_norow_cant").val()+'</td>'+
+	'<td align="right" data-ColumName="pt" class="total">'+xMoneda($("#txt_norow_importe").val())+'</td>'+	
+	'<td align="right" data-ColumName="item" class="xInvisible">'+$("#txt_norow_des").val()+'</td>'+		
+	'</tr>';
+	$("#tb_pro_facturar tr:last").before(xCadenaNoRow).trigger('create');
+	//xAddItemNoRow();
+	xNewItemNoRow();
+}
+function xNewItemNoRow(){
+	$("#txt_norow_des").val('');
+	$("#txt_norow_cant").val('');
+	$("#txt_norow_importe").val('');	
+	$("#txt_norow_des").focus();
+	xSumarTotal();
+}
+function xAddItemNoRow(){
+	//$("#tb_pro_facturar .row_add").remove();
+	$("#tb_pro_facturar").append('<tr class="row_add xSinBorde"><td><input id="txt_norow_des" type="text" class="xMiInput xPasarEnter2" onChange="conMayusculas(this)" placeholder="Descripcion"></td><td><input id="txt_norow_cant"´type="text" class="xMiInput xAlinearDerecha xPasarEnter2" onblur="xRetornaMoneda(this)" placeholder="P.Unitario"></td><td><input type="text" class="xMiInput xAlinearDerecha" onblur="xRetornaMoneda(this)" placeholder="Importe" id="txt_norow_importe"></td></tr>').trigger('create');
+	$("#txt_norow_des").focus();	
+}
+function xAddItemHab(i){	
+	var xRowBusqueda=xBuscarAttrTbData($("#tb_pro_facturar"),'data-i',i);	
+	if(xRowBusqueda!=false){return;}
+	var xCadenaAddHab='';		
+	i=i.replace('HAB','');
+	xCadenaAddHab='<tr class="row" data-i="HAB'+i+'">'+	
+	'<td><span class="xDeleteRowNeutro" title="Borrar" onclick="xxBorrarItemLocal(this);"></span>'+xThis.datahabitacion[i].descripcion+'</td>'+
+	'<td align="right" data-ColumName="pu"></td>'+
+	'<td align="right" data-ColumName="pt" class="total">'+parseFloat(xThis.datahabitacion[i].total).toFixed(2)+'</td>'+
+	'<td align="right" data-ColumName="item" class="xInvisible">'+xThis.datahabitacion[i].descripcion+'</td>'+	
+	+'</tr>';
+	$("#tb_pro_facturar tr:last").before(xCadenaAddHab).trigger('create');
+	//xAddItemNoRow();
+	xNewItemNoRow();
+}
+function xAddItem(i){
+	var xRowBusqueda=xBuscarAttrTbData($("#tb_pro_facturar"),'data-id',i);
+	if(xRowBusqueda!=false){return;}
+	var xCadenaAdd='';	
+	var xdescripcion_pro=xThis.dataconsumo[i].descripcion;	
+	if(xdescripcion_pro.indexOf('|')!=-1){xdescripcion_pro=xdescripcion_pro.split('|');xdescripcion_pro=xdescripcion_pro[1];}
+	xCadenaAdd='<tr class="row" data-id="'+i+'">'+	
+	'<td><span class="xDeleteRowNeutro" title="Borrar" onclick="xxBorrarItemLocal(this);"></span>'+xCeroIzq(xThis.dataconsumo[i].cantidad,2)+' '+xdescripcion_pro+'</td>'+	
+	'<td align="right">'+xThis.dataconsumo[i].punitario+'</td>'+
+	'<td align="right" class="total">'+parseFloat(xThis.dataconsumo[i].total).toFixed(2)+'</td>'+
+	+'</tr>';
+	$("#tb_pro_facturar tr:last").before(xCadenaAdd).trigger('create');
+	//xAddItemNoRow();
+	xNewItemNoRow();
+}
+function xAddItemALL(){
+	for (var i = 0; i < xThis.dataconsumo.length; i++) {xAddItem(i)};
+	$("#tb_consumo .row").addClass('xselected_row');	
+}
+function xQuitarItemHab(i){		
+	var xRowBusqueda=xBuscarAttrTbData($("#tb_pro_facturar"),'data-i',i);
+	$(xRowBusqueda).remove();
+	//xAddItemNoRow();
+	xNewItemNoRow();
+}
+function xQuitarItem(i){	
+	var xRowBusqueda=xBuscarAttrTbData($("#tb_pro_facturar"),'data-id',i);
+	$(xRowBusqueda).remove();
+	//xAddItemNoRow();
+	xNewItemNoRow();
+}
+function xQuitarItemAll(){
+	for (var i = 0; i < xThis.dataconsumo.length; i++) {xQuitarItem(i)};
+	$("#tb_consumo .row").removeClass('xselected_row');
+}
+function xQuitarTodoConsumoGrid(){
+	for (var i = 0; i < xThis.dataconsumo.length; i++) {xQuitarItem(i)};	
+}
+
+function xAddQuitarAllItem(obj){	
+	if($(obj).text()=='Consumos'){
+		xAddItemALL();
+		$(obj).text('x Consumos');
+	}else{
+		xQuitarItemAll();
+		$(obj).text('Consumos');
+	}
+}
+function xxBorrarItemLocal(obj){
+	$(obj).parent().parent().fadeTo(100, 0, function () {$(this).remove();xNewItemNoRow()});
+}
+
+var xdialog_comprobante;
+Polymer({
+	is:'x-comprobante',
+	properties:{
+		dataconsumo: {type:Object,value:''},
+		datahabitacion: {type:Object,value:''},
+		dataComprobante:Object,
+		dataCliente:Object,
+		dtIdCliente:{type:Number,value:33},
+		xt_org:{type:Number},
+		xt_idsede:{type:Number},
+		xt_idus:{type:Number},
+	},
+	attached:function(){		
+		xThis=this;
+		xdialog_comprobante = document.getElementById('dialog_cotent_comprobante');   
+        xdialog_comprobante.close();
+        xIiniComprobante();
+    },
+    open: function(reponde){        
+      	xdialog_comprobante.open();      	
+    },
+    xopen:function(){
+    	xload_Data_Consumo();
+    	xIdClienteComprobante=xThis.dtIdCliente;
+    	xDatosClienteIni();    	
+    	xdialog_comprobante.open();},
+    xclose:function(){xdialog_comprobante.close();}
+})
+</script>

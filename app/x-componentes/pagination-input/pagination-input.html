@@ -1,0 +1,243 @@
+<!-- <link rel="import" href="../../web_components/polymer/polymer-element.html"> -->
+
+<link rel="import" href="../../web_components/iron-icons/iron-icons.html">
+<link rel="import" href="../../web_components/paper-icon-button/paper-icon-button.html">
+<link rel="import" href="../../web_components/paper-input/paper-input.html">
+<link rel="import" href="../../web_components/iron-flex-layout/iron-flex-layout.html">
+
+<!--
+  `pagination-input` is a simple pagination control with an paper-input.
+
+### Example
+  
+        <pagination-input current-page="1" page-count="5"></pagination-input>
+        <pagination-input current-page="99" page-count="155"></pagination-input>
+        <pagination-input current-page="14" page-count="23"></pagination-input>
+
+### Styling
+
+Custom property | Description | Default
+----------------|-------------|---------
+`--pagination-input-text-color` | Color of text showing the selected page | `--primary-text-color`
+`--pagination-input-suffix-color` | Color of text showing the number of pages | `--secondary-text-color`
+`--pagination-input-input` | Mixin for the paper-input (selected page)  | `{}`
+`--pagination-input-input-suffix` | Mixin for the paper-input suffix (number of pages) | `{}`
+`--pagination-input-button` | Mixin for paper-icon-button | `{}`
+`--pagination-input-disabled-button` | Mixin for disabled paper-icon-button | `{}`
+
+@demo demo/index.html
+-->
+
+<dom-module id="pagination-input">
+  <template>
+    <style>
+       :host {
+        @apply --layout-horizontal;
+        @apply --layout-center;
+      }
+
+      #input {
+        color: var(--pagination-input-text-color, var(--primary-text-color));
+        text-align: center;
+        margin-left: 4px;
+        margin-right: 4px;
+        @apply --pagination-input-input;
+      }
+
+      #suffix {
+        -webkit-user-select: none;
+        -moz-user-select: none;
+        -ms-user-select: none;
+        user-select: none;
+        height: 19px;
+        text-align: center;
+        color: var(--pagination-input-suffix-color, var(--secondary-text-color));
+        @apply --pagination-input-input-suffix;
+      }
+
+      paper-icon-button {
+        --iron-icon-fill-color: var(--pagination-input-icon-fill-color, var(--primary-text-color));
+        @apply --pagination-input-button;
+      }
+
+      paper-icon-button[disabled] {
+        /* opacity: 0.15; */
+        @apply --pagination-input-disabled-button;
+      }
+    </style>
+
+    <paper-icon-button icon="icons:first-page" on-click="_onFirstPageBtnClick" disabled$="[[_shouldDisablePreviousPageBtns(currentPage)]]"></paper-icon-button>
+    <paper-icon-button icon="icons:chevron-left" on-click="_onPreviousPageBtnClick" disabled$="[[_shouldDisablePreviousPageBtns(currentPage)]]"></paper-icon-button>
+    <!-- <paper-input id="input" type="number" on-change="_onInputValueChange" no-label-float="true" min="1" max$="[[pageCount]]" value="[[currentPage]]" auto-validate allowed-pattern="[0-9]"></paper-input>     -->
+    <div style="width: 45px; padding-right: 10px;">
+      <select id="selectRows" class="xTextRow2 xCursor" value="{{hostValue::change}}">
+        <template is="dom-repeat" items="{{listRows}}" as="item">
+          <option value="[[index]]">[[item]]</option>
+        </template>
+      </select>
+    </div>
+    <div id="suffix">[[pageDesde]]-[[pageHasta]] de [[pageRows]]</div>
+    <!-- <div id="suffix">[[pageRows]]</div>         -->
+    <paper-icon-button icon="icons:chevron-right" on-click="_onNextPageBtnClick" disabled$="[[_shouldDisableNextPageBtns(currentPage,pageCount)]]"></paper-icon-button>
+    <paper-icon-button icon="icons:last-page" on-click="_onLastPageBtnClick" disabled$="[[_shouldDisableNextPageBtns(currentPage,pageCount)]]"></paper-icon-button>
+
+  </template>
+
+  <script>
+    'use strict';
+
+    function _updateCalcularPaginator() {
+        this.pageCount = Math.ceil(this.pageRows / this.pageLimit);
+        this.pageDesde = (this.currentPage * this.pageLimit) - this.pageLimit;
+        this.pageHasta = this.pageDesde + this.pageLimit;
+        this.pageHasta = this.pageHasta > this.pageRows ? this.pageRows : this.pageHasta;
+      }
+
+
+    Polymer({
+        is: 'pagination-input',
+        properties: {
+          currentPage: {
+            type: Number,
+            notify: true,  
+            observer: '_calcularPaginator'          
+          },
+          hostValue: {
+            type: String,
+            observer: '_observer'
+          },
+          pageLimit: { // limite de filas
+            type: Number,
+          }, 
+          pageCount: Number, // cantidad de paginas
+          pageRows: {
+            type: Number,
+            notify: true,
+            observer: '_onlyCalcularPaginator'
+          }, // total de filas
+          pageDesde: Number, // desde
+          pageHasta: Number, // hasta          
+          listRows: {
+            type: [],
+            observer: '_observer_list'
+          },
+          observers: [
+              '_onPageCountChange(pageCount)',
+              '_onCurrentPageChange(currentPage)'
+          ]
+        },
+        _observer_list: function (a) {          
+          this.pageLimit= a[0];
+          this._calcularPaginator();
+          // this.fire('page-limit-change', { value: this.pageLimit });
+        },
+        _observer: function (i) {
+          this.pageLimit = this.listRows[i];
+          this._calcularPaginator();
+          // this.fire('page-limit-change', { value: this.pageLimit });
+        },        
+        _shouldDisablePreviousPageBtns(currentPage) {          
+          return currentPage === 1;
+        },
+        _shouldDisableNextPageBtns(currentPage, pageCount) {
+          return currentPage === pageCount;
+        },
+
+        _onFirstPageBtnClick() {
+          this.currentPage = 1;
+          // this.$.input.value = this.currentPage;
+        },
+
+        _onPreviousPageBtnClick() {
+          this.currentPage--;
+          // this.$.input.value = this.currentPage;
+        },
+
+        _onNextPageBtnClick() {
+          this.currentPage++;
+          // this.$.input.value = this.currentPage;
+        },
+
+        _onLastPageBtnClick() {
+          this.currentPage = this.pageCount;
+          // this.$.input.value = this.currentPage;
+        },
+
+        _selectOptionRow() {
+          this.pageLimit = this.listRows[this.$.selectRows.value];          
+        },
+
+        _onInputValueChange() {
+          const inputValue = parseInt(this.$.input.value);
+          if (inputValue < 1 || inputValue > this.pageCount) {
+            this.$.input.value = this.currentPage;
+          } else {
+            this.currentPage = inputValue;
+          }
+
+          this._calcularPaginator();
+        },
+
+        _onCurrentPageChange(currentPage) {
+          this._validateParams(currentPage, this.pageCount);
+
+          if (currentPage < 1 || currentPage > this.pageCount) {
+            this.currentPage = 1;
+          } else {
+            this.$.input.value = currentPage;
+          }
+        },
+
+        _onPageCountChange(pageCount) {
+          this._validateParams(this.currentPage, pageCount);
+
+          const countCharsLength = pageCount.toString().length;
+          const inputWidth = `${2 + countCharsLength}em`;
+          this.$.input.style.width = inputWidth;
+          this.$.input.maxlength = countCharsLength;
+
+          if (this.currentPage > pageCount) {
+            this.currentPage = 1;
+          }
+        },
+
+        _validateParams(currentPage, pageCount) {
+          this._ensurePositiveInteger(currentPage, "currentPage");
+          this._ensurePositiveInteger(pageCount, "pageCount");
+        },
+
+        _ensurePositiveInteger(value, paramName) {
+          if (typeof value !== "number" || value <= 0) {
+            console.warn(`[pagination-input] Invalid value for ${paramName}. Need to be an positive integer (value=${value})`);
+          }
+        },
+
+        _onlyCalcularPaginator () {
+          this.pageCount = Math.ceil(this.pageRows / this.pageLimit);
+          this.pageDesde = (this.currentPage * this.pageLimit) - this.pageLimit;
+          this.pageHasta = this.pageDesde + this.pageLimit;
+          this.pageHasta = this.pageHasta > this.pageRows ? this.pageRows : this.pageHasta;
+        },
+        
+        _calcularPaginator() {
+          this.pageCount = Math.ceil(this.pageRows / this.pageLimit);
+          this.pageDesde = (this.currentPage * this.pageLimit) - this.pageLimit;
+          this.pageHasta = this.pageDesde + this.pageLimit;
+          this.pageHasta = this.pageHasta > this.pageRows ? this.pageRows : this.pageHasta;
+
+          const dataRpt = {
+            pageLimit: this.pageLimit,
+            pageActual: this.currentPage,
+            pageDesde: this.pageDesde,
+            pageHasta: this.pageHasta
+          }
+
+          this.fire('page-limit-change', { value: dataRpt });
+        },
+        attached: function () {
+          this._calcularPaginator()
+        },
+      });
+    // window.customElements.define(KlmPagination.is, KlmPagination);
+  </script>
+</dom-module>

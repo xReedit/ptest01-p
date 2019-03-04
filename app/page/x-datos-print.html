@@ -1,0 +1,154 @@
+<dom-module id="x-datos-print">
+	<template>
+		<br>
+		<h3>DATOS DE IMPRESION</h3>
+		<div class="xLinea2"></div>		
+		<br>
+		<div>
+			<table id="tb_print">
+				<tr>
+					<td>
+						<h3>IP Impresora</h3>
+						<span>Impresora ticketera donde se imprimiran los pedidos</span>
+					</td>
+					<td>
+						<input type="text" class="xMiInput" placeholder="IP xx.xx.xx.x" id="td_ip">
+					</td>
+				</tr>
+				<tr>
+					<td>
+						<h3>Numero de Copias</h3>
+						<span>Numero de Copias a imprimir por pedido</span>
+					</td>
+					<td>
+						<input class="xMiInput"  placeholder="00" type="number" min="0" pattern="[0-9]+([\.,][0-9]+)?" step="any" id="td_copia">
+					</td>
+				</tr>
+				<tr>
+					<td>
+						<h3>Pie de pagina</h3>
+						<span>Mensaje en el pie de pagina</span>
+					</td>
+					<td>
+						<input type="text" class="xMiInput" placeholder="Pie de pagina" maxlength="200" id="td_pie">
+					</td>
+				</tr>
+				<tr>
+					<td>
+						<h3>Logo</h3>
+						<span>Logo a imprimir en el ticket, ancho remcomendado 500px</span>
+					</td>
+					<td>
+						<input type="text" class="xMiInput" placeholder="Logo" maxlength="200" onclick="xSeleccionarFoto();" id="td_logo">
+						<input type="file" class="xInvisible xobj_subir_foto" id="ctrl_open_file" accept="image/*"/>
+					</td>
+				</tr>
+			</table>
+			<br><br>
+			<div class="xBoton2 xAzul" onclick="xGuardarCambioPrint();">Guardar Cambios</div>
+
+			<div class="xInvisible">
+				<form id="frm_conf_print">
+					<input type="text" id="idconf_print" name="idconf_print">
+					<input type="text" id="ip_print" name="ip_print">
+					<input type="text" id="num_copias" name="num_copias">
+					<input type="text" id="pie_pagina" name="pie_pagina">
+
+					<input type="text" id="idorg" name="idorg" value$="[[xt_org]]">
+					<input type="text" id="idsede" name="idsede" value$="[[xt_idsede]]">
+					<!--input type="text" id="logo" name="logo"-->
+				</form>
+			</div>
+		</div>
+	</template>
+</dom-module>
+<script>
+var xThis;
+var xIdConf;
+function xIniDatoPrint(){
+	$("#Titulo_page").text('Reglas de la Carta');
+	if(xIdOrg=='' || xIdOrg==undefined){xIdOrg=window.localStorage.getItem('::app3_wo');}	
+	if(xIdUsuario=='' || xIdUsuario==undefined){xIdUsuario=window.localStorage.getItem('::app3_woU');}
+	$("#Titulo_page").text("Datos de Impresion");	
+	xThis.xt_org=xIdOrg;
+	xThis.xt_idsede=xIdSede;
+	xThis.xt_idus=xIdUsuario;
+
+	xLoadConf();
+
+	$("#ctrl_open_file").change(function(e) {		
+	    for (var i = 0; i < e.originalEvent.srcElement.files.length; i++) {	        	    	
+	        var file = e.originalEvent.srcElement.files[i];	        
+	        $("#td_logo").val(file.name);
+	        //$("#ctrl_open_file").after(img);
+	    }
+	});
+}
+function xLoadConf(){
+	$.ajax({ type: 'POST', url: '../../bdphp/log.php?op=401'})
+	.done( function (dtPrint) {
+		var xdtPrint=$.parseJSON(dtPrint);
+		var xCadenaPrint='';
+		xdtPrint=xdtPrint.datos;
+		
+		xIdConf='';
+		xIdConf=xdtPrint[0].idconf_print;
+		$("#td_ip").val(xdtPrint[0].ip_print);
+		$("#td_copia").val(xdtPrint[0].num_copias);
+		$("#td_pie").val(xdtPrint[0].pie_pagina);
+		$("#td_logo").val(xdtPrint[0].logo);
+	});			
+}
+function xGuardarCambioPrint(){	
+	xPopupLoad.xopen();	
+	$("#frm_conf_print #idconf_print").val(xIdConf);
+	$("#frm_conf_print #ip_print").val($("#td_ip").val());
+	$("#frm_conf_print #num_copias").val($("#td_copia").val());
+	$("#frm_conf_print #pie_pagina").val($("#td_pie").val());	
+
+	$.post("../../bdphp/ManejoBD_IUD.php?tb=conf_print",$("#frm_conf_print").serialize(),function(a){							
+		xPopupLoad.xclose();
+		xIdConf=a;
+		xItemGuardarFoto();
+		//xLoadReglasCarta();
+	})
+
+}
+function xSeleccionarFoto(){
+	$("#ctrl_open_file").click();	
+}
+function xItemGuardarFoto(){	
+	$(".xobj_subir_foto").each(function(index, element) {		
+	if($(this).val()==''){return}    		
+	file=this.files[0]; name = file.name; size = file.size; type = file.type;									
+	xhr = new XMLHttpRequest();	
+	xhr.upload.addEventListener ('load', transferenciaCompleta(name), false);
+					
+	xhr.open('POST','upload.php?op=2',true);
+						
+	xhr.setRequestHeader("Cache-Control", "no-cache");
+	xhr.setRequestHeader("X-Requested-With", "XMLHttpRequest");
+	xhr.setRequestHeader("X-File-Name", file.name);		
+	xhr.send(file); 
+	})   
+};
+function transferenciaCompleta(xfile){	
+	xfile=xThis.xt_org+xThis.xt_idsede+xfile;	
+	$.ajax({ type: 'POST', url: '../../bdphp/log.php?op=208', data:{i:xIdConf,d:xfile}})
+	.done( function (a) {		
+		xPopupLoad.xclose();	
+	})	
+}
+Polymer({
+	is:'x-datos-print',	
+	properties:{
+		xt_org:Number,
+		xt_idsede:Number,
+		xt_idus:Number,	
+	},
+	attached:function(){		
+    	xThis=this;    	
+    	xIniDatoPrint();
+    }   
+})
+</script>

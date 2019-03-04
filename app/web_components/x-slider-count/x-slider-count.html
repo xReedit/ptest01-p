@@ -1,0 +1,110 @@
+<dom-module id="x-slider-count">
+  <template>
+    <div class="xContent_xSBtn" id="Content">
+    </div>   
+  </template>
+
+<style type="text/css">
+  .xContent_xSBtn{
+    display: inline-block;        
+    padding: 10px; 
+    height: var(--xon);
+  }
+  .xSBtn{    
+    background: black;
+    color: white;    
+    display:inline-block;
+    position: relative;
+    text-align: center; 
+    vertical-align: middle;         
+    margin:2px;
+    padding: 4px;
+    border-radius: 50%;
+    opacity: 0.4;    
+
+    width: var(--xoff);
+    height: var(--xoff);
+    line-height: var(--xoff);
+    font-size: var(--xofftext);
+
+    -webkit-transition: all 0.5s ease;-o-transition: all 0.5s ease;-ms-transition: all 0.5s ease;-moz-transition: all 0.5s ease;  transition: all 0.5s ease;
+  }
+
+  .active{
+    width: var(--xon);
+    height: var(--xon);
+    line-height: var(--xon);
+    font-size: var(--xontext);
+    opacity: 1;    
+  }
+
+</style>
+  <script>
+  var xBtns;
+  var x=0;
+  var xtt;  
+
+    Polymer({
+      is: 'x-slider-count',
+      properties:{
+        xcant:{type:Number, value:1},
+        xcolor:{type:String, value:'#7B1FA2'},
+        xsize_circulo_on:{type:String, value:'40px'},
+        xsize_circulo_Off:{type:String, value:'20px'},
+        xsize_text_on:{type:String, value:'15px'},
+        xsize_text_Off:{type:String, value:'11px'},
+      },
+      ready:function(){        
+        this.customStyle['--xon'] = this.xsize_circulo_on;
+        this.customStyle['--xoff'] = this.xsize_circulo_Off;
+        this.customStyle['--xontext'] = this.xsize_text_on;
+        this.customStyle['--xofftext'] = this.xsize_text_Off;
+        this.updateStyles();        
+
+        var firstChild = Polymer.dom(this.$.Content).firstChild;
+        Polymer.dom(this.$.Content).removeChild(firstChild);        
+        for (var i = 1; i <= this.xcant; i++) {          
+          var xdiv=document.createElement('div');
+          xdiv.setAttribute('class','xSBtn');          
+          xdiv.textContent =i;
+          
+          Polymer.dom(this.$.Content).appendChild(xdiv);          
+        };       
+
+        xBtns=document.getElementById("Content").children;                
+        xtt=xBtns.length;        
+        this.xActivar(x);
+      },
+      resetear:function(){
+        x=0;
+        this.xDesactivar();
+        this.xActivar(x);
+      },
+      xsgt:function(){
+        x++;
+        this.xDesactivar();
+        this.xActivar(x);
+      },
+      xant:function(){
+        x--;
+        this.xDesactivar();
+        this.xActivar(x);
+      },
+      xActivar:function(n){
+        if(n>=xtt){n=xtt-1;x=n;}
+        if(n<0){n=0;x=0;}     
+        xBtns[n].classList.add('active');
+        xBtns[n].style.background=this.xcolor;
+      },
+      xDesactivar:function(){
+        for (var i = 0; i < xBtns.length; i++) {
+           xBtns[i].classList.remove('active');
+         }; 
+      },
+      xactivar_slide:function(n){
+        this.xDesactivar();
+        this.xActivar(n);
+      }
+    });
+  </script>
+</dom-module>

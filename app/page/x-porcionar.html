@@ -1,0 +1,267 @@
+<dom-module id="x-porcionar">
+	<template>
+		<br>
+		<div class="xMiCard xradius" style="width:80%">
+			<div class="xEncanezadoCard xFondoRowAmarillo4">
+				<p><strong>Elaborar porciones para las recetas.</strong><br> Por ejemplo: de 1000gr de bistec salen 10 porciones de 100gr cada una para el preparar bistec a lo pobre.</p>
+				<p>Utilize la misma unidad de medida que esta en el producto a porcionar. Es decir si el producto a porcionar esta en gramos la misma unidad de medida debe ser para las prociones.</p>
+			</div>
+			<div class="xContentCard">
+				<div class="x_div_linea">
+					<div class="xitem1 xBordeDe">
+						<p><strong>Producto que se va a porcionar</strong></p>
+						<form id="frm_item">
+							<input type="text" class="xMiInput xPasarEnter2 xDesItem" style="width:90%;" placeholder="Descripcion" onChange="conMayusculas(this)" required id="des_item_porcionar" espaciar>
+							<input type="text" class="xMiInput xPasarEnter2" style="width:50%;" placeholder="Stock actual" id="txt_stock" disabled encendido espaciar>
+							<input type="number" class="xMiInput _xcant" style="width:50%;" placeholder="Cantidad a porcionar" onChange="conMayusculas(this)" required id="cant_item" espaciar>
+							<br><br>
+							<paper-checkbox id="check_enlaze">Enlazar</paper-checkbox><br><br>
+							<span class="xColorRow_Plomo xfont11">Enlazar este producto con la porcion al momento de registrar la compra, esto puede realizarse si el producto no se transforma es decir cuando el producto mantiene la misma unidad de medida y el mismo peso que la compra. Ejemplo: Huevos; cuando compre huevos tambien se actualizara la porcion</span>
+						</form>
+					</div>
+					<div class="xitem2">
+						<p><strong>Porciones</strong></p>
+						<table class="xtable4" width="100%" id="tb_porciones" data-TablaName="porcion">
+							<thead>
+								<th class="xSinBorde" width="60%"></th>
+								<th class="xSinBorde" width="10px"></th>
+								<th class="xSinBorde" width="10px"></th>
+								<th class="xSinBorde" width="10px"></th>
+							</thead>
+							<tr class="xSinBorde" data-id="">
+								<td><input type="text" class="xMiInput xPasarEnter2 xDesItem" placeholder="Descripcion" onChange="conMayusculas(this)" required id="des_porcion"></td>
+								<td><input type="number" class="xMiInput xPasarEnter2" placeholder="Peso" onChange="conMayusculas(this)" id="cant_peso" required></td>
+								<td><input type="number" class="xMiInput _xcant" placeholder="Cantidad" onChange="conMayusculas(this)" id="cant_porcion" required></td>
+								<td><paper-fab icon="add" onclick="xAddItemPorcionado()" title="Agregar item" class="xmini"></paper-fab></td>
+							</tr>
+						</table>
+					</div>
+				</div>
+				<br><br><br>
+				<div class="xInvisible">
+					<table id="tb_almacen_items" data-TablaName="almacen_items"></table>
+				</div>
+			</div>
+			<div class="xPieCard">
+				<br>
+				<div class="xBoton2 xAzul" onclick="xGuardarPorciones();">Listo, guardar porciones</div>
+				<br><br>
+			</div>
+		</div>
+	</template>
+</dom-module>
+<script>
+var xThis;
+var xIdProducto_sel="";
+var xIdAlmacen_item_pro_sel="";
+var xidproducto_porcionado="";
+
+function xIniPorcionar(){
+	xPopupLoad=document.getElementById('xLoad');
+	xm_LogChequea(function(){
+		xm_log_get('ini_us');
+		//if(xIdOrg=='' || xIdOrg==undefined){xIdOrg=window.localStorage.getItem('::app3_wo');}
+		//if(xIdSede=='' || xIdSede==undefined){xIdSede=window.localStorage.getItem('::app3_woS');}
+		$("#Titulo_page").text("Porcionar");
+
+		xloadProductoItem();
+	})
+
+	$('.xPasarEnter2').on('keyup',function(e){
+			var code=e.which;
+			if ( code==13||code==186 ) {
+				var inputs = $('input'); // storage a array of Inputs
+			    var a = inputs.index(document.activeElement);
+			    if (inputs[a + 1] !== null)
+			    {
+			      var nextBox = inputs[a + 1];
+			      if(nextBox===undefined){return}
+			      if(nextBox.disabled){nextBox = inputs[a + 2]}
+
+			      if(nextBox==undefined){return;}
+			  	  nextBox.focus();
+			  	  nextBox.select();
+			    }
+			    event.stopPropagation();
+			    e.stopPropagation();
+			    e.stopImmediatePropagation();
+			    return false;
+			}
+	});
+	$("#cant_item").on('keyup',function(e){
+		var code=e.which;
+		if ( code==13||code==186 ) {
+
+			var xcant_item_a_por=parseFloat($("#cant_item").val());
+			var xstck_item_a_por=parseFloat($("#txt_stock").val());
+			if(xcant_item_a_por>xstck_item_a_por){$("#cant_item").val('');$("#cant_item").focus();return}
+
+			$("#des_porcion").focus();
+		}
+	});
+	$("#cant_porcion").on('keyup',function(e){
+		//sacar peso x cantidad
+		var xpeso_total=$("#cant_item").val();
+		var xpeso=$(this).val();
+		var xpeso_cal=parseInt(parseFloat(xpeso_total)/parseFloat(xpeso));
+		if(isNaN(xpeso_cal)){xpeso_cal=0;}
+		$("#cant_peso").val(xpeso_cal);
+		//
+		var code=e.which;
+		if ( code==13||code==186 ) {
+			xAddItemPorcionado()
+		}
+	});
+}
+function xGuardarPorciones(){
+	xPopupLoad.xopen();
+	var xcant_item=$("#cant_item").val();
+	var sql_porciones=xArmarInsertDetalle($("#tb_porciones"),'','');
+	var xenlazado=check_enlaze.checked ? 1 : 0;
+	//update producto porcionado
+	$.ajax({ type: 'POST', url: '../../bdphp/log.php?op=16004', data:{s:xcant_item, i:xIdAlmacen_item_pro_sel, idpro_de:xIdProducto_sel,e:xenlazado}})
+	.done( function (ax) {
+		$.ajax({ type: 'POST', url: '../../bdphp/log.php?op=100', data:{xsql:sql_porciones}})
+		.done( function (dtsuccess) {
+			xPopupLoad.xclose();
+			xNuevaPorcion();
+			xloadProductoItem();
+		})
+	})
+}
+function xNuevaPorcion(){
+	$("#tb_porciones tr.row").remove();
+	$("#frm_item").reset();
+	check_enlaze.checked=false;
+	xIdProducto_sel="";
+	xIdAlmacen_item_pro_sel="";
+	xidproducto_porcionado="";
+	$("#des_item_porcionar").focus();
+
+}
+function xAddItemPorcionado(){
+	var xdes_porcion=$("#des_porcion").val();
+	var xcant_porcion=$("#cant_porcion").val();
+	var xcant_peso=$("#cant_peso").val();
+	var xcant_item_a_por=parseFloat($("#cant_item").val());
+	var xstck_item_a_por=parseFloat($("#txt_stock").val());
+	var xupdate_porcion="";
+	var xupdate_stock_porcion="";
+
+	if(xcant_item_a_por>xstck_item_a_por){$("#cant_item").val('');$("#cant_item").focus();return}
+
+	if(xdes_porcion=="" || xcant_porcion==""){return;}
+	if(xIdProducto_sel=="" || xIdProducto_sel==undefined){alert('Selecciona un producto valido.'); return;}
+	//update stock
+	xupdate_porcion="";
+	xupdate_stock_porcion="";
+	if(xidproducto_porcionado!=""){xupdate_porcion="data-update="+xidproducto_porcionado; xupdate_stock_porcion='data-operacion=suma';}
+
+
+	var xrow_porcion='<tr class="row" '+xupdate_porcion+'>'+
+				'<td data-ColumName="descripcion">'+xdes_porcion+'</td>'+
+				'<td data-ColumName="peso">'+xcant_peso+'</td>'+
+				'<td data-ColumName="stock" '+xupdate_stock_porcion+'>'+xcant_porcion+'</td>'+
+				'<td data-ColumName="idorg" class="xInvisible">'+xIdOrg+'</td>'+
+				'<td data-ColumName="idsede" class="xInvisible">'+xIdSede+'</td>'+
+				'<td data-ColumName="idproducto_de" class="xInvisible">'+xIdProducto_sel+'</td>'+
+				'<td><span class="xDeleteRowNeutro" title="Borrar" onclick="xBorrarItemLocalPro(this);"></span></td>'+
+				'</tr>';
+
+	$("#tb_porciones").append(xrow_porcion).trigger('create');
+
+	$("#des_porcion").val('');
+	$("#cant_porcion").val('');
+	$("#cant_peso").val('');
+	$("#des_porcion").focus();
+}
+
+function xloadProductoItem(){
+
+	xPopupLoad.titulo="Cargando...";
+	xPopupLoad.xopen();
+	$.ajax({ type: 'POST', url: '../../bdphp/log.php?op=16002'})
+	.done( function (DtItems) {
+		var xDtItems=$.parseJSON(DtItems);
+		xThis.dtProItem=xDtItems.datos;
+		xCargarProductoItemPorcionar();
+
+		xPopupLoad.xopen();
+		$.ajax({ type: 'POST', url: '../../bdphp/log.php?op=16003'})
+		.done( function (DtItemsPor) {
+			var xDtItemsPor=$.parseJSON(DtItemsPor);
+			xThis.dtProItem_porcion=xDtItemsPor.datos;
+			xCargarProductoItemPorcionar();
+		})
+	})
+}
+
+function xBorrarItemLocalPro(obj){
+	var xObj=$(obj).parent().parent();
+	xObj.fadeTo(550, 0, function () {$(this).remove();});
+}
+
+function xCargarProductoItemPorcionar () {
+	var xObjTxtItemPro=$("#des_item_porcionar");
+		xObjTxtItemPro.autocomplete({
+			autoFocus:true,
+			source:xThis.dtProItem,
+			select: function( event, ui ) {
+				xObjTxtItemPro.val(ui.item.label);
+		        xObjTxtItemPro.attr('data-id',ui.item.value);
+		        $("#txt_stock").val(ui.item.stock);
+		        xIdAlmacen_item_pro_sel=ui.item.idproducto_stock;
+		        xIdProducto_sel=ui.item.value;
+		        check_enlaze.checked=ui.item.enlazar==1 ? true : false;
+		        return false;
+		    },
+		    focus:function(event, ui){return false;},
+		    change:function( event, ui ) {
+		    	if(ui.item===null){
+		    		xObjTxtItemPro.attr('data-value',"");
+		    		xObjTxtItemPro.attr('data-id',"");
+		    		xIdAlmacen_item_pro_sel='';
+		    		xIdProducto_sel='';
+		    		check_enlaze.checked=false;
+		    		$("#txt_stock").val("");
+		    	}
+		    	return false;
+		    }
+		});
+
+	var xObjTxtItemProPor=$("#des_porcion");
+		xObjTxtItemProPor.autocomplete({
+			autoFocus:true,
+			source:xThis.dtProItem_porcion,
+			select: function( event, ui ) {
+				xObjTxtItemProPor.val(ui.item.label);
+		        xObjTxtItemProPor.attr('data-id',ui.item.value);
+		        xidproducto_porcionado=ui.item.value
+		        return false;
+		    },
+		    focus:function(event, ui){return false;},
+		    change:function( event, ui ) {
+		    	if(ui.item===null){
+		    		xObjTxtItemProPor.attr('data-value',"");
+		    		xObjTxtItemProPor.attr('data-id',"");
+		    		xidproducto_porcionado="";
+		    	}
+		    	return false;
+		    }
+		});
+
+	xPopupLoad.xclose();
+}
+
+Polymer({
+	is:'x-porcionar',
+	properties:{
+		dtProItem:Object,
+		dtProItem_porcion:Object,
+	},
+	attached:function(){
+    	xThis=this;
+    	xIniPorcionar();
+    }
+})
+</script>

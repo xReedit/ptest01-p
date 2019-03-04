@@ -1,0 +1,28 @@
+<dom-module id="x-panel">
+	<template>
+		<br>
+		<div class="xContent">
+			<div class="xMiBoton_icon xBold" id="btn_facturacion" onclick="xOpenPage(2);"><img src="../../images/_carta.png"><p>Elaborar Carta</p></div>
+		</div>
+	</template>
+</dom-module>
+<script>
+var xThis;
+
+function xIniPanel(){
+	//if(xIdOrg==''){	xIdOrg=window.localStorage.getItem('::app3_wo');}
+	//if(xIdUsuario==''){	xIdUsuario=window.localStorage.getItem('::app3_woU');}
+	$("#Titulo_page").text("Panel");
+	xScrolUp(0);
+}
+Polymer({
+	is:'x-panel',
+	properties:{
+
+	},
+	attached:function(){
+    	xThis=this;
+    	xIniPanel();
+    }
+})
+</script>

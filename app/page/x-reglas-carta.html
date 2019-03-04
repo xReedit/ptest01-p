@@ -1,0 +1,121 @@
+<dom-module id="x-reglas-carta">
+	<template>
+		<br>
+		<h3>REGLAS DE LA CARTA</h3>
+		<div class="xLinea2"></div>
+		<p class="xBold">Especifique las reglas que obedece la carta, como por ejemplo: Cada plato de fondo sale con una entrada.</p>
+		<br>
+		<label for="selCategoria">Categoria: </label>		
+		<select class="xTextRow2" id="selCategoria" inline></select>
+		<br><br>
+		<label for="selSeccion">Seccion : </label>
+		<select class="xTextRow2" id="selSeccion" inline></select>		
+		<label for="selCon">Sale con: </label>
+		<select class="xTextRow2" id="selCon" inline></select>
+		<div class="xBoton2 xAzul" onclick="xAddRegla();">Agregar Regla</div>
+		<div class="xInvisible">
+			<form id="frm_regla">				
+				<input type="text" name="idorg" id="idorg" value$="[[xt_org]]">
+				<input type="text" name="idsede" id="idsede" value$="[[xt_idsede]]">
+				<input type="text" name="idcategoria" id="idcategoria">
+				<input type="text" name="idseccion" id="idseccion">
+				<input type="text" name="idseccion_detalle" id="idseccion_detalle">
+			</form>
+		</div>
+		<br><br><br>
+		<table class="xtable2" style="max-width:600px;width:600px;" id="tb_regla">
+			<thead>
+				<th align="left">Categoria:</th>
+				<th align="left">Seccion:</th>
+				<th align="left">Sale con:</th>
+				<th></th>
+			</thead>			
+		</table>
+	</template>
+</dom-module>
+<script>
+var xThis;
+function xIniRegla(){
+	$("#Titulo_page").text('Reglas de la Carta');
+	// if(xIdOrg=='' || xIdOrg==undefined){xIdOrg=window.localStorage.getItem('::app3_wo');}	
+	// if(xIdUsuario=='' || xIdUsuario==undefined){xIdUsuario=window.localStorage.getItem('::app3_woU');}
+	$("#Titulo_page").text("Elaborar Carta");	
+
+	xm_log_get('ini_us');
+	xThis.xt_org=xIdOrg;
+	xThis.xt_idsede=xIdSede;
+	xThis.xt_idus=xIdUsuario;
+	xLoadCategoria();
+	xLoadReglasCarta();
+}
+function xAddRegla(){	
+	var xidSel=$("#selSeccion").val();
+	var xidSelCon=$("#selCon").val();
+	var xidCat=$("#selCategoria").val();
+	if(xidSel==xidSelCon){alert('Seleccione secciones diferentes'); return;}
+
+	xPopupLoad.xopen();
+	$("#frm_regla #idcategoria").val(xidCat);
+	$("#frm_regla #idseccion").val(xidSel);
+	$("#frm_regla #idseccion_detalle").val(xidSelCon);
+	$.post("../../bdphp/ManejoBD_IUD.php?tb=regla_carta",$("#frm_regla").serialize(),function(a){					
+		xPopupLoad.xclose();
+		xLoadReglasCarta();
+	})
+}
+function xLoadCategoria(){
+	$.ajax({ type: 'POST', url: '../../bdphp/log.php?op=1'})
+	.done( function (dtCAct) {
+		var xCadenaCat='';			
+		var xdtCAct=$.parseJSON(dtCAct);
+		xdtCAct=xdtCAct.datos;
+		for (var i = 0; i < xdtCAct.length; i++) {
+			xCadenaCat=String(xCadenaCat+'<option value="'+xdtCAct[i].idcategoria+'">'+xdtCAct[i].descripcion+'</option>');
+		};
+		$("#selCategoria").html(xCadenaCat).trigger('create');
+	});
+	//seccion
+	$.ajax({ type: 'POST', url: '../../bdphp/log.php?op=201'})
+	.done( function (dtSec) {
+		var xCadenaCat='';			
+		var xdtSec=$.parseJSON(dtSec);
+		xdtSec=xdtSec.datos;
+		xThis.dt_seccion=xdtSec;
+		for (var i = 0; i < xdtSec.length; i++) {
+			xCadenaCat=String(xCadenaCat+'<option value="'+xdtSec[i].value+'">'+xdtSec[i].label+'</option>');
+		};
+		$("#selSeccion").html(xCadenaCat).trigger('create');
+		$("#selCon").html(xCadenaCat).trigger('create');
+	});
+
+
+}
+function xLoadReglasCarta(){
+	$("#tb_regla .row").remove();
+	$("#tb_regla").append('<tr class="row"><td colspan="3"><paper-spinner active></paper-spinner></td></tr>');
+	$.ajax({ type: 'POST', url: '../../bdphp/log.php?op=4'})
+	.done( function (dtRla) {
+		var xCadenaRgl='';			
+		var xdtRla=$.parseJSON(dtRla);
+		xdtRla=xdtRla.datos;
+		for (var i = 0; i < xdtRla.length; i++) {
+			xCadenaRgl=String(xCadenaRgl+'<tr class="row" data-t="regla_carta" data-id="'+xdtRla[i].idregla_carta+'"><td>'+xdtRla[i].des_categoria+'</td><td>'+xdtRla[i].des_seccion+'</td><td>'+xdtRla[i].des_con+'</td><td><span class="xDeleteRow" title="Borrar" onclick="xBorrarItem(this);"></span></td></tr>');
+		};
+		$("#tb_regla .row").remove();
+		$("#tb_regla").append(xCadenaRgl).trigger('create');
+	});
+}
+Polymer({
+	is:'x-reglas-carta',	
+	properties:{
+		xt_org:Number,
+		xt_idsede:Number,
+		xt_idus:Number,
+		dt_seccion:Object
+	},
+	attached:function(){		
+    	xThis=this;    	
+    	xIniRegla();
+    }    
+})
+</script>

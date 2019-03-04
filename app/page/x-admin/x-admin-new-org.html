@@ -1,0 +1,259 @@
+<dom-module id="x-admin-new-org">
+	<template>
+		<br>
+		<div class="xMiCard xradius" style="width:calc(100% - 10%)">
+			<div class="xEncanezadoCard xFondoRowAmarillo4">
+				Agregar un nuevo restaurante o sede.
+			</div>
+			<div class="xContentCard">
+				<div class="x_div_linea">
+					<div class="xitem1 xBordeDe">
+						<p><strong>Datos del Restaurante</strong></p>
+						<hr>
+						<form id="frm_org">
+							<input type="text" class="xMiInput xPasarEnter2" placeholder="RUC" onChange="conMayusculas(this)" id="ruc" name="ruc" espaciar required>
+							<input type="text" class="xMiInput xPasarEnter2" placeholder="RAZON SOCIAL" onChange="conMayusculas(this)" id="nombre" name="nombre" espaciar required>
+
+							<div class="xInvisible">								
+								<input type="text" id="idorg" name="idorg" value$="{{xIdOrg}}">
+							</div>							
+						</form>
+						<br>
+						
+						<p><strong>Usuario del sistema - Implementacion</strong></p>
+						<input type="text" class="xMiInput xPasarEnter2" placeholder="USUARIO" id="txt_usuario" onblur="xAdmNewValidarUsuario(this);" espaciar>
+						<span class="xColorRow_verde xInvisible" id="labelUsValido">Usuario Valido</span>
+						<input type="password" class="xMiInput xPasarEnter2" placeholder="PASSWORD" id="txt_usuario_password" espaciar>
+						
+						<br><br>
+						<div class="xBoton2 xAzul" onclick="xAdmGuardarOrg();">Guardar</div>
+						<br><br><br><br>
+																		
+						<p><strong>Sedes</strong></p>
+						<hr>
+						<table width="100%">
+							<thead>
+								<th>#</th>
+								<th>Sede</th>
+								<th>Ciudad</th>
+								<th>Estado</th>		
+								<th></th>
+							</thead>
+							<tbody>
+								<template is="dom-repeat" items="{{ListSedesPorOrg}}" as="item">
+									<tr data-id="{{index}}">
+										<td>{{displayIndex(index)}}</td>
+										<td>{{item.nombre}}</td>
+										<td>{{item.ciudad}}</td>										
+										<td>Activo</td>
+										<td title="Modificar" onClick="xAdmNewModificarSede(this)"><span class="xIconRow xCursor"><img
+													src="../../../images/edit.png"></span></td>
+									</tr>
+								</template>
+							</tbody>
+						</table>
+						<br><br>
+						<div class="xBoton2 xVerde" onclick="xAdmNewNuevaSede();">Nueva Sede</div>
+					</div>
+					<div class="xitem2 xBordeIzqHover">
+						<p><strong>Sede datos generales</strong></p>
+						<hr>
+						<form id="frm_sede">
+							<input type="text" class="xMiInput xPasarEnter2" placeholder="NOMBRE" onChange="conMayusculas(this)" id="nombre" name="nombre" espaciar required>
+							<input type="text" class="xMiInput xPasarEnter2" placeholder="CIUDAD" onChange="conMayusculas(this)" id="ciudad" name="ciudad" espaciar required>
+
+							<input type="text" class="xMiInput xPasarEnter2" placeholder="UBIGEO" id="ubigeo" name="ubigeo" espaciar>
+							<input type="text" class="xMiInput xPasarEnter2" placeholder="CODIGO DEL DOMICILIO FISCAL" id="codigo_del_domicilio_fiscal" name="codigo_del_domicilio_fiscal" espaciar>
+							
+							<br><br>
+							<p><strong>Habilitar facturacion electronica</strong></p>
+							<label for="authorization_api_comprobante">Token</label>
+							<input type="password" class="xMiInput xPasarEnter2" id="authorization_api_comprobante" name="authorization_api_comprobante" espaciar>
+							<label for="id_api_comprobante">ID</label>
+							<input type="password" class="xMiInput xPasarEnter2" id="id_api_comprobante" name="id_api_comprobante" espaciar>
+							
+							<br><br>
+							<p><strong>Plataforma | local o web</strong></p>
+							<input type="text" class="xMiInput xPasarEnter2" placeholder="RUN LOCAL?" id="sys_local" name="sys_local" espaciar>
+							<input type="text" class="xMiInput xPasarEnter2" placeholder="IP PRINT SERVER" id="ip_server_local" name="ip_server_local" espaciar>
+
+							<br><br>
+							<p><strong>Escenario</strong></p>
+							<select id="selTipo" class="xCursor">
+								<option value="PRUEBAS">PRUEBAS</option>
+								<option value="PRODUCCION">PRODUCCION</option>
+							</select>
+							<input type="text" class="xMiInput xPasarEnter2" placeholder="FECHA INICIO" id="finicio" name="finicio" espaciar>
+
+							<div class="xInvisible">
+								<input type="text" id="idorg" name="idorg" value$="{{xIdOrg}}">
+								<input type="text" id="idsede" name="idsede" value$="{{xIdSede}}">
+								<input type="text" class="xMiInput xPasarEnter2" placeholder="TIPO" id="tipo" name="tipo" espaciar>
+							</div>
+						</form>						
+						
+						<br><br><br>
+						<div class="xBoton2 xAzul" onclick="xAdmGuardarSede();" disabled$="{{!formValid}}">Guardar</div>
+					</div>
+				</div>
+			</div>			
+		</div>
+		<br><br><br><br>
+	</template>
+</dom-module>
+<script>
+	var xThisAdminNew, xPopupLoad;
+
+	function xIniAdminNew() {		
+		xPopupLoad = document.getElementById('xLoad');
+		xLoadAdmDatosOrg();
+	}
+
+	function xAdmGuardarOrg() {		
+		xPopupLoad.xopen();
+		$.post("../../bdphp/ManejoBD_IUD.php?tb=org", $("#frm_org").serialize(), function (id) {			
+			xPopupLoad.xclose();
+			xAdmGuardarUsuario();	
+			xLoadOrg();
+		});		
+	}
+
+	function xAdmGuardarSede() {		
+		xPopupLoad.xopen();
+		const selTipoVal=selTipo.value;
+
+		$("#frm_sede #idorg").val(xThisAdminNew.xIdOrg);
+		$("#frm_sede #idsede").val(xThisAdminNew.xIdSede);
+		$("#frm_sede #tipo").val(selTipoVal);
+		$.post("../../bdphp/ManejoBD_IUD.php?tb=sede", $("#frm_sede").serialize(), function (id) {
+			xPopupLoad.xclose();
+
+			// script nuevo org
+			if ( xThisAdminNew.xIdSede === '' ) {// si es nuevo			
+				xThisAdminNew.xIdSede = id;
+				xAddNewConfigNewOrg(xThisAdminNew.xIdOrg, xThisAdminNew.xIdSede);
+			}
+
+			xLoadAdmDatosOrg();
+			$("#frm_sede").reset();				
+		});		
+	}
+
+	function xAdmGuardarUsuario() {
+		const _data={
+			idorg: xThisAdminNew.xIdOrg,
+			idsede: 0,
+			u: txt_usuario.value,
+			p: txt_usuario_password.value
+		}
+		$.ajax({ type: 'POST', url: '../../bdphp/log_004.php?op=201', data: { d: _data } })
+		.done((res) => {
+			$("#txt_usuario").val('');
+			$("#txt_usuario_password").val('');
+			xThisAdminNew.xIdSede = '';	
+		});
+	}
+
+	function xLoadAdmDatosOrg() {
+		const dataOrg = localStorage.getItem('::app3_woOAdm') ? JSON.parse(localStorage.getItem('::app3_woOAdm')) : null;
+		xThisAdminNew.xIdOrg = '';
+		if ( dataOrg !==null) {
+			xThisAdminNew.xIdOrg = dataOrg.idorg;
+			$("#frm_org #nombre").val(dataOrg.razonsocial);
+			$("#frm_org #ruc").val(dataOrg.ruc);
+
+			// load sedes
+			$.ajax({ type: 'POST', url: '../../bdphp/log_004.php?op=101', data:{idorg: dataOrg.idorg} })
+			.done((res) => {
+				const _res = $.parseJSON(res);
+				xThisAdminNew.ListSedesPorOrg = _res.datos;					
+			});
+
+			// LOAD USUARIO IMPLEMENTADOR
+			$.ajax({ type: 'POST', url: '../../bdphp/log_004.php?op=102', data:{idorg: dataOrg.idorg} })
+			.done((res) => {
+				txt_usuario.value = res;				
+			});
+		}				
+
+	}
+
+	function xAdmNewModificarSede(obj) {
+		const index = obj.parentElement.dataId;
+		const dataSede = xThisAdminNew.ListSedesPorOrg[index];
+
+		xThisAdminNew.xIdSede = xThisAdminNew.ListSedesPorOrg[index].idsede;
+
+		$("#frm_sede #nombre").val(dataSede.nombre);
+		$("#frm_sede #ciudad").val(dataSede.ciudad);
+		$("#frm_sede #ubigeo").val(dataSede.ubigeo);
+		$("#frm_sede #codigo_del_domicilio_fiscal").val(dataSede.codigo_del_domicilio_fiscal);
+		$("#frm_sede #authorization_api_comprobante").val(dataSede.authorization_api_comprobante);
+		$("#frm_sede #id_api_comprobante").val(dataSede.id_api_comprobante);
+		$("#frm_sede #sys_local").val(dataSede.sys_local);
+		$("#frm_sede #ip_server_local").val(dataSede.ip_server_local);
+		$("#frm_sede #finicio").val(dataSede.finicio);
+		selTipo.value = dataSede.tipo;
+	}
+
+	function xAdmNewNuevaSede() {
+		$("#frm_sede").reset();
+		$("#txt_usuario").val('');
+		$("#txt_usuario_password").val('');
+		xThisAdminNew.xIdSede = '';
+		$("#frm_sede #nombre").focus();
+	}
+
+	function xAdmNewValidarUsuario(obj) {
+		const _u = obj.value;		
+		if ( _u === '' ) return;
+
+		$.ajax({ type: 'POST', url: '../../bdphp/log_004.php?op=2', data: { u: _u } })
+		.done((res) => {
+			xThisAdminNew.formValidUsuario = res.length === 0 ? true : false;
+			var msj_us_valido = 'Usuario Valido';
+			var msj_us_valido_class = 'xRojo';
+			$("#labelUsValido").removeClass('xInvisible');
+			if ( res.length === 0 ) {
+				$("#labelUsValido").removeClass('xColorRow_Rojo');
+				$("#labelUsValido").addClass('xColorRow_verde');
+			} else {
+				msj_us_valido='Usuario ya existe';
+				$("#labelUsValido").addClass('xColorRow_Rojo');
+				$("#labelUsValido").removeClass('xColorRow_verde')
+			}
+
+			$("#labelUsValido").text(msj_us_valido);
+						
+		});
+	}
+
+
+	// crea variables del nuevo org
+	function xAddNewConfigNewOrg(_idorg, _idsede) {
+		$.ajax({ type: 'POST', url: '../../bdphp/log_004.php?op=3', data: { idorg: _idorg, idsede: _idsede } })
+		.done((res) => {
+			console.log(res);
+		});
+	}
+	
+	Polymer({
+		is: 'x-admin-new-org',
+		properties: {
+			formValid: boolean = false,
+			formValidUsuario: boolean = false,
+			xIdOrg: {type: String, value:''},
+			xIdSede: { type: String, value: '' },
+			ListSedesPorOrg: []
+			//ListSedes: [],
+			// hayDatosRestaurar: boolean = true,
+		},
+		attached: function () {
+			xThisAdminNew = this;
+			xIniAdminNew();
+		},
+		displayIndex: function (index) {
+			return xCeroIzq(index + 1, 1);
+		},
+	})
+</script>

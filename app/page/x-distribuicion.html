@@ -1,0 +1,295 @@
+<dom-module id="x-distribuicion">
+	<template>
+		<br>
+		<div class="xMiCard xradius" style="width:80%">
+			<div class="xEncanezadoCard xFondoRowAmarillo4">
+				<table class="xtable4">
+					<tr>
+						<td>
+							<p><strong>Distribuir DE:</strong></p>
+							<select id="sel_alamcenDE" class="xTextRow2" inline></select>
+						</td>
+						<td>
+							<p><strong>A:</strong></p>
+							<select id="sel_alamcenA" class="xTextRow2" inline></select>
+						</td>
+					</tr>
+				</table>
+			</div>
+			<div class="xContentCard">
+				<table class="xtable4" width="100%" id="tb_input" data-TablaName="producto_stock">
+					<thead>
+						<th class="xSinBorde" width="60%">Producto</th>
+						<th class="xSinBorde" width="10px">Stock</th>
+						<th class="xSinBorde" width="10px">Cant</th>
+						<th class="xSinBorde" width="10px"></th>
+					</thead>
+					<tr class="xSinBorde" data-id="">
+						<td><input type="text" class="xMiInput xPasarEnter2 xDesItem" style="width:100%;" placeholder="Descripcion" onChange="conMayusculas(this)" required id="des_item"></td>
+						<td><input type="text" class="xMiInput xPasarEnter2" style="width:100%;" placeholder="Stock actual" id="txt_stock" disabled encendido></td>
+						<td><input type="number" class="xMiInput _xcant" style="width:100%;" placeholder="Cantidad" onChange="conMayusculas(this)" required id="cant_item"></td>
+						<td><paper-fab icon="add" onclick="xAddItemRow()" title="Agregar item"></paper-fab></td>
+					</tr>
+					<tr class="tt_row"></tr>
+				</table>
+				<br><br>
+				<div class="xInvisible">
+					<!--table id="tb_almacen_items_update" data-TablaName="almacen_items"></table-->
+					<table id="tb_almacen_items" data-TablaName="producto_stock"></table>
+				</div>
+			</div>
+			<div class="xPieCard">
+				<br>
+				<div class="xBoton2 xAzul" onclick="xGuardarDistribuicion();">Listo, guardar distribuicion</div>
+				<br><br>
+			</div>
+		</div>
+	</template>
+</dom-module>
+<script>
+var xThisDisttribucion;
+var xlo_idorg;
+var xlo_idsede;
+var xDtAlam;
+var xIdProducto_sel;
+var xIdAlmacen_item_pro_sel;
+var xnom_producto_sel;
+var xidAlmacen=0;
+
+function xIniDistribuicion(){
+	xPopupLoad=document.getElementById('xLoad');
+	xm_LogChequea(function(){
+		xm_log_get('ini_us');
+		//if(xIdOrg=='' || xIdOrg==undefined){xIdOrg=window.localStorage.getItem('::app3_wo');}
+		//if(xIdSede=='' || xIdSede==undefined){xIdSede=window.localStorage.getItem('::app3_woS');}
+
+
+		//xloadProductoItem();
+		xloadAlamcen();
+	})
+
+	$("#Titulo_page").text("Distribuicion");
+	$('.xPasarEnter2').on('keyup',function(e){
+			var code=e.which;
+			if ( code==13||code==186 ) {
+				var inputs = $('input'); // storage a array of Inputs
+			    var a = inputs.index(document.activeElement);
+			    if (inputs[a + 1] !== null)
+			    {
+			      var nextBox = inputs[a + 1];
+			      if(nextBox===undefined){return}
+			      if(nextBox.disabled){nextBox = inputs[a + 2]}
+
+			      if(nextBox==undefined){return;}
+			  	  nextBox.focus();
+			  	  nextBox.select();
+			    }
+			    event.stopPropagation();
+			    e.stopPropagation();
+			    e.stopImmediatePropagation();
+			    return false;
+	  		}
+		});
+	$("._xcant").on('keyup',function(e){
+		var code=e.which;
+		if ( code==13||code==186 ) {
+			xAddItemRow();
+		}
+	});
+
+	$("#sel_alamcenDE").on('change',function(){
+		xidAlmacen=$("#sel_alamcenDE option:selected").val();
+		xloadProductoItem();
+	})
+
+}
+
+function xGuardarDistribuicion(){
+	var xarray_db=new Array();
+	xPopupLoad.xopen();
+
+	//sacar el array
+	$("#tb_almacen_items .row").each(function(index,element){
+		xarray_db.push({'idproducto_stock':$(element).find('#td_idupdate').text(),'idalmacen_de':$(element).find('#td_almacen_de').text(),'idalmacen_a':$(element).find('#td_almacen_a').text(),'idproducto':$(element).find('#td_dproducto').text(),'cantidad':$(element).find('#td_cantidad').text()});
+	})
+
+	$.ajax({ type: 'POST', url: '../../bdphp/log.php?op=16006', data:{array_db:xarray_db}})
+		.done( function (dtsuccess) {
+			xPopupLoad.xclose();
+			xNuevaDisrtribuicion();
+			xloadProductoItem();
+		})
+	//actualizar items distribuidos
+	/*var sql_update_items=xArmarInsertDetalle($("#tb_input"),'','','',1);
+
+	//ingresar items distribuidos
+	var sql_new_items=xArmarInsertDetalle($("#tb_almacen_items"),'','','',1);
+
+
+	sql_new_items=sql_new_items.replace(/-almacen/g,xIdAlmacen_A);
+
+	sql_update_items=sql_update_items+' '+sql_new_items;
+	$.ajax({ type: 'POST', url: '../../bdphp/log.php?op=100', data:{xsql:sql_update_items}})
+		.done( function (dtsuccess) {
+			xPopupLoad.xclose();
+			xNuevaDisrtribuicion();
+		})*/
+}
+function xNuevaDisrtribuicion(){
+	$("#tb_input tr.row").remove();
+	$("#tb_almacen_items tr").remove();
+}
+
+function xAddItemRow(){
+	xCan_item=$("#cant_item").val();
+	xDes_item=$("#des_item").val();
+	if(xCan_item==""){return}
+	//registrar producto
+	xAddItemLista()
+	xResetInputPro();
+}
+	//
+function xAddItemLista(){
+	//agregar a lista
+	var xIdAlmacen_A=$("#sel_alamcenA option:selected").val();
+	var xIdAlmacen_De=$("#sel_alamcenDE option:selected").val();
+	if(xIdAlmacen_A==xIdAlmacen_De){alert('Los almacenes de distribuicion son los mismos.'); return;}
+
+	var xTb_items=$("#tb_input");
+	var xcount_row=xTb_items.find('.row').length;
+	var xstock_item_actual=$("#txt_stock").val();
+	xcount_row=xcount_row+xIdProducto_sel;
+	var xrow_duplicado=xBuscarAttrTbData(xTb_items,'data-id',xIdProducto_sel);
+	if(xrow_duplicado==false){
+		if(xCan_item>xstock_item_actual){return;}
+
+		var xrow_pro='<tr class="row" id="'+xcount_row+'" data-id="'+xIdProducto_sel+'" data-stock="'+xstock_item_actual+'" data-update="'+xIdAlmacen_item_pro_sel+'">'+
+				'<td colspan="2">'+xnom_producto_sel+'</td>'+
+				'<td data-ColumName="stock" id="row_stock" data-operacion="resta">'+xCan_item+'</td>'+
+				'<td><span class="xDeleteRowNeutro" title="Borrar" onclick="xBorrarItemLocalPro(this);"></span></td>'+
+				'</tr>';
+
+		//producto_stock
+		var xrow_pro_almacen='<tr class="row" id="'+xcount_row+'" data-update="'+xIdAlmacen_item_pro_sel+'" data-id="'+xIdProducto_sel+'">'+
+					'<td id="td_idupdate">'+xIdAlmacen_item_pro_sel+'</td>'+
+					'<td id="td_almacen_de">'+xIdAlmacen_De+'</td>'+
+					'<td id="td_almacen_a">'+xIdAlmacen_A+'</td>'+
+					'<td id="td_dproducto">'+xIdProducto_sel+'</td>'+
+					'<td id="td_cantidad">'+xCan_item+'</td>'+
+					'</tr>';
+
+		/*var xrow_pro_almacen='<tr class="row" id="'+xcount_row+'" data-update="'+xIdAlmacen_item_pro_sel+'">'+
+					'<td data-ColumName="idalmacen">-almacen</td>'+
+					'<td data-ColumName="idproducto">'+xIdProducto_sel+'</td>'+
+					'<td data-ColumName="stock" id="row_stock" data-operacion="suma">'+xCan_item+'</td>'+
+					'<td data-ColumName="f_ingreso">'+xDevolverFecha()+'</td>'+
+					'</tr>';*/
+
+		$("#tb_almacen_items").append(xrow_pro_almacen).trigger('create');
+
+		if(xTb_items.find('.row').length==0){
+			xTb_items.append(xrow_pro).trigger('create');
+		}else{
+			$("#tb_input tr.row:first").before(xrow_pro).trigger('create');}
+	}else{
+		//agrega cantidad al row que existe
+		var xcant_row_tb=$(xrow_duplicado).find('#row_stock').text()
+		var xstock_item_row_tb=parseFloat($(xrow_duplicado).attr('data-stock'));
+		xcant_row_tb=parseFloat(xcant_row_tb)+parseFloat(xCan_item);
+		if(xcant_row_tb>xstock_item_row_tb){xcant_row_tb=xstock_item_row_tb;}
+		$(xrow_duplicado).find('#row_stock').text(xcant_row_tb);
+
+		$(xrow_duplicado).css('font-weight','bold');
+
+		xrow_duplicado=xBuscarAttrTbData($("#tb_almacen_items"),'data-id',xIdProducto_sel);
+		$(xrow_duplicado).find('#td_cantidad').text(xcant_row_tb);
+	}
+}
+
+function xCargarProductoItem () {
+	var xPrecio_pro_calc=0;
+	var xObjTxtItemPro=$("#des_item");
+		xObjTxtItemPro.autocomplete({
+			autoFocus:true,
+			source:xThisDisttribucion.dtProItem,
+			select: function( event, ui ) {
+				xObjTxtItemPro.val(ui.item.label);
+		        xObjTxtItemPro.attr('data-id',ui.item.value);
+		        xObjTxtItemPro.attr('data-des-familia',ui.item.familia);
+		        $("#txt_stock").val(ui.item.stock);
+		        //$("#cant_item").focus();
+		        xnom_producto_sel=ui.item.label;
+		        xIdProducto_sel=ui.item.value;
+		        xIdAlmacen_item_pro_sel=ui.item.idproducto_stock;
+		        return false;
+		    },
+		    focus:function(event, ui){return false;},
+		    change:function( event, ui ) {
+		    	if(ui.item===null){
+		    		xObjTxtItemPro.attr('data-value',"");
+		    		xObjTxtItemPro.attr('data-id',"");
+		    		xnom_producto_sel="";
+		    		xIdAlmacen_item_pro_sel='';
+		    		xIdProducto_sel='';
+		    		$("#txt_stock").val("");
+		    		xNewItemPro=true;
+		    	}else{xNewItemPro=false; $("#frm_item_pro #idproducto").val(ui.item.value);}
+		    	return false;
+		    }
+		});
+}
+
+function xloadProductoItem(){
+	xPopupLoad.xopen();
+	$.ajax({ type: 'POST', url: '../../bdphp/log.php?op=16001', data:{i:xidAlmacen}})
+	.done( function (DtItems) {
+		var xDtItems=$.parseJSON(DtItems);
+		xThisDisttribucion.dtProItem=xDtItems.datos;
+		xCargarProductoItem();
+		xPopupLoad.xclose();
+	})
+}
+function xloadAlamcen(){
+	$.ajax({ type: 'POST', url: '../../bdphp/log.php?op=1604'})
+	.done( function (DtAlm) {
+		xDtAlam=$.parseJSON(DtAlm);
+		var xcandena_alm='';
+		xDtAlam=xDtAlam.datos;
+		for (var i = 0; i < xDtAlam.length; i++) {
+			xcandena_alm=String(xcandena_alm+'<option value="'+xDtAlam[i].idalmacen+'">'+xDtAlam[i].descripcion+'</option>')
+		};
+		$("#sel_alamcenDE").html(xcandena_alm).trigger('create');
+		$("#sel_alamcenA").html(xcandena_alm).trigger('create');
+		xidAlmacen=$("#sel_alamcenDE option:selected").val()
+		xloadProductoItem()
+	})
+}
+
+function xBorrarItemLocalPro(obj){
+	var xObj=$(obj).parent().parent();
+	var xtb=xObj.parents('table');
+	var xtb_row_id=xObj.attr('id');
+	//xObj.fadeTo(550, 0, function () {$(this).remove(); xSumarTotal(xtb);});
+	xObj.fadeTo(550, 0, function () {$(this).remove();$('#tb_input #'+xtb_row_id).remove();});
+}
+function xResetInputPro(){
+	$("#des_item").val('');
+	$("#des_item").attr('data-id','')
+	$("#cant_item").val('');
+	$("#txt_stock").val('');
+	$("#des_item").focus();
+}
+Polymer({
+	is:'x-distribuicion',
+	properties:{
+		xt_org:Number,
+		xt_idsede:Number,
+		xt_idus:Number,
+		dtProItem:Object,
+	},
+	attached:function(){
+    	xThisDisttribucion=this;
+    	xIniDistribuicion();
+    }
+})
+</script>

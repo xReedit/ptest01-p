@@ -1,0 +1,154 @@
+<dom-module id="x-resumen-cierre-caja">
+	<template>
+		<div class="xContent">
+			<br>
+			<paper-button class="xDerecha xverde" raised> Regresar</paper-button>
+			<h3><strong>Resumen de movimientos en caja</strong></h3>
+			<br>
+			<div class="xLinea2"></div>
+			<br>
+			<div id="div_us">
+				<p inline>Todos los movimientos de caja que aun no estan cerrados, del usuario: <strong><span id="us">MRAMIREZ.</span></strong> <img class="xCursor" src="../../images/candado.png" title="Habilitar filtros, cambiar usuario y fecha"></p>
+			</div>
+			<div id="div_filtros" class="xInvisible">
+				<label for="sel_usuario">Usurio:</label>
+				<select id="sel_usuario" inline ><option>mramirez</option></select>
+				<label for="fecha_cierre">Fecha de cierre:</label>
+				<input type="date" id="fecha_cierre" inline>
+			</div><br>
+			<div class="xLinea2"></div>
+			<br>
+
+			<div id="div_datos" style="max-width:700px;">
+			</div>
+		</div>
+	</template>
+</dom-module>
+<script>
+var xThisResumenCaja;
+var xArrayCierrePrint, xArraySumT=[];
+function xResumenCaja(){
+	xPopupLoad=document.getElementById('xLoad');
+	//xm_LogChequea(function(){
+	xm_log_get('ini_us');
+	//if(xIdOrg=='' || xIdOrg==undefined){xIdOrg=window.localStorage.getItem('::app3_wo');}
+	//if(xIdUsuario=='' || xIdUsuario==undefined){xIdUsuario=window.localStorage.getItem('::app3_woU');}
+	//if(xIdSede=='' || xIdSede==undefined){	xIdSede=window.localStorage.getItem('::app3_woS');}
+	$("#Titulo_page").text("Movimientos de Caja");
+
+	xLoadDataCierre();
+}
+function xLoadDataCierre(){
+	xPopupLoad.xopen();
+	xPopupLoad.titulo="Obteniendo Datos...";
+
+	xArrayCierrePrint=[];
+	xArrayCierrePrint.push({'des':'VENTAS', 't1':'', 't2':'','t3':'importe'});
+	xArmarDataItems(0,7,function(){
+		xArrayCierrePrint.push({'des':'CAJA INGRESOS', 't1':'', 't2':'','t3':''});
+		xArmarDataItems(1,701,function(){
+			xArrayCierrePrint.push({'des':'CAJA SALIDAS', 't1':'', 't2':'','t3':''});
+			xArmarDataItems(2,7002,function(){
+				xArrayCierrePrint.push({'des':'VENTAS AL CREDITO', 't1':'', 't2':'','t3':''});
+				xArmarDataItems(3,702,function(){
+					xArrayCierrePrint.push({'des':'TOTAL EFECTIVO', 't1':'', 't2':'','t3':''});
+					xArmarDataItems(4,7001,function(){
+						xArrayCierrePrint.push({'des':'PEDIDOS ATENDIDOS', 't1':'', 't2':'cant','t3':'importe'});
+						xArmarDataItems(5,703,function(){
+							xArrayCierrePrint.push({'des':'ITEMS ANULADOS', 't1':'', 't2':'cant','t3':'importe'});
+							xArmarDataItems(5,7091,function(){
+								xArrayCierrePrint.push({'des':'PEDIDOS ANULADOS - MOTIVO', 't1':'', 't2':'','t3':'importe'});
+								xArmarDataItems(5,7092,function(){
+									xArrayCierrePrint.push({'des':'CANTIDAD POR SECCION', 't1':'', 't2':'cant','t3':'importe'});
+									xArmarDataItems(5,70010,function(){
+										xArrayCierrePrint.push({'des':'PORCIONES', 't1':'', 't2':'ven','t3':'queda'});
+										xArmarDataItems(5,707,function(){
+											xArrayCierrePrint.push({'des':'PRODUCTOS VENDIDOS', 't1':'', 't2':'ven','t3':'qda'});
+											xArmarDataItems(5,705,function(){
+												xArrayCierrePrint.push({'des':'VENDIDO X BODEGA', 't1':'', 't2':'vend','t3':'queda'});
+												xArmarDataItems(5,706,function(){
+													xEscribirDatos();
+												})
+											})
+										})
+									})
+								})
+							})
+						})
+					})
+				})
+			})
+		})
+	})
+
+	/*xArrayCierrePrint.push({'des':'VENTAS', 't1':'', 't2':'','t3':''});
+	xArmarDataItems(0,7,function(){
+		xEscribirDatos();
+	})*/
+}
+function xArmarDataItems(xx,numBD,reponde){
+	$.ajax({ type: 'POST', url: '../../bdphp/log.php?op='+numBD})
+	.done( function (dtT) {
+		indexAr=xArrayCierrePrint.length-1;
+		if(numBD==7001){
+		//efectivo en caja
+			indexAr=xArrayCierrePrint.length-1;
+			xArrayCierrePrint[indexAr][0]={'des':'EFECTIVO EN CAJA', 't1':'','t2':'', 't3':xMoneda(dtT)}
+			xArraySumT[indexAr]={'t1':"",'t2':"",'t3':xMoneda(dtT)}
+			reponde(true);
+			return;
+			}
+
+		var xDtImpr=$.parseJSON(dtT), sum_t1=0,sum_t2=0,sum_t3=0;
+		xDtImpr=xDtImpr.datos;
+
+		for (var i = 0; i < xDtImpr.length; i++) {
+			sum_t1+=isNaN(parseFloat(xDtImpr[i].t1)) ? 0 : parseFloat(xDtImpr[i].t1.replace(',', ''));
+			sum_t2+=isNaN(parseFloat(xDtImpr[i].t2)) ? 0 : parseFloat(xDtImpr[i].t2.replace(',', ''));
+			sum_t3+=isNaN(parseFloat(xDtImpr[i].t3)) ? 0 : parseFloat(xDtImpr[i].t3.replace(',', ''));
+			xArrayCierrePrint[indexAr][i]={'des':xDtImpr[i].descripcion, 't1':xDtImpr[i].t1, 't2':xDtImpr[i].t2, 't3':xDtImpr[i].t3, }
+		}
+		sum_t1=sum_t1===0 ? '' : (xArrayCierrePrint[indexAr].t1==="importe" ? xMoneda(sum_t1) : xCeroIzq(sum_t1,2));
+		sum_t2=sum_t2===0 ? '' : (xArrayCierrePrint[indexAr].t2==="importe" ? xMoneda(sum_t2) : xCeroIzq(sum_t2,2));
+		sum_t3=sum_t3===0 ? '' : (xArrayCierrePrint[indexAr].t3==="importe" ? xMoneda(sum_t3) : xCeroIzq(sum_t3,2));
+		xArraySumT[indexAr]={'t1':sum_t1,'t2':sum_t2,'t3':sum_t3}
+		//si no hay registro borra seccion
+		if(xDtImpr.length==0){xArrayCierrePrint[indexAr].visible=1;}else{xArrayCierrePrint[indexAr].visible=0;}
+		reponde(true);
+	});
+}
+
+function xEscribirDatos(){
+	var xtabla_datos='',xtabla_encabezados='', xbody_datos='', count_row=0, xtabla_sum='';
+	for (a in xArrayCierrePrint) {
+		xtabla_datos='';xtabla_encabezados='';xbody_datos='';count_row=0;xtabla_sum='';
+
+		xtabla_encabezados='<thead><th align="left">'+xArrayCierrePrint[a].des+'</th><th align="right">'+xArrayCierrePrint[a].t1+'</th><th align="right">'+xArrayCierrePrint[a].t2+'</th><th align="right">'+xArrayCierrePrint[a].t3+'</th></thead>';
+
+		$.map(xArrayCierrePrint[a], function(xn_p, z) {
+			if (typeof xn_p==="object"){
+				count_row++;
+				xtabla_datos=String(xtabla_datos+'<tr><td>'+xn_p.des+'</td><td align="right" class="t1">'+xn_p.t1+'</td><td class="t2" align="right">'+xn_p.t2+'</td><td class="t3" align="right">'+xn_p.t3+'</td><tr>');
+			}
+		})
+		xtabla_sum=String('<tr><td></td><td align="right"><strong>'+xArraySumT[a].t1+'</strong></td><td align="right"><strong>'+xArraySumT[a].t2+'</strong></td><td align="right"><strong>'+xArraySumT[a].t3+'</strong></td></tr>');
+
+		if(count_row===0){continue;}
+		xbody_datos=String(xbody_datos+'<table class="xtable2 xMarginTop" width="100%">'+xtabla_encabezados+xtabla_datos+xtabla_sum+'</table><br><br>');
+		$("#div_datos").append(xbody_datos).trigger('create');
+	};
+	xPopupLoad.xclose();
+}
+
+
+Polymer({
+	is:'x-resumen-cierre-caja',
+	properties:{
+	},
+	attached:function(){
+		this.selected=0;
+    	xThisResumenCaja=this;
+    	xResumenCaja();
+    }
+})
+</script>

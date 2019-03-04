@@ -1,0 +1,35 @@
+<link rel="import" href="../paper-spinner/paper-spinner.html">
+<link rel="import" href="../paper-dialog/paper-dialog.html">
+<dom-module id="x-dialog">
+	<template>
+		<paper-dialog id="xdialog" modal entry-animation="scale-up-animation" exit-animation="fade-out-animation" with-backdrop>
+      		<h2>{{titulo}}</h2>
+      		<paper-spinner active></paper-spinner>
+          <p>{{subtitulo}}</p>          
+    	</paper-dialog>
+	</template>
+<style>
+	#xdialog{ border-radius: 5px; text-align: center; padding: 8px; border: 1px solid #bdbdbd;}
+</style>
+<script>
+var dialog;
+  Polymer({
+    is: 'x-dialog',
+    properties: {
+      titulo:{type:String, value:'Guardando...'},
+      subtitulo:{type:String, value:''},
+      tiempo:Number
+    },
+    ready: function() {
+    	dialog = document.getElementById('xdialog');      
+      dialog.close();
+    },
+    open: function(reponde){        
+      	dialog.open();
+      	setTimeout(function(){dialog.close();reponde(true)},this.tiempo)
+    },
+    xopen:function(){dialog.open();},
+    xclose:function(){dialog.close();}
+  });
+  </script>
+  </dom-module> 

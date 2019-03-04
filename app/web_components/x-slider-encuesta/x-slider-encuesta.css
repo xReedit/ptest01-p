@@ -1,0 +1,46 @@
+	.xContentPregunta{
+		z-index: -9999999;
+		text-align: center;
+		margin: 20px;
+	}
+	.xPregunta{font-size: 25px;}
+	.xBtnSelect{
+		width: 100%;
+		height: 60px;
+		font-size: 23px;
+		padding-bottom: 5px;
+		border-bottom: 1px #616161 solid;		
+		padding-top: 20px; 
+	}
+	.xBtnSelect:hover{ background: #29B6F6;}
+
+
+	.xBtnSelect .xNum{ font-weight: 700; position: relative; float: left; color: #616161; top:15px; padding-right: 5px; padding-left: 10px;}
+	.xBtnSelect .xDes{ float: left; position: relative; top:15px; }
+	.xBtnSelect .xIcon{ float: right; padding-right: 10px;}
+	.xBtnSelect .xIcon img{ width: 45px;}
+
+	.xFinGracias{
+		text-align: center;
+		margin: 50px;		
+	}	
+
+	@media screen and (max-width: 1120px) {	
+	.xBtnSelect{ height: 70px;}
+	.xBtnSelect ,.xNum{font-size: 30px;}
+	.xBtnSelect .xIcon img{ width: 60px;}
+	}
+
+	@media screen and (max-width: 520px) {
+		.xPregunta{font-size: 19px;}
+		.xBtnSelect{ height: 45px;}
+		.xBtnSelect ,.xNum{font-size: 19px;}
+		.xBtnSelect .xIcon img{ width: 40px;}		
+	}
+
+	paper-button[toggles] {
+      transition: background-color 0.5s;
+    }
+    paper-button[toggles][active] {
+      background-color: #29B6F6;
+    }

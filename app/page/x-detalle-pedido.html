@@ -1,0 +1,270 @@
+<dom-module id="x-detalle-pedido">
+	<template>
+		<div class="xMenuPopup" id="miPopupMenu">
+			<ul>
+				<li>Cobrar</li>	
+				<li>Agregar sin imprimir</li>
+				<li onclick="xUniPedido();">Unir pedido</li>
+				<li>Ir Marcando</li>
+				<li>Cambiar de mesa</li>				
+				<li>Anular pedido</li>												
+			</ul>
+		</div>
+		<div id="control">
+			<button>AAA</button>			
+		</div>
+		<div class="xLinea2"></div><br><br>		
+		<div id="xBodyPC">
+			<div class="xPedidoEnCaja">
+			<input class="xcheck_item_pc" type="radio" name="option" value="other">
+			<div class="xencabezado_pc">				
+				<paper-icon-button icon="icons:more-vert" class="xDerecha xCursor btn_op_p"></paper-icon-button>
+				<p>Referencia: Sra de aaaaaaa eeeeee</p>
+				<p>Fecha: 02/05/16 12:45:10</p>
+				<p>Atendido por: Orlando</p>
+				<p>Tiempo de atencion:</p>
+			</div>
+			<div class="xtpc_div" id="tpc_1"><div class="xEncabezadoTpCon noselect" data-col="colapse1" onclick="toggle(this);">CONSUMIR EN EL LOCAL<div class="xEncabezadoTpCon_Cant">6</div><input id="optionOther"  class="xcheck_item" type="radio" name="option" value="other"></div><iron-collapse id="colapse1" tabindex="0" class="xcolapse"><div class="content_collapse noselect"><table width="100%" class="xtb_pedido"><tr><td colspan="3" class="xPedidoTitulo xSinBorde xBold" id="s11">ENTRADA</td></tr><tr class="xPedidoItem" id="i112"><td width="10px" data-ColumName="cantidad" id="cant_descontar">01</td><td data-ColumName="descripcion">MASAMORRA </td><td width="10px" align="right" class="xtb_pedido_importe" data-ColumName="ptotal">0.00</td></tr><tr class="xPedidoItem" id="i113"><td width="10px" data-ColumName="cantidad" id="cant_descontar">01</td><td data-ColumName="descripcion">ENSALADA RUSA </td><td width="10px" align="right" class="xtb_pedido_importe" data-ColumName="ptotal">0.00</td></tr><tr class="xPedidoItem" id="i114"><td width="10px" data-ColumName="cantidad" id="cant_descontar">01</td><td data-ColumName="descripcion">CAUSA RELLENA </td><td width="10px" align="right" class="xtb_pedido_importe" data-ColumName="ptotal">0.00</td></tr><tr><td colspan="3" class="xPedidoTitulo xSinBorde xBold" id="s12">PLATOS DE FONDO</td></tr><tr class="xPedidoItem" id="i122"><td width="10px" data-ColumName="cantidad" id="cant_descontar">01</td><td data-ColumName="descripcion">CARAPULCRA DE CHANCHO Y POLLO Y MOLLEJAS </td><td width="10px" align="right" class="xtb_pedido_importe" data-ColumName="ptotal">7.00</td></tr><tr class="xPedidoItem" id="i123"><td width="10px" data-ColumName="cantidad" id="cant_descontar">01</td><td data-ColumName="descripcion">GALLINA GUISADA </td><td width="10px" align="right" class="xtb_pedido_importe" data-ColumName="ptotal">10.00</td></tr><tr class="xPedidoItem" id="i124"><td width="10px" data-ColumName="cantidad" id="cant_descontar">01</td><td data-ColumName="descripcion">LOMITO SALTADO </td><td width="10px" align="right" class="xtb_pedido_importe" data-ColumName="ptotal">7.00</td></tr></table></div></iron-collapse></div></div>
+
+			<div class="xPedidoEnCaja">
+			<input class="xcheck_item_pc" type="radio" name="option" value="other">
+			<div class="xencabezado_pc">				
+				<paper-icon-button icon="icons:more-vert" class="xDerecha xCursor btn_op_p"></paper-icon-button>
+				<p>Referencia: Sra de aaaaaaa eeeeee</p>
+				<p>Fecha: 02/05/16 12:45:10</p>
+				<p>Atendido por: Orlando</p>
+				<p>Tiempo de atencion:</p>
+			</div>
+			<div class="xtpc_div" id="tpc_1"><div class="xEncabezadoTpCon noselect" data-col="colapse1" onclick="toggle(this);">CONSUMIR EN EL LOCAL<div class="xEncabezadoTpCon_Cant">6</div><input id="optionOther"  class="xcheck_item" type="radio" name="option" value="other"></div><iron-collapse id="colapse1" tabindex="0" class="xcolapse"><div class="content_collapse noselect"><table width="100%" class="xtb_pedido"><tr><td colspan="3" class="xPedidoTitulo xSinBorde xBold" id="s11">ENTRADA</td></tr><tr class="xPedidoItem" id="i112"><td width="10px" data-ColumName="cantidad" id="cant_descontar">01</td><td data-ColumName="descripcion">MASAMORRA </td><td width="10px" align="right" class="xtb_pedido_importe" data-ColumName="ptotal">0.00</td></tr><tr class="xPedidoItem" id="i113"><td width="10px" data-ColumName="cantidad" id="cant_descontar">01</td><td data-ColumName="descripcion">ENSALADA RUSA </td><td width="10px" align="right" class="xtb_pedido_importe" data-ColumName="ptotal">0.00</td></tr><tr class="xPedidoItem" id="i114"><td width="10px" data-ColumName="cantidad" id="cant_descontar">01</td><td data-ColumName="descripcion">CAUSA RELLENA </td><td width="10px" align="right" class="xtb_pedido_importe" data-ColumName="ptotal">0.00</td></tr><tr><td colspan="3" class="xPedidoTitulo xSinBorde xBold" id="s12">PLATOS DE FONDO</td></tr><tr class="xPedidoItem" id="i122"><td width="10px" data-ColumName="cantidad" id="cant_descontar">01</td><td data-ColumName="descripcion">CARAPULCRA DE CHANCHO Y POLLO Y MOLLEJAS </td><td width="10px" align="right" class="xtb_pedido_importe" data-ColumName="ptotal">7.00</td></tr><tr class="xPedidoItem" id="i123"><td width="10px" data-ColumName="cantidad" id="cant_descontar">01</td><td data-ColumName="descripcion">GALLINA GUISADA </td><td width="10px" align="right" class="xtb_pedido_importe" data-ColumName="ptotal">10.00</td></tr><tr class="xPedidoItem" id="i124"><td width="10px" data-ColumName="cantidad" id="cant_descontar">01</td><td data-ColumName="descripcion">LOMITO SALTADO </td><td width="10px" align="right" class="xtb_pedido_importe" data-ColumName="ptotal">7.00</td></tr></table></div></iron-collapse></div></div>
+
+			<div class="xPedidoEnCaja">
+			<input class="xcheck_item_pc" type="radio" name="option" value="other">
+			<div class="xencabezado_pc">				
+				<paper-icon-button icon="icons:more-vert" class="xDerecha xCursor btn_op_p"></paper-icon-button>
+				<p>Referencia: Sra de aaaaaaa eeeeee</p>
+				<p>Fecha: 02/05/16 12:45:10</p>
+				<p>Atendido por: Orlando</p>
+				<p>Tiempo de atencion:</p>
+			</div>
+			<div class="xtpc_div" id="tpc_1"><div class="xEncabezadoTpCon noselect" data-col="colapse1" onclick="toggle(this);">CONSUMIR EN EL LOCAL<div class="xEncabezadoTpCon_Cant">6</div><input id="optionOther"  class="xcheck_item" type="radio" name="option" value="other"></div><iron-collapse id="colapse1" tabindex="0" class="xcolapse"><div class="content_collapse noselect"><table width="100%" class="xtb_pedido"><tr><td colspan="3" class="xPedidoTitulo xSinBorde xBold" id="s11">ENTRADA</td></tr><tr class="xPedidoItem" id="i114"><td width="10px" data-ColumName="cantidad" id="cant_descontar">01</td><td data-ColumName="descripcion">CAUSA RELLENA </td><td width="10px" align="right" class="xtb_pedido_importe" data-ColumName="ptotal">0.00</td></tr><tr><td colspan="3" class="xPedidoTitulo xSinBorde xBold" id="s13">PLATOS A LA CARTA</td></tr><tr class="xPedidoItem" id="i239"><td width="10px" data-ColumName="cantidad" id="cant_descontar">01</td><td data-ColumName="descripcion">BISTEC APANADO </td><td width="10px" align="right" class="xtb_pedido_importe" data-ColumName="ptotal">15.00</td></tr><tr class="xPedidoItem" id="i238"><td width="10px" data-ColumName="cantidad" id="cant_descontar">01</td><td data-ColumName="descripcion">LOMITO MONTAO </td><td width="10px" align="right" class="xtb_pedido_importe" data-ColumName="ptotal">20.00</td></tr></table></div></iron-collapse></div></div>
+
+		</div>
+	</template>
+</dom-module>
+<script>
+var xThis;
+var xidm;
+var xidp;
+var xnump;
+var xPedidoUnir1=null;
+var xPedidoUnir2=null;
+var xPedidoSelect;
+function xIniDetallePedido(){
+	xPopupLoad=document.getElementById('xLoad');
+	if(xIdOrg=='' || xIdOrg==undefined){xIdOrg=window.localStorage.getItem('::app3_wo');}	
+	if(xIdUsuario=='' || xIdUsuario==undefined){xIdUsuario=window.localStorage.getItem('::app3_woU');}
+	$("#Titulo_page").text("Detalle de Pedido");	
+	xThis.xt_org=xIdOrg;
+	xThis.xt_idsede=xIdSede;
+	xThis.xt_idus=xIdUsuario;
+
+	
+	xidm=getUrlParameter('m','?');
+	xidp=getUrlParameter('p','?');
+	xnump=getUrlParameter('np','?');
+
+	//xLoadDetallePedido();
+
+	$(".btn_op_p").on('click',function(e){		
+		$("#miPopupMenu").css({display: 'block'})				
+		$("#miPopupMenu").offset({left:e.pageX, top:e.pageY});
+		$(this).parents('.xPedidoEnCaja').addClass("activo_pc");
+		e.preventDefault();
+	})
+	
+	$(document).on('click','body',function(){$("#miPopupMenu").css({display:'none'});})
+	$(document).on('click', '.xPedidoEnCaja', function(e) {	
+		xPedidoSelect=$(this);
+		if($(this).find('input:radio')[0].checked==true){
+			event.stopPropagation();
+			e.stopPropagation();
+			e.stopImmediatePropagation()
+			return false;	
+		}
+		$("#miPopupMenu").css({display:'none'});
+		$(this).find('input:radio')[0].checked = true;    		
+		xVerificarCheckItem()
+
+		event.stopPropagation();
+		e.stopPropagation();
+		e.stopImmediatePropagation()
+		return false;	
+	});
+}
+function xVerificarCheckItem(){	
+	$(".xPedidoEnCaja .xcheck_item_pc").each(function(index,element){				
+		if ($(element).is(':checked')) {			
+			$(this).parent().addClass('xPSeleccionado');						
+		}else{
+			$(this).parent().removeClass('xPSeleccionado');			
+		}
+	})	
+}
+function xUniPedido(){	
+	//idea // cada pedido mantiene su id de pedido, al unir se junta los arrays o json y se escribe un solo pedido
+	if(xPedidoUnir1==null){
+		xPedidoUnir1=$(xPedidoSelect);		
+		return;
+	}	
+	if(xPedidoUnir2==null){
+		xPedidoUnir2=$(xPedidoSelect);		
+	}
+	
+	//unir pedido xPedidoUnir2>xPedidoUnir1		
+	/*var idItemPC='';
+	var xTbBuscar=$(xPedidoUnir1).find('.xtb_pedido');
+	var xRowBus;
+	var xidtpc_bus_pc='';
+	var xItemTP_pc;
+	$(xPedidoUnir2).find('.xPedidoItem').each(function(index,element){	
+		idItemPC=$(element).attr('id');
+		xRowBus=xBuscarAttrTbData2(xTbBuscar,'id',idItemPC,'.xPedidoItem')
+		debugger
+		if(xRowBus!=false){
+			var xcant1=$(xRowBus).find('#cant_descontar').text();
+			var xprecio1=$(xRowBus).find('.xtb_pedido_importe').text();
+			var xcant2=$(element).find('#cant_descontar').text();
+			var xprecio2=$(element).find('.xtb_pedido_importe').text();
+
+			xcant1=xCeroIzq(parseFloat(xcant1)+parseFloat(xcant2),2);
+			xprecio1=xMoneda(parseFloat(xprecio1)+parseFloat(xprecio2));
+
+			$(xRowBus).find('#cant_descontar').text(xcant1);
+			$(xRowBus).find('.xtb_pedido_importe').text(xprecio1);
+
+			$(element).remove();
+		}
+		else{
+			//busca tr tipo consumo / seccion
+			debugger
+			idItemPC=$(element).parent().find('.xPedidoTitulo').attr('id');
+			xRowBus=xBuscarAttrTbData2(xTbBuscar,'id',idItemPC,'.xPedidoTitulo');
+			if(xRowBus!=false){
+				xtrSeccion='<tr>'+$(element).parents('table').find(idItemPC).html()+'</tr>';
+				$(xRowBus).parents('.xtpc_div').append($(element).parents('table').html()).trigger('create');
+				
+			}
+			else{//
+				//busca tipo consumo
+				xidtpc_bus_pc='#'+$(element).parents('.xtpc_div').attr('id');
+				xItemTP_pc=$(xTbBuscar).parents('.xPedidoEnCaja').find(xidtpc_bus_pc).html();
+				if(xItemTP_pc==undefined){//si no hay tipo de consumo en unir1
+					xItemTP_pc=$(element).parents('.xPedidoEnCaja').find(xidtpc_bus_pc).html();
+					$(xTbBuscar).parents('.xPedidoEnCaja').append(xItemTP_pc).trigger('create');
+					$(element).parents('.xPedidoEnCaja').find(xidtpc_bus_pc).remove();
+				}
+			}
+		}
+	});
+	$(xPedidoUnir2).fadeTo(550, 0, function () {$(this).remove();xPedidoUnir1=null;xPedidoUnir2=null;});
+	*/
+}
+function xLoadDetallePedido(){
+	xPopupLoad.xopen();	
+	$.ajax({ type: 'POST', url: '../../bdphp/log.php?op=502', data:{i:xidm}})
+	.done( function (dtPed) {		
+		var xdtPed=$.parseJSON(dtPed);
+		var xCadenaTPC='';
+		xdtPed=xdtPed.datos;
+		xThis.dt_pedido=xdtPed;
+
+		if(xnump>1){//total mas pedidos
+
+		}
+		else{//un solo pedido
+			xArmarPedido(xdtPed)
+		}
+	});
+}
+function xArmarPedido(dt){
+	var xTpConsumo='';
+	var xCadenaItemArray;
+	var xEncabezadoCollapse='';
+	var xCadenaCollapse='';
+	var xArrayTpC=new Array();
+	var xArraySeccion=new Array();
+	var xIdColapse='';
+	var xCadenaGrupo='';
+	var xCantItems;
+	var xIndicacionItem='';
+	var xNom_seccion;
+	var xDtBd=dt;	
+	$("#xBodyPC div").remove();		
+
+
+	//tipo de consumo
+	for (var a = 0; a < xDtBd.length; a++) {
+		if(xArrayTpC[xDtBd[a].idtipo_consumo]==null){xArrayTpC[xDtBd[a].idtipo_consumo]={'id':xDtBd[a].idtipo_consumo, 'des':xDtBd[a].des_tp}}
+	}
+	
+	//body pedido	
+	var xNom_seccion_b='';	
+	var xIdCodItem;//para unir
+	var xidCodSec;//para unir
+	for(b in xArrayTpC){
+		xCadenaItemArray='';
+		xEncabezadoCollapse='';
+		xCadenaCollapse='';
+		xIndicacionItem='';
+		xArraySeccion=new Array();
+		xCantItems=0;
+		for (var i = 0; i < xDtBd.length; i++) {
+			xidCodSec='s'+xDtBd[i].idtipo_consumo+xDtBd[i].idseccion;			
+			if(xArrayTpC[b].id==xDtBd[i].idtipo_consumo){				
+					xNom_seccion=xDtBd[i].des_seccion;		
+					if(xArraySeccion[xDtBd[i].idseccion]==null){xArraySeccion[xDtBd[i].idseccion]='<tr><td colspan="3" class="xPedidoTitulo xSinBorde xBold" id="'+xidCodSec+'">'+xNom_seccion+'</td></tr>'; }				
+
+					xIdCodItem='i'+xDtBd[i].idtipo_consumo+xDtBd[i].idseccion+xDtBd[i].iditem;					
+					xCadenaItemArray=String('<tr class="xPedidoItem" id="'+xIdCodItem+'">'+					
+					'<td width="10px" data-ColumName="cantidad" id="cant_descontar">'+xCeroIzq(xDtBd[i].cantidad,2)+'</td>'+
+					'<td data-ColumName="descripcion">'+xDtBd[i].descripcion+'</td>'+
+					'<td width="10px" align="right" class="xtb_pedido_importe" data-ColumName="ptotal">'+xDtBd[i].ptotal+'</td>'+					
+					'</tr>');
+
+					xCantItems++;
+					xArraySeccion[xDtBd[i].idseccion]=xArraySeccion[xDtBd[i].idseccion]+xCadenaItemArray;
+				
+			}
+		}
+		
+		xIdColapse='colapse'+xArrayTpC[b].id;
+		xEncabezadoCollapse='<div class="xtpc_div" id="tpc_'+xArrayTpC[b].id+'"><div class="xEncabezadoTpCon noselect" data-col="'+xIdColapse+'" onclick="toggle(this);">'+xArrayTpC[b].des+'<div class="xEncabezadoTpCon_Cant">'+xCantItems+'</div><input id="optionOther"  class="xcheck_item" type="radio" name="option" value="other"></div>';
+		for (a in xArraySeccion) {
+			xCadenaCollapse=String(xCadenaCollapse+xArraySeccion[a]);		
+		};
+			
+		xCadenaCollapse=String('<iron-collapse id="'+xIdColapse+'" tabindex="0" class="xcolapse">'+
+	    	'<div class="content_collapse noselect">'+
+			'<table width="100%" class="xtb_pedido">'+xCadenaCollapse+'</table></div></iron-collapse></div>');
+
+		xCadenaGrupo=String(xCadenaGrupo+xEncabezadoCollapse+xCadenaCollapse);			
+		xCadenaGrupo='<div class="xPedidoEnCaja activo">'+xCadenaGrupo+'</div>';
+	}	
+	$("#xBodyPC").html(xCadenaGrupo).trigger('create');
+	xPopupLoad.xclose();
+	//xSumarTotal();
+}
+Polymer({
+	is:'x-detalle-pedido',	
+	properties:{
+		xt_org:Number,
+		xt_idsede:Number,
+		xt_idus:Number,
+		dt_pedido: Object		
+	},
+	attached:function(){				
+    	xThis=this;        	
+    	xIniDetallePedido();
+    }    
+})
+</script>

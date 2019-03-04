@@ -1,0 +1,100 @@
+<link rel="import" href="../paper-button/paper-button.html">
+<link rel="import" href="../paper-styles/paper-styles.html">
+<link rel="import" href="../neon-animation/neon-animated-pages.html">
+<link rel="import" href="../neon-animation/neon-animatable.html">
+<link rel="import" href="../neon-animation/neon-animations.html">
+<link rel="import" href="../x-dialog/x-dialog.html">	
+
+<dom-module id="x-slider-encuesta">
+<link rel="import" type="css" href="x-slider-encuesta.css">
+<template>
+	<x-dialog tiempo=1000 titulo="..." id="xdialog"></x-dialog>	
+	<template is="dom-bind" id="t">
+      <neon-animated-pages id="pages" class="flex" selected="[[selected]]" entry-animation="[[entryAnimation]]" exit-animation="[[exitAnimation]]">
+        <template is="dom-repeat" items="[[pages]]"> 
+          <neon-animatable>          	
+          	<div class="xContentPregunta" data-id="[[item.ide]]">          		
+	        	<div>	        		
+	        		<h3 class="xPregunta">[[item.pregunta]]</h3>
+	        	</div><br><br>
+	        	<template is="dom-repeat" items="[[item.rpts]]"> 
+		        	<div>		        					        	
+			        	<div on-click="buttonClicked" class="xBtnSelect xTransicion3s noselect xPuntero xCursor" data-val="{{item.valor}}" data-idep="[[item.idep]]">
+			        		<div class="xNum">[[item.num]]</div>
+			        		<div class="xDes">[[item.des]]</div>
+			        		<div class="xIcon"><img src=[[item.iconx]]></div>			        		
+			        	</div>
+			        </div>			        
+		        </template> 		        
+	        </div>	        
+          </neon-animatable>
+        </template>
+        <neon-animatable>        	
+        		<h2 class="xFinGracias"><p id="xAgradece"></p></h2>
+        		<div id="xImgGracias" class="xCentrado">
+			      	<img src="../../../images/7-01.png" style="max-width:90%">
+			    </div>
+        </neon-animatable>        
+      </neon-animated-pages>
+    </template>    
+</template>
+
+<script>
+var scope;
+var xdialog;
+var xRpts=new Array();
+var xThis;
+
+function xObtenerValPregunta(obj){
+	obj=obj.currentTarget;		
+	xdialog.open(function(a){		
+		if(a){						
+			var xidep=obj.parentNode.parentNode.dataId;
+			var xider=obj.dataIdep;
+			var xv=obj.dataVal;
+			xRpts.push({'idp':xidep,'ider':xider, 'val':xv});
+			scope.entryAnimation = 'slide-from-right-animation';
+			scope.exitAnimation = 'slide-left-animation';		
+			scope.selected = scope.selected === scope.pages.length ? 0 : (scope.selected + 1)		
+			if(scope.selected==parseInt(scope.pages.length)){							
+				xThis.fire('xFinSlide', {xRpts});								
+				}
+			xThis.fire('xNextSlide');			
+			obj.active=false;
+		}		
+	})
+}
+
+Polymer({
+    is: 'x-slider-encuesta',    
+    properties: {
+      datos: {type:Object},      
+      fin_gracias:{type:String, value:'Muschas Gracias, su aporte es muy valioso. Seguiremos trabajando para mejorar nuestro servicio.'}
+    },    
+    ready:function(){
+    	scope = document.querySelector('template[is="dom-bind"]');    	
+    	xdialog = document.querySelector('x-dialog');
+    },     
+    cargar:function(aD,xa){
+    	if(xa!=''){this.fin_gracias=xa}
+    	document.getElementById("xAgradece").innerHTML =this.fin_gracias;
+      	scope.selected = 0;
+      	this.datos=aD;
+      	scope.pages=this.datos;
+      	this.fire('xCountSlide',{cant:parseInt(this.datos.length)+1});
+      	xThis=this;      	      
+      	
+      	var templatex = document.querySelector('#t');
+		templatex.buttonClicked= function (obj) {
+			xObtenerValPregunta(obj)			
+		}			      		
+	},
+	resetear:function(s){
+		setTimeout(function(){
+			xRpts=new Array();scope.selected =0;	
+			xThis.fire('xResetear');			
+		},s)			
+	}
+  });
+</script>
+</dom-module>

@@ -1,0 +1,635 @@
+<!--link rel="import" href="../paper-progress/paper-progress.html">
+<link rel="import" href="../paper-dropdown-menu/paper-dropdown-menu.html" !-->
+<dom-module id="x-caja">
+	<link rel="preload" href="../../../images/_msj_envio_sunat.gif" as="image" media="(max-width: 600px)">
+	<template>
+		<paper-dialog class="dialog_redondo" id="dialog_enviando_sunat" style="width: 245px;" modal entry-animation="scale-up-animation" exit-animation="fade-out-animation">
+			<div style="text-align: center">
+				<img id="dgl_sunat_img" src="../../../images/_msj_envio_sunat.gif" alt="">
+				<p id="dgl_sunat_msj">Enviando comprobantes electronicos.</p>
+				<p id="dgl_sunat_msj2" class="xInvisible xColorRow_Azul">Proceso concluido con exito.</p>
+				<p id="dgl_sunat_msj3 xfont11" class="center xColorRow_Plomo">...</p>
+				<paper-progress id="dgl_sunat_progress" indeterminate style="width: 100%;"></paper-progress>
+				<button dialog-dismiss id="dlg_sunat_btn" class="xBoton2 xVerde xInvisible">Listo</button>
+			</div>
+		</paper-dialog>
+		<paper-dialog id="dialog_erro_print" modal style="min-width: 330px;" modal entry-animation="scale-up-animation" exit-animation="fade-out-animation">
+			<h4>Error en impresora</h4>
+			<p id="print_error"></p>
+			<br>
+			<div class="xBoton2 xVerde" style="margin-left:23px;" onclick="xReImprimirCierre();">Intentar Nuevamente</div>
+			<div class="xBoton2 xPlomo" style="margin-left:23px;" dialog-dismiss onclick="dialog_detalle.close();">No imprimir</div>
+			<br><br><br>
+		</paper-dialog>
+		<paper-dialog id="dialog_cierre" modal entry-animation="scale-up-animation" exit-animation="fade-out-animation" with-backdrop>
+			<div class="xContent">
+				<p class="xfont14" id="msj">OK cuadre conforme. Recuerde imprimir las operaciones detalladas, luego cierre su terminal.</p>
+				<br>
+				<paper-button tabindex="0" raised class="xverde" onclick=""><iron-icon icon="save"></iron-icon>Imprimir cierre</paper-button>
+            	<paper-button tabindex="0" raised class="xnegro" onclick=""><iron-icon icon="save"></iron-icon>Cerrar sistema</paper-button>
+			</div>
+		</paper-dialog>
+		<x-pass id="xPSupervisor" titulo="Permiso del administrador" val="Pe1"></x-pass>
+		<br>
+		<div class="xContent">
+			<paper-tabs selected="{{selected}}" id="tab_caja">
+				<paper-tab>INGRESO / SALIDA DE CAJA</paper-tab>
+      			<paper-tab>CIERRE DE CAJA</paper-tab>
+      		</paper-tabs>
+			<div class="xLinea2"></div>
+      		<br><br>
+      		<iron-pages selected="{{selected}}">
+	      		<div id="ingreso_caja">
+					<br>
+					<form id="form_ingreso">
+						<select class="xTextRow2 xfont18 xCursor" id="selecie" style="width:200px">
+							<option value="1">INGRESO A CAJA</option>
+							<option value="2">SALIDA DE CAJA</option>
+						</select><br><br>
+						<p>Detalle el motivo del movimiento de efectivo.</p>
+						<input type="text" class="xMiInput xPasarEnter2" onChange="conMayusculas(this)" placeholder="Motivo" id="motivo" name="motivo" required>
+						<br><br>
+						<input type="number" class="xMiInput" placeholder="Monto" style="width:200px" pattern="[0-9]+([\.,][0-9]+)?" step="any" id="monto" name="monto" required>
+						<div class="xInvisible">
+							<input type="text" id="idsede" name="idsede" value="[[xt_idsede]]">
+							<input type="text" id="idorg" name="idorg" value="[[xt_org]]">
+							<input type="text" id="idusuario" name="idusuario" value="[[xt_idus]]">
+							<input type="text" id="fecha" name="fecha">
+							<input type="text" id="tipo" name="tipo">
+						</div>
+					</form><br><br>
+					<paper-button tabindex="0" raised class="xverde" onclick="xGuardarIngreso();"><iron-icon icon="save"></iron-icon>Listo Guardar</paper-button>
+					<br><br><br>
+					<h4>Resumen de movimientos que aun no tienen cierre</h4>
+					<div class="xLinea2"></div>
+					<table id="tb_resumen_ie" width="65%" class="xtable">
+						<thead>
+							<th width="20px">#</th>
+							<th align="left">Fecha</th>
+							<th align="left">Tipo</th>
+							<th align="left">Motivo</th>
+							<th align="right">Importe</th>
+						</thead>
+					</table>
+				</div>
+
+				<!--Cierre de caja-->
+				<div id="cierre_caja">
+					<div class="xTxtCierreCajaContenedor">
+						 <b><h3 id="xTituloCierre">CIERRE DE CAJA</h3></b>
+						 <p>Especifique que cantidad tiene en caja segun denominacion:</p>
+						 <br>
+			            <form id="formCierre">
+			            <div class="xAlinearce xm_at_cont xEpaciarInputCierre">
+			                 <input type="text" class="xMiInput xPasarEnter2" data-valor="200" placeholder="De 200">
+			                 <input type="text" class="xMiInput xPasarEnter2" data-valor="100" placeholder="De 100">
+			                 <input type="text" class="xMiInput xPasarEnter2" data-valor="50" placeholder="De 50">
+			                 <input type="text" class="xMiInput xPasarEnter2" data-valor="20" placeholder="De 20">
+			                 <input type="text" class="xMiInput xPasarEnter2" data-valor="10" placeholder="De 10">
+			                 <input type="text" class="xMiInput xPasarEnter2" data-valor="5" placeholder="De 5">
+			            </div>
+			            <div class="xAlinearce xm_at_cont xEpaciarInputCierre">
+			                 <input type="text" class="xMiInput xPasarEnter2" data-valor="2" placeholder="De 2">
+			                 <input type="text" class="xMiInput xPasarEnter2" data-valor="1" placeholder="De 1">
+			                 <input type="text" class="xMiInput xPasarEnter2" data-valor="0.50" placeholder="De 0.50">
+			                 <input type="text" class="xMiInput xPasarEnter2" data-valor="0.20" placeholder="De 0.20">
+			                 <input type="text" class="xMiInput xPasarEnter2" data-valor="0.10" placeholder="De 0.10" id="txt_fin">
+			                 <input type="text" class="xMiInput" data-valor="total" placeholder="Total" id="TxtTotal" disabled encendido>
+			            </div>
+			            <div id="xTituloRpt">
+						</div>
+						<div id="xTituloRpt2"></div>
+
+			            </form><br>
+			            <div id="btns_cierre">
+				            <paper-button tabindex="0" raised class="xverde" onclick="xVerificar();"><iron-icon icon="save"></iron-icon>Verificar</paper-button>
+				            <paper-button tabindex="0" raised class="xnegro" onclick="xPSupervisor.xopen()"><iron-icon icon="save"></iron-icon>Supervisor</paper-button>
+			            </div>
+			            <!-- <button onclick="xCocinarResumenBoletas();">Enviar Resumen</button> -->
+					</div>
+				</div>
+      		</iron-pages>
+
+
+		</div>
+		<!--Cierre de caja-->
+		<div id="ImprimeCierre" class="xInvisible">
+			<p id="xImpTitulo" style="font-size:18px; line-height:1px;">CIERRE DE CAJA</p>
+		    <p id="xImpUsuario" style="font-size:14px; line-height:2px;">aaaaaa</p>
+		    <p id="xImpFecha" style="font-size:14px; line-height:1px;">aaaaaa</p>
+
+			<table width="290" border="0" id="xTableList" style="font-size:12px;">
+			  <tr id="Seccion_total"></tr>
+			  <tr id="Seccion_caja"></tr>
+			  <tr id="Seccion_salida"></tr>
+			  <tr id="Seccion_venta_credito"></tr>
+			  <tr id="Seccion_tipo_consumo"></tr>
+			  <tr id="Seccion_estado_pedido"></tr>
+			  <tr id="Seccion_resumen_vendido"></tr>
+			</table>
+		</div>
+	</template>
+</dom-module>
+<style>
+	/*paper-button.colorful {color: #4285f4;}*/
+	paper-button[raised].colorful {	background: #4285f4;color: #fff;}
+	paper-button[raised].xverde {	background: #43a047;color: #fff;}
+	paper-button[raised].xnegro {	background: #424242;color: #fff;}
+	.xEpaciarInputCierre input{margin-bottom: 20px; font-size: 18px;}
+	.xTxtRojo{color:#F00;}
+</style>
+
+<script type="text/javascript" src="./cocinar.resumen.boletas.js"></script>
+<!-- <script type="text/javascript" src="../../view/config.const.js"></script> -->
+<script type="text/javascript" src="../../view/xSOAPSunat.js"></script>
+<script type="text/javascript" src="../../view/cpe_interno.js"></script>
+<script type="text/javascript" src="../../view/item_pedido_print_comprobante.js"></script>
+<script>
+var xThisCaja;
+var xMontoTotalCaja;
+var xSumData;
+var xtbReport;
+var xPermisoSupervisor=0;
+var xArrayCierrePrint=new Array();
+var xArrayEncabezadoCierre;
+var xEfectivoCaja=0;
+var nom_supervisor='';
+var xlo_idorg;
+var xlo_idsede;
+var xlo_us;
+function xIniCaja(){
+
+	xPopupLoad=document.getElementById('xLoad');
+	/*if(xIdOrg=='' || xIdOrg==undefined){xIdOrg=window.localStorage.getItem('::app3_wo');}
+	if(xIdUsuario=='' || xIdUsuario==undefined){xIdUsuario=window.localStorage.getItem('::app3_woU');}
+	if(xIdSede=='' || xIdSede==undefined){	xIdSede=window.localStorage.getItem('::app3_woS');}*/
+	xm_LogChequea(function(){
+		xm_log_get('ini_us');
+
+
+		xThisCaja.xt_org=xIdOrg;
+		xThisCaja.xt_idsede=xIdSede;
+		xThisCaja.xt_idus=xIdUsuario;
+		//xlo_idorg=xIdOrg;
+		//xlo_idsede=xIdSede;
+		//xlo_us=xIdUsuario;
+		$("#Titulo_page").text("Movimientos de Caja");
+		//xScrolUp(0);
+
+		//xIniArraysPrint();
+		xtbReport=$("#xTableList");
+	});
+
+	/*xThis.xt_org=xIdOrg;
+	xThis.xt_idsede=xIdSede;
+	xThis.xt_idus=xIdUsuario;*/
+
+	xPSupervisor=document.getElementById('xPSupervisor');
+	xPSupervisor.addEventListener('xSend', function (e) {
+		var p=e.detail.xRpts[0].p;
+		if(p==1){
+			nom_supervisor=e.detail.xRpts[0].nomus;
+			xPermisoSupervisor=1;
+			xVerificar()
+			//xPreparaReport();
+		}
+	});
+
+	//$("#xTituloCierre").text('CIERRE DE CAJA: '+xNomU.toUpperCase());
+	$('.xPasarEnter2').on('keyup',function(e){
+
+		var xvalText=$(this).val();
+		var xValDeno=$(this).attr('data-valor');
+		if(xValDeno=='total'){return;}
+		var xDeno=parseFloat(parseFloat(xvalText)/parseFloat(xValDeno));
+		if(xDeno % 1==0){
+			$(this).removeClass('xTxtRojo');
+			xSumarTotal();
+		}else{
+			$(this).addClass('xTxtRojo');
+			}
+
+		var code=e.which;
+		if ( code==13||code==186 ) {
+			var inputs = $('input'); // storage a array of Inputs
+		    var a = inputs.index(document.activeElement);
+		    if (inputs[a + 1] !== null)
+		    {
+		      var nextBox = inputs[a + 1];
+		      if(nextBox===undefined){return}
+		      if(nextBox.disabled){nextBox = inputs[a + 2]}
+
+		      if(nextBox==undefined){return;}
+		  	  nextBox.focus();
+		      //event.preventDefault();
+		    }
+		    return false;
+  		}
+	});
+
+	$("#form_ingreso #monto").on('keyup',function(e){
+		var code=e.which;
+		if ( code==13||code==186 ) {xGuardarIngreso();}
+	})
+	$("#form_egreso #monto").on('keyup',function(e){
+		var code=e.which;
+		if ( code==13||code==186 ) {xGuardarEgreso();}
+	})
+
+	$("#txt_fin").on('keyup',function(e){
+		var code=e.which;
+		if ( code==13||code==186 ) {
+			xVerificar();}
+	})
+
+	$("#tab_caja").on('iron-select',function(){
+		switch(xThisCaja.selected){
+			case 0:xLoadResumenIS();break;
+		}
+	})
+
+}
+function xGuardarIngreso(){
+	//$("#form_ingreso #idorg").val(xIdOrg);
+	//$("#form_ingreso #idsede").val(xIdSede);
+	//$("#form_ingreso #idusuario").val(xIdUsuario);
+	xvalidateFormInput('form_ingreso',function(a){
+		if(a===false){return;}
+		var xvalIE=$("#form_ingreso #selecie").val();
+		xPopupLoad.xopen();
+		$("#form_ingreso #fecha").val(xDevolverFecha()+' '+xDevolverHora());
+		$("#form_ingreso #monto").val(xMoneda($("#form_ingreso #monto").val()))
+		$("#form_ingreso #tipo").val(xvalIE);
+
+		//var xx=$("#form_ingreso").serialize();
+
+		$.post("../../bdphp/ManejoBD_IUD.php?tb=ie_caja",$("#form_ingreso").serialize(),function(){
+			xPopupLoad.xclose();
+			//$("#form_ingreso").reset();
+			$("#form_ingreso #motivo").val('');
+			$("#form_ingreso #monto").val('');
+			xLoadResumenIS();
+		})
+	})
+}
+function xLoadResumenIS(){
+	$("#tb_resumen_ie .row").remove();
+	$("#tb_resumen_ie").append('<tr class="row"><td colspan="5"><paper-spinner active></paper-spinner></td></tr>').trigger('create');
+	$.ajax({ type: 'POST', url: '../../bdphp/log.php?op=70011'})
+	.done( function (dtIE) {
+		var xdtIE=$.parseJSON(dtIE);
+		var xcadena_resumen_ie='';
+		var xCuentaRow=0;
+		var xClassTipo='';
+		xdtIE=xdtIE.datos;
+		for (var i = 0; i < xdtIE.length; i++) {
+			xCuentaRow++;
+			xClassTipo='';
+			if(xdtIE[i].tipo!=1){xClassTipo='xColorRow_Rojo';}
+			xcadena_resumen_ie=String(xcadena_resumen_ie+'<tr class="row '+xClassTipo+'"><td>'+xCeroIzq(xCuentaRow,2)+'</td><td>'+xdtIE[i].fecha+'</td><td>'+xdtIE[i].des_tipo+'</td><td>'+xdtIE[i].motivo+'</td><td align="right">'+xdtIE[i].monto+'</td></tr>');
+		};
+		$("#tb_resumen_ie .row").remove();
+		$("#tb_resumen_ie").append(xcadena_resumen_ie).trigger('create');
+	})
+}
+
+function xSumarTotal(){
+	xMontoTotalCaja=0;
+	$('.xTxtCierreCajaContenedor').find('input:text').each(function(index, element) {
+		var xValElement=$(element).val();
+		if(xValElement!="" && $(element).attr('data-valor')!="total"){
+        	xMontoTotalCaja+=parseFloat(xValElement);
+			}
+
+    	});
+		$('#TxtTotal').val(xMoneda(xMontoTotalCaja));
+	}
+
+function xVerificar(){
+	//$.post('x../../bdphp/log.php?op=16',{xid:xDataEmp.Data[0].xu,xtb:xDevolverFecha()},function(xData){
+	$('#xTituloRpt').html('<paper-spinner active></paper-spinner>').trigger('create');
+	//$('#xTituloRpt').text('');
+	$.ajax({ type: 'POST', url: '../../bdphp/log.php?op=7001'})
+	.done( function (dtC) {
+		xSumData=parseFloat(dtC);
+		xEfectivoCaja=xSumData;
+		var xRpt_monto_supervicion='';
+		var xsub_falta='', xsub_sobra='';
+		var xRpt;
+		var xColor="";
+		xSumData=xMontoTotalCaja-xSumData;
+
+		if(xSumData>=-1 && xSumData<=1){xRpt='<h3>OK cuadre conforme.</h3>';xColor="#060"; xArmarArrayPrint();}
+		else{
+			if(xPermisoSupervisor==1){//supervisor
+				if(!isNaN(xSumData)){
+					if(xSumData>1){xRpt_monto_supervicion='(sobra '+xMoneda(xSumData)+'). ';xsub_sobra='xSubrayar xBold2';}else{xRpt_monto_supervicion='(falta '+xMoneda(xSumData)+'). ';xsub_falta='xSubrayar xBold2';}
+				}
+				xRpt='<p class="xfont16"><strong>Efectivo: '+xEfectivoCaja+' </strong> '+xRpt_monto_supervicion+' Resultado de caja con supervision. Si <span class='+xsub_sobra+'>tiene sobrante</span>, haga un ingreso en caja como sobrante de efectivo. Si por el contrario <span class='+xsub_falta+'>tiene faltante</span>, haga una salida de caja como faltante en caja. Luego vuela a realizar el cuadre de caja, imprima los resultados y cierre su terminal. </p><a class="xCursor xfont16" onClick="xOpenPage(22);"><strong>Ver Resumen.</strong></a>';xColor="#8e24aa"; //<a onclick="xArmarArrayPrint();">Imprimir cierre</a>
+				//xPermisoSupervisor=0;
+			}else{
+				if(xSumData>1){xRpt='<h3>Existe sobrante en caja</h3>';xColor="#F00";}
+				if(xSumData<-1){xRpt='<h3>Existe faltante en caja</h3>';xColor="#F00";}
+			}
+		}
+		//$('.xTxtMontoPagar').find('#xBtns').remove();
+		$('#xTituloRpt').html(xRpt);
+		$('#xTituloRpt').css('color',xColor);
+
+		if(xColor=="#060"){
+			////dialog_cierre.open();
+			//$('.xTxtMontoPagar').append('<div id="xBtns"><button data-theme="a" onClick="xImprimir();")>Listo, Imprimir operaciones.</button><button data-theme="a" onClick="xCerrarSession();">Cerrar Terminal</button></div>');
+			//$('.xTxtMontoPagar').trigger('create');
+			}
+	});
+		//});
+}
+
+function xArmarSubItems(xx,numBD,reponde){
+	var indexAr;
+	//efectivo en caja
+	if(numBD==7021){
+		//efectivo en caja
+		indexAr=xArrayCierrePrint.length-1;
+		xArrayCierrePrint[indexAr][0]={'des':'EFECTIVO EN CAJA', 't1':'','t2':'', 't3':xMoneda(xEfectivoCaja)}
+		reponde(true);
+		return;
+	}
+
+	$.ajax({ type: 'POST', url: '../../bdphp/log.php?op='+numBD})
+	.done( function (dtT) {
+		var xDtImpr=$.parseJSON(dtT);
+		xDtImpr=xDtImpr.datos;
+		indexAr=xArrayCierrePrint.length-1;
+		for (var i = 0; i < xDtImpr.length; i++) {
+			xArrayCierrePrint[indexAr][i]={'des':xDtImpr[i].descripcion, 't1':xDtImpr[i].t1, 't2':xDtImpr[i].t2, 't3':xDtImpr[i].t3}
+		};
+		//si no hay registro borra seccion
+		if(xDtImpr.length==0){xArrayCierrePrint[indexAr].visible=1;}else{xArrayCierrePrint[indexAr].visible=0;}
+		reponde(true);
+	})
+}
+
+function xIniArraysPrint(){
+	xArrayEncabezadoCierre=new Array();
+
+	var xIpPrintDoc='';
+	var xdetall_cierre='';
+	var xidPrint;
+	if(xPermisoSupervisor==1){xdetall_cierre='Cierre con permiso de supervisor. '+nom_supervisor}
+	xDtPrint=xm_log_get('sede_generales');// $.parseJSON(window.localStorage.getItem("::app3_sys_dta_prt"));
+	xDtTipoDoc=xm_log_get('app3_woIpPrintO');//JSON.parse(window.localStorage.getItem("::app3_woIpPrintO"));
+	xArrayImpresoras=xm_log_get('app3_woIpPrint');// $.parseJSON(window.localStorage.getItem("::app3_woIpPrint"));
+
+	//obtener impresora para cierre
+	// for (a in xDtTipoDoc) {
+	// 	if(xDtTipoDoc[a].idtipo_otro==-3){xIpPrintDoc=xDtTipoDoc[a].idimpresora; break;}
+	// };
+	// for (b in xArrayImpresoras) {
+	// 	if(xIpPrintDoc==xArrayImpresoras[b].idimpresora){xIpPrintDoc=xArrayImpresoras[b].ip;xidPrint=b;}
+	// };
+
+	const impresora = xgetImpresora(-3);
+	if (impresora == null ) {
+		xRpt = '<a class="xCursor xfont16" onClick="xOpenPage(22);"><strong>Ver Resumen.</strong></a>';
+		$('#xTituloRpt2').html(xRpt);
+		alert('No se selecciono ninguna impresora para este documento');
+		return false;
+	}
+	// xArrayEncabezadoCierre.push({'ip_print':xIpPrintDoc, 'logo':xDtPrint[0].logo,'detalle_cierre':xdetall_cierre,'titulo':'CIERRE DE CAJA','var_margen_iz':xArrayImpresoras[xidPrint].var_margen_iz, 'var_size_font':xArrayImpresoras[xidPrint].var_size_font})
+	xArrayEncabezadoCierre.push({ 'ip_print': impresora[0].ip_print, 'logo': xDtPrint[0].logo, 'detalle_cierre': xdetall_cierre, 'titulo': 'CIERRE DE CAJA', 'var_margen_iz': impresora[0].var_margen_iz, 'var_size_font': impresora[0].var_size_font })
+	return true;
+}
+
+function xArmarArrayPrint(){
+	xPopupLoad.xopen();
+	xPopupLoad.titulo="Obteniendo Datos...";
+
+	if (!xIniArraysPrint()) { xPopupLoad.xclose(); return;}
+
+	xArrayCierrePrint=new Array();
+	xArrayCierrePrint.push({'des':'VENTAS', 't1':'', 't2':'','t3':''});
+	xArmarSubItems(0,7,function(){
+		xArrayCierrePrint.push({'des':'CAJA INGRESOS', 't1':'', 't2':'','t3':''});
+		xArmarSubItems(1,701,function(){
+			xArrayCierrePrint.push({'des':'CAJA SALIDAS', 't1':'', 't2':'','t3':''});
+			xArmarSubItems(2,7002,function(){
+				xArrayCierrePrint.push({'des':'VENTAS AL CREDITO', 't1':'', 't2':'','t3':''});
+				xArmarSubItems(3,702,function(){
+					xArrayCierrePrint.push({'des':'TOTAL EFECTIVO', 't1':'', 't2':'','t3':''});
+					xArmarSubItems(4,7021,function(){
+						xArrayCierrePrint.push({'des':'PEDIDOS ATENDIDOS', 't1':'', 't2':'cant','t3':'importe'});
+						xArmarSubItems(5,703,function(){
+							xArrayCierrePrint.push({'des':'ITEMS ANULADOS', 't1':'', 't2':'cant','t3':'importe'});
+							xArmarSubItems(5,7091,function(){
+								xArrayCierrePrint.push({'des':'PEDIDOS ANULADOS - MOTIVO', 't1':'Motivo', 't2':'','t3':'importe'});
+								xArmarSubItems(5,7092,function(){
+									xArrayCierrePrint.push({'des':'CANTIDAD POR SECCION', 't1':'', 't2':'cant','t3':'importe'});
+									xArmarSubItems(5,70010,function(){
+										xArrayCierrePrint.push({'des':'PORCIONES', 't1':'', 't2':'ven','t3':'queda'});
+										xArmarSubItems(5,707,function(){
+											xArrayCierrePrint.push({'des':'PRODUCTOS VENDIDOS', 't1':'', 't2':'ven','t3':'qda'});
+											xArmarSubItems(5,705,function(){
+												xArrayCierrePrint.push({'des':'VENDIDO X BODEGA', 't1':'', 't2':'vend','t3':'queda'});
+												xArmarSubItems(5,706,function(){
+												//xArrayCierrePrint.push({'des':'PRODUCTOS CON STOCK MINIMO', 't1':'', 't2':'','t3':''});
+													//xArmarSubItems(5,708,function(){
+														xUpdateCerrarCession(function(){
+															xPermisoSupervisor=0;
+															xImprimirCierre(xArrayEncabezadoCierre,xArrayCierrePrint);														
+														})
+													//})
+												})
+											})
+										})
+									})
+								})
+							})
+						})
+					})
+				})
+			})
+		})
+	})
+}
+
+
+function xUpdateCerrarCession(responde){
+	$.ajax({ type: 'POST', url: '../../bdphp/log.php?op=70012',data:{i:xIdUsuario}})
+	.done( function (dtT) {
+		xPopupLoad.xclose();
+		$("#btns_cierre").html('<paper-button tabindex="0" raised class="xverde" onclick="xCerrarSessionAll();"><iron-icon icon="close"></iron-icon>Cerrar terminal</paper-button>');
+		responde(true)
+	})
+}
+
+
+
+
+function xImprimirCierre(xArrayEncabezadoCierre,xArrayCierrePrint){
+
+	//si existe impresora local // imprime todos los otros documentos en esta impresora local.
+	var xPrintLocal=window.localStorage.getItem("::app3_woIpPrintLo");
+	if(xPrintLocal!=undefined && xPrintLocal!=''){
+		xPrintLocal=$.parseJSON(xPrintLocal);
+		xArrayEncabezadoCierre[0].ip_print=xPrintLocal.ip;
+		xArrayEncabezadoCierre[0].var_margen_iz=xPrintLocal.var_margen_iz;
+		xArrayEncabezadoCierre[0].var_size_font=xPrintLocal.var_size_font
+	}
+
+	$.ajax({type: 'POST', url: '../../print/print4.php', data:{Array_enca:xArrayEncabezadoCierre, ArrayItem:xArrayCierrePrint}})
+						.done( function (dtPbd) {
+							//xPopupLoad.xclose();
+							if(dtPbd.indexOf('Error')!=-1){
+								xPopupLoad.xclose();
+								$("#xTituloRpt").text(dtPbd);
+								xErrorPrint=true;
+								dialog_erro_print.open();
+							}else{
+								//xPopupLoad.titulo='Exito!';
+								xErrorPrint=false;
+								xPopupLoad.titulo="Imprimiendo...";
+								xPopupLoad.xopen();
+
+								var _arrSedes = xm_log_get('datos_org_sede');
+								const isFacturacionElectronica = _arrSedes[0].facturacion_e_activo === "0" ? false : true; // si se emiten comprobantes electronicos    
+
+								if (!isFacturacionElectronica) {
+									xPopupLoad.xclose();
+									return;
+								}
+								
+								setTimeout(function(){ 
+									xPopupLoad.xclose(); 
+									dialog_enviando_sunat.open();
+									setTimeout(() => {										
+										xCocinarResumenBoletas(); // envia los comprobantes
+									}, 1000);
+								}, 1500);
+								//setTimeout( function(){ xNuevoPedido(); }, 600);
+								//xNuevoPedido()
+								//setTimeout( function(){ xNuevoPedido(); }, 1500);
+
+							}
+						});
+}
+
+function xPreparaReport(){
+	var xCadenaAdd='';
+	var xTituloEncabezado=new Array()
+	$.ajax({ type: 'POST', url: '../../bdphp/log.php?op=7'})
+	.done( function (dtT) {
+		var xDtt=$.parseJSON(dtT);
+		var xDtt=xDtt.datos;
+		var xsum_venta_tt=0;
+		var xsum_efc_tt=0;
+		xCadenaRG='';
+		//seccion 1 /resumen general
+		//xtotal_seccion1=(parseFloat(xDtt.datos[0].efectivo)+parseFloat(xDtt.datos[1].ingreso))-parseFloat(xDtt.datos[1].salida);
+		xTitulo='<tr><td colspan="2" style="border-bottom:1px solid;">RESUMEN GENERAL</td></tr>';
+		for (var i = 0; i < xDtt.length; i++) {
+			if(xDtt[i].operacion1=='+'){xsum_venta_tt=parseFloat(xDtt[i].importe)+parseFloat(xsum_venta_tt)}
+			if(xDtt[i].operacion2=='+'){xsum_efc_tt=parseFloat(xDtt[i].importe)+parseFloat(xsum_efc_tt)}
+			if(xDtt[i].operacion2=='-'){xsum_efc_tt=parseFloat(xsum_efc_tt)-parseFloat(xDtt[i].importe)}
+			xCadenaRG=String(xCadenaRG+'<tr><td>'+xDtt[i].descripcion+'</td><td align="right">'+xMoneda(xDtt[i].importe)+'</td></tr>');
+		};
+		xpie_secc1='<tr><td style="border-top:1px solid;">VENTA TOTAL</td><td align="right" style="border-top:1px solid;">'+xMoneda(xsum_venta_tt)+'</td></tr><tr class="xBold" ><td style="border-top:1px solid;border-bottom:1px solid;">EFECTIVO EN CAJA</td><td style="border-top:1px solid;border-bottom:1px solid;" align="right">'+xMoneda(xsum_efc_tt)+'</td></tr>';
+
+		xtbReport.find('#Seccion_total').html(xTitulo+xCadenaRG+xpie_secc1).trigger('create');
+
+		//seccion 2 detalle de caja
+		xTituloEncabezado='';
+		xTituloEncabezado=["Descripcion", "Importe"];
+		xAddReport("INGRESO DE CAJA",701,'Seccion_caja','si',xTituloEncabezado,function(){
+			//xTituloEncabezado=["Producto", "Stock"];
+			xAddReport("SALIDA DE CAJA",7002,'Seccion_salida','si',xTituloEncabezado,function(){
+				xImprimir();
+				return
+				//xTituloEncabezado=["Habitacion | Servicio", "Cantidad"];
+				xAddReport("CONSUMO SERVICIOS",135,'Seccion_servicios','',xTituloEncabezado,function(){
+					//xTituloEncabezado=["Motivo", "Importe"];
+					xAddReport("MOVIMIENTOS DE CAJA",132,'Seccion_move_caja','',xTituloEncabezado,function(){
+						//xTituloEncabezado=["Empresa | Cliente", "Importe"];
+						xAddReport("DETALLE DE CREDITO",137,'Seccion_credito','si',xTituloEncabezado,function(){
+							//xTituloEncabezado=["Habitacion | Cliente", "Hora"];
+							xAddReport("EQUIPAJE CONSIGNADO",138,'Seccion_consigna','',xTituloEncabezado,function(){
+								//xTituloEncabezado=["Descripcion", "Importe"];
+								xAddReport("ADELANTOS",139,'Seccion_adelanto','si',xTituloEncabezado,function(){
+									xPopupLoad.xclose();
+									xImprimir();
+									if(xSumData>0){
+										if(xPermisoSupervisor==0){$.ajax({ type: 'POST', url: '../../bdphp/log.php?op=136', data:{e:xSumData}})}else{xPermisoSupervisor==0;}
+									}
+								})
+							})
+						})
+					})
+				});
+			});
+		});
+
+	});
+}
+function xAddReport(xtitulo,oplog,seccion,sacar_total,titulo_encabezado,responde){
+	var xCadenaAdd='';
+	var xTitulo=''
+	var xtotal=0;
+	var xTituloEncabezadoTB='';
+	var xAligTitulo='';
+
+	for (var i = 0; i < titulo_encabezado.length; i++) {
+		if(i==1){xAligTitulo='align="right"';}else{xAligTitulo='';}
+		xTituloEncabezadoTB=xTituloEncabezadoTB+'<td '+xAligTitulo+' style="border-bottom:1px solid;">'+titulo_encabezado[i]+'</td>';
+	};
+	if(titulo_encabezado!=''){xTituloEncabezadoTB='<tr>'+xTituloEncabezadoTB+'</tr>';}
+
+	xTitulo='<tr><td colspan="2" style="border-bottom:1px solid;">'+xtitulo+'</td></tr>';
+	$.ajax({ type: 'POST', url: '../../bdphp/log.php?op='+oplog})
+	.done( function (dtT) {
+		var xDtt=$.parseJSON(dtT);
+		for (var i = 0; i < xDtt.datos.length; i++) {
+			//<td style="font-size:9px" align="right">'+xDtt.datos[i].t2+'</td>
+			xCadenaAdd=String(xCadenaAdd+'<tr><td style="font-size:9px">'+xDtt.datos[i].descripcion+'</td><td align="right">'+xDtt.datos[i].t2+'</td></tr>');
+			xtotal=parseFloat(xtotal)+parseFloat(xDtt.datos[i].t2)
+		};
+		if(sacar_total=='si'){
+			xtotal='<tr><td colspan="2" align="right" style="border-top:1px dashed;">'+xMoneda(xtotal)+'</td></tr>';
+		}
+		else{xtotal='';}
+		if(xCadenaAdd==''){xCadenaAdd='<tr><td colspan="2">-</td></tr>';}
+		xtbReport.find('#'+seccion).html(xTitulo+xTituloEncabezadoTB+xCadenaAdd+xtotal+'<br>').trigger('create');
+		responde(true);
+	});
+}
+function xImprimir(){
+	var xCtrCierre=$("#ImprimeCierre");
+	//xCtrCierre.find('#xImpUsuario').text(xNomU.toUpperCase());
+	xCtrCierre.find('#xImpFecha').text(xDevolverFecha()+' '+xDevolverHora());
+	xImprSelec('ImprimeCierre');
+}
+function xCerrarTerminal(){
+	xCerrarSession();
+}
+
+function xReImprimirCierre(){
+	dialog_erro_print.close();
+	xPopupLoad.titulo="Enviando...";
+	xPopupLoad.xopen();
+	xImprimirCierre(xArrayEncabezadoCierre,xArrayCierrePrint);
+}
+
+Polymer({
+	is:'x-caja',
+	properties:{
+		//xpage_selected:String,
+		xt_org:Number,
+		xt_idsede:Number,
+		xt_idus:Number
+	},
+	attached:function(){
+		this.selected=0;
+    	xThisCaja=this;
+    	xIniCaja();
+    }
+})
+</script>

@@ -1,0 +1,101 @@
+<dom-module id="x-pass">
+	<template>		
+		<paper-dialog id="dialog_cotent" entry-animation="scale-up-animation" exit-animation="fade-out-animation" with-backdrop>
+		 <div>
+			<h3 id="titulo">{{titulo}}</h3>			
+			<div style="text-align: left;">
+			<p class="xRojo" id="msj_passUs"></p>
+			<br>
+			<paper-input id="us" label="Usuario" autofocus autocomplete="off"></paper-input>
+			<paper-input id="pass" type="password" label="Clave"></paper-input>
+			<br>
+			<paper-button tabindex="0" raised class="xverde" onclick="xVerificarPassUs();">Listo</paper-button>
+			<paper-button tabindex="0" raised class="xnegro" onclick="xCerrar();">Cancelar</paper-button>
+			</div>
+		</div>
+		</paper-dialog>
+	</template>
+	</div>
+</dom-module>
+<style>
+	.xRojo{color:red;}
+	paper-button[raised].xverde {background: #43a047;color: #fff; text-align: center;}
+	paper-button[raised].xnegro {background: #424242;color: #fff;}		    		
+	#dialog_cotent{ border-radius: 5px; text-align: center; padding: 8px; border: 1px solid #bdbdbd;}
+</style>
+<script>
+var xThisPass;
+var xRpts;
+function xIiniPass(){
+	$("#us").focus();
+	$("#us").on('keyup',function(e){var code=e.which; 		
+		if ( code==13||code==186 ) {pass.$.input.focus()}
+	})
+	$("#pass").on('keyup',function(e){
+		var code=e.which; if ( code==13||code==186 ) {xVerificarPassUs()}
+	})
+
+	$("#dialog_cotent").on('iron-overlay-opened',function(){		
+		us.$.input.focus();
+	})
+}
+
+function xVerificarPassUs(){
+	xRpts=new Array();	
+	var xrpt;
+	var u=$("#us").val();
+	var p=$("#pass").val();	
+	var xValBus=xThisPass.valor;
+	$("#msj_passUs").text('');
+	$.ajax({ type: 'POST', url: '../../bdphp/log.php?op=-102', data:{u:u, p:p}})	
+	.done( function (dt) {					
+		var xdt=$.parseJSON(dt);			
+		if(xdt.datos.length>0){	
+			if(xdt.datos[0].per.indexOf(xValBus)==-1){
+				xrpt=0;				
+			}
+			else{				
+				xrpt=1;
+				xRpts.push({'us':xdt.datos[0].idusuario,'p':xrpt,'nomus':us.value});				
+				xThisPass.fire('xSend', {xRpts});
+				$("#us").val('');$("#pass").val('');				
+				xpass_d.close();
+			}
+		}
+		else{xrpt=2;}	
+		xVerRpt(xrpt);						
+	});
+}
+function xVerRpt(op){	
+	var xmsj='';
+	switch(op){
+		case 0:xmsj='El usuario no tiene permiso';break;
+		case 2:xmsj='Usuario o clave incorrecto';break;
+	}
+	$("#msj_passUs").text(xmsj);
+}
+function xCerrar(){xpass_d.close();}
+
+var xpass_d;
+Polymer({
+	is:'x-pass',
+	properties:{
+		titulo:{type:String, value:''},
+		valor:{type:String, value:''},
+	},
+	attached:function(){		
+		xThisPass=this;		
+		xpass_d = document.getElementById('dialog_cotent');   
+        xpass_d.close();
+        xIiniPass();
+    },
+    open: function(reponde){       	
+      	xpass_d.open();      	  
+    },
+    setVal:function(xval){
+    	//valBus=xval;
+    },
+    xopen:function(){xpass_d.open();},
+    xclose:function(){xpass_d.close();}
+})
+</script>

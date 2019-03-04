@@ -1,0 +1,239 @@
+<dom-module id="x-ie-almacen">
+	<template>
+		<paper-dialog modal id="dialog_msj_confirma" style="min-width: 300px;" entry-animation="scale-up-animation" exit-animation="fade-out-animation">
+			<div class="xContent">
+				<h4 id="titulo_msj">Recuerde: Todos los movimientos por Entradas, Salidas se reflejan automaticamente en el Kardex del Producto. Confirmar?</h4>
+				<br>
+				<div class="xLinea2"></div><br>
+				<div class="xBoton2 xVerde" dialog-confirm  onclick="xGuardarESAlmacen();" id="btn_dlg_confirm">Confirmar</div>
+				<div class="xBoton2 xPlomo" dialog-dismiss>Cancelar</div>
+			</div>
+		</paper-dialog>
+		<br>
+		<div class="xMiCard xradius" style="width:80%">
+			<div class="xEncanezadoCard xFondoRowAmarillo4">
+				<p><strong>Registre las Entradas y Salidas de productos del almacen. Recuerde: Todos los movimientos por Entradas, Salidas se reflejan automaticamente en el fichero Kardex del Producto.</strong><br> Las entradas que se registran en este modulo son todos los productos que NO tengan origen de COMPRA. Por ejemplo: devoluciones,bonificaciones de los proveedores, etc.</p>
+				<p>Las salidas pueden ser por: Deterioro, vencimiento del producto, consumo del personal y otros.</p>
+			</div>
+			<div class="xContentCard">
+				<form id="frm_ie_almacen" method="post">
+					<p>Tipo de movimiento:</p>
+					<select class="xTextRow2 xfont18 xCursor" id="selecie" style="width:200px">
+							<option value="1">ENTRADA</option>
+							<option value="2">SALIDA</option>
+					</select><br><br>
+					<p id="titulo_al">Almacen</p>
+					<select class="xTextRow2 xfont18 xCursor" id="sel_alamcen" style="width:200px"></select><br><br>
+					<p id="titulo_al">Motivo</p>
+					<select class="xTextRow2 xfont18 xCursor" id="sel_motivo" style="width:200px"></select><br><br>
+					<p>Detalle el motivo del movimiento del producto</p>
+					<input type="text" class="xMiInput xPasarEnter2" onChange="conMayusculas(this)" placeholder="Motivo" autocomplete="on" id="motivo" name="motivo" required>
+					<br><br><br>
+					<h3>Productos / porcion:</h3>
+					<div class="xLinea2"></div>
+					<br>
+					<table width="100%" id="tb_is_almacen" class="xtable2">
+						<thead>
+							<th class="xSinBorde">Descripcion</th>
+							<th class="xSinBorde" width="100px">Cantidad</th>
+							<th class="xSinBorde" width="10px"></th>
+						</thead>
+						<tr class="xSinBorde" data-id="">
+							<td><input type="text" class="xMiInput xPasarEnter2" style="width:100%;" placeholder="Descripcion" onChange="conMayusculas(this)" required id="des_item"></td>
+							<td><input type="number" class="xMiInput xPasarEnter2" style="width:100%;" placeholder="Cantidad" onChange="conMayusculas(this)" required id="cant_item"></td>
+							<td><paper-fab icon="add" onclick="xAddItemIEAlmacen()" title="Agregar item"></paper-fab></td>
+						</tr>
+					</table>
+				</form>
+				<br><br>
+				<div class="xBoton2 xVerde" onclick="dialog_msj_confirma.open();">Listo Guardar</div>
+				<br><br>
+			</div>
+		</div>
+		<br><br>
+	</template>
+<script>
+var xThisIEalmacen;
+var xIdProducto_sel;
+function xIniIEAlmacen(){
+	xPopupLoad=document.getElementById('xLoad');
+	xm_LogChequea(function(){
+		xm_log_get('ini_us');
+		//if(xIdOrg=='' || xIdOrg==undefined){xIdOrg=window.localStorage.getItem('::app3_wo');}
+		//if(xIdSede=='' || xIdSede==undefined){xIdSede=window.localStorage.getItem('::app3_woS');}
+		//if(xIdUsuario=='' || xIdUsuario==undefined){xIdUsuario=window.localStorage.getItem('::app3_woU');}
+	})
+	$("#Titulo_page").text("Ingreso / Salida del almacen");
+
+	$("#selecie").on('change',function(){
+		if(this.value==1){$("#titulo_al").text('Alamcen a donde ENTRA:');xloadProductoItemIngreso()}else{$("#titulo_al").text('Alamcen de donde SALE:');}
+		xLoadMtPor(this.value);
+	})
+
+	$('.xPasarEnter2').on('keyup',function(e){
+			var code=e.which;
+			if ( code==13||code==186 ) {
+				var inputs = $('input'); // storage a array of Inputs
+			    var a = inputs.index(document.activeElement);
+			    if (inputs[a + 1] !== null)
+			    {
+			      var nextBox = inputs[a + 1];
+			      if(nextBox===undefined){return}
+			      if(nextBox.disabled){nextBox = inputs[a + 2]}
+
+			      if(nextBox==undefined){return;}
+			  	  nextBox.focus();
+			  	  nextBox.select();
+			    }
+			    event.stopPropagation();
+			    e.stopPropagation();
+			    e.stopImmediatePropagation()
+			    return false;
+	  		}
+		});
+
+	$("#cant_item").on('keyup',function(e){
+		var code=e.which;
+		if ( code==13||code==186 ) {
+			xAddItemIEAlmacen();
+		}
+	});
+
+	xloadAlamcen();
+}
+function xloadAlamcen(){
+	xPopupLoad.titulo='Cargando...';
+	xPopupLoad.xopen();
+	$.ajax({ type: 'POST', url: '../../bdphp/log.php?op=1604'})
+	.done( function (DtAlm) {
+		var xDtAlam=$.parseJSON(DtAlm);
+		var xcandena_alm='';
+		xDtAlam=xDtAlam.datos;
+		for (var i = 0; i < xDtAlam.length; i++) {
+			xcandena_alm=String(xcandena_alm+'<option value="'+xDtAlam[i].idalmacen+'">'+xDtAlam[i].descripcion+'</option>')
+		};
+		$("#sel_alamcen").html(xcandena_alm).trigger('create');
+		xloadProductoItemIngreso();
+	})
+}
+function xloadProductoItemIngreso(){
+	$.ajax({ type: 'POST', url: '../../bdphp/log.php?op=1805'})
+	.done( function (DtItems) {
+		var xDtItems=$.parseJSON(DtItems);
+		var dtProItem=xDtItems.datos;
+
+		var xObjTxtItemPro=$("#des_item");
+		xObjTxtItemPro.autocomplete({
+			autoFocus:true,
+			source:dtProItem,
+			select: function( event, ui ) {
+				xObjTxtItemPro.val(ui.item.label);
+		        xObjTxtItemPro.attr('data-id',ui.item.value);
+		        xObjTxtItemPro.attr('data-procede',ui.item.procede);
+		        xIdProducto_sel=ui.item.value;
+		        return false;
+		    },
+		    focus:function(event, ui){return false;},
+		    change:function( event, ui ) {
+		    	if(ui.item===null){
+		    		xObjTxtItemPro.attr('data-value',"");
+		    		xObjTxtItemPro.attr('data-id',"");
+		    		xObjTxtItemPro.attr('data-procede',"");
+		    		xIdProducto_sel=0;
+		    	}
+		    	return false;
+		    }
+		});
+		xLoadMotivoES();
+		xPopupLoad.xclose();
+	})
+}
+function xLoadMotivoES(){
+	$.ajax({ type: 'POST', url: '../../bdphp/log.php?op=1606'})
+	.done( function (dtMt) {
+		var xdtMt=$.parseJSON(dtMt);
+		xThisIEalmacen.dt_mot=xdtMt.datos;
+		xLoadMtPor(1)//entradas
+	});
+}
+function xLoadMtPor(op){
+	var xCandena_mot='';
+	for (var i = 0; i < xThisIEalmacen.dt_mot.length; i++) {
+		if(op==xThisIEalmacen.dt_mot[i].tipo){
+			xCandena_mot=String(xCandena_mot+'<option value="'+xThisIEalmacen.dt_mot[i].idalmacen_motivo_es+'">'+xThisIEalmacen.dt_mot[i].motivo+'</option>')
+		}
+	};
+	$("#sel_motivo").html(xCandena_mot).trigger('create');
+}
+function xAddItemIEAlmacen(){
+	var xCant_mov=parseFloat($("#cant_item").val());
+	if(xIdProducto_sel==0){alert('Seleccione un producto o porcion validos'); $("#des_item").select(); $("#des_item").focus(); return;}
+	if(xCant_mov==0 || isNaN(xCant_mov)){alert('Coloque una cantidad valida'); $("#cant_item").select(); $("#cant_item").focus(); return;}
+
+	var xTb_items=$("#tb_is_almacen");
+	var xcount_row=xTb_items.find('.row').length;
+	xcount_row=xcount_row+xIdProducto_sel;
+
+	var xtipo_mov=$("#selecie option:selected").text();
+	var xalm_moc=$("#sel_alamcen option:selected").text();
+	var xdes_mov=xtipo_mov+' > '+xalm_moc +' | '+ $("#des_item").val();
+	var xprocede=$("#des_item").attr('data-procede');
+	var xidp=$("#des_item").attr('data-id');
+	var xrow_mov='<tr class="row" id="'+xcount_row+'" data-tipo="'+selecie.value+'" data-idalmacen="'+sel_alamcen.value+'" procede="'+xprocede+'" xid="'+xidp+'">'+
+				'<td>'+xdes_mov+'</td>'+
+				'<td align="center" class="cant_row" id="cantidad">'+$("#cant_item").val()+'</td>'+
+				'<td><span class="xDeleteRowNeutro" title="Borrar" onclick="xBorrarItem(this);"></span></td>'+
+				'</tr>';
+
+	if(xTb_items.find('.row').length==0){
+		xTb_items.append(xrow_mov).trigger('create');
+	}else{
+		$("#tb_is_almacen tr.row:first").before(xrow_mov).trigger('create');}
+
+	$("#des_item").val('');
+	$("#des_item").attr('data-id','')
+	$("#cant_item").val('');
+	$("#des_item").focus();
+}
+function xGuardarESAlmacen(){
+	var xArraySaveEA=new Array();
+	$("#tb_is_almacen .row").each(function(index,element){
+		xArraySaveEA.push({'tipo':selecie.value, 'idalmacen':sel_alamcen.value, 'id':$(element).attr('xid'),'procede':$(element).attr('procede'),'cantidad':$(element).find('#cantidad').text(),'idmotivo':sel_motivo.value,'motivo':$("#motivo").val()})
+	})
+	if(xArraySaveEA.length>0){
+		xPopupLoad.xopen();
+		$.ajax({ type: 'POST', url: '../../bdphp/log.php?op=1806', data:{xarray_save_ae:xArraySaveEA}})
+		.done( function (dtRpt) {
+			var xdtRpt=$.parseJSON(dtRpt);
+			if(!xdtRpt.success){alert(xdtRpt.error); return;}
+			dialog_msj_confirma.close()
+			xPopupLoad.xclose();
+			xNuevo();
+		})
+	}
+}
+function xNuevo(){
+	$("#motivo").val('');
+	$("#des_item").val('');
+	$("#des_item").attr('data-id','')
+	$("#cant_item").val('');
+	$("#des_item").focus();
+	$("#tb_is_almacen .row").remove();
+}
+
+Polymer({
+	is:'x-ie-almacen',
+	properties:{
+		xt_org:Number,
+		xt_idsede:Number,
+		xt_idus:Number,
+		dt_mot:Object
+	},
+	attached:function(){
+		this.selected=0;
+    	xThisIEalmacen=this;
+    	xIniIEAlmacen();
+    }
+})
+</script>
+</dom-module>

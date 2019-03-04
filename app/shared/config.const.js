@@ -1,0 +1,1 @@
+ const const_pie_pagina_comprobante = 'Representación impresa del Comprobante de Venta Electrónico esta puede ser consultada en www.papaya.com.pe. Autorizado mediante resolución de intendencia 00000000/SUNAT.'

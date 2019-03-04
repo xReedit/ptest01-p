@@ -1,0 +1,963 @@
+<dom-module id="x-zona_despacho">
+	<link href="../../js/c3.min.css" rel="stylesheet">
+	<script src="../../js/d3.min.js"></script>
+	<script src="../../js/c3.min.js"></script>
+	<template>
+		<paper-dialog id="dialog_despachar"  style="max-width: 350px; z-index: 500;" entry-animation="scale-up-animation" exit-animation="fade-out-animation" with-backdrop>
+			<div class="xtxtCentro">
+				<img src="../../images/_dlg_remove.gif" alt="" width="150px">
+			</div>
+			<p>Se marcara todos los pedidos hasta este momento como despachados. Si tiene pedidos pendientes, no se mostraran en ninguna zona de despacho.</p>
+			<br>
+			<div class="buttons">
+				<button class="xBoton2 xPlomo" dialog-dismiss>Cancelar</button>
+				<button class="xBoton2 xRojo" onclick="xDespacharTodos();">Si, seguro</button>
+			</div>
+		</paper-dialog>
+
+		<paper-dialog id="dialog_detalle_pd" style="border-radius: 5px; padding:0px; width: 320px;" entry-animation="scale-up-animation" exit-animation="fade-out-animation" with-backdrop>
+			<paper-dialog-scrollable style="padding:0px; top:0px; left:0px; overflow-y:auto;">
+				<div id="div_pd_detalle">
+				</div>
+			</paper-dialog-scrollable>
+		</paper-dialog>
+		<paper-dialog id="dialog_marcar" class="dialog_redondo dialog_color" entry-animation="scale-up-animation" exit-animation="fade-out-animation">
+			<div class="xContent">
+				<div class="xIndicadorPedido morado xCursor noselect" onclick="xRefreshMarcador(this);" data-color="xMorado">
+					<div><p></p><span>__________</span></div>
+				</div><br>
+				<div class="xIndicadorPedido naranja xCursor noselect" onclick="xRefreshMarcador(this);" data-color="xNaranja">
+					<div><p></p><span>__________</span></div>
+				</div><br>
+				<div class="xIndicadorPedido rojo xCursor noselect" onclick="xRefreshMarcador(this);" data-color="xRojo">
+					<div><p></p><span>__________</span></div>
+				</div>
+			</div>
+		</paper-dialog>
+		<div class="xHeaderPersiste xcolor1">
+			<div id="des_zona_despacho" class="xEnLineaTable">
+				<div class="xEnLineaTable xCursor" onclick="xOpenLateralIzq();">
+					<img src="../../images/_config_despacho.png">
+				</div>
+				<div class="xEnLineaTable xpadingLateralIz">
+					<p class="xfont18">Zona de despacho</p>
+					<span class="xfont11" id="des_titulo_despacho">Cocina,Jugos | Para llevar, Consumir Local</span>
+				</div>
+				<div class="xIndicaTiempoDespacho">
+					<p id="min_max_pedido">-<span class="xfont9">min x pedido</span></p>
+				</div>
+				<div class="xContent_Indicador_pedido_de">
+					<div class="xIndicadorPedido fuccia xCursor noselect xInvisible xFondoRowAmarillo3" id="btn_ver_reserva" onclick="xVerReservas();">
+						<div><p id="tt_pedidos_reserva">0</p><span>Reservas</span></div>
+					</div>
+					<div class="xIndicadorPedido default xCursor noselect" onclick="dialog_marcar.open();">
+						<div><img src="../../images/_marcar.png"></div>
+					</div>
+					<div class="xIndicadorPedido default xCursor noselect" onclick="xOpenLateralDe();">
+						<div><p id="tt_pedidos_cola">0</p><span>pedidos</span></div>
+					</div>
+				</div>
+			</div>
+		</div>
+		<div class="xdrawerIzq" id="xdrawerIzq">
+			<div class="xBtnCloseDrawer noselect xCursor" id="close_drawer_izq" onclick="closeDrawer_izq();">
+				<p>CERRAR</p>
+			</div>
+			<div class="xLinea"></div>
+			<p class="xpading_10">Seleccione las zonas de despacho y el tipo de consumo a trabajar.</p>
+			<div class="xLinea"></div>
+			<div class="xContent xpading_15" id="div_zona_despacho">
+				<h4>Zona de despacjo</h4>
+				<div class="xLinea"></div><br>
+				<paper-checkbox>Cocina</paper-checkbox><br>
+				<paper-checkbox>Bar</paper-checkbox><br>
+				<br>
+				<h4>Tipo de consumo</h4>
+				<div class="xLinea"></div><br>
+				<paper-checkbox>En el local</paper-checkbox><br>
+				<paper-checkbox>Para llevar</paper-checkbox><br>
+				<br>
+				<br>
+			</div><br>
+			<div class="xLinea"></div><br>
+			<div class="xpading_15">
+				<div class="xMarginIz xBoton2 xVerde" onclick="xEstablecerFiltroDespachos();"> Listo Aplicar</div>
+				<div class="xMarginIz xBoton2 xRojo" onclick="dialog_despachar.open()"> Despachar todos</div>
+			</div><br>
+			<div class="xLinea"></div>
+			<div class="xpading_15">
+				<div class="xMiBoton_icon_lateral" onclick="xVerPedidosDespachados();"><img src="../../images/_despachado.png"><p>Ver pedidos despachados</p></div>
+				<div class="xMiBoton_icon_lateral" onclick="xCargarChartDespacho();"><img src="../../images/_estadistica_despacho.png"><p>Estadisticas</p></div>
+			</div>
+		</div>
+		<div class="xdrawerDe" id="xdrawerDe">
+			<div class="xBtnCloseDrawer noselect xCursor" id="close_drawer_de" onclick="closeDrawer_de();">
+				<p>CERRAR</p>
+			</div>
+			<h3 class="xpading_10">RESUMEN DE PEDIDOS</h3>
+			<div class="xLinea"></div>
+			<div class="xContent xpading_15">
+				<table class="xtable4" width="100%" id="tb_resumen_pedido">
+					<!--tr><td colspan="2" class="xBold">ENTRADAS</td></tr>
+					<tr><td>ARROZ CON LECHE</td><td align="right">02</td></tr>
+					<tr><td>SOPA DE POLLO</td><td align="right">05</td></tr>
+					<tr><td>CAUSA RELLENA</td><td align="right">10</td></tr>
+					<tr><td colspan="2" class="xBold" align="right">17</td></tr>
+					<tr><td colspan="2" class="xBold">SEGUNDOS</td></tr>
+					<tr><td>ARROZ CON LECHE</td><td align="right">02</td></tr>
+					<tr><td>SOPA DE POLLO</td><td align="right">05</td></tr>
+					<tr><td>CAUSA RELLENA</td><td align="right">10</td></tr>
+					<tr><td colspan="2" class="xBold" align="right">17</td></tr-->
+				</table>
+			</div>
+		</div>
+		<iron-pages selected="{{select_div}}">
+			<div id="div_pedidos_on">
+				<!--button onclick="pruebaAddPedido();">aaa</button-->
+				<br>
+				<div class="xContent_zd_pedido" id="xContent_zd_pedido">
+					<!--div class="xmarco_zd_pedido">
+						<div class="encabezado xFondoRowverde">
+							<table width="100%" class="xtable4">
+								<tr class="xSinBorde_tr">
+									<td>
+										<div class="xEncabezado_zd_pedido"><p class="xfont30">10</p><span>mesa</span></div>
+									</td>
+									<td>
+										<div class="xEncabezado_zd_pedido"><p>02</p><span># en cola</span></div>
+									</td>
+									<td>
+										<div class="xEncabezado_zd_pedido"><p>09</p><span>minutos</span></div>
+									</td>
+								</tr>
+							</table>
+							<div id="ref_pedido" class="referencia xFondoRowIndigo">
+								<p>Juan Perez</p>
+							</div>
+						</div>
+						<div id="body_pedido">
+							<table width="100%" class="xtabla_pedido_despacho">
+								<tr><td class="xSinBorde xBold">ENTRADAS</td></tr>
+								<tr><td>01 | CAUSA RELLENA</td></tr>
+								<tr><td>02 | SOPA DE CARAMBOLA</td></tr>
+								<tr><td class="xSinBorde xBold">SEGUNDOS</td></tr>
+								<tr><td>01 | LOMITO SALTADO <span class="xColorRow_Morado">(con bastante papa)<span></td></tr>
+								<tr><td>01 | MILANESA DE POLLO</td></tr>
+								<tr><td>01 | PECHUGA A LA PLANCHA</td></tr>
+							</table>
+						</div>
+						<div class="xFlex xInvisible" id="btn_pedido">
+							<div id="bt_retirar" class="xAlinearce xBtnDespacho_retirar noselect xCursor" style="width:60px">Retirar</div>
+							<div id="bt_despachado" class="xAlinearce xBtnDespacho noselect xCursor" style="width:240px">Listo</div>
+						</div>
+					</div-->
+				</div>
+			</div>
+			<div id="div_pedidos_despachados">
+				<br>
+				<h3 class="xBold">Pedidos Despachados <span class="xCursor xDerecha"><a onclick="xVerDepacho();">Regresar</a></span></h3>
+				<div class="xLinea"></div><br>
+				<div class="grid_pedidos_despachados">
+				</div>
+			</div>
+			<div id="div_pedidos_reserva">
+				<br>
+				<h3 class="xBold">Reservas <span class="xCursor xDerecha"><a onclick="xVerDepacho();">Regresar</a></span></h3>
+				<div class="xLinea"></div><br>
+				<div class="xContent_zd_pedido" id="div_reserva">
+				</div>
+			</div>
+			<div id="id_charts_despacho" class="xContent">
+					<br><br>
+					<h3 class="xBold"><span class="xCursor xDerecha"><a onclick="xVerDepacho();">Regresar</a></span></h3>
+					<div style="text-align: center;" class="xfont18"><p>Tiempo maximo establecido: <span id="tt_max_p" class="xBold"></span> <span>Pedidos despachados: <span id="tt_pd" class="xBold"></span> <span class="xColorRow_Rojo">Pedidos Retirados: <span id="tt_an" class="xBold"></span></p></div>
+					<br>
+					 <div class="xLinea"></div><br>
+					 <div style="text-align: center;" class="xfont18"><p>Tiempo de despacho en minutos por pedido.<p></div>
+					 <div id="chart_linea_tiempo_pedido" style="margin:auto 0; width:100%; height: 400px;"></div>
+					 <br><br>
+					 <div class="xLinea"></div><br>
+					 <div style="text-align: center;">
+							<div class="xdiv_promedio xEnLinearTop">
+									<h2 class="xBold" id="val_tt_p">50'</h2>
+									<p>Minutos, en promedio se tomo en despachar un pedido</p>
+							</div>
+							<div class="xEnLinearTop">
+									<p class="xBold">Tiempo promedio de despacho</p>
+									<div id="chart_bar_tiempo" style="margin:auto 0; width:500px; height: 300px;"></div>
+							</div>
+							<div class="xEnLinearTop">
+									<!--p class="xBold">Tiempo promedio de despacho</p-->
+									<div id="chart_indicador"style="margin:auto 0; width:500px; height: 250px;"></div>
+							</div>
+					 </div><br>
+					 <div class="xLinea"></div><br>
+			</div>
+		</iron-pages>
+	</template>
+</dom-module>
+<style type="text/css">
+	.dialog_color{border-radius:5px; position: fixed; top: 10px; right: 10px;}
+	.xdiv_promedio{padding: 20px; text-align: center; width: 90px; border-radius: 10px; color:white;}
+	.xEnLinearTop{display:inline-block; vertical-align: middle;}
+</style>
+<script>
+var xThisZonaDespacho;
+var xdata_zona=[], xIdZonaSeccion='',xIdTp='', des_despacho='',xValCountPedidosDespacho=0, xUltimoIdPedidoEnZona, xColorMarcado='xNaranja',xObjPedido,xRefresh_tiempo, xelem_tt_p_cola,xhora_actual_serv;
+var xtiempo_maximo=0,tiempo_medio=0,xNumReservas=0,element_sonido;
+
+function pruebaAddPedido(){
+	var xaa='<div class="xmarco_zd_pedido ini"><h3>pedido</h3><h3>pedido</h3><h3>pedido</h3><h3>pedido</h3><h3>pedido</h3></div>';
+	$('.xContent_zd_pedido').append(xaa).trigger('create');
+	//element_sonido.pause();
+	//element_sonido.currentTime = 0;
+	//element_sonido.play();
+	setTimeout(function(){xTransicionPedido();},100);
+}
+
+function xIniZonaDespacho(){
+	xm_LogChequea(function(){
+		xm_log_get('ini_us');
+		xPopupLoad=document.getElementById('xLoad');
+		//if(xIdOrg=='' || xIdOrg==undefined){xIdOrg=window.localStorage.getItem('::app3_wo');}
+		//if(xIdUsuario=='' || xIdUsuario==undefined){xIdUsuario=window.localStorage.getItem('::app3_woU');}
+		//if(xIdSede=='' || xIdSede==undefined){xIdSede=window.localStorage.getItem('::app3_woS');}
+		$("#Titulo_page").text("Zona de despacho");
+		$("#panel_toolbar").hide();
+		xLoadZonaDespacho();
+
+		xelem_tt_p_cola=$("#tt_pedidos_cola");
+		element_sonido=document.getElementById('sonido_notifica_despacho');
+		element_sonido.autobuffer = true;
+		element_sonido.load();
+		element_sonido.play();
+
+
+	})
+	//$(".xtabla_pedido_despacho tr td").on('click',function(e){
+	$(document).on('click', '.xtabla_pedido_despacho tr td', function(e) {
+		if($(this).hasClass('des_seccion')){return;}
+		if($(this).hasClass('xmarcado')){
+			$(this).removeClass();
+		}else{
+			$(this).addClass(xColorMarcado+' xmarcado');
+		}
+		e.stopPropagation();e.stopImmediatePropagation();
+	})
+
+	$(document).on('click', '.xBtnDespacho', function(e) {
+		if($(this).text()==="Enviar a despacho"){$(this).text('Confirmar envio');e.stopPropagation();e.stopImmediatePropagation(); return;}
+		if($(this).text()==="Listo"){$(this).text('Confirmar'); e.stopPropagation();e.stopImmediatePropagation();return;}
+		if($(this).text()==="Confirmar"){
+			xObjPedido=$(this).parents('.xmarco_zd_pedido');
+			xDespachado_retirado(xObjPedido,0);
+		}
+
+		if($(this).text()==="Confirmar envio"){
+			xObjPedido=$(this).parents('.xmarco_zd_pedido');
+			$(xObjPedido).addClass('retirada');
+			xEnviarReservaDespacho(xObjPedido)
+		}
+
+		e.stopPropagation();e.stopImmediatePropagation();
+	})
+
+	$(document).on('click', '.xBtnDespacho_retirar', function(e) {
+		if($(this).text()==="Retirar"){$(this).text('Confirma')}else{
+			xObjPedido=$(this).parents('.xmarco_zd_pedido');
+			xDespachado_retirado(xObjPedido,1);
+			//$(xObjPedido).addClass('retirada');
+			//setTimeout(function(){xObjPedido.remove(); xObjPedido.empty();xResumenPedidosItem();},2000)
+
+		}
+		e.preventDefault();		
+		e.stopPropagation();
+		e.stopImmediatePropagation();
+	})
+}
+
+function xCargarChartDespacho(){
+	closeDrawer_izq();
+	xThisZonaDespacho.select_div=3
+	$.ajax({ type: 'POST', url: '../../bdphp/log_chart.php?op=1',data:{'arr_filtro':xdata_zona}})
+	.done( function (dt_chart) {
+		var xdata=$.parseJSON(dt_chart);
+		var xdata_grafico=[],xcuenta_row=1,xtiempo_p=0, xcant_x_tiempo=[],xtiempo_row,xcount_tiempo_ok=0,xcount_tiempo_m=0,xcount_tiempo_fuera=0,xp_retirados=0,xdata_bar_tiempo,data,option,xcolor_chart='',xtotal_row_chart=0;
+
+		xdata=xdata.datos;
+		xtotal_row_chart=xdata.length;
+		//areachat
+		xdata_grafico = xdata.filter(({estado}) => estado !== "4");
+		xdata.forEach(function(d) {
+			if(d.estado==="4"){xp_retirados++;}
+			else{
+				//tiempopromedio
+				xtiempo_row=parseInt(d.minutos);
+				xtiempo_p+=xtiempo_row;
+				//cantidadXtiempo
+				if(xtiempo_row>=xtiempo_maximo){
+					xcount_tiempo_fuera++;
+				}else if(xtiempo_row>=tiempo_medio){
+					xcount_tiempo_m++;
+				}else{
+					xcount_tiempo_ok++;
+				}
+				xcuenta_row++;
+			}
+		});
+
+		//tiempopromedio
+		xtiempo_p=parseInt(xtiempo_p/xcuenta_row);
+		//establecer_color_chart
+		if(xtiempo_p>=xtiempo_maximo){
+			xcolor_chart='#E53935';
+		}else if(xtiempo_p>=tiempo_medio){
+			xcolor_chart='#ffa000';
+		}else{
+			xcolor_chart='#43a047';
+		}
+
+		$("#val_tt_p").text(xtiempo_p+"'");
+		$(".xdiv_promedio").css('background',xcolor_chart);
+
+		$("#tt_max_p").text(xtiempo_maximo+" minutos |");
+		$("#tt_pd").text(xCeroIzq(xcuenta_row-1,2)+' | ');
+		$("#tt_an").text(xCeroIzq(xp_retirados,2));
+
+		//barra linea de tiempo pedidos
+		chart = c3.generate({
+				bindto: '#chart_linea_tiempo_pedido',
+        data: {
+            json: xdata_grafico,
+            keys: {
+                x: 'despachado_hora',
+                value: ['minutos'],
+            },
+            type: 'area-spline'
+        },
+		    grid: {
+		        y: {
+		            lines: [
+		                {value: xtiempo_maximo, text: 'Tiempo maximo establecido', position: 'start'}
+		            ]
+		        }
+		    },
+        axis: {x: {type: 'category'}},
+				legend: {show: false},
+				color: {pattern: [xcolor_chart]}
+    });
+
+		//tiempo
+
+		var chart = c3.generate({
+			bindto: '#chart_bar_tiempo',
+	    data: {
+	        columns: [
+	            ['data', xtiempo_p]
+	        ],
+	        type: 'gauge'
+	    },
+	    gauge: {
+	       label: {
+	            format: function(value, ratio) {
+	                return value;
+	            },
+	        },
+	    max: xtiempo_maximo,
+	    units: 'minutos',
+	    },
+	    color: {
+	        pattern: ['#60B044', '#F6C600', '#FF0000'], // the three color levels for the percentage values.
+	        threshold: {
+	            values: [tiempo_medio, (xtiempo_maximo*0.9), xtiempo_maximo]
+	        }
+	    },
+	    size: {
+	        height: 180
+	    }
+		});
+
+
+		var chart = c3.generate({
+				bindto: '#chart_indicador',
+		    data: {
+		        columns: [
+								['Total', xtotal_row_chart],
+		            ['A tiempo', xcount_tiempo_ok],
+		            ['Medio tiempo', xcount_tiempo_m],
+								['Fuera de tiempo', xcount_tiempo_fuera],
+								['Retirados', xp_retirados]
+		        ],
+		        type: 'bar',labels: true
+		    },
+				color: {pattern: ["#1976d2","#43a047","#ffa000","#E53935","#6d4c41"]}
+		});
+	});
+}
+
+
+function xTransicionPedido(){
+$(element_sonido).trigger('play');
+	$('.xmarco_zd_pedido.ini').each(function(i,e){
+		//e.style.marginLeft=0;
+		$(e).removeClass('ini');
+
+		element_sonido.pause();
+		element_sonido.currentTime = 0;
+		element_sonido.play();
+		xResumenPedidosItem();
+	})
+}
+
+function xVerPedidosDespachados(){
+	closeDrawer_izq();
+	xThisZonaDespacho.select_div=1;
+	clearInterval(xRefresh_tiempo);
+
+	var xtb_obj=$(".grid_pedidos_despachados");
+	try{
+		$(xtb_obj).empty();
+		if($(xtb_obj).isotope()){$(xtb_obj).isotope('destroy');}
+	}
+	catch(e){}
+	$(xtb_obj).html('<paper-spinner active class="xCentradoVerticalHorizontal"></paper-spinner>').trigger('create');
+
+	$.ajax({ type: 'POST', url: '../../bdphp/log.php?op=2103', data:{'idzona':xdata_zona.idseccion}})
+	.done( function (dt_pe_d) {
+		var xdtPe=$.parseJSON(dt_pe_d),xCadenaNumMesa='',xcont_mesa='',xdes_mesa_pedido='',xcolor_tiempo_transcurrido='xFondoRowverde_estado_pedido',x_tiempo_transcurrido,xmin_tt;
+		xdtPe=xdtPe.datos;
+		for (var i = 0; i < xdtPe.length; i++) {
+			xindex=i;xdes_mesa_pedido='Mesa';
+			if(xdtPe[xindex].nummesa===''){xdes_mesa_pedido='Pedido';xcont_mesa=xCeroIzq(xdtPe[xindex].correlativo_dia,4);}else{xcont_mesa=xCeroIzq(xdtPe[xindex].nummesa,2);}
+
+			xcolor_tiempo_transcurrido='xFondoRowverde_estado_pedido';
+			x_tiempo_transcurrido=xdtPe[xindex].despachado_tiempo
+			xmin_tt=x_tiempo_transcurrido.split(':');
+			xmin_tt=xmin_tt[0];
+			if(xmin_tt>=xtiempo_maximo){
+				xcolor_tiempo_transcurrido='xFondoRowRojo_estado_pedido';
+			}else if(xmin_tt>=tiempo_medio){
+				xcolor_tiempo_transcurrido='xFondoRowAmarillo_estado_pedido';
+			}
+
+			xCadenaNumMesa=String(xCadenaNumMesa+'<div class="xMiCardPedido xCursor '+xcolor_tiempo_transcurrido+'" data-hora="'+xdtPe[xindex].despacho_tiempo+'" data-color="'+xcolor_tiempo_transcurrido+'" data-p="'+xdtPe[xindex].idpedido+'" data-nummesa="'+xdtPe[xindex].nummesa+'" data-correlativo="'+xdtPe[xindex].correlativo_dia+'"  data-numpedido="'+xdtPe[xindex].numpedido+'" onclick="xVerDetallePD(this)">'+
+						'<p class="tipo">'+xdes_mesa_pedido+'</p>'+
+					    '<h3 class="numero xBold">'+xcont_mesa+'</h3>'+
+					    '<p class="referencia xfont11">'+xdtPe[xindex].referencia+'</p>'+
+					    '<p class="tiempo xBold">'+x_tiempo_transcurrido+'</p>'+
+					'</div>');
+		};
+
+		//$aa.isotope('reloadItems');
+		$(xtb_obj).html($(xCadenaNumMesa)).trigger('create').isotope({
+		  itemSelector: '.xMiCardPedido',
+		  layoutMode: 'fitRows'
+		});
+
+		//$aa.isotope('fitRows');
+		//$(".grid_pedidos_despachados").isotope();
+	})
+}
+function xVerDetallePD(obj){
+	var xid_p=$(obj).attr('data-p'),xcolor_estado=$(obj).attr('data-color');
+	xPopupLoad.titulo="Cargando...";
+	xPopupLoad.xopen();
+	$.ajax({ type: 'POST', url: '../../bdphp/log.php?op=2104', data:{'id':xid_p}})
+	.done( function (dt_dp) {
+		var xdt_pedidos=$.parseJSON(dt_dp),xarr_pedido=[],xcadena_item='',xcadena_secc='',xcadena_pedido='';
+		xdt_pedidos=xdt_pedidos.datos;
+		xarr_pedido=xElaborarArray(xdt_pedidos);
+
+		//Armamos pedidos y lanzamos
+		for (e in xarr_pedido) {
+			//HEADER
+			xcadena_secc='';
+			xid_p=e;//xid_p=xarr_pedido[e].id;
+			xcadena_enca='<div class="xmarco_zd_pedidox" data-id="'+xid_p+'">'+
+					'<div class="encabezado '+xcolor_estado+'" data-id="'+xid_p+'" id="enca_'+xid_p+'" data-tiempo="'+xarr_pedido[e].hora+'">'+
+						'<table width="100%" class="xtable4">'+
+							'<tr class="xSinBorde_tr">'+
+								'<td>'+
+									'<div class="xEncabezado_zd_pedido"><p class="xfont30">'+xCeroIzq(xarr_pedido[e].nummesa,2)+'</p><span>mesa</span></div>'+
+								'</td>'+
+								'<td>'+
+									'<div class="xEncabezado_zd_pedido"><p id="val_num_cola">-</p><span># en cola</span></div>'+
+								'</td>'+
+								'<td>'+
+									'<div class="xEncabezado_zd_pedido"><p id="val_minutos">'+xarr_pedido[e].despachado_tiempo+'</p><span>minutos</span></div>'+
+								'</td>'+
+							'</tr>'+
+						'</table>'+
+					'</div>';
+
+			//TIPO DE CONSUMO //BODY
+
+			if(xarr_pedido[e]===null){continue;}
+			$.map(xarr_pedido[e], function(tp_c, z) {
+				//TIPO CONSUMO
+				xcadena_tp_c='<div id="ref_pedido" class="referencia xFondoRowIndigo">'+
+						'<p>'+tp_c.des_tipo_consumo+'<br><span class="xBold">'+xarr_pedido[e].referencia+'</span></p>'+
+					'</div>'+
+				'<div id="body_pedido">'+
+				'<table width="100%" class="xtabla_pedido_despacho">';
+
+				if (typeof tp_c==="object"){
+					//BODY
+					$.map(tp_c, function(n_seccion, z) {
+						if (typeof n_seccion==="object"){
+							//items
+							$.map(n_seccion, function(items, z) {
+								if (typeof items==="object"){
+									xcadena_item=String(xcadena_item+'<tr class="row row_item" data-id="'+items.idpedido_detalle+'" data-iditem="'+items.iditem+'" data-idseccion="'+n_seccion.idseccion+'"><td>'+xCeroIzq(items.cantidad_r,2)+' | '+items.descripcion+'</td></tr>');
+								}
+							})
+
+							//secciones + itmes
+							xcadena_secc=String(xcadena_secc+'<tr><td class="xSinBorde xBold des_seccion" data-id="'+n_seccion.idseccion+'">'+n_seccion.des_seccion+'</td></tr>'+xcadena_item);
+							xcadena_item='';
+						}
+					})
+					xcadena_secc=String(xcadena_tp_c+xcadena_secc);
+					//tipo_consumo_secciones_items
+					xcadena_pedido=String(xcadena_pedido+xcadena_secc+'</table>');
+					xcadena_secc='';
+				}
+			});
+			//botones pie
+			//xcandena_btn='<div class="xFlex xpie_zd_btn_pedido" id="btn_pedido"><div id="bt_retirar" class="xAlinearce xBtnDespacho_retirar noselect xCursor" style="width:60px">Retirar</div><div id="bt_despachado" class="xAlinearce xBtnDespacho noselect xCursor" style="width:240px">Listo</div></div>';
+
+			xcadena_pedido=String(xcadena_enca+xcadena_pedido+'</div></div></div>');
+
+		}
+
+		$("#div_pd_detalle").html(xcadena_pedido).trigger('create');
+		xPopupLoad.xclose();
+		dialog_detalle_pd.open();
+	})
+}
+
+//op 0=depachado 1= retirado
+function xDespachado_retirado(obj,op){
+	var xid_pd='',xid_p=$(obj).attr('data-id'),xtimepo_despacho=$(obj).find('#val_minutos').text();
+	xPopupLoad.xopen();
+	$(obj).find('.row_item').each(function(i,e){
+		xid_pd=xid_pd+$(e).attr('data-id')+',';
+	})
+	xid_pd=xid_pd.slice(0,-1);
+
+	// estado del pedido -> 1 verde, 2 ambar, 3 alertado
+	const objColor = $(obj).find(".encabezado");
+	let valEstado = 0;
+	valEstado = objColor.hasClass('xFondoRowverde') ? 1 : valEstado; 
+	valEstado = objColor.hasClass('xFondoRowAmarillo_estado_pedido') ? 2 : valEstado;
+	valEstado = objColor.hasClass('xFondoRowRojo_estado_pedido') ? 3 : valEstado;
+
+	$.ajax({ type: 'POST', url: '../../bdphp/log.php?op=2102',data:{'idp':xid_p, 'id_pd':xid_pd,'op':op,'td':xtimepo_despacho, 'valEstado': valEstado}})
+	.done( function (dt_rp) {
+		dt_rp=$.parseJSON(dt_rp)
+		//if(!dt_rp.success){alert(dt_rp.error);xPopupLoad.xclose(); xDespachado(obj);}
+
+		$(xObjPedido).addClass('retirada');
+		setTimeout(function(){$(xObjPedido).remove();xObjPedido.empty();xResumenPedidosItem();},2000)
+		xPopupLoad.xclose();
+	})
+}
+
+function xVerSiPedidos_logrun(){
+	var xrpt_run;
+	console.log(xdata_zona);
+	if(typeof(EventSource) !== "undefined") {
+	    xsourceEvent = new EventSource("../../bdphp/log_run.php?op=2&tp="+xdata_zona.tipo_consumo+"&ids="+xdata_zona.idseccion);
+	    xsourceEvent.onmessage = function(event) {
+	    	xrpt_run=event.data.split(',');
+	    	xhora_actual_serv=xrpt_run[1];
+	        if(xrpt_run[0]!==xValCountPedidosDespacho){
+				xValCountPedidosDespacho=xrpt_run[0];
+				// xUltimoIdPedidoEnZona = xValCountPedidosDespacho;
+				xActualizarPedidosZona();
+	        }
+	    };
+	}
+}
+
+function xActualizarPedidosZona(){
+	var xarr_pedido=[];
+	//cantidad de pedidos actualez en lista
+	var xNumEnCola=parseInt($(".xmarco_zd_pedido").length);
+
+	$.ajax({ type: 'POST', url: '../../bdphp/log.php?op=2101',data:{'id':xUltimoIdPedidoEnZona,'num_pedidos_cola':xNumEnCola,'arr_filtro':xdata_zona}})
+	.done( function (dt_pedidos) {
+		// console.log(dt_pedidos);
+		var xdt_pedidos=$.parseJSON(dt_pedidos), 
+			xid_p,xid_secc,xid_item,xcadena_enca='',
+			xcadena_secc='',xcadena_tp_c='',
+			xcadena_item='',xcadena_pedido='',
+			xcandena_btn='',xid_tp_c='',
+			xnum_mesa_p=0,
+			xdes_mesa_p="mesa";
+
+		xdt_pedidos=xdt_pedidos.datos;
+		xarr_pedido=xElaborarArray(xdt_pedidos);
+
+		//Armamos pedidos y lanzamos
+		for (e in xarr_pedido) {
+			//HEADER
+			xcadena_secc='';
+			xNumEnCola++;
+			xid_p=e;//xid_p=xarr_pedido[e].id;
+			xdes_mesa_p="mesa";
+			xnum_mesa_p=xCeroIzq(xarr_pedido[e].nummesa,2);
+			if(xnum_mesa_p==="00"){xnum_mesa_p=xCeroIzq(xarr_pedido[e].correlativo_dia,3);xdes_mesa_p="pedido"}
+			xcadena_enca='<div class="xmarco_zd_pedido ini" data-id="'+xid_p+'" >'+
+					'<div class="encabezado xFondoRowverde" data-id="'+xid_p+'" id="enca_'+xid_p+'" data-reserva="'+xarr_pedido[e].reserva+'" data-tiempo="'+xarr_pedido[e].hora+'">'+
+						'<table width="100%" class="xtable4">'+
+							'<tr class="xSinBorde_tr">'+
+								'<td>'+
+									'<div class="xEncabezado_zd_pedido"><p class="xfont30">'+xnum_mesa_p+'</p><span>'+xdes_mesa_p+'</span></div>'+
+								'</td>'+
+								'<td>'+
+									'<div class="xEncabezado_zd_pedido xDesactivarBoton"><p id="val_num_cola">'+xCeroIzq(xNumEnCola,2)+'</p><span># en cola</span></div>'+
+								'</td>'+
+								'<td>'+
+									'<div class="xEncabezado_zd_pedido"><p id="val_minutos">00:00</p><span>minutos</span></div>'+
+								'</td>'+
+							'</tr>'+
+						'</table>'+
+					'</div>';
+						/*'<div id="ref_pedido" class="referencia xFondoRowIndigo">'+
+							'<p>'+xarr_pedido[e].des_tipo_consumo+'<br><span class="xBold">'+xarr_pedido[e].referencia+'</span></p>'+
+						'</div>'+
+					'</div>'+
+					'<div id="body_pedido">'+
+						'<table width="100%" class="xtabla_pedido_despacho">';*/
+
+			//TIPO DE CONSUMO //BODY
+
+			if(xarr_pedido[e]===null){continue;}
+			$.map(xarr_pedido[e], function(tp_c, z) {
+				//TIPO CONSUMO
+				xcadena_tp_c='<div id="ref_pedido" class="referencia xFondoRowIndigo">'+
+						'<p>'+tp_c.des_tipo_consumo+'<br><span class="xBold">'+xarr_pedido[e].referencia+'</span></p>'+
+					'</div>'+
+				'<div id="body_pedido">'+
+				'<table width="100%" class="xtabla_pedido_despacho">';
+
+				if (typeof tp_c==="object"){
+					//BODY
+					$.map(tp_c, function(n_seccion, z) {
+						if (typeof n_seccion==="object"){
+							//items
+							$.map(n_seccion, function(items, z) {
+								if (typeof items==="object"){
+									xcadena_item=String(xcadena_item+'<tr class="row row_item" data-id="'+items.idpedido_detalle+'" data-iditem="'+items.iditem+'" data-idseccion="'+n_seccion.idseccion+'"><td>'+xCeroIzq(items.cantidad_r,2)+' | '+items.descripcion+'</td></tr>');
+								}
+							})
+
+							//secciones + itmes
+							xcadena_secc=String(xcadena_secc+'<tr><td class="xSinBorde xBold des_seccion" data-id="'+n_seccion.idseccion+'">'+n_seccion.des_seccion+'</td></tr>'+xcadena_item);
+							xcadena_item='';
+						}
+					})
+					xcadena_secc=String(xcadena_tp_c+xcadena_secc);
+					//tipo_consumo_secciones_items
+					xcadena_pedido=String(xcadena_pedido+xcadena_secc+'</table>');
+					xcadena_secc='';
+				}
+			});
+
+			if(xarr_pedido[e].reserva==='1'){//si es reserva
+				xNumReservas++;
+
+				//botones pie
+				xcandena_btn='<div class="xFlex xpie_zd_btn_pedido" id="btn_pedido"><div id="bt_retirar" class="xAlinearce xBtnDespacho_retirar noselect xCursor" style="width:60px">Retirar</div><div id="bt_despachado" class="xAlinearce xBtnDespacho noselect xCursor" style="width:240px">Enviar a despacho</div></div>';
+				xcadena_pedido=String(xcadena_enca+xcadena_pedido+'</div>'+xcandena_btn+'</div></div>');
+
+				$("#div_reserva").append(xcadena_pedido).trigger('create');
+				$("#tt_pedidos_reserva").parent().parent().removeClass('xInvisible');
+				xCuentaReservas();
+
+			}else{
+				//botones pie
+				xcandena_btn='<div class="xFlex xpie_zd_btn_pedido" id="btn_pedido"><div id="bt_retirar" class="xAlinearce xBtnDespacho_retirar noselect xCursor" style="width:60px">Retirar</div><div id="bt_despachado" class="xAlinearce xBtnDespacho noselect xCursor" style="width:240px">Listo</div></div>';
+				xcadena_pedido=String(xcadena_enca+xcadena_pedido+'</div>'+xcandena_btn+'</div></div>');
+				$("#xContent_zd_pedido").append(xcadena_pedido).trigger('create');
+			}
+			//element_sonido.play();
+			setTimeout(function(){xTransicionPedido();},100);
+			xcadena_pedido='';
+		}
+
+		xUltimoIdPedidoEnZona=xValCountPedidosDespacho;
+	})
+}
+
+function xResumenPedidosItem(){
+	var arr_resumen_item=[],xre_id_seccion,xre_id_item,xre_sum_cant_item,xre_des_seccion='',xre_cadena='',xre_cadena_item='',xre_sum_secc=0;
+
+	//secciones
+	$(".xtabla_pedido_despacho .des_seccion").each(function(i,e){
+		xre_id_seccion=$(e).attr('data-id');
+		if(arr_resumen_item[xre_id_seccion]===undefined){arr_resumen_item[xre_id_seccion]={'id':xre_id_seccion,'des_seccion':$(e).text()}}
+	})
+
+	//items
+	for(a in arr_resumen_item){
+		$(".xtabla_pedido_despacho .row_item").each(function(i,e){
+			xre_id_seccion=$(e).attr('data-idseccion');
+			xre_id_item=$(e).attr('data-iditem');
+			xtxt_item=$(e).text().split('|');
+			if(xre_id_seccion===a){
+				if(arr_resumen_item[a][xre_id_item]!==undefined){xre_sum_cant_item=parseInt(arr_resumen_item[a][xre_id_item].cantidad_r)+parseInt(xtxt_item[0])}else{xre_sum_cant_item=parseInt(xtxt_item[0])}
+				arr_resumen_item[a][xre_id_item]={'iditem':xre_id_item,'des_item':xtxt_item[1],'cantidad_r':xre_sum_cant_item}
+			}
+		})
+	}
+
+	//escribir
+	xre_cadena='';
+	var keys = Object.keys(arr_resumen_item).sort();
+	for(x in keys){
+		x=keys[x];
+		xre_des_seccion='<tr><td colspan="2" class="xBold">'+arr_resumen_item[x].des_seccion+'</td></tr>';
+		xre_sum_secc=0;
+		xre_cadena_item='';
+
+		$.map(arr_resumen_item[x], function(item, z) {
+			if (typeof item==="object"){
+				xre_sum_secc=parseInt(xre_sum_secc)+parseInt(item.cantidad_r);
+				xre_cadena_item=String(xre_cadena_item+'<tr><td>'+item.des_item.toUpperCase()+'</td><td align="right">'+xCeroIzq(item.cantidad_r,2)+'</td></tr>')
+			}
+		})
+		xre_cadena=String(xre_cadena+xre_des_seccion+xre_cadena_item+'<tr class="xSinBorde_tr"><td colspan="2" class="xBold" align="right">'+xCeroIzq(xre_sum_secc,2)+'</td></tr>')
+	}
+	$("#tb_resumen_pedido").html(xre_cadena).trigger('create');
+}
+
+function xRefrecarTiempoMinutos(){
+	var xtiempo_transcurrido,tiempo_encabezado,xen_cola=0;
+	$(".xmarco_zd_pedido .encabezado").each(function(i,e){
+		if($(e).attr('data-reserva')!=='1'){//si es reserva continua
+			tiempo_encabezado=$(e).attr('data-tiempo');
+			xTiempoTranscurridos(tiempo_encabezado,xhora_actual_serv,function(h,m,s,dif){
+				xen_cola++;
+				xtiempo_transcurrido=xTiempoDe_MS_minutos(dif)
+				$(e).find('#val_minutos').text(xtiempo_transcurrido);
+				$(e).find('#val_num_cola').text(xCeroIzq(xen_cola,2));
+
+				xCalcularEstadoSegunTiempo($(e),xtiempo_transcurrido);
+			})
+		}
+	})
+	xelem_tt_p_cola.text(xCeroIzq(xen_cola,2));
+}
+function xCalcularEstadoSegunTiempo(elemento,x_tiempo_transcurrido){
+	var xmin_tt=x_tiempo_transcurrido.split(':');
+	xmin_tt=xmin_tt[0];
+	if(xmin_tt>=xtiempo_maximo){
+		elemento.removeClass('xFondoRowverde_estado_pedido');
+		elemento.removeClass('xFondoRowAmarillo_estado_pedido');
+		elemento.addClass('xFondoRowRojo_estado_pedido');
+	}else if(xmin_tt>=tiempo_medio){
+		elemento.removeClass('xFondoRowverde_estado_pedido');
+		elemento.addClass('xFondoRowAmarillo_estado_pedido');
+	}
+
+}
+
+function xLoadZonaDespacho(){
+	$.ajax({ type: 'POST', url: '../../bdphp/log.php?op=21'})
+	.done( function (dtImp) {
+		var xdtImp=$.parseJSON(dtImp), xcadena_imp='',xmin_pedido=0;
+		xdtImp=xdtImp.datos;
+		xcadena_imp='<br><h4>Zonas de despacho</h4><div class="xLinea"></div><br>';
+		for (var i = 0; i < xdtImp.length; i++) {
+			//if(parseInt(xdtImp[i].minutos_pedido)>xmin_pedido){xmin_pedido=parseInt(xdtImp[i].minutos_pedido);}
+			xcadena_imp=String(xcadena_imp+'<paper-checkbox class="check_zona" data-ids="'+xdtImp[i].idimpresora+'" data-tiempo="'+xdtImp[i].minutos_pedido+'">'+xdtImp[i].descripcion+'</paper-checkbox><br>');
+		};
+
+		//xCalcularMinutosDespacho(xmin_pedido);
+		///tipo de consumo
+		$.ajax({ type: 'POST', url: '../../bdphp/log.php?op=3'})
+		.done( function (dttp) {
+			var xdttp=$.parseJSON(dttp);
+			xdttp=xdttp.datos;
+			xcadena_imp=xcadena_imp+'<br><br><h4>Tipos de consumo</h4><div class="xLinea"></div><br>';
+			for (var i = 0; i < xdttp.length; i++) {
+				xcadena_imp=String(xcadena_imp+'<paper-checkbox class="check_tp" data-tp="'+xdttp[i].idtipo_consumo+'">'+xdttp[i].descripcion+'</paper-checkbox><br>')
+			};
+
+			$("#div_zona_despacho").html(xcadena_imp);
+		})
+	})
+}
+
+function xCalcularMinutosDespacho(mm){
+	xtiempo_maximo=mm;
+	tiempo_medio=parseInt(xtiempo_maximo*0.6);
+	$("#min_max_pedido").html(xCeroIzq(xtiempo_maximo,2)+'<span class="xfont9">min x pedido</span>').trigger('create');
+}
+
+function xEstablecerFiltroDespachos(){
+	element_sonido.play();
+	///zona
+	xIdZonaSeccion='';des_despacho='';xIdTp='',xmin_pedido=0,xmin_pedido_ultimo=0;
+	$(".check_zona").each(function(i,e){
+		if(e.checked){
+			xIdZonaSeccion=xIdZonaSeccion+$(e).attr('data-ids')+',';
+			xmin_pedido_ultimo=parseInt($(e).attr('data-tiempo'));
+			if(isNaN(xmin_pedido_ultimo)){xmin_pedido_ultimo=0;}
+
+			des_despacho=des_despacho+xMayusculaPrimera(xSoloMinuscula($(e).text().trim()))+',';
+			if(xmin_pedido_ultimo>xmin_pedido){xmin_pedido=xmin_pedido_ultimo;}
+		}
+	})
+	xCalcularMinutosDespacho(xmin_pedido);
+	des_despacho=des_despacho.slice(0,-1)+' | ';
+	///tipo consumo
+	$(".check_tp").each(function(i,e){
+		if(e.checked){
+			xIdTp=xIdTp+$(e).attr('data-tp')+',';
+			des_despacho=des_despacho+xMayusculaPrimera(xSoloMinuscula($(e).text().trim()))+',';
+		}
+	})
+	des_despacho=des_despacho.slice(0,-1);
+	xIdZonaSeccion=xIdZonaSeccion.slice(0,-1);
+	xIdTp=xIdTp.slice(0,-1);
+
+	window.localStorage.setItem('::app3_woZD',xIdZonaSeccion);
+	window.localStorage.setItem('::app3_woZD_TP',xIdTp);
+
+	xdata_zona=[]
+	xdata_zona={'tipo_consumo':xIdTp, 'idseccion':xIdZonaSeccion}
+
+	$("#des_titulo_despacho").text(des_despacho);
+	closeDrawer_izq();
+
+	if(typeof(xsourceEvent) !== "undefined") {xsourceEvent.close();}
+
+	//nuevo
+	$("#xContent_zd_pedido").html('').trigger('create');
+	xValCountPedidosDespacho=0
+	xThisZonaDespacho.select_div=0;
+	xVerSiPedidos_logrun();
+
+	xRefresh_tiempo=setInterval(function () {xRefrecarTiempoMinutos()},1000);
+}
+
+//xbotones 0:on despachao
+function xElaborarArray(xdata){
+	//var xNumEnCola='-';
+	//if(xbotones===0){xNumEnCola=parseInt($(".xmarco_zd_pedido").length);}
+
+	var xdt_pedidos=xdata,xarr_pedido=[], xid_p,xid_secc,xid_item,xcadena_enca='',xcadena_secc='',xcadena_tp_c='',xcadena_item='',xcadena_pedido='',xcandena_btn='',xid_tp_c='';
+	//encabezados
+		for (var i = 0; i < xdt_pedidos.length; i++) {
+			xid_p=xdt_pedidos[i].idpedido;
+			if(xarr_pedido[xid_p]!==undefined){continue;}
+			xarr_pedido[xid_p]={'id':xid_p,'fecha_hora':xdt_pedidos[i].fecha_hora,'hora':xdt_pedidos[i].hora,'nummesa':xdt_pedidos[i].nummesa,'correlativo_dia':xdt_pedidos[i].correlativo_dia,'referencia':xdt_pedidos[i].referencia,'reserva':xdt_pedidos[i].reserva,'des_tipo_consumo':xdt_pedidos[i].des_tipo_consumo,'idtipo_consumo':xdt_pedidos[i].idtipo_consumo,'despachado_tiempo':xdt_pedidos[i].despachado_tiempo, 'reserva':xdt_pedidos[i].reserva}
+		};
+
+		//tipo de consumo //llevar / consumir local
+		for (a in xarr_pedido) {
+			xid_p=xarr_pedido[a].id;
+			for (var i = 0; i < xdt_pedidos.length; i++) {
+				if(xid_p===xdt_pedidos[i].idpedido){
+					xid_tp_c=xdt_pedidos[i].idtipo_consumo;
+					if(xarr_pedido[xid_p][xid_tp_c]!==undefined){continue;}
+					xarr_pedido[xid_p][xid_tp_c]={'idtipo_consumo':xid_tp_c,'des_tipo_consumo':xdt_pedidos[i].des_tipo_consumo}
+				}
+			}
+		}
+
+		//secciones
+		for (a in xarr_pedido) {
+			xid_p=xarr_pedido[a].id;
+			for (var i = 0; i < xdt_pedidos.length; i++) {
+				if(xid_p===xdt_pedidos[i].idpedido){
+					xid_tp_c=xdt_pedidos[i].idtipo_consumo;
+					xid_secc=xdt_pedidos[i].idseccion_index;
+
+					if(xarr_pedido[xid_p][xid_tp_c][xid_secc]!==undefined){continue;}
+					xarr_pedido[xid_p][xid_tp_c][xid_secc]={'idseccion':xid_secc,'des_seccion':xdt_pedidos[i].des_seccion}
+					//items
+					for (var z = 0; z < xdt_pedidos.length; z++) {
+						if(xid_p===xdt_pedidos[z].idpedido && xid_tp_c===xdt_pedidos[z].idtipo_consumo && xid_secc===xdt_pedidos[z].idseccion_index){
+							xid_item=xdt_pedidos[z].idpedido_detalle;
+							xarr_pedido[xid_p][xid_tp_c][xid_secc][xid_item]={'idpedido_detalle':xdt_pedidos[z].idpedido_detalle,'iditem':xdt_pedidos[z].iditem,'cantidad_r':xdt_pedidos[z].cantidad_r,'descripcion':xdt_pedidos[z].descripcion}
+						}
+					}
+				}
+			}
+		};
+
+	return xarr_pedido;
+}
+function xEnviarReservaDespacho(obj){
+	var xid_p=$(obj).attr('data-id')
+	xObjPedido.find('.encabezado').attr('data-reserva',0)
+	setTimeout(function(){
+		//$("#xContent_zd_pedido").append(xObjPedido).trigger('create');
+		$(xObjPedido).remove();
+
+		$.ajax({ type: 'POST', url: '../../bdphp/log.php?op=2105', data:{'i':xid_p}})
+		.done( function (x) {
+			var xcant_r=xCuentaReservas();
+			if(xcant_r===0){xThisZonaDespacho.select_div=0;$("#btn_ver_reserva").addClass('xInvisible');}
+			xActualizarPedidosZona();
+		})
+	},2000)
+
+
+}
+function xCuentaReservas(){
+	var xcant_r=parseInt($("#div_reserva .xmarco_zd_pedido").length);
+	$("#tt_pedidos_reserva").text(xCeroIzq(xcant_r,2));
+	return xcant_r;
+}
+function xVerReservas(){
+	xThisZonaDespacho.select_div=2;
+}
+function xVerDepacho(){
+	clearInterval(xRefresh_tiempo);
+	xRefresh_tiempo=setInterval(function () {xRefrecarTiempoMinutos()},1000);
+	xThisZonaDespacho.select_div=0;
+}
+function xOpenLateralIzq(){
+    document.getElementById("xdrawerIzq").style.width = "280px";
+}
+function xOpenLateralDe(){
+    document.getElementById("xdrawerDe").style.width = "380px";
+}
+function closeDrawer_izq() {
+    document.getElementById("xdrawerIzq").style.width = "0";
+}
+function closeDrawer_de() {
+    document.getElementById("xdrawerDe").style.width = "0";
+}
+function xRefreshMarcador(obj){
+	xColorMarcado=$(obj).attr('data-color');
+	dialog_marcar.close();
+}
+
+function xDespacharTodos() {
+	$.ajax({ type: 'POST', url: '../../bdphp/log.php?op=2109'})
+		.done(function (x) {			
+			dialog_despachar.close();
+		});
+}
+
+Polymer({
+	is:'x-zona_despacho',
+	properties:{
+	},
+	attached:function(){
+		this.select_div=0;
+    	xThisZonaDespacho=this;
+    	xIniZonaDespacho();
+    },
+    detached:function(){
+		clearInterval(xRefresh_tiempo);
+		// xsourceEvent.close();
+    }
+})
+</script>

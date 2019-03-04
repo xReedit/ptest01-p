@@ -1,0 +1,344 @@
+<dom-module id="x-pruebas">
+<!--script src="../../js/isotope.pkgd.min.js"></script-->
+<script src="../web_components/webcomponentsjs/webcomponents-lite.js"></script>
+
+<!--chart google-->
+<!--script src="../../js/loader_chart_gstatic.js"></script-->
+
+<!--link rel="stylesheet" href="../../css/dc.css"/-->
+
+<link rel="import" href="../web_components/polymer/polymer.html">
+<link rel="import" href="../web_components/paper-button/paper-button.html">
+<link rel="import" href="../web_components/paper-input/paper-input.html">
+<link rel="import" href="../web_components/paper-input/paper-textarea.html">
+<link rel="import" href="../web_components/paper-styles/paper-styles.html">
+<link rel="import" href="../web_components/neon-animation/neon-animated-pages.html">
+	<link rel="import" href="../web_components/neon-animation/neon-animatable.html">
+<link rel="import" href="../web_components/neon-animation/neon-animations.html">
+<link rel="import" href="../web_components/paper-spinner/paper-spinner.html">
+<link rel="import" href="../web_components/paper-drawer-panel/paper-drawer-panel.html">
+
+<link rel="import" href="../web_components/paper-toolbar/paper-toolbar.html">
+<link rel="import" href="../web_components/paper-icon-button/paper-icon-button.html">
+<link rel="import" href="../web_components/iron-icons/iron-icons.html">
+<link rel="import" href="../web_components/paper-card/paper-card.html">
+<link rel="import" href="../web_components/paper-fab/paper-fab.html">
+<link rel="import" href="../web_components/paper-menu/paper-menu.html">
+	<link rel="import" href="../web_components/paper-item/paper-item.html">
+	<link rel="import" href="../web_components/paper-dialog-scrollable/paper-dialog-scrollable.html">
+	<link rel="import" href="../web_components/paper-checkbox/paper-checkbox.html">
+<link rel="import" href="../web_components/paper-dropdown-menu/paper-dropdown-menu.html">
+<link rel="import" href="../web_components/iron-dropdown/iron-dropdown.html">
+<link rel="import" href="../web_components/iron-pages/iron-pages.html">
+<link rel="import" href="../web_components/paper-radio-button/paper-radio-button.html">
+<link rel="import" href="../web_components/paper-slider/paper-slider.html">
+<link rel="import" href="../web_components/paper-tabs/paper-tabs.html">
+<link rel="import" href="../web_components/paper-tooltip/paper-tooltip.html">
+<link rel="import" href="../web_components/paper-toggle-button/paper-toggle-button.html">
+<link rel="import" href="../web_components/paper-badge/paper-badge.html">
+
+<!--router-->
+<link rel="import" href="../web_components/iron-icons/maps-icons.html">
+
+
+<link rel="import" href="../web_components/x-dialog/x-dialog.html">
+<link rel="import" href="../web_components/app-router/app-router.html">
+<link rel="import" href="../web_components/x-router/x-router.html">
+<link rel="import" href="../web_components/x-pass/x-pass.html">
+<link rel="import" href="../web_components/x-pago/x-pago.html">
+	<template>
+		<div class="xContent">
+			<h1>Pruebas</h1>
+			<h3>prueba de facturacion</h3>
+			<button onclick="enviarCpe()"> ennivar cpe </button>
+
+
+			<br>
+			<br>
+			<br>
+			<x-comprobante id="xComprobante"></x-comprobante><br>
+			<div class="xMiBoton_icon xIzquierda" id="btn_facturacion" onclick="xComprobante.xopen();"><img src="../../images/_facturacion.png"><p>Facturacion</p></div>
+			<div class="xMiBoton_icon_lateral xIzquierda" id="btn_facturacion" onclick="xPreparaPrint();"><img src="../../images/_imprimir.png"><p>Facturacion</p></div>
+
+			<br><br><br><br>
+			<div style="width:500px">
+				<x-pago id="component_pago"></x-pago>
+			</div><br><br>
+			<div class="xBoton2 xAzul" id="btn_pago" onclick="xGuardarPago();" disabled>Ok guardar pago</div>
+
+
+			<table>
+				<caption>aaaaaaaaaaaaa</caption>
+				<thead>
+					<th>aaa</th>
+					<th>bbb</th>
+				</thead>
+			</table>
+
+
+			<div>
+				<h3>contenedor</h3>
+				<div>
+						<p>ENTRADAS</p>
+						<p>PLATOS A LA CARTA</p>
+						<p>SEGUNDO</p>
+						<p>JUGOS Y REFRESCOS</p>
+						<p>GASEOSAS</p>
+				</div>
+				<div>
+						<p>ESTOFADO DE GALLINA</p>
+						<p>ARROZ CON POLLO</p>
+						<p>ARROZ CHAUFA</p>
+						<p>JUGO DE NARANJA</p>
+						<p>JUGO DE PAPAYA</p>
+						<p>ESTOFADO DE GALLINA</p>
+						<p>ARROZ CON POLLO</p>
+						<p>ARROZ CHAUFA</p>
+						<p>JUGO DE NARANJA</p>
+						<p>JUGO DE PAPAYA</p>
+				</div>
+				<div>
+						<h3>LA CUENTA</h3>
+						<p>aaaaaaaaaaa 10.00</p>
+						<p>aaaaaaaaaaa 10.00</p>
+						<p>aaaaaaaaaaa 10.00</p>
+						<p>aaaaaaaaaaa 10.00</p>
+						<p>aaaaaaaaaaa 10.00</p>
+				</div>
+			</duiv>
+
+
+		</div>
+
+		<!--div id="print_prueba" class="container">
+			<div class="xpage">
+				<span id="xaaa">aaaaaaaaaaaa</span>
+				<span id="nombre">MARCEL RAMIREZ</span>
+				<span id="direccion">JR REYES GUERRA 8</span>
+				<span id="dni">42299556</span>
+				<span id="dia">14</span>
+				<span id="mes">03</span>
+				<span id="yy">6</span>
+			</div>
+		</div-->
+		<br><br><br>
+		<!--div class="grid">
+			<div class="xMiCardPedido xNeutro" data-tpc="LOCAL">
+				<p class="tipo">Mesa</p>
+			    <h3 class="numero xBold">01</h3>
+			    <p class="tiempo xfont11">disponible</p>
+			    <p class="importe xBold">-</p>
+			</div>
+			<div class="xMiCardPedido xNeutro" data-tpc="LOCAL">
+			    <p class="tipo">Mesa</p>
+			    <h3 class="numero xBold">02</h3>
+			    <p class="tiempo xfont11">disponible</p>
+			    <p class="importe xBold">-</p>
+			</div>
+			<div class="xMiCardPedido xOcupado" data-tpc="LOCAL">
+			    <p class="tipo">Mesa</p>
+			    <h3 class="numero xBold">03</h3>
+			    <p class="tiempo xfont11">00:24:60</p>
+			    <p class="importe xBold">S/. 12.00</p>
+			</div>
+		</div-->
+
+
+		<x-medida-comprobante></x-medida-comprobante>
+	</template>
+</dom-module>
+<script>
+var xThis;
+var xComprobante_mod;
+var xRpt_pago=new Array();
+function xIniPruebas(){
+	if(xIdOrg==''){	xIdOrg=window.localStorage.getItem('::app2_wo');}
+	if(xIdUsuario==''){	xIdUsuario=window.localStorage.getItem('::app2_woU');}
+
+	xComprobante_mod=document.getElementById('xComprobante');
+
+
+	// xValPago=document.getElementById('component_pago');
+	// xValPago.addEventListener('xSend', function (e) {
+	// 	xRpt_pago=e.detail.xRpts;
+	// 	var p=e.detail.xRpts[0].ok;
+	// 	if(p==0){
+	// 		$("#btn_pago").attr('disabled', true);
+
+	// 	}else{
+	// 		btn_pago.removeAttribute("disabled")
+	// 	}
+	// });
+	//xLoadProductos();
+}
+function xPreparaPrintxxxxxxxxxxx(){$
+	/*$("#print_prueba").css('position','absolute');
+	$("#print_prueba").css('margin','0');
+	$("#print_prueba").css('width','100%');*/
+	//$(".container").css('display','inline-block');
+	//$(".xpage").css('display','inline');
+	$(".container").css('position','relative');
+	$(".container").css('width','100%');
+	/*$("#xaaa").css('position','absolute');
+	$("#xaaa").css('margin-top','0cm');
+	$("#xaaa").css('margin-left','0cm');*/
+
+	//$("#nombre").css('float','left');
+	//$("#nombre").css('position','absolute');
+	$("#nombre").css('margin-top','4cm');
+	$("#nombre").css('margin-left','3.3cm');
+	//$("#direccion").css('clear','top');
+	//$("#direccion").css('float','left');
+	//$("#direccion").css('position','absolute');
+	$("#direccion").css('margin-top','6cm');
+	$("#direccion").css('margin-left','3.3cm');
+	//$("#dni").css('clear','top');
+	//$("#dni").css('float','left');
+	//$("#dni").css('position','absolute');
+	$("#dni").css('margin-top','10cm');
+	$("#dni").css('margin-left','3.3cm');
+
+	//$("#dia").css('float','left');
+	//$("#dia").css('text-align','left');
+	//$("#dia").css('position','absolute');
+	$("#dia").css('margin-top','5.5cm');
+	$("#dia").css('margin-left','16cm');
+	//$("#mes").css('float','left');
+	//$("#mes").css('text-align','left');
+	//$("#mes").css('position','absolute');
+	$("#mes").css('margin-top','5.5cm');
+	$("#mes").css('margin-left','18cm');
+	//$("#yy").css('float','left');
+	//$("#yy").css('text-align','left');
+	//$("#yy").css('position','absolute');
+	$("#yy").css('margin-top','5.5cm');
+	$("#yy").css('margin-left','20cm');
+	xImprSelec3('print_prueba');
+}
+function xLoadProductos(){
+	$.ajax({ type: 'POST', url: '../../bdphp/log.php?op=90440'})
+	.done( function (dtConsumoHab) {
+		var xcadenaCH='';
+		var xdtCH=$.parseJSON(dtConsumoHab);
+		xComprobante_mod.dataconsumo=xdtCH.datos;
+	});
+	var xAAEE=[{"descripcion":"HABITACION 102 MATRIMONIAL 2 DIAS","total":"1200.00"}];
+	xComprobante_mod.datahabitacion=xAAEE;
+	xComprobante_mod.dtIdCliente=33;
+	xComprobante_mod.xt_org=1;
+	xComprobante_mod.xt_idsede=1;
+	xComprobante_mod.xt_idus=1;
+}
+
+function enviarCpe() {
+	const xjson =
+		{
+		"serie_documento": "B001",
+			"numero_documento": "#",
+				"fecha_de_emision": "2018-10-09",
+					"hora_de_emision": "10:11:11",
+						"codigo_tipo_operacion": "0101",
+							"codigo_tipo_documento": "03",
+								"codigo_tipo_moneda": "PEN",
+									"fecha_de_vencimiento": "2018-08-30",
+										"numero_orden_de_compra": "0045467898",
+											"datos_del_emisor": {
+			"codigo_pais": "PE",
+				"ubigeo": "150101",
+					"direccion": "Av. 2 de Mayo",
+						"correo_electronico": "demo@gmail.com",
+							"telefono": "427-1148",
+								"codigo_del_domicilio_fiscal": "0000"
+		},
+		"datos_del_cliente_o_receptor": {
+			"codigo_tipo_documento_identidad": "6",
+				"numero_documento": "10414711225",
+					"apellidos_y_nombres_o_razon_social": "EMPRESA XYZ S.A.",
+						"codigo_pais": "PE",
+							"ubigeo": "150101",
+								"direccion": "Av. 2 de Mayo",
+									"correo_electronico": "demo@gmail.com",
+										"telefono": "427-1148"
+		},
+		"totales": {
+			"total_exportacion": 0.00,
+				"total_operaciones_gravadas": 0.00,
+					"total_operaciones_inafectas": 0.00,
+						"total_operaciones_exoneradas": 118.00,
+							"total_operaciones_gratuitas": 0.00,
+								"total_igv": 0.00,
+									"total_impuestos": 0.00,
+										"total_valor": 118,
+											"total_venta": 118
+		},
+		"items": [
+			{
+				"codigo_interno": "P0121",
+				"descripcion": "Inca Kola 250 ml",
+				"codigo_producto_sunat": "51121703",
+				"codigo_producto_gsl": "51121703",
+				"unidad_de_medida": "NIU",
+				"cantidad": 2,
+				"valor_unitario": 59,
+				"codigo_tipo_precio": "01",
+				"precio_unitario": 59,
+				"codigo_tipo_afectacion_igv": "20",
+				"total_base_igv": 0.00,
+				"porcentaje_igv": 18,
+				"total_igv": 0.00,
+				"total_impuestos": 0.00,
+				"total_valor_item": 118,
+				"total_item": 118
+			}
+		],
+			"extras": {
+			"forma_de_pago": "Efectivo",
+				"observaciones": "probando",
+					"vendedor": "Juan",
+						"caja": "Caja 1"
+		}
+	}
+
+	const _url = URL_COMPROBANTE + '/documents';
+	let _headers = HEADERS_COMPROBANTE;
+	_headers.Authorization = "Bearer 0SPvP3HY0qVzM00sCWZc40UCXh3DrObQhobGEzEWCrUOKwCyaX";
+
+	const json_xml = JSON.stringify(xjson);
+
+	// var myHeaders = new Headers();
+	// myHeaders.append("X-My-Custom-Header", "some value");
+
+	fetch(_url, {
+		method: 'POST',
+		headers: _headers,
+		body: json_xml,		
+	}).then(function (response) {
+		return response.json();
+	}).then(function (json) {
+		console.log(json);
+	});
+
+	// $.ajax({
+	// 	type: "POST",
+	// 	url: _url,
+	// 	headers: _headers,
+	// 	dataType: "json",
+	// 	data: json_xml,		
+	// 	success: function (data) {
+	// 		console.log(data);
+	// 	}
+	// });
+
+}
+
+	Polymer({
+	is:'x-pruebas',
+	properties:{
+		dtConsumo: Object
+	},
+	attached:function(){
+		xThis=this;
+		xIniPruebas()
+	}
+})
+</script>

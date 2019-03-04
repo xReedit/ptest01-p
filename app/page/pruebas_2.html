@@ -1,0 +1,152 @@
+<<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <!-- Required meta tags always come first -->
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+  <meta http-equiv="x-ua-compatible" content="ie=edge">
+</head>
+
+<body>
+  <div class="xdivEnLinea2">
+    <div class="itemsDiv a">
+        <h3>OPCIONES CARTA</h3>
+        <p>ENTRADAS</p>
+        <p>PLATOS A LA CARTA</p>
+        <p>SEGUNDO</p>
+        <p>JUGOS Y REFRESCOS</p>
+        <p>GASEOSAS</p>
+    </div>
+    <div class="itemsDiv b">
+        <h3>ITEMS CARTA</h3>
+        <p>ESTOFADO DE GALLINA</p>
+        <p>ARROZ CON POLLO</p>
+        <p>ARROZ CHAUFA</p>
+        <p>JUGO DE NARANJA</p>
+        <p>JUGO DE PAPAYA</p>
+        <p>ESTOFADO DE GALLINA</p>
+        <p>ARROZ CON POLLO</p>
+        <p>ARROZ CHAUFA</p>
+        <p>JUGO DE NARANJA</p>
+        <p>JUGO DE PAPAYA</p>
+        <p>ESTOFADO DE GALLINA</p>
+        <p>ARROZ CON POLLO</p>
+        <p>ARROZ CHAUFA</p>
+        <p>JUGO DE NARANJA</p>
+        <p>JUGO DE PAPAYA</p>
+        <p>ESTOFADO DE GALLINA</p>
+        <p>ARROZ CON POLLO</p>
+        <p>ARROZ CHAUFA</p>
+        <p>JUGO DE NARANJA</p>
+        <p>JUGO DE PAPAYA</p>
+        <p>ESTOFADO DE GALLINA</p>
+        <p>ARROZ CON POLLO</p>
+        <p>ARROZ CHAUFA</p>
+        <p>JUGO DE NARANJA</p>
+        <p>JUGO DE PAPAYA</p>
+        <p>ESTOFADO DE GALLINA</p>
+        <p>ARROZ CON POLLO</p>
+        <p>ARROZ CHAUFA</p>
+        <p>JUGO DE NARANJA</p>
+        <p>JUGO DE PAPAYA</p>
+        <p>ESTOFADO DE GALLINA</p>
+        <p>ARROZ CON POLLO</p>
+        <p>ARROZ CHAUFA</p>
+        <p>JUGO DE NARANJA</p>
+        <p>JUGO DE PAPAYA</p>
+        <p>ESTOFADO DE GALLINA</p>
+        <p>ARROZ CON POLLO</p>
+        <p>ARROZ CHAUFA</p>
+        <p>JUGO DE NARANJA</p>
+        <p>JUGO DE PAPAYA</p>
+    </div>
+    <div class="itemsDiv c">
+        <h3>LA CUENTA</h3>
+        <p>aaaaaaaaaaa 10.00</p>
+        <p>aaaaaaaaaaa 10.00</p>
+        <p>aaaaaaaaaaa 10.00</p>
+        <p>aaaaaaaaaaa 10.00</p>
+        <p>aaaaaaaaaaa 10.00</p>
+    </div>
+  </div>
+    <!--table border="1" width="100%">
+      <tr>
+        <td width="50%">
+        <div>
+            <h3>OPCIONES CARTA</h3>
+            <p>ENTRADAS</p>
+            <p>PLATOS A LA CARTA</p>
+            <p>SEGUNDO</p>
+            <p>JUGOS Y REFRESCOS</p>
+            <p>GASEOSAS</p>
+        </div>
+        </td>
+        <td rowspan="2">
+          <div >
+              <h3>ITEMS CARTA</h3>
+              <p>ESTOFADO DE GALLINA</p>
+              <p>ARROZ CON POLLO</p>
+              <p>ARROZ CHAUFA</p>
+              <p>JUGO DE NARANJA</p>
+              <p>JUGO DE PAPAYA</p>
+              <p>ESTOFADO DE GALLINA</p>
+              <p>ARROZ CON POLLO</p>
+              <p>ARROZ CHAUFA</p>
+              <p>JUGO DE NARANJA</p>
+              <p>JUGO DE PAPAYA</p>
+          </div>
+        </td>
+      </tr>
+      <tr>
+        <td>
+          <div class="item1">
+              <h3>LA CUENTA</h3>
+              <p>aaaaaaaaaaa 10.00</p>
+              <p>aaaaaaaaaaa 10.00</p>
+              <p>aaaaaaaaaaa 10.00</p>
+              <p>aaaaaaaaaaa 10.00</p>
+              <p>aaaaaaaaaaa 10.00</p>
+          </div>
+        </td>
+      </tr>
+    </table-->
+
+
+</body>
+<style>
+.xdivEnLinea2 {
+  display: flex;                  /* establish flex container */
+  flex-direction: row;            /* default value; can be omitted */
+  flex-wrap: nowrap;              /* default value; can be omitted */
+  justify-content: space-between; /* switched from default (flex-start, see below) */
+  height: 100%;
+}
+.xdivEnLinea2 > .itemsDiv {
+  width: 380px;
+  height: 60vh;
+  border: solid rgba(1,1,1,.25) 1px;
+  overflow-y:auto;
+  -webkit-transition:all 0.3s ease;-o-transition:all 0.3s ease;-ms-transition:all 0.3s ease;-moz-transition:all 0.3s ease;transition:all 0.3s ease;
+}
+
+/*.xdivEnLinea2 > .itemsDiv.div1{display : table-cell;}
+.xdivEnLinea2 > .itemsDiv.div2{display : table-cell;}
+.xdivEnLinea2 > .itemsDiv.div3{display : table-row;}*/
+@media screen and (max-width:820px){
+  .xdivEnLinea2 {
+    display:grid;
+    grid-template-areas: "head main"
+                         "foot main";
+    justify-items:stretch;
+    justify-content:center;
+    align-content:stretch;
+    height: 100%;
+  }
+  .xdivEnLinea2 > .itemsDiv {height: auto;}
+  .xdivEnLinea2 > .itemsDiv.a { grid-area:head; background:blue }
+  .xdivEnLinea2 > .itemsDiv.b { grid-area:main; background:red }
+  .xdivEnLinea2 > .itemsDiv.c { grid-area:foot; background:green }
+}
+</style>
+</html>
