@@ -1037,7 +1037,7 @@
 
 
 			$idCatProcede=$_POST['p'];
-			if($idCatProcede!=0){//'almacen_items'
+			if($idCatProcede!=0){//'carta !=0'
 				// $sql="
 				// SELECT cl.idcarta_lista,s.idseccion,concat('1',s.sec_orden,'.',s.idseccion) as idseccion_index, i.iditem,s.descripcion AS des_seccion ,s.idimpresora, i.descripcion AS des_item, cl.precio, IF(cl.cantidad='SP',(IFNULL(it_p.stock,0)),cl.cantidad) AS cantidad,i.detalle,i.img,cl.cant_preparado,c.fecha,s.imprimir, IF(cl.cantidad='SP',it_p.idporcion,cl.idcarta_lista) AS idprocede, IF(cl.cantidad='SP',2,1) as procede, '0' AS procede_index, '1' AS imprimir_comanda, IF(cl.cantidad='SP',it_p.cant_porcion,1) AS cant_descontar
 				// FROM carta_lista AS cl
@@ -1068,7 +1068,7 @@
 				";
 			}
 			else{
-				$sql="
+				/*$sql="
 				SELECT ai.idalmacen_items AS idcarta_lista, pf.idproducto_familia AS idseccion,concat('2',pf.idproducto_familia,'.0') AS idseccion_index, ai.idproducto AS iditem, pf.descripcion AS des_seccion, cp.idimpresora
 					,p.descripcion AS des_item, format(p.precio_venta,2) AS precio, sum(ai.stock) AS cantidad, 0 AS sec_orden,'' AS detalle,'' AS img, sum(ai.stock) AS cant_preparado, ai.f_ingreso, 0 AS imprimir,ai.idproducto AS idprocede, 0 AS procede, pf.idproducto_familia AS procede_index,a.imprimir_comanda,1 AS cant_descontar
 				FROM almacen_items AS ai
@@ -1079,6 +1079,18 @@
 				WHERE (a.idorg=".$_SESSION['ido']." AND a.idsede=".$_SESSION['ido'].") and cl.idcarta_lista='".$_POST['i']."' AND ai.estado=0 AND p.estado=0
 				GROUP by ai.idproducto
 				ORDER BY pf.descripcion, p.descripcion
+				";*/
+
+				$sql="
+					SELECT ps.idproducto_stock AS idcarta_lista,pf.idproducto_familia as idseccion,concat('2',pf.idproducto_familia) AS idseccion_index,p.idproducto AS iditem, pf.descripcion AS des_seccion, cp.idimpresora,p.descripcion AS des_item, format(p.precio_venta,2) AS precio, ps.stock AS cantidad, 0 AS sec_orden,'' AS detalle,'' AS img, ps.stock AS cant_preparado, 0 AS imprimir,p.idproducto AS idprocede, 0 AS procede, pf.idproducto_familia AS procede_index,a.imprimir_comanda,1 AS cant_descontar,ps.idproducto_stock AS idalmacen_items
+					FROM producto AS p
+						INNER JOIN producto_stock AS ps using(idproducto)
+						INNER JOIN almacen AS a using(idalmacen)
+						INNER JOIN producto_familia AS pf using(idproducto_familia)
+						LEFT JOIN (SELECT idorg, idsede, idtipo_otro, idimpresora FROM conf_print_otros WHERE esalmacen=1) AS cp ON idtipo_otro=ps.idalmacen AND (cp.idorg=a.idorg AND cp.idsede=a.idsede)
+					WHERE (a.idorg=".$_SESSION['ido']." AND a.idsede=".$_SESSION['ido'].") AND ps.idproducto_stock='".$_POST['i']."' AND a.bodega=1 AND ps.estado=0 AND p.estado=0
+					GROUP by p.idproducto
+					ORDER BY pf.descripcion, p.descripcion
 				";
 			}
 
