@@ -1,0 +1,13 @@
+[28-Nov-2018 17:23:11 America/Lima] PHP Notice:  Undefined index: token in /home/viudaneg/consulta.viudanegra.com.pe/dni/api/service.php on line 70
+[28-Nov-2018 17:23:11 America/Lima] PHP Fatal error:  Class 'Reniec\Exception' not found in /home/viudaneg/consulta.viudanegra.com.pe/dni/src/token.php on line 14
+[28-Nov-2018 17:24:48 America/Lima] PHP Notice:  Undefined index: token in /home/viudaneg/consulta.viudanegra.com.pe/dni/api/service.php on line 70
+[28-Nov-2018 17:24:48 America/Lima] PHP Fatal error:  Class 'Reniec\Exception' not found in /home/viudaneg/consulta.viudanegra.com.pe/dni/src/token.php on line 14
+[28-Nov-2018 17:31:53 America/Lima] PHP Fatal error:  Cannot use object of type stdClass as array in /home/viudaneg/consulta.viudanegra.com.pe/dni/api/service.php on line 44
+[28-Nov-2018 17:31:55 America/Lima] PHP Fatal error:  Cannot use object of type stdClass as array in /home/viudaneg/consulta.viudanegra.com.pe/dni/api/service.php on line 44
+[28-Nov-2018 17:32:14 America/Lima] PHP Fatal error:  Cannot use object of type stdClass as array in /home/viudaneg/consulta.viudanegra.com.pe/dni/api/service.php on line 44
+[28-Nov-2018 17:32:29 America/Lima] PHP Notice:  Use of undefined constant Nombres - assumed 'Nombres' in /home/viudaneg/consulta.viudanegra.com.pe/dni/api/service.php on line 45
+[28-Nov-2018 17:32:29 America/Lima] PHP Catchable fatal error:  Object of class stdClass could not be converted to string in /home/viudaneg/consulta.viudanegra.com.pe/dni/api/service.php on line 45
+[28-Nov-2018 17:32:32 America/Lima] PHP Notice:  Use of undefined constant Nombres - assumed 'Nombres' in /home/viudaneg/consulta.viudanegra.com.pe/dni/api/service.php on line 45
+[28-Nov-2018 17:32:32 America/Lima] PHP Catchable fatal error:  Object of class stdClass could not be converted to string in /home/viudaneg/consulta.viudanegra.com.pe/dni/api/service.php on line 45
+[28-Nov-2018 17:38:52 America/Lima] PHP Notice:  Undefined index: token in /home/viudaneg/consulta.viudanegra.com.pe/dni/api/service.php on line 74
+[28-Nov-2018 17:38:52 America/Lima] PHP Fatal error:  Class 'Reniec\Exception' not found in /home/viudaneg/consulta.viudanegra.com.pe/dni/src/token.php on line 14

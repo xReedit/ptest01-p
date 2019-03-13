@@ -64,6 +64,11 @@
 				print 0; // no pasa
 			}
 			break;
+		case -3041: // cambiar clave usuario			
+			$sql="update usuario set nuevo=1, pass = '".$_POST['pn']."' where idusuario=".$_SESSION['idusuario'];
+			$bd->xConsulta($sql);
+			break;
+		
 		case -303:// load tipo usuarios
 			$sql="SELECT * FROM usuario_tipo order by idusuario_tipo";
 			$bd->xConsulta($sql);
@@ -223,7 +228,8 @@
 										$_SESSION['cargoU']=$obj["us"]->cargo;
 										$_SESSION['nom_sede']=$obj["us"]->nom_sede;
 										$_SESSION['rol']=$obj["us"]->rol;
-										$_SESSION['ciudad']=$obj["us"]->ciudad;										
+										$_SESSION['ciudad']=$obj["us"]->ciudad;
+										$_SESSION['nuevo']=$obj["us"]->nuevo;
 										$_SESSION['dataUs']=$data_cliente;
 										$rpt="1";
 									}
@@ -267,6 +273,7 @@
 						$_SESSION['nom_sede']=$obj[0]->nom_sede;
 						$_SESSION['rol']=$obj[0]->rol;
 						$_SESSION['ciudad']=$obj[0]->ciudad;
+						$_SESSION['nuevo']=$obj[0]->nuevo;
 						$_SESSION['dataUs']="";
 						//session_start();
 						print 1;
@@ -1096,7 +1103,45 @@
 
 			$bd->xConsulta($sql);
 			break;
+		case 3031: // get stock item antes de confirmar el pedido comprobar stock
+			$productos = $_POST['p'];
 
+			if ( $productos !=="" ) {
+				$sql = "
+				SELECT cl.idcarta_lista, IF(cl.cantidad='SP',(IFNULL(it_p.stock,0)),cl.cantidad) AS cantidad
+				FROM carta_lista AS cl
+					INNER JOIN carta AS c using(idcarta)													
+					LEFT JOIN (SELECT ii.iditem, GROUP_CONCAT(ii.idporcion) AS idporcion,GROUP_CONCAT(ii.cantidad) AS cant_porcion,po.stock
+									FROM item_ingrediente AS ii
+									INNER JOIN porcion AS po ON ii.idporcion=po.idporcion
+									WHERE ii.idporcion!=0 GROUP BY ii.iditem) AS it_p using(iditem)
+				WHERE (c.idorg=1 AND c.idsede=1) and cl.estado=0 and cl.idcarta_lista in (".$_POST['i'].") 								
+				UNION ALL
+				SELECT ps.idproducto_stock AS idcarta_lista, ps.stock AS cantidad
+				FROM producto AS p
+						INNER JOIN producto_stock AS ps using(idproducto)
+						INNER JOIN almacen AS a using(idalmacen)
+						INNER JOIN producto_familia AS pf using(idproducto_familia)
+						LEFT JOIN (SELECT idorg, idsede, idtipo_otro, idimpresora FROM conf_print_otros WHERE esalmacen=1) AS cp ON idtipo_otro=ps.idalmacen AND (cp.idorg=a.idorg AND cp.idsede=a.idsede)
+				WHERE (a.idorg=1 AND a.idsede=1) AND ps.idproducto_stock in (".$_POST['p'].") and a.bodega=1 AND ps.estado=0 AND p.estado=0
+				GROUP by p.idproducto		
+				";
+			} else {
+				$sql = "
+				SELECT cl.idcarta_lista, IF(cl.cantidad='SP',(IFNULL(it_p.stock,0)),cl.cantidad) AS cantidad
+				FROM carta_lista AS cl
+					INNER JOIN carta AS c using(idcarta)													
+					LEFT JOIN (SELECT ii.iditem, GROUP_CONCAT(ii.idporcion) AS idporcion,GROUP_CONCAT(ii.cantidad) AS cant_porcion,po.stock
+									FROM item_ingrediente AS ii
+									INNER JOIN porcion AS po ON ii.idporcion=po.idporcion
+									WHERE ii.idporcion!=0 GROUP BY ii.iditem) AS it_p using(iditem)
+				WHERE (c.idorg=1 AND c.idsede=1) and cl.estado=0 and cl.idcarta_lista in (".$_POST['i'].")				
+				";
+			}
+
+			
+			$bd->xConsulta($sql);
+			break;
 		case 304://guardar pedido
 			//num pedido
 			$sql="select count(idpedido) as d1 from pedido where idorg=".$_SESSION['ido']." and idsede=".$_SESSION['idsede'];
@@ -2561,6 +2606,45 @@
 			";
 			$bd->xConsulta($sql);
 			break;
+		case 20001:// historial de ventas
+			$pagination = $_POST['pagination'];
+			$fecha = $pagination['pageFecha'];
+			$filtroFecha = $fecha === '' ? '' : " HAVING SUBSTRING_INDEX(fecha,' ',1) = '".$fecha."' ";
+			$filtroFechaCount = $fecha === '' ? '' : " and (SUBSTRING_INDEX(c.fecha,' ',1)= '".$fecha."')";
+
+			$sql = "
+				select idregistro_pago, SUBSTRING_INDEX(fecha,' ',-1) AS hora, total, estado, cierre, idce
+				from registro_pago
+				where (idorg=".$_SESSION['ido']." and idsede=".$_SESSION['idsede'].") ".$filtroFecha."
+				order by idregistro_pago desc limit ".$pagination['pageLimit']." OFFSET ".$pagination['pageDesde'];				
+			
+			$sqlCount="
+                SELECT count(c.idregistro_pago) as d1 from registro_pago as c                    
+                where (c.idorg=".$_SESSION['ido']." and c.idsede=".$_SESSION['idsede'].")".$filtroFechaCount;            
+            
+			$rowCount = $bd->xDevolverUnDato($sqlCount);
+			$rpt = $bd->xConsulta($sql);            
+            print $rpt."**".$rowCount;
+			break;
+		case 20002: // detalles
+			$sql = "
+				SELECT rpp.idregistro_pago,GROUP_CONCAT(DISTINCT rpp.idpedido) AS idpedido,SUBSTRING_INDEX(rp.fecha,' ',-1) AS hora,rp.total,rp.estado,rp.cierre,rp.motivo_anular,tp.idtipo_comprobante
+					,LPAD(p.nummesa,2,'0') AS nummesa, GROUP_CONCAT(DISTINCT LPAD(p.correlativo_dia,5,'0')) as correlativo_dia, p.referencia, u.usuario, tp.idtipo_comprobante, tp.descripcion as comprobante, IFNULL(c.nombres, 'PUBLICO EN GENERAL') AS cliente
+					,rp.idce, ce.numero as num_comprobante
+						FROM registro_pago_pedido AS rpp
+						INNER JOIN registro_pago AS rp ON rpp.idregistro_pago=rp.idregistro_pago										
+						INNER JOIN pedido AS p ON rpp.idpedido=p.idpedido
+						inner JOIN usuario as u on u.idusuario = rp.idusuario
+						LEFT join cliente as c on c.idcliente = rp.idcliente
+						LEFT join ce as ce on rp.idce = ce.idce			
+						LEFT join tipo_comprobante_serie as tpcs on tpcs.idtipo_comprobante_serie = ce.idtipo_comprobante_serie
+						LEFT JOIN tipo_comprobante as tp on tp.idtipo_comprobante = tpcs.idtipo_comprobante
+				WHERE rpp.idregistro_pago = ".$_POST['i']."
+				GROUP BY rpp.idregistro_pago
+				ORDER BY rp.idregistro_pago desc
+			";
+			$bd->xConsulta($sql);
+			break;
 		case 2001://resumen total historial de venta x dia
 			$f_historial=$_POST['f'];
 			if($f_historial==''){$f_historial='curdate()';}else{$f_historial="STR_TO_DATE('".$f_historial."', '%d/%m/%Y')";}
@@ -2829,7 +2913,8 @@ function encode_dataUS(){
 				'nomus'=>$_SESSION['nomUs'],
 				'nom_sede'=>$_SESSION['nom_sede'],
 				'ciudad'=>$_SESSION['ciudad'],
-				'rol'=>$_SESSION['rol']
+				'rol'=>$_SESSION['rol'],
+				'nuevo'=>$_SESSION['nuevo'],
 			],
 		'dispositivos'=>[
 				'dispositivo'=>xDtUS(3011),

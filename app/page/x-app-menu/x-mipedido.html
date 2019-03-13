@@ -65,6 +65,22 @@ Confirmar
 <div class="xBoton2 xPlomo" dialog-dismiss>Cancelar</div>
 </div>
 </paper-dialog>
+<paper-dialog id="dialog_item_sin_stock" class="dialog_redondo" modal entry-animation="scale-up-animation" exit-animation="fade-out-animation" with-backdrop>
+<div class="xCentrado">
+<h3>CAMBIAR</h3>
+<h4>No hay stock requerido para:</h4>
+</div>
+<hr>
+<div>
+<table width="100%">
+<tbody id="body_item_sin_stock"></tbody>
+</table>
+</div>
+<br>
+<hr>
+<button class="xBoton2 xPlomo xCentrado" dialog-dismiss>Listo</button>
+<br>
+</paper-dialog>
 <div class="xEncabezadoMesa">
 <table width="100%">
 <thead class="xtable3 xFondoRowIndigo">
@@ -104,9 +120,13 @@ Nuevo pedido
 <style is="custom-style">paper-checkbox.check_red{background:#bdbdbd}.content_collapse{padding:0}table tr td.xtb_pedido_importe{width:10px;text-align:right}.btn_apunte_deliver{margin-top:-10px}</style>
 </dom-module>
 <style type="text/css">paper-checkbox.check_red{background:#bdbdbd}.content_collapse{padding:0}table tr td.xtb_pedido_importe{width:10px;text-align:right}.btn_apunte_deliver{margin-top:-10px}</style>
+<script type="text/javascript" src="../../view/item_pedido_estructura.js"></script>
 <script type="text/javascript" src="../../view/item_pedido_print_comprobante.js"></script>
 <script type="text/javascript" src="../../view/item_pedido_subtotales.js"></script>
-<script>/*<![CDATA[*/var xThis;var xCadenaTC,xNumMesaPedido,xReferenciaPedido,xRowColapseOpen=null,xidCategoriaSeccion,xHayPedido=0,xArrayRegla=[],xDtPrint=[],xDtSubTotales=[],xArrayEnca=[],xsolo_llevar=0,xdelivery=0,xReservar=0,xPopupLoad,xNumMesaLoadCuenta,xnum_mesa_valido=false,xNumMesasBd,arrDatosAdjuntoDelivery={},guardandoPedido=false;function xAbrirPopupConfirmar(){var xmesa=$("#nummesa").val();xVerificarSiSoloLLevar();if(xsolo_llevar===1||xdelivery===1){}else{if(xmesa==""){alert("Indique numero de mesa. Coloque cero(0) si no corresponde");xPopupLoad.xclose();return;}else{if(xnum_mesa_valido==false){alert("Numero de mesa no es valido.");xPopupLoad.xclose();return;}}}
+<script>/*<![CDATA[*/var xThis;var xCadenaTC,xNumMesaPedido,xReferenciaPedido,xRowColapseOpen=null,xidCategoriaSeccion,xHayPedido=0,xArrayRegla=[],xDtPrint=[],xDtSubTotales=[],xArrayEnca=[],xsolo_llevar=0,xdelivery=0,xReservar=0,xPopupLoad,xNumMesaLoadCuenta,xnum_mesa_valido=false,xNumMesasBd,arrDatosAdjuntoDelivery={},guardandoPedido=false;async function xAbrirPopupConfirmar(){var xmesa=$("#nummesa").val();xVerificarSiSoloLLevar();if(xsolo_llevar===1||xdelivery===1){}else{if(xmesa==""){alert("Indique numero de mesa. Coloque cero(0) si no corresponde");xPopupLoad.xclose();return;}else{if(xnum_mesa_valido==false){alert("Numero de mesa no es valido.");xPopupLoad.xclose();return;}}}
+const _arrNoStockItem=await xVerificarStockItemPedidoBefore();if(_arrNoStockItem.length>0){var msj_sin_stock='';_arrNoStockItem.map(x=>{msj_sin_stock+='<tr><td>'+xCeroIzq(x.stock_actual,1)+'</td><td>'+x.des+'</td></tr>'
+if(x.stock_actual===0){delete xArrayPedidoObj[x.tipo_consumo][x.id];}
+xArrayPedidoObj[x.tipo_consumo][x.id].cantidad=x.stock_actual;xArrayPedidoObj[x.tipo_consumo][x.id].update_stock=true;x.stock_modificado=true;});const _itemReservar=_arrNoStockItem.filter(x=>x.stock_modificado).map(x=>{return{id:x.id,procede:x.procede,stock:x.stock_actual}});xLoadMipedido();xArrayPedidoObj[x.tipo_consumo][x.id].cantidad=$("#body_item_sin_stock").html(msj_sin_stock).trigger('create');dialog_item_sin_stock.open();return;}
 btn_dlg_confirm.hidden=false;dialog_msj_confirma_pedido.open();}
 function xIniMiPedido(){xPopupLoad=document.getElementById("xLoad");xHayPedido=0;$("#xtitulo_bar").text("MI PEDIDO");xArmarMenuLateral(2);$("body").addClass("loaded");$(window).trigger("resize");xm_log_get("ini_us");var xDatos_p=xm_log_get("sede_generales");xNumMesasBd=parseInt(xDatos_p[0].mesas);xArrayPedidoObj=$.parseJSON(window.localStorage.getItem("::app3_sys_dta_pe"));xNumMesaPedido=window.localStorage.getItem("::app3_sys_dta_nmp");xReferenciaPedido=window.localStorage.getItem("::app3_sys_dta_rp");xArrayRegla=xm_log_get("reglas_de_carta");xDtPrint=xm_log_get("sede_generales");xLoadMipedido();if(xReferenciaPedido==undefined){xReferenciaPedido="";}
 if(xNumMesaPedido==undefined){xNumMesaPedido="";}
@@ -127,7 +147,7 @@ function xVerificarSiSoloLLevar(){xsolo_llevar=0;xdelivery=0;var xcount_seccion=
 if($(element).attr("data-col")=="colapse2"){xsolo_llevar=1;}
 if(xIdTpc_pe==="3"){xsolo_llevar=1;}
 if($(element).attr("data-colDes").trim().toLowerCase()=="delivery"){xdelivery=1;}});if(xcount_seccion>1){xsolo_llevar=0;}}
-function xGuardarPedido(){if(guardandoPedido===true){return;}
+async function xGuardarPedido(){if(guardandoPedido===true){return;}
 guardandoPedido=true;xPopupLoad.titulo="Enviando...";xPopupLoad.xopen();btn_dlg_confirm.hidden=true;var xmesa=$("#nummesa").val();var xref=$("#referencia_pedido").val();var xtotal=$(".xPedidoTotal").text();var xCantidad_descontar=0;var xItem_descontar="";var xsql_descontar="";var xIdPedido="";var xNumPedido="";var xIdTpc_pe="";var xsub_sql_descontar="";xReservar=0;if(check_reserva.checked==true){xmesa="0";$("#nummesa").val(0);xReservar=1;}
 xVerificarSiSoloLLevar();if(tt_pedido==0){return;}
 xGeneralValidarRegalasCarta(xArrayPedidoObj,true);if(xArmarSubtotalesArray()==0){return;}

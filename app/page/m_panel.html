@@ -90,6 +90,19 @@
 </div>
 </div>
 </paper-dialog>
+<paper-dialog id=dialog_requiere_cambio_pas class=dialog_redondo modal entry-animation=scale-up-animation exit-animation=fade-out-animation with-backdrop>
+<div class=xContent>
+<h4>CAMBIAR CLAVE</h4>
+<p>Por seguridad se requiere el cambio de clave.</p>
+<br><div class=xLinea2></div><br>
+<paper-input label="Nueva Clave" type=password required id=pass1></paper-input>
+<paper-input label=Repitalo type=password required id=pass2></paper-input>
+<p id=msj_pass_clave class=xColorRow_Rojo></p>
+<br><div class=xLinea2></div><br>
+<button class="xBoton2 xAzul" id=btn_cambiar_pass onclick=changePass()>Listo, cambiar clave</button>
+<br>
+</div>
+</paper-dialog>
 <div class=wrapper>
 <div id=loader-wrapper>
 <div id=loader></div>

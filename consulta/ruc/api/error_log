@@ -1,0 +1,5 @@
+[02-Sep-2018 06:17:53 UTC] PHP Notice:  Undefined index: ruc in /home/viudaneg/consulta.viudanegra.com.pe/ruc/api/service.php on line 6
+[14-Sep-2018 08:20:56 UTC] PHP Notice:  Undefined index: ruc in /home/viudaneg/consulta.viudanegra.com.pe/ruc/api/service.php on line 8
+[14-Sep-2018 08:21:11 UTC] PHP Notice:  Undefined index: ruc in /home/viudaneg/consulta.viudanegra.com.pe/ruc/api/service.php on line 8
+[19-Oct-2018 15:18:38 America/Lima] PHP Notice:  Undefined index: token in /home/viudaneg/consulta.viudanegra.com.pe/ruc/api/service.php on line 7
+[19-Oct-2018 15:18:38 America/Lima] PHP Fatal error:  Class 'Sunat\Exception' not found in /home/viudaneg/consulta.viudanegra.com.pe/ruc/src/sunat.php on line 34

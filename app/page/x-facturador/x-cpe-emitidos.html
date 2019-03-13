@@ -1,475 +1,216 @@
 <link rel="import" href="../../x-componentes/pagination-input/pagination-input.html">
 <link rel="preload" href="../../../images/_msj_envio_sunat.gif" as="image" media="(max-width: 600px)">
-
 <dom-module id="x-cpe-emitidos">
-    <template is="dom-bind">
-        <paper-dialog class="dialog_redondo" id="dialog_enviando_sunat" style="width: 245px;" modal entry-animation="scale-up-animation"
-            exit-animation="fade-out-animation">
-            <div style="text-align: center">
-                <img id="dgl_sunat_img" src="../../../images/_msj_envio_sunat.gif" alt="">
-                <p id="dgl_sunat_msj">Enviando comprobantes electronicos.</p>
-                <p id="dgl_sunat_msj2" class="xInvisible xColorRow_Azul">Proceso concluido con exito.</p>
-                <p id="dgl_sunat_msj3" class="center xColorRow_Plomo xfont11">...</p>                
-                <paper-progress id="dgl_sunat_progress" indeterminate style="width: 100%;"></paper-progress>
-                <button dialog-dismiss id="dlg_sunat_btn" class="xBoton2 xVerde xInvisible">Listo</button>
-            </div>
-        </paper-dialog>
-        
-        <paper-dialog id="dialog_motivo_anular_comprobante" style="min-width:320px;" entry-animation="scale-up-animation" exit-animation="fade-out-animation" with-backdrop>
-            <div class="xContent">
-                <h4>ANULAR COMPROBANTE</h4>
-                <hr>
-                <p class="xColorRow_Rojo">Esta seguro de querer anular el comprobante? Una vez anulado no podra recuperarlo.</p>
-                <br>
-                <h4>Indique el motivo de anulacion</h4>
-                <div>                    
-                    <input type="text" class="xMiInput" placeholder="Motivo..." id="txt_motivo_anular" autofocus>
-                </div>
-                <br><br><br>
-                <div class="xBoton2 xRojo" dialog-dismiss onclick="xAnularComprobante_confirma();">Listo</div>
-                <div class="xBoton2 xPlomo" dialog-dismiss>Cancelar</div>
-                <br><br>
-            </div>
-        </paper-dialog>
-
-        <br>
-        <div class="xMiCard xradius" style="width:90%">
-            <div class="xEncanezadoCard xFondoRowAmarillo2">
-                <h4>Comprobantes electronicos.</h4>
-                <span>Estado de los comprobantes electronicos, resumenes diarios y reportes.</span>
-            </div>
-            <div class="xContentCard" style="height: 100%;">
-                <div>
-                    <br>
-                    <paper-tabs selected="{{selected}}" id="tab_cpe">
-                        <paper-tab>Comprobantes</paper-tab>
-                        <paper-tab>Resumen de boletas</paper-tab>
-                    </paper-tabs>
-                    <div class="xLinea2"></div>
-                    <br><br>
-                    <iron-pages selected="{{selected}}">
-                        <div id="div_comprobantes">
-                            <div>
-                                <div class="xDerecha">
-                                    <button class="xBoton2 xAzul xDerecha" onclick="xEnviarResumenBoletas()">Enviar Resumen de boletas</button>
-                                    <br>
-                                    <button class="xBoton2 xVerde xDerecha" onclick="xGenerarReporteExcel()" title="Bajar a excel"><img src="../../../images/excel.png" alt=""></button>
-                                </div>     
-                                
-                                <h4>Comprobantes electronicos emitidos.</h4>
-                                <p class="xColorRow_Plomo">Al enviar el resumen de boletas, también se procesan y se envían los documentos sin
-                                    registrar, es decir los documentos
-                                    que se emitieron en modo offline ó los que por algún motivo en su momento no se pudo establecer conexión con la
-                                    Sunat.<br>Este proceso es el mismo que se realiza al cierre de caja.</p>
-                                <p id="xTituloRpt" class="xColorRow_Rojo"></p>
-                            </div>
-                            <br>
-                            <hr>
-                            <div class="x_div_linea">
-                                <input type="date" class="xMiInput xfont17 xitem1" style="width:200px;" id="txt_fecha" enlinea>
-                                <input type="text" class="xMiInput xfont18 xitem2" style="width:80%; bottom: -2px;" placeholder="Buscar" autofocus onkeyup="xfiltrarDatos()"
-                                    id="txt_buscar" enlinea>                                                                
-                            </div>
-                            <br><br>
-                            <table width="100%" id="tb_list_cpe" class="xtable5">
-                                <thead>
-                                    <th class="xNoVisibleMenos720" width="45px">#</th>
-                                    <th class="xNoVisibleMenos720" width="15%">fecha</th>
-                                    <th class="xNoVisibleMenos720" width="17%">Comprobante</th>
-                                    <th width="35%">Cliente</th>
-                                    <th align="right">Total</th>
-                                    <th>Estado</th>
-                                    <th>.</th>
-                                </thead>
-                                <tbody>
-                                    <template is="dom-repeat" items="{{ListCpe}}" as="item">
-                                        <tr class="animated fadeIn fast" id="{{index}}">
-                                            <td class="xNoVisibleMenos720" data-id="{{index}}">
-                                                <!-- <paper-checkbox class="check_item_recuperar" id="{{index}}"></paper-checkbox> -->
-                                                <!-- <img src="../../../images/_delete.png" alt=""> -->
-                                                <span hidden$="{{!item.btn_anular}}" class="xDeleteRow2" title="Anular" onclick="xAnularComprobante(this);"></span>
-                                                <span>{{displayIndex(index)}}</span>
-                                            </td>
-                                            <td class="xNoVisibleMenos720">{{item.fecha}} - {{ item.hora }}</td>
-                                            <td class="xNoVisibleMenos720">{{item.nom_comprobante}} - {{ item.numero }}</td>
-                                            <td>{{item.nomcliente}}</td>
-                                            <td align="right" class="ximporte_row">{{item.total}}</td>
-                                            <td><span class$={{item.class_estado}}>{{item.nom_estado}}</span></td>
-                                            <td>
-                                                <div data-id="{{index}}">
-                                                    <img class="xzoom-1 xCursor" hidden$="{{!item.ico_pdf}}" onclick="verDocuemnto('pdf', this)" src="../../../images/001-pdf.png" width="16px" alt="">
-                                                    <img class="xzoom-1 xCursor" hidden$="{{!item.ico_xml}}" onclick="verDocuemnto('xml', this)" src="../../../images/002-xml.png" width="16px" alt="">
-                                                    <img class="xzoom-1 xCursor" hidden$="{{!item.ico_cdr}}" onclick="verDocuemnto('cdr', this)" src="../../../images/003-cdr.png" width="16px" alt="">
-                            
-                                                    <!-- reenviar -->
-                                                    <!-- <img class="xzoom-1 xCursor" hidden$="{{!item.btn_enviar}}" title="Reenviar" src="../../../images/x_up.png" width="16px" alt="">                                                     -->
-                                                </div>
-                                            </td>
-                                        </tr>
-                                    </template>
-                                </tbody>
-                            </table>
-                            <br>                            
-                            <div>                                
-                                <pagination-input id="paginator" class="xDerecha" current-page="1" page-count="5" current-page-changed="onChangePagination($event)"></pagination-input>                                
-                            </div>
-                            <br><br>
-                        </div>
-
-                        <!-- resumen de boletas -->
-                        <div id="div_resuemn">
-                            <h4>Resumen de boletas</h4>
-                            <p>Todas las boletas emitidas en el dia se envian a la sunat en un unico archivo llamado resumen diario de boletas.</p>
-                            <br>
-                            <hr>
-                            <div>                                
-                                <input type="text" class="xMiInput xfont18" style="width:100%; bottom: -3px;" placeholder="Buscar" autofocus onkeyup="xfiltrarDatos_re()" id="txt_buscar_re" enlinea>
-                            </div>
-                            <br><br>
-                            <table width="100%" id="tb_list_resumen" class="xtable5">
-                                <thead>
-                                    <th>#</th>
-                                    <th>f. Resumen</th>
-                                    <th>f. Envio</th>
-                                    <th>Estado</th>                                    
-                                    <th>.</th>
-                                </thead>
-                                <tbody>
-                                    <template is="dom-repeat" items="{{ListCpeResumen}}" as="item">
-                                        <tr class="animated fadeIn fast" id="{{index}}">
-                                            <td>                                                
-                                                <span class="xNoVisibleMenos720">{{displayIndex(index)}}</span>
-                                            </td>
-                                            <td class="xNoVisibleMenos720">{{item.fecha_resumen}}</td>
-                                            <td class="xNoVisibleMenos720">{{item.fecha_envio}}</td>
-                                            <td>{{item.msj}}</td>                                            
-                                            <td>
-                                                <div>                                                    
-                                                    <img class="xzoom-1 xCursor" hidden$="{{!item.ico_xml}}" src="../../../images/002-xml.png" width="16px" alt="">
-                                                    <img class="xzoom-1 xCursor" hidden$="{{!item.ico_cdr}}" src="../../../images/003-cdr.png" width="16px" alt="">                            
-                                                </div>
-                                            </td>
-                                        </tr>
-                                    </template>
-                                </tbody>
-                            </table>
-                            <br>
-                            <div class="xDerecha">
-                                <pagination-input id="paginator_re" current-page="1" page-count="5" current-page-changed="onChangePagination_re($event)"></pagination-input>
-                            </div>
-                            <br><br>
-                        </div>
-                    </iron-pages>                    
-                </div>
-            </div>
-        </div>
-        <br><br>
-
-
-        <!-- reporte comprobantes exportar -> excel -->
-        <!-- <button onclick="xGenerarReporteExcel()">Exportar</button> -->
-        <div id="reporte" class="xInvisible">
-
-            <table id="testTable" width="100%">
-                <caption>
-                    <h1>[[nom_sede]]</h1>
-                    <h2>Reporte de comprobantes emitidos</h2>                    
-                </caption>            
-                <thead>                
-                    <th width="45px">#</th>
-                    <th width="15%">f. Emision</th>
-                    <th width="15%">H. Emision</th>                
-                    <th>Tipo</th>
-                    <th>Numero</th>
-                    <th width="35%">Cliente</th>
-                    <th align="right">Sub total</th>
-                    <th align="right">I.G.V</th>
-                    <th align="right">Total</th>
-                    <th>Estado</th>                
-                </thead>
-                <tbody>
-                    <template is="dom-repeat" items="{{ListReporte}}" as="row">
-                    <tr>
-                        <td>{{displayIndex(index)}}</td>
-                        <td>{{row.fecha}}</td>
-                        <td>{{row.hora}}</td>
-                        <td>{{row.nom_comprobante}}</td>
-                        <td>{{row.numero }}</td>
-                        <td>{{row.nomcliente}}</td>
-                        <td>{{row.subtotal}}</td>
-                        <td>{{row.igv}}</td>
-                        <td>{{row.total}}</td>
-                        <td style$="{{row.style_reporte}}">{{row.nom_estado}}</td>
-                    </tr>
-                    </template>
-                </tbody>
-            </table>
-
-        </div>
-    </template>
+<template is="dom-bind">
+<paper-dialog class="dialog_redondo" id="dialog_enviando_sunat" style="width:245px" modal entry-animation="scale-up-animation" exit-animation="fade-out-animation">
+<div style="text-align:center">
+<img id="dgl_sunat_img" src="../../../images/_msj_envio_sunat.gif" alt="">
+<p id="dgl_sunat_msj">Enviando comprobantes electronicos.</p>
+<p id="dgl_sunat_msj2" class="xInvisible xColorRow_Azul">Proceso concluido con exito.</p>
+<p id="dgl_sunat_msj3" class="center xColorRow_Plomo xfont11">...</p>
+<paper-progress id="dgl_sunat_progress" indeterminate style="width:100%"></paper-progress>
+<button dialog-dismiss id="dlg_sunat_btn" class="xBoton2 xVerde xInvisible">Listo</button>
+</div>
+</paper-dialog>
+<paper-dialog id="dialog_motivo_anular_comprobante" style="min-width:320px" entry-animation="scale-up-animation" exit-animation="fade-out-animation" with-backdrop>
+<div class="xContent">
+<h4>ANULAR COMPROBANTE</h4>
+<hr>
+<p class="xColorRow_Rojo">Esta seguro de querer anular el comprobante? Una vez anulado no podra recuperarlo.</p>
+<br>
+<h4>Indique el motivo de anulacion</h4>
+<div>
+<input type="text" class="xMiInput" placeholder="Motivo..." id="txt_motivo_anular" autofocus>
+</div>
+<br><br><br>
+<div class="xBoton2 xRojo" dialog-dismiss onclick="xAnularComprobante_confirma()">Listo</div>
+<div class="xBoton2 xPlomo" dialog-dismiss>Cancelar</div>
+<br><br>
+</div>
+</paper-dialog>
+<br>
+<div class="xMiCard xradius" style="width:90%">
+<div class="xEncanezadoCard xFondoRowAmarillo2">
+<h4>Comprobantes electronicos.</h4>
+<span>Estado de los comprobantes electronicos, resumenes diarios y reportes.</span>
+</div>
+<div class="xContentCard" style="height:100%">
+<div>
+<br>
+<paper-tabs selected="{{selected}}" id="tab_cpe">
+<paper-tab>Comprobantes</paper-tab>
+<paper-tab>Resumen de boletas</paper-tab>
+</paper-tabs>
+<div class="xLinea2"></div>
+<br><br>
+<iron-pages selected="{{selected}}">
+<div id="div_comprobantes">
+<div>
+<div class="xDerecha">
+<button class="xBoton2 xAzul xDerecha" onclick="xEnviarResumenBoletas()">Enviar Resumen de boletas</button>
+<br>
+<button class="xBoton2 xVerde xDerecha" onclick="xGenerarReporteExcel()" title="Bajar a excel"><img src="../../../images/excel.png" alt=""></button>
+</div>
+<h4>Comprobantes electronicos emitidos.</h4>
+<p class="xColorRow_Plomo">Al enviar el resumen de boletas, también se procesan y se envían los documentos sin
+registrar, es decir los documentos
+que se emitieron en modo offline ó los que por algún motivo en su momento no se pudo establecer conexión con la
+Sunat.<br>Este proceso es el mismo que se realiza al cierre de caja.</p>
+<p id="xTituloRpt" class="xColorRow_Rojo"></p>
+</div>
+<br>
+<hr>
+<div class="x_div_linea">
+<input type="date" class="xMiInput xfont17 xitem1" style="width:200px" id="txt_fecha" enlinea>
+<input type="text" class="xMiInput xfont18 xitem2" style="width:80%;bottom:-2px" placeholder="Buscar" autofocus onkeyup="xfiltrarDatos()" id="txt_buscar" enlinea>
+</div>
+<br><br>
+<table width="100%" id="tb_list_cpe" class="xtable5">
+<thead>
+<th class="xNoVisibleMenos720" width="45px">#</th>
+<th class="xNoVisibleMenos720" width="15%">fecha</th>
+<th class="xNoVisibleMenos720" width="17%">Comprobante</th>
+<th width="35%">Cliente</th>
+<th align="right">Total</th>
+<th>Estado</th>
+<th>.</th>
+</thead>
+<tbody>
+<template is="dom-repeat" items="{{ListCpe}}" as="item">
+<tr class="animated fadeIn fast" id="{{index}}">
+<td class="xNoVisibleMenos720" data-id="{{index}}">
+<span hidden$="{{!item.btn_anular}}" class="xDeleteRow2" title="Anular" onclick="xAnularComprobante(this)"></span>
+<span>{{displayIndex(index)}}</span>
+</td>
+<td class="xNoVisibleMenos720">{{item.fecha}} - {{ item.hora }}</td>
+<td class="xNoVisibleMenos720">{{item.nom_comprobante}} - {{ item.numero }}</td>
+<td>{{item.nomcliente}}</td>
+<td align="right" class="ximporte_row">{{item.total}}</td>
+<td><span class$={{item.class_estado}}>{{item.nom_estado}}</span></td>
+<td>
+<div data-id="{{index}}">
+<img class="xzoom-1 xCursor" hidden$="{{!item.ico_pdf}}" onclick="verDocuemnto('pdf',this)" src="../../../images/001-pdf.png" width="16px" alt="">
+<img class="xzoom-1 xCursor" hidden$="{{!item.ico_xml}}" onclick="verDocuemnto('xml',this)" src="../../../images/002-xml.png" width="16px" alt="">
+<img class="xzoom-1 xCursor" hidden$="{{!item.ico_cdr}}" onclick="verDocuemnto('cdr',this)" src="../../../images/003-cdr.png" width="16px" alt="">
+</div>
+</td>
+</tr>
+</template>
+</tbody>
+</table>
+<br>
+<div>
+<pagination-input id="paginator" class="xDerecha" current-page="1" page-count="5" current-page-changed="onChangePagination($event)"></pagination-input>
+</div>
+<br><br>
+</div>
+<div id="div_resuemn">
+<h4>Resumen de boletas</h4>
+<p>Todas las boletas emitidas en el dia se envian a la sunat en un unico archivo llamado resumen diario de boletas.</p>
+<br>
+<hr>
+<div>
+<input type="text" class="xMiInput xfont18" style="width:100%;bottom:-3px" placeholder="Buscar" autofocus onkeyup="xfiltrarDatos_re()" id="txt_buscar_re" enlinea>
+</div>
+<br><br>
+<table width="100%" id="tb_list_resumen" class="xtable5">
+<thead>
+<th>#</th>
+<th>f. Resumen</th>
+<th>f. Envio</th>
+<th>Estado</th>
+<th>.</th>
+</thead>
+<tbody>
+<template is="dom-repeat" items="{{ListCpeResumen}}" as="item">
+<tr class="animated fadeIn fast" id="{{index}}">
+<td>
+<span class="xNoVisibleMenos720">{{displayIndex(index)}}</span>
+</td>
+<td class="xNoVisibleMenos720">{{item.fecha_resumen}}</td>
+<td class="xNoVisibleMenos720">{{item.fecha_envio}}</td>
+<td>{{item.msj}}</td>
+<td>
+<div>
+<img class="xzoom-1 xCursor" hidden$="{{!item.ico_xml}}" src="../../../images/002-xml.png" width="16px" alt="">
+<img class="xzoom-1 xCursor" hidden$="{{!item.ico_cdr}}" src="../../../images/003-cdr.png" width="16px" alt="">
+</div>
+</td>
+</tr>
+</template>
+</tbody>
+</table>
+<br>
+<div class="xDerecha">
+<pagination-input id="paginator_re" current-page="1" page-count="5" current-page-changed="onChangePagination_re($event)"></pagination-input>
+</div>
+<br><br>
+</div>
+</iron-pages>
+</div>
+</div>
+</div>
+<br><br>
+<div id="reporte" class="xInvisible">
+<table id="testTable" width="100%">
+<caption>
+<h1>[[nom_sede]]</h1>
+<h2>Reporte de comprobantes emitidos</h2>
+</caption>
+<thead>
+<th width="45px">#</th>
+<th width="15%">f. Emision</th>
+<th width="15%">H. Emision</th>
+<th>Tipo</th>
+<th>Numero</th>
+<th width="35%">Cliente</th>
+<th width="15%">RUC/DNI</th>
+<th align="right">Sub total</th>
+<th align="right">I.G.V</th>
+<th align="right">Total</th>
+<th>Estado</th>
+</thead>
+<tbody>
+<template is="dom-repeat" items="{{ListReporte}}" as="row">
+<tr>
+<td>{{displayIndex(index)}}</td>
+<td>{{row.fecha}}</td>
+<td>{{row.hora}}</td>
+<td>{{row.nom_comprobante}}</td>
+<td>{{row.numero }}</td>
+<td>{{row.nomcliente}}</td>
+<td>{{row.ruc}}</td>
+<td>{{row.subtotal}}</td>
+<td>{{row.igv}}</td>
+<td>{{row.total}}</td>
+<td style$="{{row.style_reporte}}">{{row.nom_estado}}</td>
+</tr>
+</template>
+</tbody>
+</table>
+</div>
+</template>
 </dom-module>
 <script type="text/javascript" src="./list.resumen.boletas.js"></script>
-
 <script type="text/javascript" src="./../x-caja/cocinar.resumen.boletas.js"></script>
-<!-- <script type="text/javascript" src="../../view/config.const.js"></script> -->
 <script type="text/javascript" src="../../view/xSOAPSunat.js"></script>
 <script type="text/javascript" src="../../view/cpe_interno.js"></script>
 <script type="text/javascript" src="../../view/export.excel.js"></script>
-
-<script>
-    var xThisCpe, lastPos=0, xPopupLoad, p_upadate=true, p_rows_re=0, p_rows=0, p_fecha='', p_filter='', p_desde=0, data_pagination={}, data_pagination_re={}, xdebounce, xe_debounce=false, index_anular;
-
-
-    function xExportarExcel() {
-        tableToExcel('testTable', 'Comprobantes')
-    }
-
-    function xIniCpe() {
-        xThisCpe.ListCpe = [];
-        xThisCpe.ListCpeResumen = [];
-        xLoadCpeEmitidos('6');
-        xIniPagination();
-                
-        xThisCpe.$.paginator.addEventListener('page-limit-change', (e) => {
-            // console.log('page-limit-change', e.detail.value);
-            data_pagination = e.detail.value; // datos del componente
-            p_desde = data_pagination.pageDesde; // para el # de fila            
-            lastPos = $(window).scrollTop();
-            xLoadCpeEmitidos('6');            
-        }); 
-           
-        
-        $("#txt_fecha").on('change', function () {
-            var d = $(this).val().split('-');            
-            p_fecha = d[1]===undefined ? '' : d[2] + '/' + d[1] + '/' + d[0];                        
-            xThisCpe.$.paginator.currentPage = 1;            
-            xLoadCpeEmitidos('6');
-            // xIniPagination();
-        });
-
-        $("#tab_cpe").on('iron-select', function () {
-            switch (xThisCpe.selected) {
-                // case 0: xLoadResumenIS(); break;
-            }
-        });
-
-        xListRe_ini(); // iniciar resumen boletas
-
-    }
-
-    function xIniPagination() {        
-        xThisCpe.$.paginator.currentPage = 1;
-        xThisCpe.$.paginator.pageRows = p_rows;
-        xThisCpe.$.paginator.listRows = [10,20,30,40];
-
-        // xThisCpe.$.data_pagination_re.currentPage = 1;
-        // xThisCpe.$.data_pagination_re.pageRows = p_rows_re;
-        // xThisCpe.$.data_pagination_re.listRows = [10,20,30,40];
-    }
-
-    function xfiltrarDatos() {
-        // if ( xThisCpe.$.txt_buscar.value.length < 3 ) return;
-        if ( xe_debounce ) return;
-        xe_debounce = true;
-        clearTimeout(xdebounce);
-
-        xdebounce = setTimeout(() => {            
-            xLoadCpeEmitidos('6');
-            // clearTimeout(xdebounce);
-            xe_debounce = false;
-            xThisCpe.$.paginator.currentPage = 1;            
-            // xIniPagination();
-        }, 900);
-    }
-
-    function xLoadCpeEmitidos(op) {                
-        p_filter = xThisCpe.$.txt_buscar.value;      
-        // p_fecha  = xThisCpe.$.txt_fecha.value;
-        //p_fecha = p_fecha == "" ? xDevolverFecha() : p_fecha;
-                
-        data_pagination.pageFilter = p_filter;    
-        data_pagination.pageFecha = p_fecha;
-
-        let xDataRes = [];
-        // console.log(data_pagination);
-
-        $.ajax({ type: 'POST', url: '../../bdphp/log_002.php', data: { op: op, pagination: data_pagination} })
-        .done(function (res) {
-            res = res.split('**');
-            p_rows = res[1];
-            res = $.parseJSON(res[0]);
-            xDataRes = res.datos;
-            
-            // console.log(xDataRes);
-            // estado   0 = ok registrado enviado
-            //          1 = registrado no enviado por que es boleta
-            //          2 = no registrado si es boleta y si es factura no enviado
-            //          3 = anulado
-
-            xDataRes.map (x => {
-                let msj_estado = '';
-                let class_estado = '';
-                const boleta = x.codsunat === '03' ? true : false;
-                const e_api = parseInt(x.estado_api) === 0 ? true : false;
-                const e_sunat = parseInt(x.estado_sunat) === 0 ? true : false;
-                let estado_cpe;
-                let btn_enviar = false;
-                let btn_anular=false; // opcion de anular
-                let style_reporte = '';
-
-
-                /*
-                
-                si anulado=0
-                    0 0 = 0 // aceptado
-                    1 1 = 1 // sin registrar
-                    B 0 1 = 2 // boleta registrada
-                    f 0 1 = 3 // boleta no aceptada
-                => 4 // anulado
-
-                */
-
-                if ( parseInt(x.anulado) === 0 ) {                    
-                    if ( e_api && e_sunat ) estado_cpe = 0;
-                    if ( !e_api && !e_sunat ) estado_cpe = 1;
-                    if (boleta && e_api && !e_sunat) estado_cpe = 2;
-                    if (!boleta && e_api && !e_sunat) estado_cpe = 3;
-                } else {
-                    estado_cpe=4;
-                }
-
-
-                switch (parseInt(estado_cpe)) {
-                    case 0: msj_estado = 'Aceptado'; class_estado='xColorRow_verde'; btn_anular=true; style_reporte='color: green'; break;
-                    case 1: msj_estado = 'Sin Registrar'; class_estado = 'xColorRow_Amarillo'; btn_enviar=true; style_reporte = 'color: yellow'; break;
-                    case 2: msj_estado = 'Registrado'; class_estado = 'xColorRow_Azul'; style_reporte = 'color: blue'; break;
-                    case 3: msj_estado = 'Rechazado'; class_estado = 'xFondoRowRojo'; style_reporte = 'backcolor:red; color: black';break;
-                    case 4: msj_estado = 'Anulado'; class_estado = 'xFondoRowRojo'; style_reporte = 'color: red';break;
-                }
-
-                // totales json                
-                if ( x.totales_json !== '' && x.totales_json !== null) {
-                    const _totales_json = JSON.parse(x.totales_json.replace('"{', '{').replace('}"', '}'))
-                    x.subtotal = _totales_json.total_valor;
-                    x.igv = _totales_json.total_igv;                    
-                } else {
-                    x.subtotal = x.total;
-                    x.igv = '0.00';       
-                }
-
-                class_estado += ' xBold xfont11';
-                x.ico_pdf = x.pdf === '1' ? true : false;
-                x.ico_xml = x.xml === '1' ? true : false;
-                x.ico_cdr = x.cdr === '1' ? true : false; 
-                x.class_estado = class_estado;
-                x.nom_estado = msj_estado;
-                x.btn_enviar = btn_enviar;
-                x.btn_anular = btn_anular;
-                x.style_reporte = style_reporte;
-            })
-                               
-            p_upadate = false;  // para que no vuelva a llamar esta funcion
-            xThisCpe.$.paginator.pageRows = p_rows;    
-            // xThisCpe.$.paginator.listRows = [10, 20, 30, 40];                 
-            // console.log('datos', xDataRes);
-
-            if ( op==='6' ) { 
-                xThisCpe.ListCpe = [];                
-                xThisCpe.ListCpe = xDataRes; 
-                setTimeout(() => {
-                    $(window).scrollTop(lastPos);
-                }, 5);
-
-            } else {  // si es para el reporte
-                xThisCpe.ListCpeResumen = [];
-                xThisCpe.ListReporte = xDataRes; 
-                setTimeout(() => {
-                    xExportarExcel();
-                }, 100);
-            }
-
-            
-        });
-
-    }   
-
-
-    // enviar resumen de boletas
-
-    function xEnviarResumenBoletas() {
-        xPopupLoad.xclose();
-        dialog_enviando_sunat.open();
-        setTimeout(() => {
-            const rpt = xCocinarResumenBoletas(); // envia los comprobantes //devuelte '' si se proceso correctamente
-            if ( rpt==='' ) {
-                xLoadCpeEmitidos('6');
-            }
-            // dialog_enviando_sunat.close();
-        }, 1000);
-    }
-
-    /// 
-
-    /// ver documentos relacionados
-    function verDocuemnto(tipo, obj) {
-        const index = obj.parentElement.dataId;
-        const external_id = xThisCpe.ListCpe[index].external_id; 
-        // console.log(external_id);
-        xSoapSunat_DownloadFile(tipo, external_id)
-    }
-
-    // anulacion de comprobante
-    function xAnularComprobante(obj) {
-        index_anular = obj.parentElement.dataId;
-        dialog_motivo_anular_comprobante.open();        
-    }
-
-    async function xAnularComprobante_confirma() {
-        const _external_id = xThisCpe.ListCpe[index_anular].external_id;
-        const _codsunat = xThisCpe.ListCpe[index_anular].codsunat;
-        const _fecha = xThisCpe.ListCpe[index_anular].fecha;
-        const _motivo_anulacion = txt_motivo_anular.value;
-        const dataAnulacion = {codsunat: _codsunat, external_id: _external_id, motivo: _motivo_anulacion, fecha: _fecha }
-        
-        lastPos = $(window).scrollTop();
-        xm_all_xToastOpen("Conectando con Sunat...");
-        const res = await xSoapSunat_AnularComprobante(dataAnulacion);
-        if (res) {
-            //ver si esto es necesario: si es factura consultar el ticket
-            lastPos = $(window).scrollTop();
-            xLoadCpeEmitidos('6');            
-        }
-        xm_all_xToastClose();
-
-        txt_motivo_anular.value='';
-    }
-
-
-    // generar reporte export excel 
-    function xGenerarReporteExcel() {
-        const org = xm_log_get('datos_org_sede');
-        // console.log(org);
-        xThisCpe.nom_sede = org[0].sedenombre;
-        xLoadCpeEmitidos('601');
-    }
-
-
-    Polymer({
-        is: 'x-cpe-emitidos',
-        properties: {            
-            ListCpe: [],
-            ListCpeResumen: [],
-            ListReporte: [],
-            nom_sede: ''           
-        },
-        attached: function () {
-            this.selected = 0,
-            xThisCpe = this;
-            xIniCpe();
-        },
-        displayIndex: function (index) {
-            return xCeroIzq(parseInt( p_desde ) + (index + 1), 1);
-        },            
-    })
-</script>
-    
+<script>/*<![CDATA[*/var xThisCpe,lastPos=0,xPopupLoad,p_upadate=true,p_rows_re=0,p_rows=0,p_fecha='',p_filter='',p_desde=0,data_pagination={},data_pagination_re={},xdebounce,xe_debounce=false,index_anular;function xExportarExcel(){tableToExcel('testTable','Comprobantes')}
+function xIniCpe(){xThisCpe.ListCpe=[];xThisCpe.ListCpeResumen=[];xLoadCpeEmitidos('6');xIniPagination();xThisCpe.$.paginator.addEventListener('page-limit-change',(e)=>{data_pagination=e.detail.value;p_desde=data_pagination.pageDesde;lastPos=$(window).scrollTop();xLoadCpeEmitidos('6');});$("#txt_fecha").on('change',function(){var d=$(this).val().split('-');p_fecha=d[1]===undefined?'':d[2]+'/'+d[1]+'/'+d[0];xThisCpe.$.paginator.currentPage=1;xLoadCpeEmitidos('6');});$("#tab_cpe").on('iron-select',function(){switch(xThisCpe.selected){}});xListRe_ini();}
+function xIniPagination(){xThisCpe.$.paginator.currentPage=1;xThisCpe.$.paginator.pageRows=p_rows;xThisCpe.$.paginator.listRows=[10,20,30,40];}
+function xfiltrarDatos(){if(xe_debounce)return;xe_debounce=true;clearTimeout(xdebounce);xdebounce=setTimeout(()=>{xLoadCpeEmitidos('6');xe_debounce=false;xThisCpe.$.paginator.currentPage=1;},900);}
+function xLoadCpeEmitidos(op){p_filter=xThisCpe.$.txt_buscar.value;data_pagination.pageFilter=p_filter;data_pagination.pageFecha=p_fecha;let xDataRes=[];$.ajax({type:'POST',url:'../../bdphp/log_002.php',data:{op:op,pagination:data_pagination}}).done(function(res){res=res.split('**');p_rows=res[1];res=$.parseJSON(res[0]);xDataRes=res.datos;xDataRes.map(x=>{let msj_estado='';let class_estado='';const boleta=x.codsunat==='03'?true:false;const e_api=parseInt(x.estado_api)===0?true:false;const e_sunat=parseInt(x.estado_sunat)===0?true:false;let estado_cpe;let btn_enviar=false;let btn_anular=false;let style_reporte='';if(parseInt(x.anulado)===0){if(e_api&&e_sunat)estado_cpe=0;if(!e_api&&!e_sunat)estado_cpe=1;if(boleta&&e_api&&!e_sunat)estado_cpe=2;if(!boleta&&e_api&&!e_sunat)estado_cpe=3;}else{estado_cpe=4;}
+switch(parseInt(estado_cpe)){case 0:msj_estado='Aceptado';class_estado='xColorRow_verde';btn_anular=true;style_reporte='color: green';break;case 1:msj_estado='Sin Registrar';class_estado='xColorRow_Amarillo';btn_enviar=true;style_reporte='color: yellow';break;case 2:msj_estado='Registrado';class_estado='xColorRow_Azul';style_reporte='color: blue';break;case 3:msj_estado='Rechazado';class_estado='xFondoRowRojo';style_reporte='backcolor:red; color: black';break;case 4:msj_estado='Anulado';class_estado='xFondoRowRojo';style_reporte='color: red';break;}
+if(x.totales_json!==''&&x.totales_json!==null){const _totales_json=JSON.parse(x.totales_json.replace('"{','{').replace('}"','}'))
+x.subtotal=_totales_json.total_valor;x.igv=_totales_json.total_igv;}else{x.subtotal=x.total;x.igv='0.00';}
+class_estado+=' xBold xfont11';x.ico_pdf=x.pdf==='1'?true:false;x.ico_xml=x.xml==='1'?true:false;x.ico_cdr=x.cdr==='1'?true:false;x.class_estado=class_estado;x.nom_estado=msj_estado;x.btn_enviar=btn_enviar;x.btn_anular=btn_anular;x.style_reporte=style_reporte;})
+p_upadate=false;xThisCpe.$.paginator.pageRows=p_rows;if(op==='6'){xThisCpe.ListCpe=[];xThisCpe.ListCpe=xDataRes;setTimeout(()=>{$(window).scrollTop(lastPos);},5);}else{xThisCpe.ListCpeResumen=[];xThisCpe.ListReporte=xDataRes;setTimeout(()=>{xExportarExcel();},100);}});}
+function xEnviarResumenBoletas(){xPopupLoad.xclose();dialog_enviando_sunat.open();setTimeout(()=>{const rpt=xCocinarResumenBoletas();if(rpt===''){xLoadCpeEmitidos('6');}},1000);}
+function verDocuemnto(tipo,obj){const index=obj.parentElement.dataId;const external_id=xThisCpe.ListCpe[index].external_id;xSoapSunat_DownloadFile(tipo,external_id)}
+function xAnularComprobante(obj){index_anular=obj.parentElement.dataId;dialog_motivo_anular_comprobante.open();}
+async function xAnularComprobante_confirma(){const _external_id=xThisCpe.ListCpe[index_anular].external_id;const _codsunat=xThisCpe.ListCpe[index_anular].codsunat;const _fecha=xThisCpe.ListCpe[index_anular].fecha;const _motivo_anulacion=txt_motivo_anular.value;const dataAnulacion={codsunat:_codsunat,external_id:_external_id,motivo:_motivo_anulacion,fecha:_fecha}
+lastPos=$(window).scrollTop();xm_all_xToastOpen("Conectando con Sunat...");const res=await xSoapSunat_AnularComprobante(dataAnulacion);if(res){lastPos=$(window).scrollTop();xLoadCpeEmitidos('6');}
+xm_all_xToastClose();txt_motivo_anular.value='';}
+function xGenerarReporteExcel(){const org=xm_log_get('datos_org_sede');xThisCpe.nom_sede=org[0].sedenombre;xLoadCpeEmitidos('601');}
+Polymer({is:'x-cpe-emitidos',properties:{ListCpe:[],ListCpeResumen:[],ListReporte:[],nom_sede:''},attached:function(){this.selected=0,xThisCpe=this;xIniCpe();},displayIndex:function(index){return xCeroIzq(parseInt(p_desde)+(index+1),1);},})/*]]>*/</script>
