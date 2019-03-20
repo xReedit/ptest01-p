@@ -1,10 +1,11 @@
 <dom-module id="x-menu">
 <template>
 <div class="xMenu_content" id="CartaDetalle">
-<div class="xMenu_Encabezado">
+<div class="xMenu_Encabezado" id="Encabezado_menu_m">
 <span class="xtitulo" id="r_titulo">{{xt_nombre_sede}}</span>
 <div class="xsub_titulo" id="r_subtitulo">[[xt_eslogan]]</div>
 </div>
+<div class="xLineaSombra xInvisible" id="line_sombra"></div>
 <div class="xMenu_body noselect">
 <div class="xAlinearCentro spinner">
 <paper-spinner active></paper-spinner>
@@ -25,4 +26,4 @@ xDetalleItemCarta=xDetalleItemCarta.slice(0,-2);xDetalleItemCarta=xMayusculaPrim
 window.localStorage.setItem("::app3_sys_dt_mlm",JSON.stringify(xSeccionArray));xArmarCarta(xSeccionArray);});}
 function xArmarCarta(xSeccionArray){var xCadenaCarta='';for(var z=0;z<xSeccionArray.length;z++){xCadenaCarta=String(xCadenaCarta+'<div class="xmenu_item xPading15" data-id="'+xSeccionArray[z].id+'" data-procede="'+xSeccionArray[z].procede+'" onclick="xPasarDetalle(this);">'+'<p class="xtitulo_item">'+xSeccionArray[z].des+"</p>"+'<span class="xsub_titulo_item">'+xSeccionArray[z].detalle+"</span>"+"</div>");}
 $(".xMenu_body div").remove();$(".xMenu_body .spinner").remove();$(".xMenu_body").append(xCadenaCarta).trigger("create");$("body").addClass("loaded");$(window).scrollTop(window.localStorage.getItem("::app3_sys_scroll_pos")||0);}
-Polymer({is:"x-menu",properties:{xt_org:Number,xt_idsede:Number,xt_idus:Number,xt_nombre_sede:String,xt_eslogan:String},attached:function(){xThisMenu=this;xIniMenu();}});/*]]>*/</script>
+Polymer({is:"x-menu",properties:{xt_org:Number,xt_idsede:Number,xt_idus:Number,xt_nombre_sede:String,xt_eslogan:String,smallPage:{type:Boolean,notify:true,value:false,},},_changeClassTitulo(){},attached:function(){xThisMenu=this;xIniMenu();if(this.smallPage){Encabezado_menu_m.classList.remove('xMenu_Encabezado');Encabezado_menu_m.classList.add('xMenu_Encabezado_small');line_sombra.classList.remove('xInvisible');}}});/*]]>*/</script>

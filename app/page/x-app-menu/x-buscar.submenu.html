@@ -1,7 +1,14 @@
 <dom-module id="x-buscar.submenu">
 <script type="text/javascript" src="../../view/item_pedidos.js"></script>
 <template>
-<div>
+<div id="contenedor-x" style="display:flex">
+<div class="xBordeDe2 xNoVisibleMenos720" style="position:relative;width:41%;height:calc(100vh - 60px);overflow-y:auto">
+<x-menu small-page="true"></x-menu>
+<div class="xNoVisibleMenos920">
+<br><br><br>
+</div>
+</div>
+<div class="div_submenu_p">
 <div>
 <input type="text" class="xMiInput xfont18 xBold" style="padding:10px" placeholder="Buscar" id="txt_parametro" onclick="this.select()">
 <div class="xLinea7"></div>
@@ -11,6 +18,10 @@
 <div class="xAlinearCentro spinner">
 <paper-spinner active></paper-spinner>
 </div>
+</div>
+</div>
+<div class="xBordeIz2 xNoVisibleMenos720 xNoVisibleMenos920" style="position:relative;width:41%;height:calc(100vh - 60px);overflow-y:auto">
+<x-mipedido id="mipedido-view"></x-mipedido>
 </div>
 </div>
 </template>

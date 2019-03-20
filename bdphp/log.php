@@ -139,13 +139,14 @@
 			$ip_p=$_POST['ip'];
 			$copia_local = $_POST['copia_local'];
 			$num_copias = $_POST['num_copias'];
+			$papel_size = $_POST['papel_size'];
 
 			$sql="SELECT idimpresora as d1 FROM impresora WHERE (idorg=".$_SESSION['ido']." AND idsede=".$_SESSION['idsede'].") AND descripcion='".$_POST['des']."' AND local=1";
 			$id_print_bus=$bd->xDevolverUnDato($sql);
 			if($id_print_bus!=''){
-				$sql="UPDATE impresora SET var_margen_iz=".$margen_iz.",var_size_font=".$font.",ip='".$ip_p."', descripcion='".$des."', copia_local=".$copia_local.", num_copias=".$num_copias.", estado=0 where idimpresora=".$id_print_bus;
+				$sql="UPDATE impresora SET var_margen_iz=".$margen_iz.",var_size_font=".$font.",ip='".$ip_p."', descripcion='".$des."', copia_local=".$copia_local.", num_copias=".$num_copias.", papel_size=".$papel_size.", estado=0 where idimpresora=".$id_print_bus;
 			}else{
-				$sql="INSERT INTO impresora (idorg,idsede,ip,descripcion,var_margen_iz,var_size_font,copia_local,num_copias,local)VALUES(".$_SESSION['ido'].",".$_SESSION['idsede'].",'".$ip_p."','".$des."',".$margen_iz.",".$font.",".$copia_local.",".$num_copias.",'1')";
+				$sql="INSERT INTO impresora (idorg,idsede,ip,descripcion,var_margen_iz,var_size_font,copia_local,num_copias,papel_size,local)VALUES(".$_SESSION['ido'].",".$_SESSION['idsede'].",'".$ip_p."','".$des."',".$margen_iz.",".$font.",".$copia_local.",".$num_copias.",".$papel_size.",'1')";
 			}
 			//print $sql;
 			$bd->xConsulta($sql);
@@ -1431,6 +1432,10 @@
 			$sql="SELECT * FROM usuario WHERE idusuario=".$_POST['i'];
 			$bd->xConsulta($sql);
 			break;
+		case 4031://resetera clave
+			$sql="update usuario set pass='123456', nuevo=0 WHERE idusuario=".$_POST['i'];
+			$bd->xConsulta($sql);
+			break;
 		case 404:// organizacion
 			$sql="
 				SELECT o.*, s.idsede, s.nombre AS nom_sede, s.direccion as dir_sede, s.ciudad,s.eslogan,s.mesas, s.ubigeo, s.codigo_del_domicilio_fiscal
@@ -1501,6 +1506,10 @@
 			break;
 		case 40101://guardar seccion impresora bodega
 			$sql="update producto_familia set idimpresora=".$_POST['idp']." where idproducto_familia=".$_POST['ids'];
+			$bd->xConsulta($sql);
+			break;
+		case 40102://guardar papel_size de impresora
+			$sql="update impresora set papel_size=".$_POST['papel']." where idimpresora=".$_POST['id'];
 			$bd->xConsulta($sql);
 			break;
 		case 4011://load config otros documentos
