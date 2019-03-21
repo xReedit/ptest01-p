@@ -15,6 +15,7 @@ function xvalidateForm(des,responde){var obj=$('#'+des);var a=true;obj.find('pap
 function xvalidateFormInput(des,responde){var obj=$('#'+des),a=true,b;obj.find('input').each(function(e,element){element.checkValidity();b=element.validity;if(b.valid===false){a=false;$(element).addClass('invalido');}});responde(a);}
 function xvalidateObjFormInput(obj,responde){var a=true,b;obj.find('input').each(function(e,element){element.checkValidity();b=element.validity;if(b.valid===false){a=false;$(element).addClass('invalido');}});responde(a);}
 function xBorrarRegistroFisico(tabla,i){$.post('../../bdphp/log.php?op=101',{t:tabla,id:i});}
+function xBorrarRegistroFisico2(tabla,i,nomcampo){$.post('../../bdphp/log.php?op=10101',{t:tabla,id:i,campo:nomcampo});}
 function xBorrarRegistro(tabla,i){$.post('../../bdphp/log.php?op=103',{t:tabla,id:i});}
 function xBorrarRegistroEnAnulado(tabla,i){$.post('../../bdphp/log.php?op=104',{t:tabla,id:i});}
 function xBorrarItem(obj){if(obj!==null){xRowObj=obj.parentNode.parentNode;xTableRow=$(xRowObj).attr('data-t');xIdROw=$(xRowObj).attr('data-id');}

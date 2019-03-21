@@ -30,6 +30,10 @@
 			$sql="delete from ".$_POST['t']." where id".$_POST['t']."=".$_POST['id'];
 			$bd->xConsulta($sql);
 			break;
+		case 10101://borrar tabla 2 criterio tabla y id ej: en carta borrar de carta_lista la seccion
+			$sql="delete from ".$_POST['t']." where ".$_POST['campo']."=".$_POST['id'];
+			$bd->xConsulta($sql);
+			break;
 		case 103://borrado logico
 			$sql="update ".$_POST['t']." set estado=1 where id".$_POST['t']."=".$_POST['id'];
 			$bd->xConsulta($sql);
