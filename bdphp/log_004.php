@@ -43,6 +43,12 @@
 										(".$datos['idorg'].",".$datos['idsede'].",'SISTEMA','IMPLEMENTADOR','".$datos['u']."','".$datos['p']."','A1,A2,A3,A4,A5,A6,A7,A8,A9,A10,A11,B1,B2,B3,B4,B5,B6,C1,C2,','Pe1,Pe2,Pe3,Pe4,',1,1)";
 			$bd->xConsulta($sql);
 			break;
+		case '202':// validar sufijo
+			$sufijo=$_POST['u'];
+			$sql="select sufijo from sede where sufijo='".$sufijo."' and estado=0";
+			$rpt = $bd->xDevolverUnDato($sql);
+			print $rpt;
+			break;
 		case '3': // new script org
 			$idorg = $_POST['idorg'];
 			$idsede = $_POST['idsede'];

@@ -13,7 +13,10 @@
 <form id="frm_us">
 <input type="text" class="xMiInput xPasarEnter2" placeholder="NOMBRES" onChange="conMayusculas(this)" id="nombres" name="nombres" espaciar required>
 <input type="text" class="xMiInput xPasarEnter2" placeholder="CARGO" onChange="conMayusculas(this)" id="cargo" name="cargo" espaciar required>
-<input type="text" class="xMiInput xPasarEnter2" placeholder="USUARIO" id="usuario" name="usuario" espaciar required>
+<div style="display:flex;margin-left:5px">
+<input type="text" class="xMiInput xPasarEnter2" placeholder="USUARIO" id="txt_sufijo" value$="[[xt_sufijo]]" style="width:50px" enLinea readonly>
+<input type="text" class="xMiInput xPasarEnter2" placeholder="USUARIO" id="usuario" name="usuario" enLinea required>
+</div>
 <input type="password" class="xMiInput xPasarEnter2" placeholder="clave" id="pass" name="pass" espaciar required>
 <div class="xInvisible">
 <input type="text" id="idusuario" name="idusuario">
@@ -86,7 +89,7 @@
 </table>
 </template>
 </dom-module>
-<script>/*<![CDATA[*/var xThis;function xIniUsuarios(){$("#Titulo_page").text("Usuarios");xm_log_get('ini_us');xThis.xt_org=xIdOrg;xThis.xt_idsede=xIdSede;xThis.xt_idus=xIdUsuario;if(xIdOrg===""||xIdOrg==undefined){var _dtUs=xm_log_get('app3_us');xThisConfig.xt_org=_dtUs.ido;xThisConfig.xt_idsede=_dtUs.idsede;xThisConfig.xt_idus=_dtUs.idus;}
+<script>/*<![CDATA[*/var xThis;function xIniUsuarios(){$("#Titulo_page").text("Usuarios");xm_log_get('ini_us');const sufijoSede=xm_log_get('datos_org_all_sede')[0].sufijo;xThis.xt_org=xIdOrg;xThis.xt_idsede=xIdSede;xThis.xt_idus=xIdUsuario;xThis.xt_sufijo=sufijoSede;if(xIdOrg===""||xIdOrg==undefined){var _dtUs=xm_log_get('app3_us');xThisConfig.xt_org=_dtUs.ido;xThisConfig.xt_idsede=_dtUs.idsede;xThisConfig.xt_idus=_dtUs.idus;}
 xLoadUs();$('.xPasarEnter2').on('keyup',function(e){var code=e.which;if(code==13||code==186){var inputs=$('input');var a=inputs.index(document.activeElement);if(inputs[a+1]!==null)
 {var nextBox=inputs[a+1];if(nextBox===undefined){return}
 if(nextBox.disabled){nextBox=inputs[a+2]}
@@ -95,16 +98,16 @@ nextBox.focus();nextBox.select();}
 return false;}});}
 function xResetearClave(){const idUsReset=$("#frm_us #idusuario")[0].value;if(idUsReset==='')return;xPopupLoad.xopen();$.ajax({type:'POST',url:'../../bdphp/log.php?op=4031',data:{i:idUsReset}})
 setTimeout(()=>{xPopupLoad.xclose();},200);}
-function xModificarUs(obj){xNuevoUsuario();xPopupLoad.xopen();xPopupLoad.titulo="Cargando..";var xid=$(obj).parents('tr').attr('data-id');$.ajax({type:'POST',url:'../../bdphp/log.php?op=403',data:{i:xid}}).done(function(dtLoadUs){var xdtLoadUs=$.parseJSON(dtLoadUs);xdtLoadUs=xdtLoadUs.datos;var xacc_bd=xdtLoadUs[0].acc;var xper_bd=xdtLoadUs[0].per;$("#frm_us #idusuario").val(xid);$("#frm_us #idorg").val(xThis.xt_org);$("#frm_us #idsede").val(xThis.xt_idsede);$("#frm_us #cargo").val(xdtLoadUs[0].cargo);$("#frm_us #nombres").val(xdtLoadUs[0].nombres);$("#frm_us #usuario").val(xdtLoadUs[0].usuario);$("#frm_us #pass").val(xdtLoadUs[0].pass);$("#frm_us #acc").val(xacc_bd);$("#frm_us #per").val(xper_bd);var xBus='';var xCharFind='';xacc_bd=xacc_bd.split(',')
+function xModificarUs(obj){xNuevoUsuario();xPopupLoad.xopen();xPopupLoad.titulo="Cargando..";var xid=$(obj).parents('tr').attr('data-id');$.ajax({type:'POST',url:'../../bdphp/log.php?op=403',data:{i:xid}}).done(function(dtLoadUs){var xdtLoadUs=$.parseJSON(dtLoadUs);xdtLoadUs=xdtLoadUs.datos;var xacc_bd=xdtLoadUs[0].acc;var xper_bd=xdtLoadUs[0].per;$("#frm_us #idusuario").val(xid);$("#frm_us #idorg").val(xThis.xt_org);$("#frm_us #idsede").val(xThis.xt_idsede);$("#frm_us #cargo").val(xdtLoadUs[0].cargo);$("#frm_us #nombres").val(xdtLoadUs[0].nombres);$("#frm_us #usuario").val(xdtLoadUs[0].usuario.replace(xThis.xt_sufijo,''));$("#frm_us #pass").val(xdtLoadUs[0].pass);$("#frm_us #acc").val(xacc_bd);$("#frm_us #per").val(xper_bd);var xBus='';var xCharFind='';xacc_bd=xacc_bd.split(',')
 for(var i=0;i<xacc_bd.length;i++){xBus=xacc_bd[i]+',';$(".checkA").each(function(index,element){xCharFind=$(element).attr('data-id');if(xCharFind==xBus){element.checked=true;return false;}})}
 xper_bd=xper_bd.split(',')
 for(var i=0;i<xper_bd.length;i++){xBus=xper_bd[i]+',';$(".checkP").each(function(index,element){xCharFind=$(element).attr('data-id');if(xCharFind==xBus){element.checked=true;return false;}})}
 dialog_add_us.open();xPopupLoad.xclose();xPopupLoad.titulo="Guardando..";});}
 function xGuardarUs(){var xCadena_a='';var xCadena_p='';$(".checkA").each(function(index,element){if(element.checked==false){return;}
 xCadena_a=xCadena_a+$(element).attr('data-id');});$(".checkP").each(function(index,element){if(element.checked==false){return;}
-xCadena_p=xCadena_p+$(element).attr('data-id');});$("#frm_us #acc").val(xCadena_a);$("#frm_us #per").val(xCadena_p);xvalidateFormInput('frm_us',function(a){if(a===false){xThis.selected_us=0;return;}
+xCadena_p=xCadena_p+$(element).attr('data-id');});$("#frm_us #acc").val(xCadena_a);$("#frm_us #per").val(xCadena_p);const _usuario=xThis.xt_sufijo+usuario.value;$("#frm_us #usuario").val(_usuario);xvalidateFormInput('frm_us',function(a){if(a===false){xThis.selected_us=0;return;}
 xPopupLoad.xopen();$.post("../../bdphp/ManejoBD_IUD.php?tb=usuario",$("#frm_us").serialize(),function(id){dialog_add_us.close();xPopupLoad.xclose();xNuevoUsuario();xLoadUs();})})}
 function xNuevoUsuario(){$("#frm_us").reset();$(".checkA").each(function(index,element){element.checked=false;});$(".checkP").each(function(index,element){element.checked=false;});}
 function xLoadUs(){$("#tb_us").append('<tr class="row"><td colspan="4"><paper-spinner active></paper-spinner></td></tr>');$.ajax({type:'POST',url:'../../bdphp/log.php?op=402'}).done(function(dtUs){var xdtUs=$.parseJSON(dtUs);var xCadenaUs='';xdtUs=xdtUs.datos;for(var i=0;i<xdtUs.length;i++){xCadenaUs=String(xCadenaUs+'<tr class="row" data-id="'+xdtUs[i].idusuario+'" data-t="usuario"><td>'+xdtUs[i].nombres+'</td><td>'+xdtUs[i].cargo+'</td><td>'+xdtUs[i].usuario+'</td>'+'<td title="Modificar" onClick="xModificarUs(this)"><span class="icon xCursor"><img src="../../images/edit.png"></span></td>'+'<td><span onclick="xBorrarItem(this);" class="xDeleteRow" title="Borrar"></span></td>'+'</tr>');}
 $("#tb_us .row").remove();$("#tb_us").append(xCadenaUs).trigger('create');});}
-Polymer({is:'x-usuarios',properties:{xt_org:Number,xt_idsede:Number,xt_idus:Number,},ready:function(){xIniUsuarios();},attached:function(){this.selected_us=0;xThis=this;xIniUsuarios();}})/*]]>*/</script>
+Polymer({is:'x-usuarios',properties:{xt_org:Number,xt_idsede:Number,xt_idus:Number,xt_sufijo:String,},ready:function(){xIniUsuarios();},attached:function(){this.selected_us=0;xThis=this;xIniUsuarios();}})/*]]>*/</script>
