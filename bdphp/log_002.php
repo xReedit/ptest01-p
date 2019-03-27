@@ -73,13 +73,14 @@
             $obj = $_POST['data'];
             $ce_anulado = array_key_exists('anulado', $obj) ? $obj['anulado'] : 0; 
 
+            $numComprobante = array_key_exists('numero', $obj) ? "numero='".$obj['numero']."'," : "";
             $sql = "
             update ce 
                 set estado_api=".$obj['estado_api'].", 
                 estado_sunat=".$obj['estado_sunat'].", 
                 msj='".$obj['msj']."', 
                 external_id='".$obj['external_id']."',
-                numero='".$obj['numero']."',                
+                ".$numComprobante."
                 anulado=".$ce_anulado.",
                 pdf=".$obj['pdf'].",
                 xml=".$obj['xml'].",
