@@ -33,10 +33,10 @@
             if ( $ce_anulado === 0 ) {
                 if (array_key_exists('idregistro_pago', $obj)) {
                     if ( $obj['viene_facturador'] === "1") {
-                        $sqlRp= "update cpe_facturador set idce =".$idce ." where idcpe_facturador=".$obj['idregistro_pago'];
+                        $sqlRp= "update cpe_facturador set idce =".$idce." where idcpe_facturador=".$obj['idregistro_pago'];
                         $bd->xConsulta_NoReturn($sqlRp);
                     } else {
-                        $sqlRp= "update registro_pago set idce =".$idce ." where idregistro_pago=".$obj['idregistro_pago'];
+                        $sqlRp= "update registro_pago set idce =".$idce." where idregistro_pago=".$obj['idregistro_pago'];
                         $bd->xConsulta_NoReturn($sqlRp);
                     }
                 }
@@ -79,7 +79,7 @@
                 estado_sunat=".$obj['estado_sunat'].", 
                 msj='".$obj['msj']."', 
                 external_id='".$obj['external_id']."',
-                numero='".$obj['numero']."',
+                numero='".$obj['numero']."',                
                 anulado=".$ce_anulado.",
                 pdf=".$obj['pdf'].",
                 xml=".$obj['xml'].",
@@ -143,6 +143,10 @@
             break;
         case '301': // lista documentos no registrados - documnentos que no fueron enviados al servicio api por algun error de conexion
             $sql = "SELECT * from ce where (idorg=".$_SESSION['ido']." and idsede=".$_SESSION['idsede'].") and estado_api = 1 and anulado=0";
+            $bd->xConsulta($sql);
+            break;
+        case '3011': // facturas// lista documentos no registrados en suant - documnentos que no fueron enviados a sunat por algun error de conexion
+            $sql = "SELECT * from ce where (idorg=".$_SESSION['ido']." and idsede=".$_SESSION['idsede'].") and estado_api = 0 and estado_sunat = 1 and anulado=0";
             $bd->xConsulta($sql);
             break;
         case '302':// resumen de boletas: consulta fecha de boletas no enviadas 

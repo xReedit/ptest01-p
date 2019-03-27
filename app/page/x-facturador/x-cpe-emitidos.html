@@ -1,7 +1,7 @@
 <link rel="import" href="../../x-componentes/pagination-input/pagination-input.html">
 <link rel="preload" href="../../../images/_msj_envio_sunat.gif" as="image" media="(max-width: 600px)">
 <dom-module id="x-cpe-emitidos">
-<template is="dom-bind">
+<template is="dom">
 <paper-dialog class="dialog_redondo" id="dialog_enviando_sunat" style="width:245px" modal entry-animation="scale-up-animation" exit-animation="fade-out-animation">
 <div style="text-align:center">
 <img id="dgl_sunat_img" src="../../../images/_msj_envio_sunat.gif" alt="">
@@ -197,7 +197,7 @@ Sunat.<br>Este proceso es el mismo que se realiza al cierre de caja.</p>
 <script type="text/javascript" src="../../view/cpe_interno.js"></script>
 <script type="text/javascript" src="../../view/export.excel.js"></script>
 <script>/*<![CDATA[*/var xThisCpe,lastPos=0,xPopupLoad,p_upadate=true,p_rows_re=0,p_rows=0,p_fecha='',p_filter='',p_desde=0,data_pagination={},data_pagination_re={},xdebounce,xe_debounce=false,index_anular;function xExportarExcel(){tableToExcel('testTable','Comprobantes')}
-function xIniCpe(){xThisCpe.ListCpe=[];xThisCpe.ListCpeResumen=[];xLoadCpeEmitidos('6');xIniPagination();xThisCpe.$.paginator.addEventListener('page-limit-change',(e)=>{data_pagination=e.detail.value;p_desde=data_pagination.pageDesde;lastPos=$(window).scrollTop();xLoadCpeEmitidos('6');});$("#txt_fecha").on('change',function(){var d=$(this).val().split('-');p_fecha=d[1]===undefined?'':d[2]+'/'+d[1]+'/'+d[0];xThisCpe.$.paginator.currentPage=1;xLoadCpeEmitidos('6');});$("#tab_cpe").on('iron-select',function(){switch(xThisCpe.selected){}});xListRe_ini();}
+function xIniCpe(){xThisCpe.ListCpe=[];xThisCpe.ListCpeResumen=[];xLoadCpeEmitidos('6');xIniPagination();setTimeout(()=>{$('body').addClass('loaded');},500);xThisCpe.$.paginator.addEventListener('page-limit-change',(e)=>{data_pagination=e.detail.value;p_desde=data_pagination.pageDesde;lastPos=$(window).scrollTop();xLoadCpeEmitidos('6');});$("#txt_fecha").on('change',function(){var d=$(this).val().split('-');p_fecha=d[1]===undefined?'':d[2]+'/'+d[1]+'/'+d[0];xThisCpe.$.paginator.currentPage=1;xLoadCpeEmitidos('6');});$("#tab_cpe").on('iron-select',function(){switch(xThisCpe.selected){}});xListRe_ini();}
 function xIniPagination(){xThisCpe.$.paginator.currentPage=1;xThisCpe.$.paginator.pageRows=p_rows;xThisCpe.$.paginator.listRows=[10,20,30,40];}
 function xfiltrarDatos(){if(xe_debounce)return;xe_debounce=true;clearTimeout(xdebounce);xdebounce=setTimeout(()=>{xLoadCpeEmitidos('6');xe_debounce=false;xThisCpe.$.paginator.currentPage=1;},900);}
 function xLoadCpeEmitidos(op){p_filter=xThisCpe.$.txt_buscar.value;data_pagination.pageFilter=p_filter;data_pagination.pageFecha=p_fecha;let xDataRes=[];$.ajax({type:'POST',url:'../../bdphp/log_002.php',data:{op:op,pagination:data_pagination}}).done(function(res){res=res.split('**');p_rows=res[1];res=$.parseJSON(res[0]);xDataRes=res.datos;xDataRes.map(x=>{let msj_estado='';let class_estado='';const boleta=x.codsunat==='03'?true:false;const e_api=parseInt(x.estado_api)===0?true:false;const e_sunat=parseInt(x.estado_sunat)===0?true:false;let estado_cpe;let btn_enviar=false;let btn_anular=false;let style_reporte='';if(parseInt(x.anulado)===0){if(e_api&&e_sunat)estado_cpe=0;if(!e_api&&!e_sunat)estado_cpe=1;if(boleta&&e_api&&!e_sunat)estado_cpe=2;if(!boleta&&e_api&&!e_sunat)estado_cpe=3;}else{estado_cpe=4;}

@@ -52,26 +52,27 @@
 		case '3': // new script org
 			$idorg = $_POST['idorg'];
 			$idsede = $_POST['idsede'];
-			$sql="
-				INSERT INTO conf_print_detalle
-				(descripcion, porcentaje, es_impuesto, activo, estado, idorg, idsede)
-				VALUES('I.G.V', '18', 1, 1, 0, ".$idorg.", ".$idsede.");
-
+			$sql="				
 				INSERT INTO almacen (idorg, idsede, descripcion, bodega, imprimir_comanda, estado)
 					VALUES(".$idorg.", ".$idsede.", 'ALMACEN CENTRAL', 0, 0, 0);
 				INSERT INTO almacen (idorg, idsede, descripcion, bodega, imprimir_comanda, estado)
 					VALUES(".$idorg.", ".$idsede.", 'COCINA', 0, 0, 0);
 				INSERT INTO almacen (idorg, idsede, descripcion, bodega, imprimir_comanda, estado)
-					VALUES(".$idorg.", ".$idsede.", 'BODEGA', 1, 0, 0);
-
-				INSERT INTO conf_print (idorg, idsede, ip_print, num_copias) VALUES(".$idorg.", ".$idsede.", '', 0);
+					VALUES(".$idorg.", ".$idsede.", 'BODEGA', 1, 0, 0);				
 
 				INSERT INTO tipo_consumo (idorg, idsede, descripcion, titulo, estado)
 						VALUES(".$idorg.", ".$idsede.", 'CONSUMIR EN EL LOCAL', 'LOCAL', 0), (".$idorg.", ".$idsede.", 'PARA LLEVAR', '', 0);
 
 			";
+
+			$sql_cnf_print="INSERT INTO conf_print (idorg, idsede, ip_print, num_copias) VALUES(".$idorg.", ".$idsede.", '', 0);";
+			$idConfigPrint = $bd->xConsulta_UltimoId($sql_cnf_print);
+
+			$sql_pd="INSERT INTO conf_print_detalle
+				(idconf_print, descripcion, porcentaje, es_impuesto, activo, estado, idorg, idsede)
+				VALUES(".$idConfigPrint.",'I.G.V', '18', 1, 1, 0, ".$idorg.", ".$idsede.");";
 			
-			$bd->xMultiConsulta($sql);
+			$bd->xMultiConsulta($sql.$sql_pd);
 			break;
 	}
 

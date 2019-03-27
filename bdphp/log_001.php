@@ -21,7 +21,8 @@
 	
 
 	
-	if ( strrpos($x_from, "re-resta") !== false ) { $x_from = str_replace('re-resta','',$x_from); reservarStockItemsPedido(); return;} // reserva stock desde mipedio
+	// lo vamos a hacer con sockets
+	// if ( strrpos($x_from, "re-resta") !== false ) { $x_from = str_replace('re-resta','',$x_from); reservarStockItemsPedido(); return;} // reserva stock desde mipedio
 	if ( strrpos($x_from, "re-suma") !== false ) { $x_from = str_replace('re-suma','',$x_from); restauraStockItemsPedido(); return;} // reserva stock desde mipedio
 
 	if ( strrpos($x_from, "a") !== false ) { $x_from = str_replace('a','',$x_from); cocinar_pedido(); }
@@ -562,7 +563,7 @@
 	}
 
 	// reserva stock -- mi pedido para no salir volando con stock
-	function reservarStockItemsPedido() {
+	function reservarStockItemsPedido() {		
 		$data = $_POST['i'];
 		$cantidad = $data['cantidad'];
 		if ($data['procede']==0){
@@ -576,25 +577,34 @@
 			SET p.stock=p.stock - (".$cantidad."*(ii.cantidad))
 			WHERE ii.iditem=".$data['id'];
 		}
-		$bd->xConsulta_NoReturn($sql);
+		$bd->xConsulta($sql);
 	}
 
 	// restaura stock -- mi pedido
 	function restauraStockItemsPedido() {
 		$data = $_POST['i'];
-		$cantidad = $data['cantidad'];
-		if ($data['procede']==0){
-			$sql="update producto_stock set stock=stock+".$cantidad." where idproducto_stock=".$data['id'];
-		} elseif ($data['procede']==1) {
-			$sql="update carta_lista set cantidad=if(cantidad!='ND',cantidad+".$cantidad.",'ND') where idcarta_lista=".$data['id'];
-		} else {
-			$sql="
-			UPDATE porcion AS p
-			LEFT JOIN item_ingrediente AS ii using (idporcion)
-			SET p.stock=p.stock + (".$cantidad."*(ii.cantidad))
-			WHERE ii.iditem=".$data['id'];
-		}
-		$bd->xConsulta_NoReturn($sql);
+			$_sql="";
+			foreach ($data as $sub_item){
+				$cantidad = $sub_item['stock'];
+				$id = $sub_item['id'];
+				if ($data['procede']==1){
+					$sql="update producto_stock set stock=stock-".$cantidad." where idproducto_stock=".$id.";";
+				} elseif ($data['procede']==0) {
+					$sql="update carta_lista set cantidad=if(cantidad!='ND',cantidad-".$cantidad.",'ND') where idcarta_lista=".$id.";";
+				} else {
+					$sql="
+					UPDATE porcion AS p
+					LEFT JOIN item_ingrediente AS ii using (idporcion)
+					SET p.stock=p.stock - (".$cantidad."*(ii.cantidad))
+					WHERE ii.iditem=".$id.";";
+				}
+
+				$_sql = $_sql.$sql;
+				
+			
+			}
+
+			$bd->xMultiConsulta($_sql);
 	}
 
 
