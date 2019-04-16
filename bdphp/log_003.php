@@ -19,8 +19,15 @@
 											values (".$_SESSION['ido'].",".$_SESSION['idsede'].",".$_SESSION['idusuario'].",".$idprint_server_estructura.", '".$tipo."', DATE_FORMAT(now(),'%d/%m/%Y'), DATE_FORMAT(now(),'%H:%i:%s'),'".$detalle_json."')";
 			
 			// echo $sql;
-			$bd->xConsulta($sql);
+			$ultimoID = $bd->xConsulta_UltimoId($sql);
+			print $ultimoID;
+			
 			break;
+		case '101': // verificar si registro se imprimio correctamente
+			$sql="select error from print_server_detalle where idprint_server_detalle = ".$_POST['id'];
+			$estadoPrint = $bd->xDevolverUnDato($sql);
+			print $estadoPrint;
+		break;
 		case '2': // buscar documentos no imprimidos
 			$UltimoId=$_POST['ultimoId'];
 			if ( $UltimoId!='' ) { $UltimoId=' and psd.idprint_server_detalle>'.$UltimoId.' '; }

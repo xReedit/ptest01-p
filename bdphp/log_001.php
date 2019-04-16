@@ -448,18 +448,20 @@
 		$num_doc=$datos_cliente['num_doc'];
 		$direccion=$datos_cliente['direccion'];
 		$f_nac=$datos_cliente['f_nac'];
+		$telefono=array_key_exists('telefono', $datos_cliente) ? $datos_cliente['telefono'] : '';
+		$update_telefono = $telefono != '' ? ", telefono = '".$telefono."'" : '';
 		// $idpedidos=$x_arr_cliente['i'] == '' ? $x_idpedido : $x_arr_cliente['i'];
 
 		if($idclie==''){
 			if($nomclie==''){//publico general
 				$idclie=0;
 			}else{
-				$sql="insert into cliente (idorg,nombres,direccion,ruc,f_nac)values(".$_SESSION['ido'].",'".$nomclie."','".$direccion."','".$num_doc."','".$f_nac."')";
+				$sql="insert into cliente (idorg,nombres,direccion,ruc,f_nac,telefono)values(".$_SESSION['ido'].",'".$nomclie."','".$direccion."','".$num_doc."','".$f_nac."','".$telefono."')";
 				$idclie=$bd->xConsulta_UltimoId($sql);
 			}
 		} else {
 			// update cliente
-			$sql="update cliente set nombres='".$nomclie."',ruc='".$num_doc."',direccion='".$direccion."' where idcliente = ".$idclie;
+			$sql="update cliente set nombres='".$nomclie."',ruc='".$num_doc."',direccion='".$direccion."'".$update_telefono." where idcliente = ".$idclie;
 			$bd->xConsulta_NoReturn($sql);
 		}
 

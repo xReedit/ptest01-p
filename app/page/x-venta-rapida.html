@@ -1,7 +1,29 @@
 <link rel="import" href="../x-componentes/x-comp-find-categoria/x-comp-find-categoria.html">
+<link rel="import" href="../web_components/paper-progress/paper-progress.html">
 <dom-module id="x-venta-rapida">
 <template>
 <br>
+<paper-dialog id="dialog_datos_delivery" style="max-width:520px" class="dialog_redondo" entry-animation="scale-up-animation" exit-animation="fade-out-animation" with-backdrop>
+<h2>Datos adicionales</h2>
+<span>Para la entrega del delivery</span>
+<hr>
+<form id="frm_cliente">
+<input type="text" class="xMiInput xPasarEnter2" placeholder="DNI" autofocus onkeyup="xValidarDNIRUC(this.value,event)" onChange="conMayusculas(this)" id="txt_delivery_dni" espaciar required>
+<div class="xInvisible" id="progress_cliente" style="width:calc(100% - 30px);margin:0;padding:0;margin-top:-16px;margin-left:5px">
+<paper-progress indeterminate style="width:100%"></paper-progress>
+</div>
+<input type="text" class="xMiInput xPasarEnter2" placeholder="NOMBRE" onChange="conMayusculas(this)" id="txt_delivery_nombre" espaciar required>
+<input type="text" class="xMiInput xPasarEnter2" placeholder="DIRECCION" onChange="conMayusculas(this)" id="txt_delivery_direccion" espaciar required>
+<input type="text" class="xMiInput xPasarEnter2" placeholder="TELEFONO" onChange="conMayusculas(this)" id="txt_delivery_telefono" espaciar required>
+<input type="text" class="xMiInput xPasarEnter2" placeholder="PAGA CON" onChange="conMayusculas(this)" id="txt_delivery_paga" espaciar required>
+</form>
+<br>
+<br>
+<div class="buttons">
+<button class="xBoton2 xPlomo" dialog-dismiss>Cancelar</button>
+<button class="xBoton2 xVerde" onclick="xAdjuntarDatosDelivery()">Listo, adjuntar</button>
+</div>
+</paper-dialog>
 <paper-dialog id="dialog_pagar_vr" class="dialog_redondo" modal entry-animation="scale-up-animation" exit-animation="fade-out-animation">
 <div id="div_pago_vr">
 <x-pago id="component_pago_vr"></x-pago>
@@ -58,6 +80,13 @@
 </div><br>
 <div class="xCentradoDiv">
 <select class="xMiInput" id="select_ulTPC"></select>
+<div id="div_btn_data_delivery" class="EnLinea xInvisible" style="text-align:center">
+<paper-button onclick="dialog_datos_delivery.open()">
+<iron-icon title="Datos Adicionales" class="btn_apunte_deliver EnLinea" icon="icons:attach-file">Datos
+</iron-icon>
+Datos Adjuntos
+</paper-button>
+</div>
 </div>
 <br>
 <div id="xBody">
@@ -91,7 +120,7 @@
 <script type="text/javascript" src="../view/manager_storage.js"></script>
 <script type="text/javascript" src="../view/cliente.service.js"></script>
 <script type="text/javascript" src="../../js/keynavigator-min.js"></script>
-<script>/*<![CDATA[*/var xThisVentaRapida,$li,$xlist_li,xedit_detalle_item=false,xArrayRegla=[],xDtPrint=[],xDtSubTotales=[],xenviar_cuenta=false,xregistrar_pago=false,xtxt_select=false,xidCategoriaVR,tt_pedido=0,xIdPedido='',xEstadoPedido,xnum_mesa_valido=false,xNumMesasBd,xarr_header=[],xarr_body=[],xarr_footer=[],xarr_tipo_pago=[],xRpt_pago=[],guardando=false,xid_cliente_pago=0,xarr_subtotales=[];function xIniVentaRapida(){xm_LogChequea(function(){xm_log_get('ini_us');$("#Titulo_page").text("Venta Rapida");document.title="Venta Rapida";$('body').addClass('loaded');xPopupLoad=document.getElementById('xLoad');xArrayRegla=xm_log_get('reglas_de_carta');xDtPrint=xm_log_get('sede_generales');xNumMesasBd=parseInt(xDtPrint[0].mesas);xLoadArrayPedido();xTraerDtTipoConsumo();})
+<script>/*<![CDATA[*/var xThisVentaRapida,$li,$xlist_li,xedit_detalle_item=false,xArrayRegla=[],xDtPrint=[],xDtSubTotales=[],xenviar_cuenta=false,xregistrar_pago=false,xtxt_select=false,xidCategoriaVR,tt_pedido=0,xIdPedido='',xEstadoPedido,xnum_mesa_valido=false,xNumMesasBd,xarr_header=[],xarr_body=[],xarr_footer=[],xarr_tipo_pago=[],xRpt_pago=[],guardando=false,xdelivery=0,xReservar=0,xsolo_llevar=0,xid_cliente_pago=0,xarr_subtotales=[],arrDatosAdjuntoDelivery={},xIdCliente_pedido='',xClientePedidoFnac='';function xIniVentaRapida(){xm_LogChequea(function(){xm_log_get('ini_us');$("#Titulo_page").text("Venta Rapida");document.title="Venta Rapida";$('body').addClass('loaded');xPopupLoad=document.getElementById('xLoad');xArrayRegla=xm_log_get('reglas_de_carta');xDtPrint=xm_log_get('sede_generales');xNumMesasBd=parseInt(xDtPrint[0].mesas);xLoadArrayPedido();xTraerDtTipoConsumo();$(document).on('change','#select_ulTPC',function(e){$('#div_btn_data_delivery').addClass('xInvisible');xdelivery=0;if($('#select_ulTPC :selected').text().toLowerCase()==="delivery"){$('#div_btn_data_delivery').removeClass('xInvisible');xdelivery=1;}})})
 compFindCategoria=document.getElementById('compFindCategoria');compFindCategoria.addEventListener('getValorIncial',function(e){let valCategoriaLoalStorage;valCategoriaLoalStorage=e.detail.categorias
 if(getLocalStorage('::app3_cat_defualt')){valCategoriaLoalStorage=JSON.parse(getLocalStorage('::app3_cat_defualt'));xidCategoriaVR=valCategoriaLoalStorage.idcategoria;setTimeout(()=>{compFindCategoria.$.compFindListCategoria.value=valCategoriaLoalStorage.index;},500);}else{xidCategoriaVR=e.detail.categorias.idcategoria;}
 setLocalSotrage('::app3_cat_defualt',JSON.stringify(valCategoriaLoalStorage));xLoadCartaVR();});document.defaultAction=false;var eventHandler=true?detectEvent:empty;document['onkeydown']=eventHandler;$("#txt_mesa").on('keyup',function(){if(tt_pedido==0||this.value==''){$("#btn_enviar_cuenta").addClass('xInvisible');xenviar_cuenta=false}else{$("#btn_enviar_cuenta").removeClass('xInvisible');xenviar_cuenta=true}
@@ -125,11 +154,10 @@ function xValPagoMostrarContainerPago(){xValPago.setVisibleContainerPago();}
 function xIrARegistrarPago(){if(xregistrar_pago==false){return;}
 xValPago.setVisiblePanel1();xedit_detalle_item=true;xEstadoPedido=2;xThisVentaRapida.$.dialog_pagar_vr.open()
 $("#component_pago_vr").focus();component_pago_vr.setVal(xMoneda(tt_pedido));}
-function xEnviarACuenta(){if(xenviar_cuenta==true){if(xnum_mesa_valido==false){alert('Numero de mesa no es valido.');return;}
+function xEnviarACuenta(){if(xenviar_cuenta==true){if(xnum_mesa_valido==false&&xdelivery===0){alert('Numero de mesa no es valido.');return;}
 xEstadoPedido=0;if(guardando===true){return;}
 guardando=true;xPopupLoad.titulo="Guardando...";xPopupLoad.xopen();xid_cliente_pago=0;xGuardarPedidoVR(function(){});}}
-function xNuevoPedidoVR(){window.localStorage.removeItem("::app3_sys_dta_pe");xPopupLoad.xopen();xLoadArrayPedido();xLoadCartaVR();$("#xtb_pedido_subtotales tr").remove();$("#tb_pedido_detalle").remove();$(".xcheck_print").attr('checked',false)
-xregistrar_pago=false;xenviar_cuenta=false;xid_cliente_pago=0;$("#btn_registrar_pago").addClass('xInvisible');$("#btn_enviar_cuenta").addClass('xInvisible');$("#txt_mesa").val('');$("#txt_ref").val('');xedit_detalle_item=false;check_reserva.checked=false;$("#txt_bus_item").focus();guardando=false;xRpt_pago=[];xLocal_SubTotal_Quitados='';}
+function xNuevoPedidoVR(){window.localStorage.removeItem("::app3_sys_dta_pe");xPopupLoad.xopen();xLoadArrayPedido();xLoadCartaVR();$("#xtb_pedido_subtotales tr").remove();$("#tb_pedido_detalle").remove();$(".xcheck_print").attr('checked',false);xregistrar_pago=false;xenviar_cuenta=false;xid_cliente_pago=0;$("#btn_registrar_pago").addClass('xInvisible');$("#btn_enviar_cuenta").addClass('xInvisible');$("#txt_mesa").val('');$("#txt_ref").val('');xedit_detalle_item=false;check_reserva.checked=false;$("#txt_bus_item").focus();guardando=false;xRpt_pago=[];arrDatosAdjuntoDelivery={};frm_cliente.reset();xLocal_SubTotal_Quitados='';}
 function xIniFocusMoveLi(){$xlist_li=$('ul#accordion li:visible').keynavigator({cycle:true,activeClass:'xitem_seleccionado_li'});}
 function xRegistrarClientePagoVR(){$("#btn_pago").attr('disabled',true);if(guardando===true){return;}
 guardando=true;xid_cliente_pago=xRpt_pago[0].idcliente;xPopupLoad.titulo="Guardando...";xPopupLoad.xopen();xGuardarPedidoVR(function(){dialog_pagar_vr.close();guardando=false;});}
@@ -137,13 +165,13 @@ function xRegistrarPagoVR(xidclie,xidp){var idtpc=select_ulTPC.value;$.ajax({typ
 xPopupLoad.xclose();xThisVentaRapida.$.dialog_pagar_vr.close();});}
 async function xGuardarPedidoVR(responde){var xmesa=$("#txt_mesa").val();var xref=$("#txt_ref").val();var xtotal=$(".xPedidoTotal").text();var xCantidad_descontar=0;var xItem_descontar='';var xsql_descontar='';var xNumPedido='';var xIdTpc_pe='';var xsub_sql_descontar='';var p_from='';xIdPedido='';xReservar=0;if(tt_pedido==0){return;}
 if(check_reserva.checked==true){xmesa='0';$("#txt_mesa").val(0);xReservar=1;}
-xsolo_llevar=0;xdelivery=0;var xcount_seccion=0;$("#xBody .xEncabezadoTpConX").each(function(index,element){xcount_seccion++;if(index==0){xIdTpc_pe=$(element).attr('data-idtpc');}
+xsolo_llevar=0;xdelivery=0;var xcount_seccion=0;$("#xBody .xEncabezadoTpConX").each(function(index,element){$("#btn_enviar_cuenta").addClass('xInvisible');xcount_seccion++;if(index==0){xIdTpc_pe=$(element).attr('data-idtpc');}
 if($(element).text().toLowerCase().indexOf('llevar')>-1){xsolo_llevar=1;}
-if($(element).text().toLowerCase().indexOf('delivery')>-1){xdelivery=1;}})
+if($(element).text().toLowerCase().indexOf('delivery')>-1){xdelivery=1;xenviar_cuenta=true;$("#btn_enviar_cuenta").removeClass('xInvisible');}})
 if(xcount_seccion>1){xsolo_llevar=0;}
-var xarr_tipo_pago=xRpt_pago[0]?xRpt_pago[0]['xtipo_pagos']:[];var DatosCliente=xRpt_pago[0]?xRpt_pago[0].cliente:[];var ComprobanteSeleccionado=xRpt_pago[0]?xRpt_pago[0].comprobante:[];var xid_cliente_pago=DatosCliente.idcliente===""?await ClienteService_Guardar(DatosCliente):DatosCliente.idcliente;var xidpedido_seleccionados='';xGeneralValidarRegalasCarta(xArrayPedidoObj,true);if(xArmarSubtotalesArray()==0){return}
+var xarr_tipo_pago=xRpt_pago[0]?xRpt_pago[0]['xtipo_pagos']:[];var DatosCliente=xRpt_pago[0]?xRpt_pago[0].cliente:arrDatosAdjuntoDelivery!={}?JSON.stringify(arrDatosAdjuntoDelivery)==="{}"?[]:JSON.parse(arrDatosAdjuntoDelivery):[];var ComprobanteSeleccionado=xRpt_pago[0]?xRpt_pago[0].comprobante:[];var xid_cliente_pago=DatosCliente.idcliente===""?await ClienteService_Guardar(DatosCliente):DatosCliente.idcliente;var xidpedido_seleccionados='';xGeneralValidarRegalasCarta(xArrayPedidoObj,true);if(xArmarSubtotalesArray()==0){return}
 xVerificarImprimirComanda=false;xVerificarSiSeImprimeComanda(xArrayPedidoObj)
-xref=xref===''?DatosCliente.nombres||'':xref;xarr_cliente={'cliente':DatosCliente,'i':xidpedido_seleccionados};xarr_header={'idclie':xid_cliente_pago,'referencia':xref,'idcategoria':xidCategoriaVR,'mesa':xmesa,'reservar':xReservar,'tipo_consumo':xIdTpc_pe,'subtotales_tachados':xLocal_SubTotal_Quitados}
+xref=xref===''?DatosCliente.nombres?DatosCliente.nombres:DatosCliente.nombre||'':xref;xarr_cliente={'cliente':DatosCliente,'i':xidpedido_seleccionados};xarr_header={'idclie':xid_cliente_pago,'referencia':xref,'idcategoria':xidCategoriaVR,'mesa':xmesa,'reservar':xReservar,'tipo_consumo':xIdTpc_pe,'subtotales_tachados':xLocal_SubTotal_Quitados}
 xarr_comprobante=ComprobanteSeleccionado;xarr_body=xArrayPedidoObj;xarr_subtotales=xLocal_xDtSubTotales;if(xEstadoPedido===2){xarr_tipo_pago=xRpt_pago[0].xtipo_pagos;p_from='ab';}else{xarr_tipo_pago=[];p_from='a';}
 xPopupLoad.xopen();$.ajax({type:'POST',url:'../../bdphp/log_001.php',data:{p_from:p_from,p_cliente:xarr_cliente,p_body:xarr_body,p_header:xarr_header,p_tipo_pago:xarr_tipo_pago,p_subtotales:xarr_subtotales,p_comprobante:xarr_comprobante,estado_p:xEstadoPedido}}).done(function(idP){const _arrRpt=xm_all_SetResponseLog_001(idP);const xrpt_correlativo=_arrRpt.correlativo_comprobante;const xCorrelativo_dia=xCeroIzq(_arrRpt.correlativo_dia,5);const xsub_sql_descontar='';const xIdRegistroPago=_arrRpt.idregistro_pago;xNumPedido=xCeroIzq(_arrRpt.numpedido,5);xIdPedido=_arrRpt.idpedido;xArrayEnca={'m':xCeroIzq(xmesa,2),'r':xMayusculaPrimera(xSoloMinuscula(xref)),'num_pedido':xNumPedido,'reservar':0,'solo_llevar':xsolo_llevar,'delivery':xdelivery,'correlativo_dia':xCorrelativo_dia};xMandarCocinarImpresionComprobante(xrpt_correlativo,xIdRegistroPago);if(xVerificarImprimirComanda==true){xLLamarPrintVR()}else{xPopupLoad.xclose();xNuevoPedidoVR();}
 responde(true)});}
@@ -168,10 +196,13 @@ if(xArraySeccion[n.idseccion_index]==null){xArraySeccion[n.idseccion_index]='<tr
 xCadenaItemArray=String('<tr class="xPedidoItem row" data-id="'+n.iditem+'" data-idseccion="'+n.idseccion+'" data-seccion="'+n.des_seccion+'" data-idbus="'+n.idseccion+'" data-idtipocobus="'+n.idtipo_consumo+'" data-idprocede="'+n.idprocede+'" data-procede="'+n.procede+'" data-procedeindex="'+n.procede_index+'" data-ventarapida=1 data-imprimircomanda="'+n.imprimir_comanda+'" data-iddescontar="'+n.idprocede+'" data-cant_descontar="'+n.cant_descontar+'" data-idalmacen_items="'+n.idalmacen_items+'">'+'<td width="90%">'+xCeroIzq(n.cantidad,2)+' | '+n.des+' '+xIndicacionItem+'</td>'+'<td class="xInvisible" data-ColumName="cantidad" id="cant_descontar">'+xCeroIzq(n.cantidad,2)+'</td>'+'<td width="10px" align="right" class="xtb_pedido_importe" data-ColumName="ptotal" id="ptotal">'+n.precio_total+'</td>'+'<td class="xInvisible" id="ptotal_calc">'+n.precio_total_calc+'</td>'+'<td class="xInvisible" data-ColumName="punitario" id="punitario">'+n.precio+'</td>'+'<td class="xInvisible" id="td_cant">'+n.cantidad+'</td>'+'<td class="xInvisible" data-ColumName="iditem">'+n.iditem2+'</td>'+'<td class="xInvisible" data-ColumName="idcarta_lista" id="id_descontar">'+n.iditem+'</td>'+'<td class="xInvisible" data-ColumName="idseccion">'+n.idseccion+'</td>'+'<td class="xInvisible" id="row_idprocede">'+n.idprocede+'</td>'+'<td class="xInvisible" data-ColumName="idcategoria">'+n.idcategoria+'</td>'+'<td class="xInvisible" data-ColumName="idtipo_consumo">'+xDtPedido[i].id+'</td>'+'<td class="xInvisible" data-ColumName="descripcion">'+n.des+' '+n.indicaciones+'</td>'+'<td class="xInvisible" data-ColumName="procede">'+n.procede_index+'</td>'+'<td class="xInvisible" id="row_tb_procede">'+n.procede+'</td>'+'<td class="xInvisible" data-ColumName="idpedido">?p</td>'+'</tr>');xArraySeccion[n.idseccion_index]=xArraySeccion[n.idseccion_index]+xCadenaItemArray;xHayPedido=1;xCantItems=parseInt(xCantItems)+parseInt(n.cantidad);}}});if(xCadenaItemArray!=''){xEncabezadoCollapse='<tr><td colspan="2" class="xFondoRowPlomo noselect xBold xMargin5 xEncabezadoTpConX" data-idtpc="'+xDtPedido[i].id+'">'+xDtPedido[i].des+'</td></tr>';for(a in xArraySeccion){xCadenaCollapse=String(xCadenaCollapse+xArraySeccion[a]);};xCadenaGrupo=String(xCadenaGrupo+xEncabezadoCollapse+xCadenaCollapse);}};xCadenaGrupo=String('<table width="100%" class="xtb_pedido" data-TablaName="pedido_detalle" id="tb_pedido_detalle">'+xCadenaGrupo+'</table></div></div>');$("#xBody").html(xCadenaGrupo).trigger('create');xValidarReglaCarta();}
 function xValidarReglaCarta(){xGeneralValidarRegalasCarta($('.xtb_pedido'),false);xSumarTotal();}
 function xSumarTotal(){xGeneralValidarRegalasCarta(xArrayPedidoObj,true);tt_pedido=xArmarSubtotalesArray();var htmlSubtotales='';xLocal_xDtSubTotales.forEach((element,index)=>{var _fontSize,_fontSizeTitulo,titulo,_style='',_id='',_colorImporte='',xBtnQuitar='',classTachado='',textBnQuitar='(-)';var classTachado=element.tachado?'xTachar':'';var textBnQuitar=element.tachado?'Add':'Quitar';var importeRow=element.tachado?element.importe_tachado:element.importe;xBtnQuitar=element.quitar?'<span data-tachado="'+element.tachado+'" class="xCursor xBold xColorRow_Azul xfont11" title="no cobrar" onclick="quitarSubTotal(this, '+index+')"> '+textBnQuitar+' </span>':'';if(element.descripcion.toUpperCase()==="TOTAL"){_id='tt_importe_pagar_t';_fontSizeTitulo='';_fontSize='xfont24 xBold';titulo='IMPORTE A PAGAR';xtt_pedidos_det=parseFloat(element.importe);}else{_colorImporte='xColorRow_Plomo';_fontSize='xfont15';_fontSizeTitulo=='xfont15';titulo=element.descripcion.toUpperCase();_style='style="padding-top:1px;padding-bottom:1px;"';}
-htmlSubtotales=htmlSubtotales+'<tr class="total '+classTachado+'">'+'<td colspan="3" '+_style+'><p class="'+_fontSizeTitulo+' xColorRow_Plomo">'+titulo+' '+xBtnQuitar+'</p></td>'+'<td align="right" '+_style+'><p class="'+_fontSize+' '+_colorImporte+'" id="'+_id+'">'+importeRow+'</p></td>'+'</tr>';});$("#xtb_pedido_subtotales").html(htmlSubtotales).trigger('create');if(tt_pedido==0){$("#btn_registrar_pago").addClass('xInvisible');xregistrar_pago=false;$("#btn_enviar_cuenta").addClass('xInvisible');xenviar_cuenta=false;}else{$("#btn_registrar_pago").removeClass('xInvisible');xregistrar_pago=true
-if($("#txt_mesa").val()!=''){$("#btn_enviar_cuenta").removeClass('xInvisible');xenviar_cuenta=true}}}
+htmlSubtotales=htmlSubtotales+'<tr class="total '+classTachado+'">'+'<td colspan="3" '+_style+'><p class="'+_fontSizeTitulo+' xColorRow_Plomo">'+titulo+' '+xBtnQuitar+'</p></td>'+'<td align="right" '+_style+'><p class="'+_fontSize+' '+_colorImporte+'" id="'+_id+'">'+importeRow+'</p></td>'+'</tr>';});$("#xtb_pedido_subtotales").html(htmlSubtotales).trigger('create');if(tt_pedido==0){$("#btn_registrar_pago").addClass('xInvisible');xregistrar_pago=false;$("#btn_enviar_cuenta").addClass('xInvisible');xenviar_cuenta=false;}else{$("#btn_registrar_pago").removeClass('xInvisible');xregistrar_pago=true;if($("#txt_mesa").val()!=''||xdelivery===1){$("#btn_enviar_cuenta").removeClass('xInvisible');xenviar_cuenta=true}}}
 function quitarSubTotal(obj,index){const tachado=$(obj).attr('data-tachado');const idQuitar=xLocal_xDtSubTotales[index].id;if(tachado==="true"){xLocal_SubTotal_Quitados=xLocal_SubTotal_Quitados.replace(idQuitar+",",'');}else{if(xLocal_SubTotal_Quitados.indexOf(idQuitar)>=0){return;}
 xLocal_SubTotal_Quitados+=idQuitar+',';}
 xSumarTotal();}
 function xTraerDtTipoConsumo(){var xCadenaSelectUlTPC='',xDtTpC=xm_log_get('estructura_pedido');for(var i=0;i<xDtTpC.length;i++){xCadenaSelectUlTPC=String(xCadenaSelectUlTPC+'<option value="'+xDtTpC[i].idtipo_consumo+'">'+xDtTpC[i].descripcion+'</option>');};$("#select_ulTPC").html(xCadenaSelectUlTPC).trigger('create');}
+function xAdjuntarDatosDelivery(){arrDatosAdjuntoDelivery={idcliente:xIdCliente_pedido,num_doc:txt_delivery_dni.value,nombre:txt_delivery_nombre.value,direccion:txt_delivery_direccion.value,telefono:txt_delivery_telefono.value,paga_con:txt_delivery_paga.value,f_nac:xClientePedidoFnac}
+arrDatosAdjuntoDelivery=JSON.stringify(arrDatosAdjuntoDelivery);dialog_datos_delivery.close();}
+function xValidarDNIRUC(valor,e){if(e.keyCode===13){xIdCliente_pedido='';$("#progress_cliente").removeClass("xInvisible");xGetFindCliente(valor,'dni',(rpt)=>{if(rpt.success){xIdCliente_pedido=rpt.idcliente;xClientePedidoFnac=rpt.f_nac;$("#txt_delivery_nombre").val(rpt.nombres);$("#txt_delivery_direccion").val(rpt.direccion);$("#txt_delivery_telefono").val(rpt.telefono);}
+$("#progress_cliente").addClass("xInvisible");});}}
 Polymer({is:'x-venta-rapida',properties:{xt_org:Number,xt_idsede:Number,xt_idus:Number,xdt_items:Object,hidden_container_registro_pago:boolean=false,valid_form_cliente_pago:boolean=false,valid_monto_pago:boolean=false},attached:function(){this.selected_us=0;xThisVentaRapida=this;xIniVentaRapida();},detached:function(){document.defaultAction=false;document['onkeydown']=empty;clearInterval(xGeneralRelojUpdateItemsSolo);}})/*]]>*/</script>

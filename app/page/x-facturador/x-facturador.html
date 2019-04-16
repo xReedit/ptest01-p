@@ -1,556 +1,146 @@
 <link rel="import" href="../../x-componentes/x-comp-find-comprobante/x-comp-find-comprobante.html">
 <dom-module id="x-facturador">
-    <template is="dom-bind">
-        <paper-dialog id="dialog_erro_print" modal style="min-width: 330px;" modal entry-animation="scale-up-animation"
-            exit-animation="fade-out-animation">
-            <h4>Error en impresora</h4>
-            <p id="print_error"></p>
-            <br>
-            <div class="xBoton2 xVerde" style="margin-left:23px;" onclick="xReImprimirFac();">Intentar Nuevamente</div>
-            <div class="xBoton2 xPlomo" style="margin-left:23px;" dialog-dismiss onclick="xNuevoPedidoVR();">No imprimir</div>
-            <br><br><br>
-        </paper-dialog>
-        <br>
-        <div class="xMiCard xradius" style="width:85%">
-            <div class="xEncanezadoCard xFondoRowAmarillo2">
-                <p>Emite comprobantes electronicos personalizados. Es decir el concepto y los montos no tienen que ser previamente registrados. <img ondblclick="xSeeFechaManual()" class="xDerecha" src="../../../images/candado.png" width="16px"></p>                
-            </div>
-            <div class="xContentCard" style="height: 100%;"> 
-                <input type="date" class="xMiInput xfont17 xDerecha" hidden$="[[!fecha_manual]]" style="width:200px;" id="txt_fecha" enlinea>                
-                <p class="bold xColorRow_Plomo">Comprobante</p>   
-                <div class="container-cliente">             
-                <form action="" id="form_pago_cliente" is="iron-form">
-                    <div style="width:250px; padding-left: 7px;">
-                        <x-comp-find-comprobante id="compFindComprobante" onchange="_getComprobante(comprobantes)"></x-comp-find-comprobante>
-                    </div>
-                    <br>
-                    <div class="xInvisible" id="contentClie">
-                        <div style="width:260px;">
-                            <input autofocus type="number" class="xMiInput" placeholder="RUC Cliente" pattern="[0-9]*" required id="txt_ruc" onkeyup="validarDocumentoCliente(this.value, event)" espaciar>
-                            <div class="xInvisible" id="progress_cliente">
-                                <paper-progress indeterminate style="width: 100%; float: left; margin-top: -6px"></paper-progress>
-                            </div>
-                            <div>
-                                <span class="xColorRow_Rojo xInvisible" id="txt_msj" style="padding-left: 7px; float: left; margin-top: -3px"></span>
-                            </div>
-                        </div>
-                        <!-- <input type="text" class="xMiInput xPasarEnter2" style="width:98%;" placeholder="Cliente" onChange="conMayusculas(this)" required="[[!formValid]]" id="txt_nombres" espaciar> -->
-                        <input type="text" class="xMiInput xPasarEnter2" style="width:98%;" placeholder="Cliente" onChange="conMayusculas(this)" id="txt_nombres" espaciar  required$="[[!modificarCliente]]" readonly$="[[!modificarCliente]]">
-                        <input type="text" class="xMiInput xPasarEnter2" style="width:98%;" placeholder="Direccion" onChange="conMayusculas(this)" required id="txt_direccion" espaciar>
-                    </div>
-                </form>
-                <br>                
-                </div>                
-                <br>                
-                <hr class="xLinea3">
-                <br>
-                <table class="xtable4" width="100%">
-                    <thead>
-                        <th class="xSinBorde" width="10px">Cant</th>
-                        <th class="xSinBorde" width="60%">Descripcion</th>
-                        <th class="xSinBorde" width="30px" align="right">P.Unitario</th>
-                        <th class="xSinBorde" width="30px" align="right">P.Total</th>
-                        <!-- <th class="xSinBorde" width="10px"></th> -->
-                    </thead>
-                    <tr class="xSinBorde" data-id="">                        
-						<td><input type="number" class="xMiInput xPasarEnter2" style="width:100%;" placeholder="Cant" onChange="conMayusculas(this)" required id="cant_item" autofocus></td>
-						<td><input type="text" class="xMiInput xPasarEnter2" style="width:100%;" placeholder="Descripcion" onChange="conMayusculas(this)" required id="des_item"></td>
-                        <td><input type="number" class="xMiInput xAlinearDerecha punitario" onChange="conMayusculas(this)" onblur="xRetornaMoneda(this)"  placeholder="P. Unitario" id="punitario" name="precio" required></td>
-                        <td><input type="number" class="xMiInput xAlinearDerecha xprecio" onChange="conMayusculas(this)" onblur="xRetornaMoneda(this)"   placeholder="P. Total" id="ptotal" name="total" required></td>
-						<!-- <td><paper-fab icon="add" onclick="xAddItem()" title="Agregar item"></paper-fab></td> -->
-                    </tr>        
-                    <template is="dom-repeat" items="{{arrItems}}" as="item">
-                        <tr data-value="[[index]]">
-                            <td> <span class="xDeleteRowNeutro" title="Borrar" onclick="xBorrarItemLocalArr(this);"></span> {{item.cantidad}} </td>
-                            <td>  {{item.descripcion}} </td>
-                            <td align="right">  {{item.punitario}} </td>
-                            <td align="right"> {{item.ptotal}}</td>
-                        </tr>
-                    </template>                    
-                    <template is="dom-repeat" items="{{arrTotales}}" as="total">
-                        <tr class="tt_row">
-                            <td colspan="2" class="xSinBorde"></td>
-                            <td align="right"> {{ total.descripcion }} </td>
-                            <td align="right"> {{ total.importe }} </td>
-                        </tr>
-                    </template>
-                </table>
-            </div>
-
-            <div class="xPieCard">
-                <div style="width: 200px;">
-                    <label for="listPrint" class="xColorRow_Plomo"> Impresora: </label>
-                    <select id="listPrint" class="xTextRow2 xCursor" onchange="fact_selectOptionCategoria()">
-                        <template is="dom-repeat" id="listImpresora" items="[[listImpresoras]]" as="impresora">
-                            <option value="[[index]]"> {{ impresora.descripcion }} </option>
-                        </template>
-                    </select>
-                </div>
-                <br>
-                <button class="xBoton2 xAzul" 
-                    onclick="xProcesarComprobante();"
-                    disabled="[[!formValid]]"
-                    hidden="[[cpe_show]]"
-                    >Listo, emitir comprobante</button>
-                
-                <button class="xBoton2 xAzul" 
-                    onclick="xProcesarComprobante();"
-                    hidden="[[!cpe_show]]"
-                    >Volver a imprimir</button>
-
-                <button class="xBoton2 xVerde" 
-                    onclick="xNuevoFac();"
-                    hidden="[[!cpe_show]]"
-                    >Nuevo</button>
-                <br><br>
-            </div>
-        </div>
-        <br><br>
-    </template>
-    <script type="text/javascript" src="../../shared/validar.numdoc.js"></script>
-    <script type="text/javascript" src="../../view/item_pedido_print_comprobante.js"></script>
-    <script type="text/javascript" src="../../view/deNumALetras.js"></script>
-    <script type="text/javascript" src="../../view/xJsonSunat.js"></script>
-    <script type="text/javascript" src="../../view/xSOAPSunat.js"></script>
-    <script type="text/javascript" src="../../view/item_pedido_estructura.js"></script>
-    <script type="text/javascript" src="../../view/item_pedido_subtotales.js"></script>
-    <script type="text/javascript" src="../../view/manager_storage.js"></script>
-    <script type="text/javascript" src="../../view/cliente.service.js"></script>    
-    <script type="text/javascript" src="../../view/cpe_interno.js"></script>
-    <style type="text/css">
-        :root {
-            --font-size: 12px;
-            --paper-input-container-input: {
-                font-size: var(--font-size);
-                }
-            --paper-input-container-label: {
-                font-size: 13px;
-                };
-            }
-
-        .tt_row td {
-            font-weight: 600;
-            font-size: 15px;
-        }
-    </style>
+<template is="dom-bind">
+<paper-dialog id="dialog_erro_print" modal style="min-width:330px" modal entry-animation="scale-up-animation" exit-animation="fade-out-animation">
+<h4>Error en impresora</h4>
+<p id="print_error"></p>
+<br>
+<div class="xBoton2 xVerde" style="margin-left:23px" onclick="xReImprimirFac()">Intentar Nuevamente</div>
+<div class="xBoton2 xPlomo" style="margin-left:23px" dialog-dismiss onclick="xNuevoPedidoVR()">No imprimir</div>
+<br><br><br>
+</paper-dialog>
+<br>
+<div class="xMiCard xradius" style="width:85%">
+<div class="xEncanezadoCard xFondoRowAmarillo2">
+<p>Emite comprobantes electronicos personalizados. Es decir el concepto y los montos no tienen que ser previamente registrados. <img ondblclick="xSeeFechaManual()" class="xDerecha" src="../../../images/candado.png" width="16px"></p>
+</div>
+<div class="xContentCard" style="height:100%">
+<input type="date" class="xMiInput xfont17 xDerecha" hidden$="[[!fecha_manual]]" style="width:200px" id="txt_fecha" enlinea>
+<p class="bold xColorRow_Plomo">Comprobante</p>
+<div class="container-cliente">
+<form action="" id="form_pago_cliente" is="iron-form">
+<div style="width:250px;padding-left:7px">
+<x-comp-find-comprobante id="compFindComprobante" onchange="_getComprobante(comprobantes)"></x-comp-find-comprobante>
+</div>
+<br>
+<div class="xInvisible" id="contentClie">
+<div style="width:260px">
+<input autofocus type="number" class="xMiInput" placeholder="RUC Cliente" pattern="[0-9]*" required id="txt_ruc" onkeyup="validarDocumentoCliente(this.value,event)" espaciar>
+<div class="xInvisible" id="progress_cliente">
+<paper-progress indeterminate style="width:100%;float:left;margin-top:-6px"></paper-progress>
+</div>
+<div>
+<span class="xColorRow_Rojo xInvisible" id="txt_msj" style="padding-left:7px;float:left;margin-top:-3px"></span>
+</div>
+</div>
+<input type="text" class="xMiInput xPasarEnter2" style="width:98%" placeholder="Cliente" onChange="conMayusculas(this)" id="txt_nombres" espaciar required$="[[!modificarCliente]]" readonly$="[[!modificarCliente]]">
+<input type="text" class="xMiInput xPasarEnter2" style="width:98%" placeholder="Direccion" onChange="conMayusculas(this)" required id="txt_direccion" espaciar>
+</div>
+</form>
+<br>
+</div>
+<br>
+<hr class="xLinea3">
+<br>
+<table class="xtable4" width="100%">
+<thead>
+<th class="xSinBorde" width="10px">Cant</th>
+<th class="xSinBorde" width="60%">Descripcion</th>
+<th class="xSinBorde" width="30px" align="right">P.Unitario</th>
+<th class="xSinBorde" width="30px" align="right">P.Total</th>
+</thead>
+<tr class="xSinBorde" data-id="">
+<td><input type="number" class="xMiInput xPasarEnter2" style="width:100%" placeholder="Cant" onChange="conMayusculas(this)" required id="cant_item" autofocus></td>
+<td><input type="text" class="xMiInput xPasarEnter2" style="width:100%" placeholder="Descripcion" onChange="conMayusculas(this)" required id="des_item"></td>
+<td><input type="number" class="xMiInput xAlinearDerecha punitario" onChange="conMayusculas(this)" onblur="xRetornaMoneda(this)" placeholder="P. Unitario" id="punitario" name="precio" required></td>
+<td><input type="number" class="xMiInput xAlinearDerecha xprecio" onChange="conMayusculas(this)" onblur="xRetornaMoneda(this)" placeholder="P. Total" id="ptotal" name="total" required></td>
+</tr>
+<template is="dom-repeat" items="{{arrItems}}" as="item">
+<tr data-value="[[index]]">
+<td> <span class="xDeleteRowNeutro" title="Borrar" onclick="xBorrarItemLocalArr(this)"></span> {{item.cantidad}} </td>
+<td> {{item.descripcion}} </td>
+<td align="right"> {{item.punitario}} </td>
+<td align="right"> {{item.ptotal}}</td>
+</tr>
+</template>
+<template is="dom-repeat" items="{{arrTotales}}" as="total">
+<tr class="tt_row">
+<td colspan="2" class="xSinBorde"></td>
+<td align="right"> {{ total.descripcion }} </td>
+<td align="right"> {{ total.importe }} </td>
+</tr>
+</template>
+</table>
+</div>
+<div class="xPieCard">
+<div style="width:200px">
+<label for="listPrint" class="xColorRow_Plomo"> Impresora: </label>
+<select id="listPrint" class="xTextRow2 xCursor" onchange="fact_selectOptionCategoria()">
+<template is="dom-repeat" id="listImpresora" items="[[listImpresoras]]" as="impresora">
+<option value="[[index]]"> {{ impresora.descripcion }} </option>
+</template>
+</select>
+</div>
+<br>
+<button class="xBoton2 xAzul" onclick="xProcesarComprobante()" disabled="[[!formValid]]" hidden="[[cpe_show]]">Listo, emitir comprobante</button>
+<button class="xBoton2 xAzul" onclick="xProcesarComprobante()" hidden="[[!cpe_show]]">Volver a imprimir</button>
+<button class="xBoton2 xVerde" onclick="xNuevoFac()" hidden="[[!cpe_show]]">Nuevo</button>
+<br><br>
+</div>
+</div>
+<br><br>
+</template>
+<script type="text/javascript" src="../../shared/validar.numdoc.js"></script>
+<script type="text/javascript" src="../../view/item_pedido_print_comprobante.js"></script>
+<script type="text/javascript" src="../../view/deNumALetras.js"></script>
+<script type="text/javascript" src="../../view/xJsonSunat.js"></script>
+<script type="text/javascript" src="../../view/xSOAPSunat.js"></script>
+<script type="text/javascript" src="../../view/item_pedido_estructura.js"></script>
+<script type="text/javascript" src="../../view/item_pedido_subtotales.js"></script>
+<script type="text/javascript" src="../../view/manager_storage.js"></script>
+<script type="text/javascript" src="../../view/cliente.service.js"></script>
+<script type="text/javascript" src="../../view/cpe_interno.js"></script>
+<style type="text/css">:root{--font-size:12px;--paper-input-container-input:{font-size:var(--font-size)}--paper-input-container-label:{font-size:13px}}.tt_row td{font-weight:600;font-size:15px}</style>
 </dom-module>
-<script>
-    var xThisFacturador, xPopupLoad, _arrCliente = [], _arrTotal=[], _arrItems = [], cnf_ComprobanteSel, xIdCliente_pago, _listValid = false, _formValid = false, _modificarCliente=false;
-    var impresoraSelect = {}, IdTpConsumo=0, rptDoc, itemsConEstructuraPrint, arr_comprobante = [], _idregistro, txt_fecha_cpe_manual='';
-
-    function xIniFacturador() {
-        xPopupLoad = document.getElementById('xLoad');
-        xThisFacturador.formValid = false;
-        _listValid = false;
-        _formValid = false;
-        xThisFacturador.modificarCliente = false;
-        xThisFacturador.arrItems = [];
-        xThisFacturador.arrTotales = [];
-        xThisFacturador.listImpresoras = [];
-        xThisFacturador.cpe_show = false;
-        xThisFacturador.fecha_manual = false
-
-        const arrEstructura = xm_log_get('estructura_pedido');
-        IdTpConsumo = arrEstructura[0].idtipo_consumo;
-
-        fact_getAllImpresoras();
-
-        $('.xPasarEnter2').on('keyup', function (e) {
-            var code = e.which;
-            if (code == 13 || code == 186) {
-                var inputs = $('input'); // storage a array of Inputs
-                var a = inputs.index(document.activeElement);
-                if (inputs[a + 1] !== null) {
-                    var nextBox = inputs[a + 1];
-                    if (nextBox === undefined) { return }
-                    if (nextBox.disabled) { nextBox = inputs[a + 2] }
-
-                    if (nextBox == undefined) { return; }
-                    nextBox.focus();
-                    nextBox.select();
-                }
-                event.stopPropagation();
-                e.stopPropagation();
-                e.stopImmediatePropagation()
-                return false;
-            }
-        });
-        $(".punitario").on('keyup', function (e) {
-            var code = e.which;
-            xCalcTotal();
-            if (code == 13 || code == 186) {
-                $("#punitario").val(xMoneda(this.value));
-                $("#ptotal").focus();
-            }
-        });
-        $(".xprecio").on('keyup', function (e) {
-            var code = e.which;
-            if (code == 13 || code == 186) {
-                xAddItem();
-            }
-        });
-
-        $("#txt_fecha").on('change', function () {
-            var d = $(this).val().split('-');
-            txt_fecha_cpe_manual = d[1] === undefined ? '' : $(this).val();                        
-            // xIniPagination();
-        })
-
-    }
-
-    function xSeeFechaManual() {
-        xThisFacturador.fecha_manual = !xThisFacturador.fecha_manual;
-    }
-
-    function _getComprobante($event) {
-        cnf_ComprobanteSel = $event;
-        xNuevoCliente();
-        if (cnf_ComprobanteSel.codsunat === '0') {
-            $("#contentClie").addClass('xInvisible');
-        } else {            
-            $("#contentClie").removeClass('xInvisible');
-        }
-
-        xThisFacturador.modificarCliente = cnf_ComprobanteSel.codsunat === '01' ? false : true; // si es factura no se puede modificar cliente
-    
-    }
-
-    function validarDocumentoCliente(valor, e){
-        if (e.keyCode !== 13) return;
-        xNuevoCliente();
-        $("#txt_msj").addClass('xInvisible');        
-
-        const tipoDoc = cnf_ComprobanteSel;
-        const rpt = validarNumDoc_ValidarDNIRUC(tipoDoc, valor);
-
-        if (!rpt.valid) {
-            NumDocNoValid(rpt);            
-            return;
-        };
-        
-        $("#progress_cliente").removeClass("xInvisible");
-        xGetFindCliente(rpt.numdoc, rpt.servicio, (new_rpt) => {
-            if (new_rpt.success) {
-                if ( new_rpt.nombres === "" ) {
-                    rpt.valid = false;
-                    rpt.msj = "No se encontraron registros. Verifique el numero de documento.";                    
-                    $("#progress_cliente").addClass("xInvisible");
-                    
-                    
-                    NumDocNoValid(rpt);
-                    return;
-                }
-
-                rpt.valid = true;
-                rpt.msj = "ok";
-                rpt.cliente = { idcliente: new_rpt.idcliente, nombres: new_rpt.nombres, direccion: new_rpt.direccion, num_doc: rpt.numdoc, f_nac: new_rpt.f_nac };
-                _arrCliente = rpt.cliente;
-
-                _formValid = rpt.valid;
-                xThisFacturador.modificarCliente = false; // no se puede modificar cliente luego que valido
-                xValidarBtnProcesar();
-
-                xIdCliente_pago = new_rpt.idcliente;
-                $("#txt_nombres").val(new_rpt.nombres);
-                $("#txt_direccion").val(new_rpt.direccion);
-            } else {
-                rpt.valid = false;
-                rpt.msj = new_rpt.msg;
-
-                xThisFacturador.modificarCliente = true; // si no valida se puede modificar
-                NumDocNoValid(rpt);
-                xNuevoCliente();
-            }
-            
-            $("#progress_cliente").addClass("xInvisible");
-        });
-    }
-
-    function NumDocNoValid(rpt){
-        _formValid = rpt.valid;
-        xValidarBtnProcesar();
-
-        $("#txt_msj").text(rpt.msj)
-        $("#txt_msj").removeClass('xInvisible');
-        $("#txt_ruc").select();
-        $("#txt_ruc").focus();
-    }
-
-    function xNuevoCliente() {
-        _formValid = false;
-        xValidarBtnProcesar();
-
-        xThisFacturador.modificarCliente = true;
-        xIdCliente_pago = '';
-        _arrCliente = [];
-        $('#txt_nombres').val('');
-        $('#txt_direccion').val('');
-
-        $("#txt_ruc").select();
-        $("#txt_ruc").focus();
-
-    }
-
-    function xCalcTotal() {
-        const xCan_item = $("#cant_item").val() === '' ? 0 : parseFloat($("#cant_item").val());    
-        const xPUnitario = $("#punitario").val() === '' ? 0 : parseFloat($("#punitario").val());
-        const ptotal = (parseFloat(parseFloat(xCan_item) * parseFloat(xPUnitario)).toFixed(2)) || 0; 
-        
-        // $("#punitario").val(xMoneda(xCan_item));
-        $("#ptotal").val(ptotal);
-        // $("#ptotal").focus();
-    }
-
-    function xAddItem() {
-        const xCan_item = $("#cant_item").val();
-        const xDes_item = $("#des_item").val();
-        const xPUnitario = $("#punitario").val();
-        const xPTotal = $("#ptotal").val();
-        if (xCan_item === '' || xDes_item === '' && xPUnitario === '' && xPTotal === '') { return }
-
-
-        const id = xCeroIzq(_arrItems.length + 1, 3);
-        const item = {  'id': id, 
-                        'iditem': id, 
-                        'idtipo_consumo': IdTpConsumo,
-                        'des_seccion': 'ITEMS',
-                        'cantidad': xCan_item, 
-                        'descripcion': xDes_item, 
-                        'punitario': xPUnitario, 
-                        'precio': xPUnitario,
-                        'ptotal': xPTotal,
-                        'precio_total_calc': xPTotal
-                    };
-        _arrItems.push(item);
-        xThisFacturador.arrItems = JSON.parse(JSON.stringify(_arrItems));
-        //arrItems = JSON.parse(JSON.stringify(arrItems));
-        console.log(xThisFacturador.arrItems);
-        xCalcularTotal();
-        xNuevoItem();
-    }
-    
-    function xBorrarItemLocalArr(obj) {
-        const i = obj.parentElement.parentElement.dataValue;
-        _arrItems.splice(i,1);
-        xThisFacturador.arrItems = JSON.parse(JSON.stringify(_arrItems));
-        xCalcularTotal();
-    }
-
-    function xNuevoItem() {
-        $("#cant_item").val('');
-        $("#des_item").val('');
-        $("#punitario").val('');
-        $("#ptotal").val('');
-        $("#cant_item").focus();
-    }
-
-    function xValidarBtnProcesar() {
-        // si es boleta y el total no pasa de 700 no requiere cliente
-        if (_arrTotal.length > 0) {
-            if ( cnf_ComprobanteSel.codsunat === "03" && _listValid && parseFloat(_arrTotal[2].importe) <= 700) {
-                xThisFacturador.formValid = true;
-                xThisFacturador.modificarCliente = true; // si se pude modificar cliente           
-                return;            
-            }
-        }
-
-        xThisFacturador.formValid = _listValid && _formValid;
-    }
-
-    function xCalcularTotal() {
-        var xCartaSubtotales = xm_log_get('carta_subtotales');
-        _arrTotal = [];
-
-        const SumaLista = this._arrItems.map( x => parseFloat(x.ptotal)).reduce((a,b) => a+b, 0);
-        _listValid = parseInt(SumaLista) === 0 ? false : true;
-        
-
-
-        _arrTotal.push({ 'descripcion': 'Sub Total', 'importe': xMoneda(SumaLista) });
-
-        xCartaSubtotales.map(x => {
-            if (x.es_impuesto === '1') {
-                const impuesto = parseFloat(x.monto);
-                const importeCalc = x.activo === '0' ? parseFloat(SumaLista * (impuesto / 100)).toFixed(2) : '0.00';
-                _arrTotal.push({'descripcion': x.descripcion, 'importe': importeCalc});
-            }
-        });
-
-
-        const total = _arrTotal.map(x => parseFloat(x.importe)).reduce((a, b) => a + b, 0);
-        _arrTotal.push({ 'descripcion': 'Total', 'importe': xMoneda(total) });
-        
-        xThisFacturador.arrTotales = JSON.parse(JSON.stringify(_arrTotal));
-
-        xValidarBtnProcesar();
-        // console.log(_arrTotal);
-    }
-
-    async function xProcesarComprobante() {    
-        if (xThisFacturador.cpe_show) { //si no  hay ningun cpe generado // para volver a imprimir o reimprimir sin generar uno nuevo                        
-            xMandarCocinarImpresionComprobante(arr_comprobante.correlativo, _idregistro);
-            return;
-        }
-        // registra cliente
-        xPopupLoad.xopen(); 
-        arr_comprobante = cnf_ComprobanteSel;
-        
-        if (_arrCliente.length === 0 ){// si no hay cliente
-            const nombres_cliente = $("#txt_nombres").val();
-            const direccion_cliente = $("#txt_direccion").val();
-            _arrCliente = {};
-            _arrCliente.idcliente=0;
-            _arrCliente.num_doc = '00000000';
-            // _arrCliente.nombres = 'PUBLICO EN GENERAL';
-            // _arrCliente.direccion = '';
-            _arrCliente.nombres = nombres_cliente === '' ? 'PUBLICO EN GENERAL' : nombres_cliente;
-            _arrCliente.direccion = direccion_cliente;            
-        }else {
-            _arrCliente.direccion = $("#txt_direccion").val();
-            _arrCliente.idcliente = _arrCliente.idcliente === "" ? await ClienteService_Guardar(_arrCliente) : _arrCliente.idcliente;
-        }
-        // obtiene el correlativo del comprobante    
-        $.ajax({ type: 'POST', url: '../../bdphp/log_001.php', data: { p_from:'f', p_comprobante: cnf_ComprobanteSel } })
-        .done(function (comprobante_correlativo) {
-            const _arrRpt = xm_all_SetResponseLog_001(comprobante_correlativo);
-
-            arr_comprobante.correlativo = xCeroIzqNumComprobante(_arrRpt.correlativo_comprobante);
-            
-            // registrar cpe_facturador                        
-            const arrCpeFac = {
-                idcliente: _arrCliente.idcliente,
-                idcomprobante: arr_comprobante.idtipo_comprobante,
-                num_comprobante: arr_comprobante.correlativo,
-                subtotal: _arrTotal[0].importe,
-                igv: _arrTotal[1].importe,
-                total: _arrTotal[2].importe,
-            }
-
-            $.ajax({ type: 'POST', url: '../../bdphp/log_002.php', data: { op: '102', data: arrCpeFac, arrItems: _arrItems } })
-            .done(function (ultimoIdCpeFac) {                
-                _idregistro = [0, ultimoIdCpeFac]; //evalua si es array entonces sabra que esta yendo desde aca
-                xMandarCocinarImpresionComprobante(_arrRpt.correlativo_comprobante, _idregistro);
-            });
-
-        });
-    }    
-
-    async function xMandarCocinarImpresionComprobante(correlativo, _idregistro) {   
-        
-        
-        if (!xThisFacturador.cpe_show) { //si no  hay ningun cpe generado // para volver a imprimir o reimprimir sin generar uno nuevo            
-            arr_comprobante.fecha_manual = txt_fecha_cpe_manual;
-            arr_comprobante = cnf_ComprobanteSel;
-            arr_comprobante.correlativo = xCeroIzqNumComprobante(correlativo);
-
-            // retorna el encabezado del comprobante con hash
-            itemsConEstructuraPrint = xCargarDatosAEstructuraImpresion(xThisFacturador.arrItems);
-            rptDoc = await xCocinarImprimirComprobante(itemsConEstructuraPrint, _arrTotal, arr_comprobante, _arrCliente, _idregistro, -2, false)
-        }
-
-        if ( rptDoc.ok = false ) {
-            alert(rptDoc.msj);
-            return;
-        }
-                        
-        if (impresoraSelect.idimpresora === -1) {// en pdf
-
-            const hash = rptDoc[0] ? rptDoc[0].hash : rptDoc.hash;
-            if (hash === 'www.papaya.com.pe') {// error de conexion o algun  error // no pdf(bajar de la web) pero si impresion
-                xPopupLoad.xclose();
-                alert('Error con la conexion al servicio de Sunat. No puede descargar el pdf. Pero si puede imprimirlo. Este comprobante sera enviado a sunat al cerrar caja.');
-                return;
-            }
-        
-            xThisFacturador.cpe_show = true;
-            // llamar servicio del api
-            xSoapSunat_DownloadFile('pdf', rptDoc[0].external_id);           
-            xPopupLoad.xclose();
-            return;
-        } else {
-            xThisFacturador.cpe_show = true;
-            xLLamarPrintFac();
-        }        
-    }
-
-    function xNuevoFac() {
-        xThisFacturador.cpe_show = false;
-        _arrCliente = [];
-        _arrItems = [];
-        _arrTotal = [];
-
-        xThisFacturador.arrItems = JSON.parse(JSON.stringify(_arrItems));
-        xThisFacturador.arrTotales = JSON.parse(JSON.stringify(_arrTotal));
-
-        xNuevoCliente();
-        $('#contentClie').addClass('xInvisible');
-        $('#form_pago_cliente').reset();
-    }
-
-    function xLLamarPrintFac() {        
-        let xSetImpresora = xm_log_get('sede_generales');
-        xSetImpresora[0].ip_print = impresoraSelect.ip;
-        xSetImpresora[0].var_margen_iz = impresoraSelect.var_margen_iz;
-        xSetImpresora[0].var_size_font = impresoraSelect.var_size_font
-        xSetImpresora[0].local = impresoraSelect.local;
-
-        xImprimirComprobanteAhoraPrintPreSelect(rptDoc, itemsConEstructuraPrint, _arrTotal, arr_comprobante, _arrCliente, xSetImpresora, function (rpt_print) {
-            if (rpt_print == false) { return false; }
-            xPopupLoad.titulo = "Imprimiendo...";
-            xPopupLoad.xopen();
-            setTimeout(function () { xPopupLoad.xclose() }, 3000);
-
-            xPopupLoad.xclose();
-        });
-    }
-    
-    function xReImprimirFac(){
-        dialog_erro_print.close();
-        xPopupLoad.titulo="Enviando...";
-        xPopupLoad.xopen();
-        
-        
-        xLLamarPrintFac();
-    }
-
-    function fact_selectOptionCategoria() {
-        const index = xThisFacturador.$.listPrint.value;
-        impresoraSelect = xThisFacturador.listImpresoras[index];
-        console.log(impresoraSelect);
-    }
-
-
-    function fact_getAllImpresoras() {
-        $.ajax({ type: 'POST', url: '../../bdphp/log_002.php', data: {op: '5'} })
-            .done(function (dtValues) {
-                var _arrPrint = []
-                dtValues = $.parseJSON(dtValues);
-                _arrPrint.push({idimpresora:-1, descripcion: 'MOSTRAR EN PDF'})
-                dtValues.datos.map(x =>
-                    _arrPrint.push(x)
-                );
-
-                xThisFacturador.listImpresoras = JSON.parse(JSON.stringify(_arrPrint));
-
-                impresoraSelect = _arrPrint[0];
-                console.log(xThisFacturador.listImpresoras);
-            });
-    }
-
-    Polymer({
-        is: 'x-facturador',
-        properties: {    
-            arrItems: [],
-            arrTotales: [],
-            listImpresoras: [],
-            formValid: boolean = false,
-            modificarCliente: boolean = false,
-            cpe_show: boolean = false,
-            fecha_manual: boolean = false,
-        },
-        attached: function () {
-            xThisFacturador = this;
-            xIniFacturador();
-        }
-    })
-</script>
+<script>/*<![CDATA[*/var xThisFacturador,xPopupLoad,_arrCliente=[],_arrTotal=[],_arrItems=[],cnf_ComprobanteSel,xIdCliente_pago,_listValid=false,_formValid=false,_modificarCliente=false;var impresoraSelect={},IdTpConsumo=0,rptDoc,itemsConEstructuraPrint,arr_comprobante=[],_idregistro,txt_fecha_cpe_manual='';function xIniFacturador(){xPopupLoad=document.getElementById('xLoad');xThisFacturador.formValid=false;_listValid=false;_formValid=false;xThisFacturador.modificarCliente=false;xThisFacturador.arrItems=[];xThisFacturador.arrTotales=[];xThisFacturador.listImpresoras=[];xThisFacturador.cpe_show=false;xThisFacturador.fecha_manual=false
+const arrEstructura=xm_log_get('estructura_pedido');IdTpConsumo=arrEstructura[0].idtipo_consumo;fact_getAllImpresoras();$('.xPasarEnter2').on('keyup',function(e){var code=e.which;if(code==13||code==186){var inputs=$('input');var a=inputs.index(document.activeElement);if(inputs[a+1]!==null){var nextBox=inputs[a+1];if(nextBox===undefined){return}
+if(nextBox.disabled){nextBox=inputs[a+2]}
+if(nextBox==undefined){return;}
+nextBox.focus();nextBox.select();}
+event.stopPropagation();e.stopPropagation();e.stopImmediatePropagation()
+return false;}});$(".punitario").on('keyup',function(e){var code=e.which;xCalcTotal();if(code==13||code==186){$("#punitario").val(xMoneda(this.value));$("#ptotal").focus();}});$(".xprecio").on('keyup',function(e){var code=e.which;if(code==13||code==186){xAddItem();}});$("#txt_fecha").on('change',function(){var d=$(this).val().split('-');txt_fecha_cpe_manual=d[1]===undefined?'':$(this).val();})}
+function xSeeFechaManual(){xThisFacturador.fecha_manual=!xThisFacturador.fecha_manual;}
+function _getComprobante($event){cnf_ComprobanteSel=$event;xNuevoCliente();if(cnf_ComprobanteSel.codsunat==='0'){$("#contentClie").addClass('xInvisible');}else{$("#contentClie").removeClass('xInvisible');}
+xThisFacturador.modificarCliente=cnf_ComprobanteSel.codsunat==='01'?false:true;}
+function validarDocumentoCliente(valor,e){if(e.keyCode!==13)return;xNuevoCliente();$("#txt_msj").addClass('xInvisible');const tipoDoc=cnf_ComprobanteSel;const rpt=validarNumDoc_ValidarDNIRUC(tipoDoc,valor);if(!rpt.valid){NumDocNoValid(rpt);return;};$("#progress_cliente").removeClass("xInvisible");xGetFindCliente(rpt.numdoc,rpt.servicio,(new_rpt)=>{if(new_rpt.success){if(new_rpt.nombres===""){rpt.valid=false;rpt.msj="No se encontraron registros. Verifique el numero de documento.";$("#progress_cliente").addClass("xInvisible");NumDocNoValid(rpt);return;}
+rpt.valid=true;rpt.msj="ok";rpt.cliente={idcliente:new_rpt.idcliente,nombres:new_rpt.nombres,direccion:new_rpt.direccion,num_doc:rpt.numdoc,f_nac:new_rpt.f_nac};_arrCliente=rpt.cliente;_formValid=rpt.valid;xThisFacturador.modificarCliente=false;xValidarBtnProcesar();xIdCliente_pago=new_rpt.idcliente;$("#txt_nombres").val(new_rpt.nombres);$("#txt_direccion").val(new_rpt.direccion);}else{rpt.valid=false;rpt.msj=new_rpt.msg;xThisFacturador.modificarCliente=true;NumDocNoValid(rpt);xNuevoCliente();}
+$("#progress_cliente").addClass("xInvisible");});}
+function NumDocNoValid(rpt){_formValid=rpt.valid;xValidarBtnProcesar();$("#txt_msj").text(rpt.msj)
+$("#txt_msj").removeClass('xInvisible');$("#txt_ruc").select();$("#txt_ruc").focus();}
+function xNuevoCliente(){_formValid=false;xValidarBtnProcesar();xThisFacturador.modificarCliente=true;xIdCliente_pago='';_arrCliente=[];$('#txt_nombres').val('');$('#txt_direccion').val('');$("#txt_ruc").select();$("#txt_ruc").focus();}
+function xCalcTotal(){const xCan_item=$("#cant_item").val()===''?0:parseFloat($("#cant_item").val());const xPUnitario=$("#punitario").val()===''?0:parseFloat($("#punitario").val());const ptotal=(parseFloat(parseFloat(xCan_item)*parseFloat(xPUnitario)).toFixed(2))||0;$("#ptotal").val(ptotal);}
+function xAddItem(){const xCan_item=$("#cant_item").val();const xDes_item=$("#des_item").val();const xPUnitario=$("#punitario").val();const xPTotal=$("#ptotal").val();if(xCan_item===''||xDes_item===''&&xPUnitario===''&&xPTotal===''){return}
+const id=xCeroIzq(_arrItems.length+1,3);const item={'id':id,'iditem':id,'idtipo_consumo':IdTpConsumo,'des_seccion':'ITEMS','cantidad':xCan_item,'descripcion':xDes_item,'punitario':xPUnitario,'precio':xPUnitario,'ptotal':xPTotal,'precio_total_calc':xPTotal};_arrItems.push(item);xThisFacturador.arrItems=JSON.parse(JSON.stringify(_arrItems));console.log(xThisFacturador.arrItems);xCalcularTotal();xNuevoItem();}
+function xBorrarItemLocalArr(obj){const i=obj.parentElement.parentElement.dataValue;_arrItems.splice(i,1);xThisFacturador.arrItems=JSON.parse(JSON.stringify(_arrItems));xCalcularTotal();}
+function xNuevoItem(){$("#cant_item").val('');$("#des_item").val('');$("#punitario").val('');$("#ptotal").val('');$("#cant_item").focus();}
+function xValidarBtnProcesar(){if(_arrTotal.length>0){if(cnf_ComprobanteSel.codsunat==="03"&&_listValid&&parseFloat(_arrTotal[2].importe)<=700){xThisFacturador.formValid=true;xThisFacturador.modificarCliente=true;return;}}
+xThisFacturador.formValid=_listValid&&_formValid;}
+function xCalcularTotal(){var xCartaSubtotales=xm_log_get('carta_subtotales');_arrTotal=[];const SumaLista=this._arrItems.map(x=>parseFloat(x.ptotal)).reduce((a,b)=>a+b,0);_listValid=parseInt(SumaLista)===0?false:true;_arrTotal.push({'descripcion':'Sub Total','importe':xMoneda(SumaLista)});xCartaSubtotales.map(x=>{if(x.es_impuesto==='1'){const impuesto=parseFloat(x.monto);const importeCalc=x.activo==='0'?parseFloat(SumaLista*(impuesto/100)).toFixed(2):'0.00';_arrTotal.push({'descripcion':x.descripcion,'importe':importeCalc});}});const total=_arrTotal.map(x=>parseFloat(x.importe)).reduce((a,b)=>a+b,0);_arrTotal.push({'descripcion':'Total','importe':xMoneda(total)});xThisFacturador.arrTotales=JSON.parse(JSON.stringify(_arrTotal));xValidarBtnProcesar();}
+async function xProcesarComprobante(){if(xThisFacturador.cpe_show){xMandarCocinarImpresionComprobante(arr_comprobante.correlativo,_idregistro);return;}
+xPopupLoad.xopen();arr_comprobante=cnf_ComprobanteSel;if(_arrCliente.length===0){const nombres_cliente=$("#txt_nombres").val();const direccion_cliente=$("#txt_direccion").val();_arrCliente={};_arrCliente.idcliente=0;_arrCliente.num_doc='00000000';_arrCliente.nombres=nombres_cliente===''?'PUBLICO EN GENERAL':nombres_cliente;_arrCliente.direccion=direccion_cliente;}else{_arrCliente.direccion=$("#txt_direccion").val();_arrCliente.idcliente=_arrCliente.idcliente===""?await ClienteService_Guardar(_arrCliente):_arrCliente.idcliente;}
+$.ajax({type:'POST',url:'../../bdphp/log_001.php',data:{p_from:'f',p_comprobante:cnf_ComprobanteSel}}).done(function(comprobante_correlativo){const _arrRpt=xm_all_SetResponseLog_001(comprobante_correlativo);arr_comprobante.correlativo=xCeroIzqNumComprobante(_arrRpt.correlativo_comprobante);const arrCpeFac={idcliente:_arrCliente.idcliente,idcomprobante:arr_comprobante.idtipo_comprobante,num_comprobante:arr_comprobante.correlativo,subtotal:_arrTotal[0].importe,igv:_arrTotal[1].importe,total:_arrTotal[2].importe,}
+$.ajax({type:'POST',url:'../../bdphp/log_002.php',data:{op:'102',data:arrCpeFac,arrItems:_arrItems}}).done(function(ultimoIdCpeFac){_idregistro=[0,ultimoIdCpeFac];xMandarCocinarImpresionComprobante(_arrRpt.correlativo_comprobante,_idregistro);});});}
+async function xMandarCocinarImpresionComprobante(correlativo,_idregistro){if(!xThisFacturador.cpe_show){arr_comprobante.fecha_manual=txt_fecha_cpe_manual;arr_comprobante=cnf_ComprobanteSel;arr_comprobante.correlativo=xCeroIzqNumComprobante(correlativo);itemsConEstructuraPrint=xCargarDatosAEstructuraImpresion(xThisFacturador.arrItems);rptDoc=await xCocinarImprimirComprobante(itemsConEstructuraPrint,_arrTotal,arr_comprobante,_arrCliente,_idregistro,-2,false)}
+if(rptDoc.ok=false){alert(rptDoc.msj);return;}
+if(impresoraSelect.idimpresora===-1){const hash=rptDoc[0]?rptDoc[0].hash:rptDoc.hash;if(hash==='www.papaya.com.pe'){xPopupLoad.xclose();alert('Error con la conexion al servicio de Sunat. No puede descargar el pdf. Pero si puede imprimirlo. Este comprobante sera enviado a sunat al cerrar caja.');return;}
+xThisFacturador.cpe_show=true;xSoapSunat_DownloadFile('pdf',rptDoc[0].external_id);xPopupLoad.xclose();return;}else{xThisFacturador.cpe_show=true;xLLamarPrintFac();}}
+function xNuevoFac(){xThisFacturador.cpe_show=false;_arrCliente=[];_arrItems=[];_arrTotal=[];xThisFacturador.arrItems=JSON.parse(JSON.stringify(_arrItems));xThisFacturador.arrTotales=JSON.parse(JSON.stringify(_arrTotal));xNuevoCliente();$('#contentClie').addClass('xInvisible');$('#form_pago_cliente').reset();}
+function xLLamarPrintFac(){let xSetImpresora=xm_log_get('sede_generales');xSetImpresora[0].ip_print=impresoraSelect.ip;xSetImpresora[0].var_margen_iz=impresoraSelect.var_margen_iz;xSetImpresora[0].var_size_font=impresoraSelect.var_size_font
+xSetImpresora[0].local=impresoraSelect.local;xSetImpresora[0].num_copias=impresoraSelect.num_copias;xImprimirComprobanteAhoraPrintPreSelect(rptDoc,itemsConEstructuraPrint,_arrTotal,arr_comprobante,_arrCliente,xSetImpresora,function(rpt_print){if(rpt_print==false){return false;}
+xPopupLoad.titulo="Imprimiendo...";xPopupLoad.xopen();setTimeout(function(){xPopupLoad.xclose()},3000);xPopupLoad.xclose();});}
+function xReImprimirFac(){dialog_erro_print.close();xPopupLoad.titulo="Enviando...";xPopupLoad.xopen();xLLamarPrintFac();}
+function fact_selectOptionCategoria(){const index=xThisFacturador.$.listPrint.value;impresoraSelect=xThisFacturador.listImpresoras[index];console.log(impresoraSelect);}
+function fact_getAllImpresoras(){$.ajax({type:'POST',url:'../../bdphp/log_002.php',data:{op:'5'}}).done(function(dtValues){var _arrPrint=[]
+dtValues=$.parseJSON(dtValues);_arrPrint.push({idimpresora:-1,descripcion:'MOSTRAR EN PDF'})
+dtValues.datos.map(x=>_arrPrint.push(x));xThisFacturador.listImpresoras=JSON.parse(JSON.stringify(_arrPrint));impresoraSelect=_arrPrint[0];console.log(xThisFacturador.listImpresoras);});}
+Polymer({is:'x-facturador',properties:{arrItems:[],arrTotales:[],listImpresoras:[],formValid:boolean=false,modificarCliente:boolean=false,cpe_show:boolean=false,fecha_manual:boolean=false,},attached:function(){xThisFacturador=this;xIniFacturador();}})/*]]>*/</script>

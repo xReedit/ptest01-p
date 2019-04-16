@@ -1948,6 +1948,7 @@
 				UPDATE pedido AS p INNER JOIN registro_pago AS rp ON p.idregistro_pago=rp.idregistro_pago SET p.cierre=1 WHERE (rp.idorg=".$_SESSION['ido']." AND rp.idsede=".$_SESSION['idsede'].") AND rp.idusuario=".$_SESSION['idusuario']." AND p.cierre=0 ;
 				UPDATE pedido SET cierre=1 WHERE estado=3 AND (idorg=".$_SESSION['ido']." AND idsede=".$_SESSION['idsede'].");
 				update pedido_borrados set fecha_cierre=now() where fecha_cierre='' and idusuario=".$_SESSION['idusuario'].";
+				DELETE FROM print_server_detalle WHERE (idorg=".$_SESSION['ido']." and idsede=".$_SESSION['idsede'].") and (impreso=1 or estado=1 or error=1);
 			";
 			//update pedido_borrados set cierre=1 where idusuario=".$_POST['i']." and cierre=0 and (idorg=".$_SESSION['ido']." AND idsede=".$_SESSION['idsede'].");
 			//UPDATE pedido AS p SET p.cierre=1 WHERE (p.idorg=".$_SESSION['ido']." AND p.idsede=".$_SESSION['idsede'].") and (p.cierre=0 AND p.idusuario=".$_POST['i'].");
@@ -1994,7 +1995,7 @@
 			SELECT tpc.descripcion,'' as t1, count(rp.idregistro_pago) AS t2, format(sum(rp.total),2) AS t3
 				FROM registro_pago AS rp
 				INNER JOIN tipo_consumo AS tpc using(idtipo_consumo)
-			WHERE (rp.idorg=".$_SESSION['ido']." AND rp.idsede=".$_SESSION['idsede'].") AND rp.cierre=0 AND rp.estado=0
+			WHERE (rp.idorg=".$_SESSION['ido']." AND rp.idsede=".$_SESSION['idsede']." AND rp.idusuario=".$_SESSION['idusuario'].") AND rp.cierre=0 AND rp.estado=0
 			GROUP BY rp.idtipo_consumo
 			";
 			$bd->xConsulta($sql);
