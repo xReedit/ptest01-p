@@ -2038,22 +2038,43 @@
 			GROUP BY pd.iditem
 			ORDER BY pd.idseccion, pd.descripcion
 			";*/
-			$sql="
-				SELECT i.descripcion,'' AS t1,sum(rpp.cantidad) AS t2,IF(cl.cantidad='SP',(IFNULL(it_p.stock,0)),IF(cl.cantidad='ND','ND',cl.cantidad)) AS t3
-				FROM registro_pago_pedido AS rpp
-					INNER JOIN registro_pago AS rp ON rpp.idregistro_pago=rp.idregistro_pago
-					INNER JOIN pedido_detalle AS pd ON rpp.idpedido_detalle=pd.idpedido_detalle
-					INNER JOIN item AS i ON pd.iditem=i.iditem
-					INNER JOIN carta_lista AS cl ON i.iditem=cl.iditem
-					LEFT JOIN(SELECT i.iditem, CAST((po.stock/ii.cantidad) AS SIGNED) AS stock
-								FROM item AS i
-									INNER JOIN item_ingrediente AS ii using(iditem)
-									INNER JOIN porcion AS po ON ii.idporcion=po.idporcion
-									GROUP BY i.iditem
-								) AS it_p ON pd.iditem=it_p.iditem
-				WHERE (rp.idorg=".$_SESSION['ido']." AND rp.idsede=".$_SESSION['idsede'].") AND rp.cierre=0 AND rp.idusuario=".$_SESSION['idusuario']."  AND pd.procede_tabla!=0
-				GROUP BY pd.iditem
-				ORDER BY t2 desc
+
+			// $sql="
+			// 	SELECT i.descripcion,'' AS t1,sum(rpp.cantidad) AS t2,IF(cl.cantidad='SP',(IFNULL(it_p.stock,0)),IF(cl.cantidad='ND','ND',cl.cantidad)) AS t3
+			// 	FROM registro_pago_pedido AS rpp
+			// 		INNER JOIN registro_pago AS rp ON rpp.idregistro_pago=rp.idregistro_pago
+			// 		INNER JOIN pedido_detalle AS pd ON rpp.idpedido_detalle=pd.idpedido_detalle
+			// 		INNER JOIN item AS i ON pd.iditem=i.iditem
+			// 		INNER JOIN carta_lista AS cl ON i.iditem=cl.iditem
+			// 		LEFT JOIN(SELECT i.iditem, CAST((po.stock/ii.cantidad) AS SIGNED) AS stock
+			// 					FROM item AS i
+			// 						INNER JOIN item_ingrediente AS ii using(iditem)
+			// 						INNER JOIN porcion AS po ON ii.idporcion=po.idporcion
+			// 						GROUP BY i.iditem
+			// 					) AS it_p ON pd.iditem=it_p.iditem				
+			// 	WHERE rp.cierre=0 AND rp.idusuario=".$_SESSION['idusuario']." AND pd.procede_tabla!=0 and (rp.idorg=".$_SESSION['ido']." AND rp.idsede=".$_SESSION['idsede'].")
+			// 	GROUP BY pd.iditem
+			// 	ORDER BY t2 desc
+			// ";
+
+			$sql = "
+				SELECT i.descripcion, sum(rpp.cantidad) as t1,
+				if (cl.cantidad = 'SP', 
+					(SELECT CAST((po.stock/ii.cantidad) AS SIGNED) AS stock 
+					FROM item AS i1 
+					INNER JOIN item_ingrediente AS ii using(iditem) 
+					INNER JOIN porcion AS po ON ii.idporcion=po.idporcion 
+					WHERE i1.iditem = i.iditem
+					GROUP BY i1.iditem)
+				, cl.cantidad) as t2, format(sum(rpp.total),2) as t3
+				FROM registro_pago_pedido as rpp
+				inner join registro_pago as rp ON rpp.idregistro_pago = rp.idregistro_pago
+				inner join pedido_detalle as pd on rpp.idpedido_detalle = pd.idpedido_detalle
+				inner join item as i on pd.iditem = i.iditem
+				INNER JOIN carta_lista AS cl ON i.iditem=cl.iditem
+				where (rp.cierre = 0 AND rp.idusuario=".$_SESSION['idusuario']." AND rp.idsede=".$_SESSION['idsede'].") AND pd.procede_tabla!=0 
+				GROUP BY i.iditem
+				order BY sum(rpp.total) desc
 			";
 
 			$bd->xConsulta($sql);

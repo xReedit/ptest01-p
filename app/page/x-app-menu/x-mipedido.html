@@ -20,7 +20,10 @@ Nuevo pedido.
 <span>Para la entrega del delivery</span>
 <hr>
 <form id="frm_cliente">
-<input type="text" class="xMiInput xPasarEnter2" placeholder="DNI" autofocus onkeyup="xValidarDNIRUC(this.value,event)" onChange="conMayusculas(this)" id="txt_delivery_dni" espaciar required>
+<div style="display:flex">
+<input type="text" class="xMiInput xPasarEnter2" placeholder="DNI" autofocus onkeyup="xValidarDNIRUC(this.value,event,true)" onChange="conMayusculas(this)" id="txt_delivery_dni" espaciar required>
+<paper-icon-button icon="icons:search" title="Buscar DNI" onclick="xValidarDNIRUC(txt_delivery_dni.value,event,false)" style="position:absolute;right:38px;margin-top:-5px"></paper-icon-button>
+</div>
 <div class="xInvisible" id="progress_cliente" style="width:calc(100% - 30px);margin:0;padding:0;margin-top:-16px;margin-left:5px">
 <paper-progress indeterminate style="width:100%"></paper-progress>
 </div>
@@ -223,6 +226,6 @@ dialog_item.close();}
 function xRecargarPedidoArray(){xLoadMipedido();}
 function xAdjuntarDatosDelivery(){arrDatosAdjuntoDelivery={idcliente:xIdCliente_pedido,num_doc:txt_delivery_dni.value,nombre:txt_delivery_nombre.value,direccion:txt_delivery_direccion.value,telefono:txt_delivery_telefono.value,paga_con:txt_delivery_paga.value,f_nac:xClientePedidoFnac}
 arrDatosAdjuntoDelivery=JSON.stringify(arrDatosAdjuntoDelivery);dialog_datos_delivery.close();}
-function xValidarDNIRUC(valor,e){if(e.keyCode===13){xIdCliente_pedido='';$("#progress_cliente").removeClass("xInvisible");xGetFindCliente(valor,'dni',(rpt)=>{if(rpt.success){xIdCliente_pedido=rpt.idcliente;xClientePedidoFnac=rpt.f_nac;$("#txt_delivery_nombre").val(rpt.nombres);$("#txt_delivery_direccion").val(rpt.direccion);$("#txt_delivery_telefono").val(rpt.telefono);}
+function xValidarDNIRUC(valor,e,tecla){if(valor.length<8)return;if(e.keyCode===13||!tecla){xIdCliente_pedido='';$("#progress_cliente").removeClass("xInvisible");xGetFindCliente(valor,'dni',(rpt)=>{if(rpt.success){xIdCliente_pedido=rpt.idcliente;xClientePedidoFnac=rpt.f_nac;$("#txt_delivery_nombre").val(rpt.nombres);$("#txt_delivery_direccion").val(rpt.direccion);$("#txt_delivery_telefono").val(rpt.telefono);}
 $("#progress_cliente").addClass("xInvisible");});}}
 Polymer({is:"x-mipedido",properties:{xt_org:Number,xt_idsede:Number,xt_idus:Number},_outLoadPedido(){xLoadMipedido();},attached:function(){xThis=this;xIniMiPedido();},detached:function(){$("#btn_add_adicional").addClass("xInvisible");}});/*]]>*/</script>
