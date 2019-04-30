@@ -23,20 +23,6 @@
 				return $rpt;
 			}
 			
-			$response = $this->essalud->check( $dni );
-			if($response->success == true)
-			{
-				$rpt = (object)array(
-					"success" 		=> true,
-					"haydatos"    => $response->result->Nombres === "" ? false : true,
-					"source" 		=> "essalud",
-					"result" 		=> $response->result
-				);
-				if ($rpt->haydatos) {
-				 return $rpt;   
-				}
-			}
-
 			$response = $this->reniec->search( $dni );
 			if($response->success == true)
 			{
@@ -44,6 +30,20 @@
 					"success" 		=> true,
 					"source" 		=> "reniec",
 					"haydatos"    => $response->result->Nombres === "" ? false : true,
+					"result" 		=> $response->result
+				);
+				if ($rpt->haydatos) {
+				 return $rpt;   
+				}
+			}
+
+			$response = $this->essalud->check( $dni );
+			if($response->success == true)
+			{
+				$rpt = (object)array(
+					"success" 		=> true,
+					"haydatos"    => $response->result->Nombres === "" ? false : true,
+					"source" 		=> "essalud",
 					"result" 		=> $response->result
 				);
 				if ($rpt->haydatos) {
