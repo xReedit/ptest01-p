@@ -589,7 +589,7 @@ Esto se utiliza en el escenario de que cada caja tenga su impresora, por ejemplo
 <script type="text/javascript" src="../../shared/config.const.js"></script>
 <script type="text/javascript" src="../../view/item_pedido_print_comprobante.js"></script>
 <script>/*<![CDATA[*/var xThisConfig,_arrPrintLocal=[];var xObjBorrar=0;function _getCategoria(val){console.log(val);}
-function xIniConf(){xPopupLoad=document.getElementById('xLoad');xm_LogChequea(function(){xm_log_get('ini_us');xThisConfig.xt_org=xIdOrg;xThisConfig.xt_idsede=xIdSede;xThisConfig.xt_idus=xIdUsuario;if(xIdOrg===""||xIdOrg==undefined){var _dtUs=xm_log_get('app3_us');xThisConfig.xt_org=_dtUs.ido;xThisConfig.xt_idsede=_dtUs.idsede;xThisConfig.xt_idus=_dtUs.idus;}
+function xIniConf(){xPopupLoad=document.getElementById('xLoad');xm_LogChequea(function(){xm_log_get('ini_us');$('body').addClass('loaded');xThisConfig.xt_org=xIdOrg;xThisConfig.xt_idsede=xIdSede;xThisConfig.xt_idus=xIdUsuario;if(xIdOrg===""||xIdOrg==undefined){var _dtUs=xm_log_get('app3_us');xThisConfig.xt_org=_dtUs.ido;xThisConfig.xt_idsede=_dtUs.idsede;xThisConfig.xt_idus=_dtUs.idus;}
 _arrPrintLocal=[];xLoadOrg();xLoadCategoria();})
 $("#Titulo_page").text("Configuraciones");xThisConfig.selected_conf=0;$('.xPasarEnter2').on('keyup',function(e){var code=e.which;if(code==13||code==186){var inputs=$('input');var a=inputs.index(document.activeElement);if(inputs[a+1]!==null)
 {var nextBox=inputs[a+1];if(nextBox===undefined){return}

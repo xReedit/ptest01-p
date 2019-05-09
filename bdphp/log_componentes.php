@@ -15,7 +15,7 @@
     switch($_GET['op'])
     {
         case 1:// load sedes
-            $sql = "select idsede, nombre, ciudad from sede where idorg = ".$_SESSION['ido']." and estado=0 ";
+            $sql = "select idorg, idsede, nombre, ciudad from sede where idorg = ".$_SESSION['ido']." and estado=0 ";
             $bd->xConsulta($sql);
             break;
         case 2:// load comprobantes generales

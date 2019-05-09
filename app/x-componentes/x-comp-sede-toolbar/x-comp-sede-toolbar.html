@@ -42,8 +42,11 @@
 			const objSede = xThisComToolSede.listSede[index];
 			$.ajax({ type: 'POST', url: '../../bdphp/log.php?op=-1001', data:{i: objSede.idsede} })
 			.done((x)=> {
-				// reload page
 
+				// guardar los cambios de sede y org en variable local
+				updateapp3_woDUS_changeSede(objSede.idorg, objSede.idsede);
+
+				// reload page
 				localStorage.setItem('::app3_woUsS', objSede.idsede);
 				localStorage.removeItem('::app3_sys_descat');// en mi pedido
 

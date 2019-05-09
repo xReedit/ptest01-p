@@ -1,0 +1,96 @@
+<dom-module id="x-comp-datos-delivery">
+	<template is="dom-bind">
+		<paper-dialog id="dialog_datos_delivery" class="dialog_redondo" entry-animation="scale-up-animation"
+			exit-animation="fade-out-animation" with-backdrop>
+			<h2>Datos adicionales-componente</h2>
+			<span>Para la entrega del delivery</span>
+			<hr>
+			<form id="frm_cliente">
+				<div style="display: flex;">
+
+					<input type="text" class="xMiInput xPasarEnter2" placeholder="DNI" autofocus
+						onkeyup="xValidarDNIRUC(this.value, event, true)" onChange="conMayusculas(this)" id="txt_delivery_dni"
+						espaciar required>
+					<paper-icon-button icon="icons:search" title="Buscar DNI"
+						onclick="xValidarDNIRUC(txt_delivery_dni.value, event, false)"
+						style="position: absolute; right: 38px; margin-top: -5px;"></paper-icon-button>
+				</div>
+				<!-- <input type="text" class="xMiInput xPasarEnter2" placeholder="DNI"
+            autofocus onkeyup="xValidarDNIRUC(this.value, event)"
+            onChange="conMayusculas(this)" id="txt_delivery_dni" espaciar required> -->
+				<div class="xInvisible" id="progress_cliente"
+					style="width: calc(100% - 30px);margin: 0;padding: 0;margin-top: -16px;margin-left: 5px;">
+					<paper-progress indeterminate style="width: 100%;"></paper-progress>
+				</div>
+				<input type="text" class="xMiInput xPasarEnter2" placeholder="NOMBRE" onChange="conMayusculas(this)"
+					id="txt_delivery_nombre" espaciar required>
+				<input type="text" class="xMiInput xPasarEnter2" placeholder="DIRECCION" onChange="conMayusculas(this)"
+					id="txt_delivery_direccion" espaciar required>
+				<input type="text" class="xMiInput xPasarEnter2" placeholder="TELEFONO" onChange="conMayusculas(this)"
+					id="txt_delivery_telefono" espaciar required>
+				<input type="text" class="xMiInput xPasarEnter2" placeholder="PAGA CON" onChange="conMayusculas(this)"
+					id="txt_delivery_paga" espaciar required>
+			</form>
+			<br>
+			<br>
+			<div class="buttons">
+				<button class="xBoton2 xPlomo" dialog-dismiss>Cancelar</button>
+				<button class="xBoton2 xVerde" onclick="xAdjuntarDatosDelivery()">Listo, adjuntar</button>
+			</div>
+		</paper-dialog>
+	</template>
+</dom-module>
+<script>
+	var xThisComDatosDelivery, xIdCliente_pedido, xClientePedidoFnac, arrCompDatosAdjuntoDelivery = [];
+	
+	function xValidarDNIRUC(valor, e, tecla) {
+		if ( valor.length < 8 ) return;
+			if ( e.keyCode === 13 || !tecla) { // buscar cliente
+				xIdCliente_pedido = '';
+				$("#progress_cliente").removeClass("xInvisible");
+				xGetFindCliente(valor, 'dni', (rpt)=>{
+					if (rpt.success) {
+						xIdCliente_pedido=rpt.idcliente;
+						xClientePedidoFnac=rpt.f_nac || '';
+						$("#txt_delivery_nombre").val(rpt.nombres);
+						$("#txt_delivery_direccion").val(rpt.direccion);
+						$("#txt_delivery_telefono").val(rpt.telefono);
+					}
+					$("#progress_cliente").addClass("xInvisible");
+			});
+		}
+	}
+
+	function xAdjuntarDatosDelivery() {
+		arrCompDatosAdjuntoDelivery = [] 
+		arrCompDatosAdjuntoDelivery.push({
+			idcliente: xIdCliente_pedido,
+			num_doc: txt_delivery_dni.value,
+			nombre: txt_delivery_nombre.value,
+			direccion: txt_delivery_direccion.value,
+			telefono: txt_delivery_telefono.value,
+			paga_con: txt_delivery_paga.value,
+			f_nac: xClientePedidoFnac
+		});
+		
+
+		arrCompDatosAdjuntoDelivery = JSON.stringify(arrCompDatosAdjuntoDelivery[0]);
+		arrCompDatosAdjuntoDelivery = JSON.parse(arrCompDatosAdjuntoDelivery);
+		xThisComDatosDelivery.fire('xGetDatosDelivery', {datos: arrCompDatosAdjuntoDelivery});
+		dialog_datos_delivery.close();
+	}
+
+	function xNuevoDatosDelivery(){
+		arrCompDatosAdjuntoDelivery = [];
+	}
+
+	Polymer({
+        is: 'x-comp-datos-delivery',
+        properties: {
+
+		}, 
+		attached: function() {
+			xThisComDatosDelivery=this;
+		},
+    })
+</script>

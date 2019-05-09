@@ -1,4 +1,4 @@
-<script src="../web_components/webcomponentsjs/webcomponents-lite.js"></script>
+<script src="../webcomponentsjs/webcomponents.min.js"></script>
 <link rel="import" href="../polymer/polymer.html">
 <link rel="import" href="../app-router/app-router.html">
 
@@ -6,7 +6,7 @@
 	<!--mode="auto|pushstate|hash"-->
 	
 	<template>
-		<app-router mode="auto|pushstate|hash">
+		<app-router mode="auto|pushstate|hash" trailingSlash="ignore">
 			<app-route path="/home" import="x-home.html"></app-route>
 			<app-route path="/elaborar_carta" import="x-carta.html"></app-route>
 			<app-route path="/menu" import="x-app-menu/x-menu.html"></app-route>
@@ -26,7 +26,7 @@
 			<app-route path="/distribuicion" import="x-distribuicion.html"></app-route>
 			<app-route path="/porcionar" import="x-porcionar.html"></app-route>
 			<app-route path="/recetas" import="x-recetas.html"></app-route>
-			<app-route path="/venta_rapida" import="x-venta-rapida.html"></app-route>
+			<app-route path="/venta_rapida" import="x-venta-rapida.html" onUrlChange="updateModel"></app-route>
 			<app-route path="/producto_porcion" import="x-producto-porcion.html"></app-route>
 			<app-route path="/ie_almacen" import="x-ie-almacen.html"></app-route>
 			<app-route path="/monitor_pedidos" import="x-monitor-pedidos.html"></app-route>
@@ -39,6 +39,7 @@
 			<app-route path="/c_electronico" import="x-facturador/x-cpe-emitidos.html"></app-route>
 			<app-route path="/adm_dashboard" import="x-admin/x-admin.html"></app-route>
 			<app-route path="/adm_dashboard-new" import="x-admin/x-admin-new-org.html"></app-route>
+			<app-route path="/us_contador" import="x-us-contador/x-us-contador.html"></app-route>
 			<app-route path="/prueba" import="x-pruebas.html"></app-route>
 		</app-router>
 	</template>

@@ -77,7 +77,7 @@ function sheetDataProductos($sheet) {
         if($idt==''){
           $sql="insert into producto_familia(descripcion,idorg,idsede)value('".$cell."',".$idorg.",".$idsede.")";                    
           $bdP->xConsulta_NoReturn($sql); 
-	  //$idt=$bdP->xConsulta_NoReturn($sql);    
+    //$idt=$bdP->xConsulta_NoReturn($sql);    
           // $idt=$bdP->xConsulta_UltimoId($sql);     
           
           // 191118 -- el id es char ej: f1
@@ -122,7 +122,7 @@ function sheetDataProductos($sheet) {
       //si es update producto      
       if($xrow_producto_new==1){
         switch ($y) {
-          case 2:$sqlProductoUpdateRow=$sqlProductoUpdateRow.", idproducto_familia=".$idt;break;                  
+          case 2:$sqlProductoUpdateRow=$sqlProductoUpdateRow." idproducto_familia='".$idt;break."'";                  
           case 3:$sqlProductoUpdateRow=$sqlProductoUpdateRow.", codigo_barra='".$cell."'";break; 
           //case 4:$sqlProductoUpdateRow=$sqlProductoUpdateRow.", canitdad='".$cell."'";break;                  
           case 5:$sqlProductoUpdateRow=$sqlProductoUpdateRow.", stock_minimo='".$cell."'";break;

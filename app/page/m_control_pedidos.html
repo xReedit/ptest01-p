@@ -11,7 +11,7 @@
 <script src=../../js/jquery_external.js></script>
 <script src=../../js/jquery-ui.min.11.4.js></script>
 <script src=../../js/isotope.pkgd.min.js></script>
-<script rel=preload src=../web_components/webcomponentsjs/webcomponents-lite.js></script>
+<script rel=preload src=../web_components/webcomponentsjs/webcomponents.min.js></script>
 <link rel=import href=../web_components/polymer/polymer.html>
 <link rel=import href=../web_components/paper-input/paper-input.html>
 <link rel=import href=../web_components/paper-button/paper-button.html>
@@ -114,13 +114,16 @@
 </paper-toolbar>
 <div fit layout vertical class=content>
 <x-router></x-router>
-<paper-toast id=toast duration=0 text=.>
+<paper-toast id=toast duration=0 text=. style=z-index:1000>
 <paper-progress id=loading indeterminate style=width:100%;float:left></paper-progress>
 </paper-toast>
 </div>
 </paper-header-panel>
 </paper-drawer-panel>
 <script type=text/javascript src=../view/xm_all.js async></script>
+<script type=text/javascript src=../view/onGalleta.js></script>
+<script type=text/javascript src=../view/manager_storage.js></script>
+<script type=text/javascript src=../view/verifyConnection.js async></script>
 <script type=text/javascript src=../../js/mifuncion_web.js async></script>
 <script type=text/javascript src=../view/x-views.js async></script>
 <script type=text/javascript src=../view/m_control_pedidos.js></script>

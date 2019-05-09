@@ -1,475 +1,125 @@
 <dom-module id="x-producto-porcion">
-	<template>
-		<paper-dialog modal id="dialog_msj_confirma" class="dialog_redondo" style="min-width: 300px;" entry-animation="scale-up-animation" exit-animation="fade-out-animation">
-			<div class="xContent">
-				<h4 id="titulo_msj">Esta seguro de elimar este producto del almacen?. puede afectar registros relacionado.</h4>
-				<br>
-				<div class="xLinea2"></div><br>
-				<div class="xBoton2 xVerde" dialog-confirm  onclick="xOkPopupConfirm();" id="btn_dlg_confirm">Confirmar</div>
-				<div class="xBoton2 xPlomo" dialog-dismiss>Cancelar</div>
-			</div>
-		</paper-dialog>
-		<paper-dialog modal id="dialog_additem_pro" class="dialog_redondo" modal entry-animation="scale-up-animation" exit-animation="fade-out-animation" with-backdrop>
-			<div class="xContent">
-				<h3>Agregar Producto</h3>
-				<form id="frm_item_pro" method="post">
-					<label for="sel_almacen_pro">Almacen donde ingresa:</label><br>
-					<select id="sel_almacen_pro" name="no_post" class="xMiInput"></select>
-					<input type="text" id="descripcion" name="descripcion" placeholder="Descripcion" class="xMiInput xPasarEnter2" onChange="conMayusculas(this)" autofocus required espaciar><br>
-					<input type="text" id="sel_familia" name="no_post" class="xMiInput xPasarEnter2" placeholder="Familia" onChange="conMayusculas(this)" required espaciar><br>
-					<input type="text" id="codigo_barra" name="codigo_barra" placeholder="Codigo de barras" class="xMiInput xPasarEnter2" onChange="conMayusculas(this)" espaciar><br>
-					<input type="text" id="stock" name="no_post" placeholder="Stock" class="xMiInput xPasarEnter2" onChange="conMayusculas(this)" espaciar required><br>
-					<input type="text" id="stock_minimo" name="stock_minimo" placeholder="Stock minimo" class="xMiInput xPasarEnter2" onChange="conMayusculas(this)" espaciar><br>
-					<input type="text" id="precio" name="precio" placeholder="Precio de compra" onblur="xRetornaMoneda(this)" class="xMiInput xPasarEnter2" onChange="conMayusculas(this)" required espaciar><br>
-					<input type="text" id="precio_venta" name="precio_venta" placeholder="Precio de venta x unidad" onblur="xRetornaMoneda(this)" class="xMiInput xPasarEnter2 xPrecioAddPro" onChange="conMayusculas(this)" onkeyup="xEnterInInputDlgPP(event)" required espaciar><br>
-					<div class="xInvisible">
-						<input type="text" id="idproducto" name="idproducto">
-						<input type="text" id="idorg" name="idorg">
-						<input type="text" id="idsede" name="idsede">
-						<input type="text" id="idproducto_familia" name="idproducto_familia">
-						<input type="text" id="precio_unitario" name="precio_unitario">
-					</div>
-				</form>
-				<br><br>
-				<div class="xBoton2 xAzul" onclick="xGuardarItemProPP();">Listo, guardar</div>
-				<div class="xBoton2 xPlomo" dialog-dismiss>Cancelar</div>
-				<br><br><br>
-			</div>
-		</paper-dialog>
-		<paper-dialog modal id="dialog_additem_porcion" class="dialog_redondo" modal entry-animation="scale-up-animation" exit-animation="fade-out-animation" with-backdrop>
-			<div class="xContent">
-				<h3>Agregar Porcion</h3><br>
-				<p><strong>Elaborar porciones para las recetas.</strong><br>
-				Por ejemplo: de 1000gr de bistec salen 10 porciones de 100gr cada una para el preparar bistec a lo pobre.<br>
-				Utilize la misma unidad de medida que esta en el producto a porcionar. Es decir si el producto a porcionar esta en gramos la misma unidad de medida debe ser para las prociones.</p>
-				<br>
-				<form id="frm_add_porcion" method="post">
-					<input type="text" id="descripcion" name="descripcion" placeholder="Descripcion de la porcion" class="xMiInput xPasarEnter2" onChange="conMayusculas(this)" autofocus required espaciar><br>
-					<input type="text" id="peso" name="peso" placeholder="Peso" class="xMiInput xPasarEnter2" onChange="conMayusculas(this)" autofocus required espaciar><br>
-					<input type="text" id="stock" name="stock" placeholder="Cantidad" class="xMiInput xPasarEnter2" onChange="conMayusculas(this)" autofocus required espaciar><br>
-					<div class="xInvisible">
-						<input type="text" id="idporcion" name="idporcion">
-						<input type="text" id="idorg" name="idorg">
-						<input type="text" id="idsede" name="idsede">
-					</div>
-				</form>
-				<br><br>
-				<div class="xBoton2 xAzul" onclick="xGuardarItemPorcion();">Listo, guardar</div>
-				<div class="xBoton2 xPlomo" dialog-dismiss>Cancelar</div>
-				<br><br><br>
-			</div>
-		</paper-dialog>
-		<br>
-		<div class="xContent">
-			<paper-tabs selected="{{selected}}" id="tab_pro_por">
-				<paper-tab>PRODUCTOS</paper-tab>
-      			<paper-tab>PORCIONES</paper-tab>
-      		</paper-tabs>
-      		<div class="xLinea2"></div>
-      		<br>
-      		<iron-pages selected="{{selected}}">
-	      		<div id="cont_productos">
-	      			<div class="xFondoRowAmarillo3 xMargin5">
-	      				<br>
-	      				<h4 class=" xpadingLateralIz">Productos por almacen. Solo usuarios autorizados puedes modificar el stock, precio y/o eliminar los productos.</h4>
-	      				<p class=" xpadingLateralIz"><img src="../../images/tr_alert_min.png"> Esta opción nos muestra los productos que se encuentran por debajo del stock mínimo.</p>
-	      				<br>
-	      			</div>
-					<p>Buscar en:</p>
-					<div class="xLinea2"></div>
-					<br>
-					<div>
-						<select id="sel_almacen_pp" inline></select>
-						<input type="text" class="xMiInput" placeholder="Buscar" inline id="txt_buscar">
-						<paper-checkbox id="chec_min" class="xpadingLateralIz">Ver solo stock minimo <img src="../../images/tr_alert_min.png"></paper-checkbox>
-						<div class="xBoton2 xAzul xDerecha" onclick="dialog_additem_pro.open();">+ Agregar Producto</div>
-						<div class="xBoton2 xVerde xDerecha" onclick="xGuardarCambiosTbProductos(1);">Guardar Cambios</div>
-					</div>
-					<br><br>
-					<div class="xLinea2"></div>
-					<br>
-					<table id="tb_productos" width="100%" class="xtable2">
-						<thead>
-							<th align="left" width="20%">Almacen</th>
-							<th align="left" width="20%">Familia</th>
-							<th align="left">Producto</th>
-							<th align="left" width="80px">Stock</th>
-							<th align="left" width="80px">P. Venta</th>
-							<th width="5px"></th>
-						</thead>
-					</table>
-					<br><br><br>
-				</div>
-				<div id="cont_porciones">
-					<br>
-					<input type="text" class="xMiInput" placeholder="Buscar" inline id="txt_buscar_porcion">
-					<div class="xBoton2 xAzul xDerecha" onclick="dialog_additem_porcion.open();">+ Agregar Porcion</div>
-					<div class="xBoton2 xVerde xDerecha" onclick="xGuardarCambiosTbProductos(2);">Guardar Cambios</div>
-					<br><br><br>
-					<div class="xLinea2"></div>
-					<br>
-					<table id="tb_porcion" width="100%" class="xtable2">
-						<thead>
-							<th align="left" width="20%">Familia</th>
-							<th align="left">Porcion</th>
-							<th align="left" width="90px">Stock</th>
-							<th width="5px"></th>
-						</thead>
-					</table>
-					<br><br><br>
-				</div>
-			</iron-pages>
-      	</div>
-	</template>
-<script>
-var xThisProPor,xidAlmacenbUS,xObjRowSel,xPrecio_item;
-function xIniProPor(){
-	xPopupLoad=document.getElementById('xLoad');
-	xm_LogChequea(function(){
-		xm_log_get('ini_us');
-		//if(xIdOrg=='' || xIdOrg==undefined){xIdOrg=window.localStorage.getItem('::app3_wo');}
-		//if(xIdSede=='' || xIdSede==undefined){xIdSede=window.localStorage.getItem('::app3_woS');}
-		$("#Titulo_page").text("Productos y porciones");
-
-		xLoadAlmacenes();
-	})
-
-	$('.xPasarEnter2').on('keyup',function(e){
-			var code=e.which;
-			if ( code==13||code==186 ) {
-				var inputs = $('input'); // storage a array of Inputs
-			    var a = inputs.index(document.activeElement);
-			    if (inputs[a + 1] !== null)
-			    {
-			      var nextBox = inputs[a + 1];
-			      if(nextBox===undefined){return}
-			      if(nextBox.disabled){nextBox = inputs[a + 2]}
-
-			      if(nextBox==undefined){return;}
-			  	  nextBox.focus();
-			  	  nextBox.select();
-			    }
-			    event.stopPropagation();
-			    e.stopPropagation();
-			    e.stopImmediatePropagation()
-			    return false;
-	  		}
-		});
-
-	$("#txt_buscar").on('keyup',function(){
-		xBuscarXTxt(this.value)
-	})
-	$("#txt_buscar_porcion").on('keyup',function(){
-		xBuscarTbData($("#tb_porcion"),this.value)
-		xSumarTotalesPorcion();
-	})
-	$("#sel_almacen_pp").on('change',function(){
-		//xFiltrarRowAttr2($("#tb_productos"),'data-idalmacen',sel_almacen_pp.value)
-		xLoadProductos(sel_almacen_pp.value)
-	})
-	$("#chec_min").on('change',function(){
-		var xbus='';
-		if(this.checked){xbus='stock minimo'}
-		xBuscarXTxt(xbus);
-	})
-
-	$("#tab_pro_por").on('iron-select',function(){
-		switch(xThisProPor.selected){
-			case 0:xLoadAlmacenes();break;
-			case 1:xLoadPorciones();break;
-		}
-	})
-
-}
-function xEnterInInputDlgPP(e){
-	var code=e.which;
-	if ( code==13||code==186 ) {
-		xGuardarItemProPP();
-	}
-}
-function xGuardarItemPorcion(){
-	xvalidateFormInput('frm_add_porcion',function(a){
-		if(a===false){return;}
-		xPopupLoad.xopen();
-		$("#frm_add_porcion #idorg").val(xIdOrg);
-		$("#frm_add_porcion #idsede").val(xIdSede);
-		$.post("../../bdphp/ManejoBD_IUD.php?tb=porcion",$("#frm_add_porcion").serialize(),function(xUltimo_id_por){
-			xLoadPorciones();
-			xPopupLoad.xclose();
-			dialog_additem_porcion.close();
-		})
-	});
-}
-function xGuardarItemProPP(){
-	//guardar familia
-	xvalidateFormInput('frm_item_pro',function(a){
-		if(a===false){return;}
-		xPopupLoad.xopen();
-		xnom_familia=$("#sel_familia").val();
-		xPrecio_item=xMoneda($("#frm_item_pro #precio").val());
-		if(xNewFamilia==true){
-			$.ajax({ type: 'POST', url: '../../bdphp/log.php?op=1602', data:{f:xnom_familia}})
-			.done( function (DtIdFamRpt) {
-				$("#frm_item_pro #idproducto_familia").val(DtIdFamRpt);
-				//$("#sel_familia").attr('data-value')=xnom_familia;
-				xGuardarItemProDtPP();
-				xLoadFamilias();
-			})
-		}else{ xGuardarItemProDtPP();}
-	});
-}
-function xGuardarItemProDtPP(){
-	//guardar producto
-	xCan_item=$("#frm_item_pro #stock").val();
-	var xPrecio_und_pro=parseFloat(xPrecio_item)/parseFloat(xCan_item);
-	$("#frm_item_pro #idorg").val(xIdOrg);
-	$("#frm_item_pro #idsede").val(xIdSede);
-	$("#frm_item_pro #precio_unitario").val(xPrecio_und_pro);
-	$.post("../../bdphp/ManejoBD_IUD.php?tb=producto",$("#frm_item_pro").serialize(),function(xUltimo_id_pro){
-		xIdProducto_sel=xUltimo_id_pro;
-		$.ajax({ type: 'POST', url: '../../bdphp/log.php?op=1807',data:{'p':xIdProducto_sel,'a':sel_almacen_pro.value,'c':$("#frm_item_pro #stock").val()}})
-		.done( function (a) {
-			dialog_additem_pro.close();
-			$("#frm_item_pro").reset();
-			xPopupLoad.xclose();
-			xLoadProductos_dt()
-		})
-	})
-}
-function xCargarFamiliaInput(){
-	//cargan en control
-		var xObjTxtFam=$("#sel_familia");
-		xObjTxtFam.autocomplete({
-			autoFocus:true,
-			source:xThisProPor.dtProFam,
-			appendTo : $('#dialog_additem_pro'),
-			select: function( event, ui ) {
-				xObjTxtFam.val(ui.item.label);
-		        xObjTxtFam.attr('data-id',ui.item.value);
-		        $("#frm_item_pro #idproducto_familia").val(ui.item.value);
-		        return false;
-		    },
-		    focus:function(event, ui){return false;},
-		    change:function( event, ui ) {
-		    	if(ui.item===null){
-		    		xObjTxtFam.attr('data-value',"");
-		    		xObjTxtFam.attr('data-id',"");
-		    		$("#frm_item_pro #idproducto_familia").val("");
-		    		xNewFamilia=true;
-		    	}else{xNewFamilia=false; $("#frm_item_pro #idproducto_familia").val(ui.item.value);}
-		    	return false;
-		    }
-		});
-}
-function xLoadFamilias(){
-	$.ajax({ type: 'POST', url: '../../bdphp/log.php?op=1601'})
-	.done( function (DtFam) {
-		var xDtFam=$.parseJSON(DtFam);
-		xThisProPor.dtProFam=xDtFam.datos;
-		xCargarFamiliaInput();
-	})
-}
-
-function xLoadPorciones(){
-	$.ajax({ type: 'POST', url: '../../bdphp/log.php?op=1803'})
-	.done( function (dtPor) {
-		var xdtPor=$.parseJSON(dtPor);
-		var xcadena_por='';
-		var xtr_stock_por='';
-		xdtPor=xdtPor.datos;
-		for (var i = 0; i < xdtPor.length; i++) {
-			xtr_stock_por=xdtPor[i].stock;
-			xcadena_por=String(xcadena_por+'<tr class="row" data-idp="'+xdtPor[i].idporcion+'">'
-				+'<td>'+xdtPor[i].familia+'</td>'
-				+'<td class="xCursor"><span onclick="xModRow(this,3);" id="td_des" data-valorginal="'+xdtPor[i].porcion+'">'+xdtPor[i].porcion+'</span></td>'
-				+'<td class="sumar_stock xCursor" onclick="xModRow(this,2);" id="td_stock" data-valorginal="'+xtr_stock_por+'" data-mod-stock="'+xtr_stock_por+'" data-colummn="stock">'+xtr_stock_por+'</td>'
-				+'<td><span class="xDeleteRowNeutro" title="Borrar" onclick="xBorrarProcion(this);"></span></td>'
-				+'</tr>')
-		}
-		$("#tb_porcion .row").remove();
-		$("#tb_porcion").append(xcadena_por).trigger('create');
-
-		xSumarTotalesPorcion();
-	})
-}
-
-function xBuscarXTxt(valbus){
-	xBuscarTbData($("#tb_productos"),valbus)
-	xSumarTotales();
-}
-function xLoadAlmacenes(){
-	xPopupLoad.xopen();
-	$.ajax({ type: 'POST', url: '../../bdphp/log.php?op=1604'})
-	.done( function (DtAlm) {
-		xDtAlam=$.parseJSON(DtAlm);
-		var xcandena_alm='';
-		xDtAlam=xDtAlam.datos;
-		for (var i = 0; i < xDtAlam.length; i++) {
-			xcandena_alm=String(xcandena_alm+'<option value="'+xDtAlam[i].idalmacen+'">'+xDtAlam[i].descripcion+'</option>')
-		};
-		xcandena_alm=String(xcandena_alm+'<option value=0>TODOS</option>')
-		$("#sel_almacen_pp").html(xcandena_alm).trigger('create');
-		$("#sel_almacen_pro").html(xcandena_alm).trigger('create');
-		//xidAlmacenbUS=$("#sel_almacen_pp option:selected").val(0)
-
-		xLoadProductos_dt();
-		xLoadFamilias();
-	})
-}
-function xLoadProductos_dt(xid_filtro){
-	$.ajax({ type: 'POST', url: '../../bdphp/log.php?op=18'})
-	.done( function (dtPro) {
-		var xdtPro=$.parseJSON(dtPro);
-		xdtPro=xdtPro.datos;
-		xThisProPor.xdt_prodcutos=xdtPro;
-		xLoadProductos(0)
-	})
-}
-
-function xLoadProductos(xid_filtro){
-		$("#tb_productos .row").remove();
-		var xdtPro=xThisProPor.xdt_prodcutos
-		var xCadenaPro='';
-		var xico_stock_min='';
-		var xtitulo_stock_min='';
-		for (var i = 0; i < xdtPro.length; i++) {
-			if(xid_filtro!=0){
-				if(xid_filtro!=xdtPro[i].idalmacen){continue;}
-			}
-			xico_stock_min='';
-			xtitulo_stock_min='';
-			var xtr_stock_min=parseInt(xdtPro[i].stock_minimo);
-			var xtr_stock=parseInt(xdtPro[i].stock);
-			if(xtr_stock<=xtr_stock_min && xtr_stock_min!=0){xtitulo_stock_min='stock minimo'; xico_stock_min='<image title="stock minimo '+xtr_stock_min+'" src="../../images/tr_alert_min.png">'}
-			xCadenaPro=String(xCadenaPro+'<tr class="row" data-idal="'+xdtPro[i].idproducto_stock+'" data-idp="'+xdtPro[i].idproducto+'" data-idalmacen="'+xdtPro[i].idalmacen+'">'
-				+'<td>'+xdtPro[i].almacen+'</td>'
-				+'<td>'+xdtPro[i].familia+'</td>'
-				+'<td class="xCursor"><div><span onclick="xModRow(this,3);" id="td_des" data-valorginal="'+xdtPro[i].producto+'">'+xdtPro[i].producto+'<span><span class="xDerecha">'+xico_stock_min+'</span><span class="xInvisible">'+xtitulo_stock_min+'</span></div></td>'
-				+'<td class="sumar_stock xCursor" onclick="xModRow(this,2);" id="td_stock" data-valorginal="'+xtr_stock+'" data-mod-stock="'+xtr_stock+'" data-mod-precio="" data-colummn="stock">'+xtr_stock+'</td>'
-				+'<td class="xCursor" onclick="xModRow(this,1);" id="td_pventa" data-valorginal="'+xdtPro[i].precio_venta+'" data-mod-stock="" data-mod-precio="'+xdtPro[i].precio_venta+'" data-colummn="precio_venta">'+xdtPro[i].precio_venta+'</td>'
-				+'<td><span class="xDeleteRowNeutro" title="Borrar" onclick="xBorrarProducto(this);"></span></td>'
-				+'</tr>')
-		};
-		$("#tb_productos .row").remove();
-		$("#tb_productos").append(xCadenaPro).trigger('create');
-		xSumarTotales()
-		xPopupLoad.xclose();
-}
-function xSumarTotales(){
-	var xtotal_row=xContarCantRowVisible($("#tb_productos"),'.sumar_stock');
-	var xsum_stock=xSumaCantRowVisible($("#tb_productos"),'.sumar_stock');
-	var xrow_total='<tr class="tr_total xBold xfont18"><td>Totales</td><td>'+xtotal_row+'</td><td>-</td><td>'+xsum_stock+'</td><td>-</td></tr>';
-	$("#tb_productos .tr_total").remove();
-	$("#tb_productos").append(xrow_total).trigger('create');
-}
-function xSumarTotalesPorcion(){
-	var xtotal_row=xContarCantRowVisible($("#tb_porcion"),'.sumar_stock');
-	var xsum_stock=xSumaCantRowVisible($("#tb_porcion"),'.sumar_stock');
-	var xrow_total='<tr class="tr_total xBold xfont18"><td>Totales</td><td>'+xtotal_row+'</td><td>'+xsum_stock+'</td></tr>';
-	$("#tb_porcion .tr_total").remove();
-	$("#tb_porcion").append(xrow_total).trigger('create');
-}
-function xModRow(obj,tipo){
-	var xvalObj=$(obj).text();
-	if($(obj).find('input').length>0){$(obj).find('input').select();return;}
-	$(obj).html('<input type="text" class="xMiInput xPasarEnter2 xAlinearIzquierda" onblur="xModBlur(this,'+tipo+')" value="'+xvalObj+'" select>').trigger('create');
-	$(obj).find('input').select();
-}
-function xModBlur(obj,tipo){
-	var xvalObj=$(obj).val();
-	var xtb=$(obj).parents('table');
-	var xrow_obj=$(obj).parent();
-	switch (tipo ){
-		case 1:xvalObj=xMoneda(xvalObj); xrow_obj.attr('data-mod-precio',xvalObj);xrow_obj.addClass('modificado');break;
-		case 2:xvalObj=xCeroIzq(xvalObj,2); xrow_obj.attr('data-mod-stock',xvalObj); xrow_obj.addClass('modificado');break;
-		case 3:xvalObj=xvalObj; xrow_obj.parents('td').attr('data-mod-descripcion',xvalObj);xrow_obj.parents('td').addClass('modificado');break;
-	}
-	/*if(tipo==1){xvalObj=xMoneda(xvalObj)}
-	else{
-		xvalObj=xCeroIzq(xvalObj,2);
-	}*/
-	//if(xrow_obj.attr('id')=='td_stock'){xrow_obj.attr('data-mod-stock',xvalObj)}else{xrow_obj.attr('data-mod-precio',xvalObj)}
-	$(obj).parent().text(xvalObj);
-	$(obj).remove();
-
-}
-function xGuardarCambiosTbProductos(op){
-	var xArraySaveProducto=new Array();
-	var xtb;
-	if(op==1){xtb=$("#tb_productos");}else{xtb=$("#tb_porcion");}
-	$(xtb).find(".row>td.modificado").each(function(index,element){
-		var xval_mod_stock=$(element).attr('data-mod-stock');
-		var xval_mod_precio=$(element).attr('data-mod-precio');
-		var xval_mod_descripcion=$(element).attr('data-mod-descripcion');
-		var xval_org=$(element).attr('data-valorginal');
-		var xid_pro=$(element).parent().attr('data-idp');
-		var xid_alm=$(element).parent().attr('data-idal');
-		if(xval_org==xval_mod_stock){xval_mod_stock='';}
-		if(xval_org==xval_mod_precio){xval_mod_precio='';}
-		if(xval_org==xval_mod_descripcion || xval_mod_descripcion==undefined){xval_mod_descripcion='';}
-
-		xArraySaveProducto.push({'idproducto':xid_pro,'idproducto_stock':xid_alm,'val_stock':xval_mod_stock,'val_precio':xval_mod_precio,'val_descripcion':xval_mod_descripcion})
-	})
-
-	if(xArraySaveProducto.length>0){
-		xPopupLoad.xopen();
-		$.ajax({ type: 'POST', url: '../../bdphp/log.php?op=1801', data:{array_rows:xArraySaveProducto,op:op}})
-		.done( function (dtRptPro) {
-			var xdtRptPro=$.parseJSON(dtRptPro);
-			if(xdtRptPro.success!=true){alert(xdtRptPro.error)}
-			xPopupLoad.xclose();
-		})
-	}
-}
-function xBorrarProducto(obj){
-	$("#dialog_msj_confirma #titulo_msj").text('Esta seguro de elimar este producto del almacen?. puede afectar registros relacionado.');
-	xObjRowSel=$(obj).parent().parent();
-	dialog_msj_confirma.open();
-}
-function xBorrarProcion(obj){
-	$("#dialog_msj_confirma #titulo_msj").text('Esta seguro de elimar esta PORCION del almacen?. puede afectar registros relacionado.');
-	xObjRowSel=$(obj).parent().parent();
-	dialog_msj_confirma.open();
-}
-function xOkPopupConfirm(){
-	var xtitulo=$("#dialog_msj_confirma #titulo_msj").text();
-	if(xtitulo.indexOf('producto')>-1){//producto
-		xConfirmBorrarProducto();
-	}else{
-		xConfirmBorrarPorcion();
-	}
-}
-function xConfirmBorrarProducto(){
-	var xida=xObjRowSel.attr('data-idalmacen');
-	var xidp=xObjRowSel.attr('data-idal');
-	$.ajax({ type: 'POST', url: '../../bdphp/log.php?op=1802', data:{idp:xidp, ida:xida}})
-	.done( function (dtElimPro) {
-		xObjRowSel.fadeTo(550, 0, function () {$(this).remove();})
-		dialog_msj_confirma.close();
-	})
-}
-function xConfirmBorrarPorcion(){
-	var xidp=xObjRowSel.attr('data-idp');
-	$.ajax({ type: 'POST', url: '../../bdphp/log.php?op=1804', data:{idp:xidp}})
-	.done( function (dtElimPor) {
-		xObjRowSel.fadeTo(550, 0, function () {$(this).remove();})
-		dialog_msj_confirma.close();
-	})
-}
-Polymer({
-	is:'x-producto-porcion',
-	properties:{
-		xt_org:Number,
-		xt_idsede:Number,
-		xt_idus:Number,
-		xdt_prodcutos: Object,
-		dtProFam:Object,
-	},
-	attached:function(){
-		this.selected=0;
-    	xThisProPor=this;
-    	xIniProPor();
-    }
-})
-</script>
+<template>
+<paper-dialog modal id="dialog_msj_confirma" class="dialog_redondo" style="min-width:300px" entry-animation="scale-up-animation" exit-animation="fade-out-animation">
+<div class="xContent">
+<h4 id="titulo_msj">Esta seguro de elimar este producto del almacen?. puede afectar registros relacionado.</h4>
+<br>
+<div class="xLinea2"></div><br>
+<div class="xBoton2 xVerde" dialog-confirm onclick="xOkPopupConfirm()" id="btn_dlg_confirm">Confirmar</div>
+<div class="xBoton2 xPlomo" dialog-dismiss>Cancelar</div>
+</div>
+</paper-dialog>
+<paper-dialog modal id="dialog_additem_pro" class="dialog_redondo" modal entry-animation="scale-up-animation" exit-animation="fade-out-animation" with-backdrop>
+<div class="xContent">
+<h3>Agregar Producto</h3>
+<form id="frm_item_pro" method="post">
+<label for="sel_almacen_pro">Almacen donde ingresa:</label><br>
+<select id="sel_almacen_pro" name="no_post" class="xMiInput"></select>
+<input type="text" id="descripcion" name="descripcion" placeholder="Descripcion" class="xMiInput xPasarEnter2" onChange="conMayusculas(this)" autofocus required espaciar><br>
+<input type="text" id="sel_familia" name="no_post" class="xMiInput xPasarEnter2" placeholder="Familia" onChange="conMayusculas(this)" required espaciar><br>
+<input type="text" id="codigo_barra" name="codigo_barra" placeholder="Codigo de barras" class="xMiInput xPasarEnter2" onChange="conMayusculas(this)" espaciar><br>
+<input type="text" id="stock" name="no_post" placeholder="Stock" class="xMiInput xPasarEnter2" onChange="conMayusculas(this)" espaciar required><br>
+<input type="text" id="stock_minimo" name="stock_minimo" placeholder="Stock minimo" class="xMiInput xPasarEnter2" onChange="conMayusculas(this)" espaciar><br>
+<input type="text" id="precio" name="precio" placeholder="Precio de compra" onblur="xRetornaMoneda(this)" class="xMiInput xPasarEnter2" onChange="conMayusculas(this)" required espaciar><br>
+<input type="text" id="precio_venta" name="precio_venta" placeholder="Precio de venta x unidad" onblur="xRetornaMoneda(this)" class="xMiInput xPasarEnter2 xPrecioAddPro" onChange="conMayusculas(this)" onkeyup="xEnterInInputDlgPP(event)" required espaciar><br>
+<div class="xInvisible">
+<input type="text" id="idproducto" name="idproducto">
+<input type="text" id="idorg" name="idorg">
+<input type="text" id="idsede" name="idsede">
+<input type="text" id="idproducto_familia" name="idproducto_familia">
+<input type="text" id="precio_unitario" name="precio_unitario">
+</div>
+</form>
+<br><br>
+<div class="xBoton2 xAzul" onclick="xGuardarItemProPP()">Listo, guardar</div>
+<div class="xBoton2 xPlomo" dialog-dismiss>Cancelar</div>
+<br><br><br>
+</div>
+</paper-dialog>
+<paper-dialog modal id="dialog_additem_porcion" class="dialog_redondo" modal entry-animation="scale-up-animation" exit-animation="fade-out-animation" with-backdrop>
+<div class="xContent">
+<h3>Agregar Porcion</h3><br>
+<p><strong>Elaborar porciones para las recetas.</strong><br>
+Por ejemplo: de 1000gr de bistec salen 10 porciones de 100gr cada una para el preparar bistec a lo pobre.<br>
+Utilize la misma unidad de medida que esta en el producto a porcionar. Es decir si el producto a porcionar esta en gramos la misma unidad de medida debe ser para las prociones.</p>
+<br>
+<form id="frm_add_porcion" method="post">
+<input type="text" id="descripcion" name="descripcion" placeholder="Descripcion de la porcion" class="xMiInput xPasarEnter2" onChange="conMayusculas(this)" autofocus required espaciar><br>
+<input type="text" id="peso" name="peso" placeholder="Peso" class="xMiInput xPasarEnter2" onChange="conMayusculas(this)" autofocus required espaciar><br>
+<input type="text" id="stock" name="stock" placeholder="Cantidad" class="xMiInput xPasarEnter2" onChange="conMayusculas(this)" autofocus required espaciar><br>
+<div class="xInvisible">
+<input type="text" id="idporcion" name="idporcion">
+<input type="text" id="idorg" name="idorg">
+<input type="text" id="idsede" name="idsede">
+</div>
+</form>
+<br><br>
+<div class="xBoton2 xAzul" onclick="xGuardarItemPorcion()">Listo, guardar</div>
+<div class="xBoton2 xPlomo" dialog-dismiss>Cancelar</div>
+<br><br><br>
+</div>
+</paper-dialog>
+<br>
+<div class="xContent">
+<paper-tabs selected="{{selected}}" id="tab_pro_por">
+<paper-tab>PRODUCTOS</paper-tab>
+<paper-tab>PORCIONES</paper-tab>
+</paper-tabs>
+<div class="xLinea2"></div>
+<br>
+<iron-pages selected="{{selected}}">
+<div id="cont_productos">
+<div class="xFondoRowAmarillo3 xMargin5">
+<br>
+<h4 class="xpadingLateralIz">Productos por almacen. Solo usuarios autorizados puedes modificar el stock, precio y/o eliminar los productos.</h4>
+<p class="xpadingLateralIz"><img src="../../images/tr_alert_min.png"> Esta opción nos muestra los productos que se encuentran por debajo del stock mínimo.</p>
+<br>
+</div>
+<p>Buscar en:</p>
+<div class="xLinea2"></div>
+<br>
+<div>
+<select id="sel_almacen_pp" inline></select>
+<input type="text" class="xMiInput" placeholder="Buscar" inline id="txt_buscar">
+<paper-checkbox id="chec_min" class="xpadingLateralIz">Ver solo stock minimo <img src="../../images/tr_alert_min.png"></paper-checkbox>
+<div class="xBoton2 xAzul xDerecha" onclick="dialog_additem_pro.open()">+ Agregar Producto</div>
+<div class="xBoton2 xVerde xDerecha" onclick="xGuardarCambiosTbProductos(1)">Guardar Cambios</div>
+</div>
+<br><br>
+<div class="xLinea2"></div>
+<br>
+<table id="tb_productos" width="100%" class="xtable2">
+<thead>
+<th align="left" width="20%">Almacen</th>
+<th align="left" width="20%">Familia</th>
+<th align="left">Producto</th>
+<th align="left" width="80px">Stock</th>
+<th align="left" width="80px">P. Venta</th>
+<th width="5px"></th>
+</thead>
+</table>
+<br><br><br>
+</div>
+<div id="cont_porciones">
+<br>
+<input type="text" class="xMiInput" placeholder="Buscar" inline id="txt_buscar_porcion">
+<div class="xBoton2 xAzul xDerecha" onclick="dialog_additem_porcion.open()">+ Agregar Porcion</div>
+<div class="xBoton2 xVerde xDerecha" onclick="xGuardarCambiosTbProductos(2)">Guardar Cambios</div>
+<br><br><br>
+<div class="xLinea2"></div>
+<br>
+<table id="tb_porcion" width="100%" class="xtable2">
+<thead>
+<th align="left" width="20%">Familia</th>
+<th align="left">Porcion</th>
+<th align="left" width="90px">Stock</th>
+<th width="5px"></th>
+</thead>
+</table>
+<br><br><br>
+</div>
+</iron-pages>
+</div>
+</template>
+<script>/*<![CDATA[*/var xThisProPor,xidAlmacenbUS,xObjRowSel,xPrecio_item;function xIniProPor(){xPopupLoad=document.getElementById("xLoad");xm_LogChequea(function(){xm_log_get("ini_us");$("body").addClass("loaded");$("#Titulo_page").text("Productos y porciones");xLoadAlmacenes()});$(".xPasarEnter2").on("keyup",function(g){var f=g.which;if(f==13||f==186){var c=$("input");var b=c.index(document.activeElement);if(c[b+1]!==null){var d=c[b+1];if(d===undefined){return}if(d.disabled){d=c[b+2]}if(d==undefined){return}d.focus();d.select()}event.stopPropagation();g.stopPropagation();g.stopImmediatePropagation();return false}});$("#txt_buscar").on("keyup",function(){xBuscarXTxt(this.value)});$("#txt_buscar_porcion").on("keyup",function(){xBuscarTbData($("#tb_porcion"),this.value);xSumarTotalesPorcion()});$("#sel_almacen_pp").on("change",function(){xLoadProductos(sel_almacen_pp.value)});$("#chec_min").on("change",function(){var a="";if(this.checked){a="stock minimo"}xBuscarXTxt(a)});$("#tab_pro_por").on("iron-select",function(){switch(xThisProPor.selected){case 0:xLoadAlmacenes();break;case 1:xLoadPorciones();break}})}function xEnterInInputDlgPP(b){var a=b.which;if(a==13||a==186){xGuardarItemProPP()}}function xGuardarItemPorcion(){xvalidateFormInput("frm_add_porcion",function(b){if(b===false){return}xPopupLoad.xopen();$("#frm_add_porcion #idorg").val(xIdOrg);$("#frm_add_porcion #idsede").val(xIdSede);$.post("../../bdphp/ManejoBD_IUD.php?tb=porcion",$("#frm_add_porcion").serialize(),function(a){xLoadPorciones();xPopupLoad.xclose();dialog_additem_porcion.close()})})}function xGuardarItemProPP(){xvalidateFormInput("frm_item_pro",function(b){if(b===false){return}xPopupLoad.xopen();xnom_familia=$("#sel_familia").val();xPrecio_item=xMoneda($("#frm_item_pro #precio").val());if(xNewFamilia==true){$.ajax({type:"POST",url:"../../bdphp/log.php?op=1602",data:{f:xnom_familia}}).done(function(a){$("#frm_item_pro #idproducto_familia").val(a);xGuardarItemProDtPP();xLoadFamilias()})}else{xGuardarItemProDtPP()}})}function xGuardarItemProDtPP(){xCan_item=$("#frm_item_pro #stock").val();var a=parseFloat(xPrecio_item)/parseFloat(xCan_item);$("#frm_item_pro #idorg").val(xIdOrg);$("#frm_item_pro #idsede").val(xIdSede);$("#frm_item_pro #precio_unitario").val(a);$.post("../../bdphp/ManejoBD_IUD.php?tb=producto",$("#frm_item_pro").serialize(),function(b){xIdProducto_sel=b;$.ajax({type:"POST",url:"../../bdphp/log.php?op=1807",data:{p:xIdProducto_sel,a:sel_almacen_pro.value,c:$("#frm_item_pro #stock").val()}}).done(function(c){dialog_additem_pro.close();$("#frm_item_pro").reset();xPopupLoad.xclose();xLoadProductos_dt()})})}function xCargarFamiliaInput(){var a=$("#sel_familia");a.autocomplete({autoFocus:true,source:xThisProPor.dtProFam,appendTo:$("#dialog_additem_pro"),select:function(b,c){a.val(c.item.label);a.attr("data-id",c.item.value);$("#frm_item_pro #idproducto_familia").val(c.item.value);return false},focus:function(b,c){return false},change:function(b,c){if(c.item===null){a.attr("data-value","");a.attr("data-id","");$("#frm_item_pro #idproducto_familia").val("");xNewFamilia=true}else{xNewFamilia=false;$("#frm_item_pro #idproducto_familia").val(c.item.value)}return false}})}function xLoadFamilias(){$.ajax({type:"POST",url:"../../bdphp/log.php?op=1601"}).done(function(a){var b=$.parseJSON(a);xThisProPor.dtProFam=b.datos;xCargarFamiliaInput()})}function xLoadPorciones(){$.ajax({type:"POST",url:"../../bdphp/log.php?op=1803"}).done(function(d){var e=$.parseJSON(d);var b="";var c="";e=e.datos;for(var a=0;a<e.length;a++){c=e[a].stock;b=String(b+'<tr class="row" data-idp="'+e[a].idporcion+'"><td>'+e[a].familia+'</td><td class="xCursor"><span onclick="xModRow(this,3);" id="td_des" data-valorginal="'+e[a].porcion+'">'+e[a].porcion+'</span></td><td class="sumar_stock xCursor" onclick="xModRow(this,2);" id="td_stock" data-valorginal="'+c+'" data-mod-stock="'+c+'" data-colummn="stock">'+c+'</td><td><span class="xDeleteRowNeutro" title="Borrar" onclick="xBorrarProcion(this);"></span></td></tr>')}$("#tb_porcion .row").remove();$("#tb_porcion").append(b).trigger("create");xSumarTotalesPorcion()})}function xBuscarXTxt(a){xBuscarTbData($("#tb_productos"),a);xSumarTotales()}function xLoadAlmacenes(){xPopupLoad.xopen();$.ajax({type:"POST",url:"../../bdphp/log.php?op=1604"}).done(function(c){xDtAlam=$.parseJSON(c);var b="";xDtAlam=xDtAlam.datos;for(var a=0;a<xDtAlam.length;a++){b=String(b+'<option value="'+xDtAlam[a].idalmacen+'">'+xDtAlam[a].descripcion+"</option>")}b=String(b+"<option value=0>TODOS</option>");$("#sel_almacen_pp").html(b).trigger("create");$("#sel_almacen_pro").html(b).trigger("create");xLoadProductos_dt();xLoadFamilias()})}function xLoadProductos_dt(a){$.ajax({type:"POST",url:"../../bdphp/log.php?op=18"}).done(function(b){var c=$.parseJSON(b);c=c.datos;xThisProPor.xdt_prodcutos=c;xLoadProductos(0)})}function xLoadProductos(f){$("#tb_productos .row").remove();var g=xThisProPor.xdt_prodcutos;var c="";var b="";var a="";for(var e=0;e<g.length;e++){if(f!=0){if(f!=g[e].idalmacen){continue}}b="";a="";var h=parseInt(g[e].stock_minimo);var d=parseInt(g[e].stock);if(d<=h&&h!=0){a="stock minimo";b='<image title="stock minimo '+h+'" src="../../images/tr_alert_min.png">'}c=String(c+'<tr class="row" data-idal="'+g[e].idproducto_stock+'" data-idp="'+g[e].idproducto+'" data-idalmacen="'+g[e].idalmacen+'"><td>'+g[e].almacen+"</td><td>"+g[e].familia+'</td><td class="xCursor"><div><span onclick="xModRow(this,3);" id="td_des" data-valorginal="'+g[e].producto+'">'+g[e].producto+'<span><span class="xDerecha">'+b+'</span><span class="xInvisible">'+a+'</span></div></td><td class="sumar_stock xCursor" onclick="xModRow(this,2);" id="td_stock" data-valorginal="'+d+'" data-mod-stock="'+d+'" data-mod-precio="" data-colummn="stock">'+d+'</td><td class="xCursor" onclick="xModRow(this,1);" id="td_pventa" data-valorginal="'+g[e].precio_venta+'" data-mod-stock="" data-mod-precio="'+g[e].precio_venta+'" data-colummn="precio_venta">'+g[e].precio_venta+'</td><td><span class="xDeleteRowNeutro" title="Borrar" onclick="xBorrarProducto(this);"></span></td></tr>')}$("#tb_productos .row").remove();$("#tb_productos").append(c).trigger("create");xSumarTotales();xPopupLoad.xclose()}function xSumarTotales(){var c=xContarCantRowVisible($("#tb_productos"),".sumar_stock");var a=xSumaCantRowVisible($("#tb_productos"),".sumar_stock");var b='<tr class="tr_total xBold xfont18"><td>Totales</td><td>'+c+"</td><td>-</td><td>"+a+"</td><td>-</td></tr>";$("#tb_productos .tr_total").remove();$("#tb_productos").append(b).trigger("create")}function xSumarTotalesPorcion(){var c=xContarCantRowVisible($("#tb_porcion"),".sumar_stock");var a=xSumaCantRowVisible($("#tb_porcion"),".sumar_stock");var b='<tr class="tr_total xBold xfont18"><td>Totales</td><td>'+c+"</td><td>"+a+"</td></tr>";$("#tb_porcion .tr_total").remove();$("#tb_porcion").append(b).trigger("create")}function xModRow(c,b){var a=$(c).text();if($(c).find("input").length>0){$(c).find("input").select();return}$(c).html('<input type="text" class="xMiInput xPasarEnter2 xAlinearIzquierda" onblur="xModBlur(this,'+b+')" value="'+a+'" select>').trigger("create");$(c).find("input").select()}function xModBlur(e,c){var b=$(e).val();var d=$(e).parents("table");var a=$(e).parent();switch(c){case 1:b=xMoneda(b);a.attr("data-mod-precio",b);a.addClass("modificado");break;case 2:b=xCeroIzq(b,2);a.attr("data-mod-stock",b);a.addClass("modificado");break;case 3:b=b;a.parents("td").attr("data-mod-descripcion",b);a.parents("td").addClass("modificado");break}$(e).parent().text(b);$(e).remove()}function xGuardarCambiosTbProductos(c){var b=new Array();var a;if(c==1){a=$("#tb_productos")}else{a=$("#tb_porcion")}$(a).find(".row>td.modificado").each(function(e,f){var j=$(f).attr("data-mod-stock");var k=$(f).attr("data-mod-precio");var i=$(f).attr("data-mod-descripcion");var g=$(f).attr("data-valorginal");var d=$(f).parent().attr("data-idp");var h=$(f).parent().attr("data-idal");if(g==j){j=""}if(g==k){k=""}if(g==i||i==undefined){i=""}b.push({idproducto:d,idproducto_stock:h,val_stock:j,val_precio:k,val_descripcion:i})});if(b.length>0){xPopupLoad.xopen();$.ajax({type:"POST",url:"../../bdphp/log.php?op=1801",data:{array_rows:b,op:c}}).done(function(d){var e=$.parseJSON(d);if(e.success!=true){alert(e.error)}xPopupLoad.xclose()})}}function xBorrarProducto(a){$("#dialog_msj_confirma #titulo_msj").text("Esta seguro de elimar este producto del almacen?. puede afectar registros relacionado.");xObjRowSel=$(a).parent().parent();dialog_msj_confirma.open()}function xBorrarProcion(a){$("#dialog_msj_confirma #titulo_msj").text("Esta seguro de elimar esta PORCION del almacen?. puede afectar registros relacionado.");xObjRowSel=$(a).parent().parent();dialog_msj_confirma.open()}function xOkPopupConfirm(){var a=$("#dialog_msj_confirma #titulo_msj").text();if(a.indexOf("producto")>-1){xConfirmBorrarProducto()}else{xConfirmBorrarPorcion()}}function xConfirmBorrarProducto(){var b=xObjRowSel.attr("data-idalmacen");var a=xObjRowSel.attr("data-idal");$.ajax({type:"POST",url:"../../bdphp/log.php?op=1802",data:{idp:a,ida:b}}).done(function(c){xObjRowSel.fadeTo(550,0,function(){$(this).remove()});dialog_msj_confirma.close()})}function xConfirmBorrarPorcion(){var a=xObjRowSel.attr("data-idp");$.ajax({type:"POST",url:"../../bdphp/log.php?op=1804",data:{idp:a}}).done(function(b){xObjRowSel.fadeTo(550,0,function(){$(this).remove()});dialog_msj_confirma.close()})}Polymer({is:"x-producto-porcion",properties:{xt_org:Number,xt_idsede:Number,xt_idus:Number,xdt_prodcutos:Object,dtProFam:Object,},attached:function(){this.selected=0;xThisProPor=this;xIniProPor()}});/*]]>*/</script>
 </dom-module>

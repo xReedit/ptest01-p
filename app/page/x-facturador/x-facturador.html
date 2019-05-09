@@ -103,7 +103,7 @@
 <style type="text/css">:root{--font-size:12px;--paper-input-container-input:{font-size:var(--font-size)}--paper-input-container-label:{font-size:13px}}.tt_row td{font-weight:600;font-size:15px}</style>
 </dom-module>
 <script>/*<![CDATA[*/var xThisFacturador,xPopupLoad,_arrCliente=[],_arrTotal=[],_arrItems=[],cnf_ComprobanteSel,xIdCliente_pago,_listValid=false,_formValid=false,_modificarCliente=false;var impresoraSelect={},IdTpConsumo=0,rptDoc,itemsConEstructuraPrint,arr_comprobante=[],_idregistro,txt_fecha_cpe_manual='';function xIniFacturador(){xPopupLoad=document.getElementById('xLoad');xThisFacturador.formValid=false;_listValid=false;_formValid=false;xThisFacturador.modificarCliente=false;xThisFacturador.arrItems=[];xThisFacturador.arrTotales=[];xThisFacturador.listImpresoras=[];xThisFacturador.cpe_show=false;xThisFacturador.fecha_manual=false
-const arrEstructura=xm_log_get('estructura_pedido');IdTpConsumo=arrEstructura[0].idtipo_consumo;fact_getAllImpresoras();$('.xPasarEnter2').on('keyup',function(e){var code=e.which;if(code==13||code==186){var inputs=$('input');var a=inputs.index(document.activeElement);if(inputs[a+1]!==null){var nextBox=inputs[a+1];if(nextBox===undefined){return}
+const arrEstructura=xm_log_get('estructura_pedido');IdTpConsumo=arrEstructura[0].idtipo_consumo;fact_getAllImpresoras();$('body').addClass('loaded');$('.xPasarEnter2').on('keyup',function(e){var code=e.which;if(code==13||code==186){var inputs=$('input');var a=inputs.index(document.activeElement);if(inputs[a+1]!==null){var nextBox=inputs[a+1];if(nextBox===undefined){return}
 if(nextBox.disabled){nextBox=inputs[a+2]}
 if(nextBox==undefined){return;}
 nextBox.focus();nextBox.select();}

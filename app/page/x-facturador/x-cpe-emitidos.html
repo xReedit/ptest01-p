@@ -32,7 +32,16 @@
 <div class="xMiCard xradius" style="width:90%">
 <div class="xEncanezadoCard xFondoRowAmarillo2">
 <h4>Comprobantes electronicos.</h4>
-<span>Estado de los comprobantes electronicos, resumenes diarios y reportes.</span>
+<span hidden$=[[isContador]]>Estado de los comprobantes electronicos, resumenes diarios y reportes.</span>
+<div hidden$=[[!isContador]] style="max-width:300px">
+<label for="sel_sede" class="xColorRow_Plomo">Seleccione Establecimiento</label>
+<select class="xSelectOptionFlat" id="selectSedeCPC" onchange="selectOptionSedeCPC()">
+<option value="-1">SELECCIONE UN ESTABLECIMIENTO</option>
+<template is="dom-repeat" items="{{listSedeUsContador}}" as="item">
+<option value="[[index]]">[[item.establecimiento]] | [[item.sede]] | [[item.ciudad]] </option>
+</template>
+</select>
+</div>
 </div>
 <div class="xContentCard" style="height:100%">
 <div>
@@ -45,7 +54,7 @@
 <br><br>
 <iron-pages selected="{{selected}}">
 <div id="div_comprobantes">
-<div>
+<div id="div_info_comprobantes" hidden$=[[isContador]]>
 <div class="xDerecha">
 <button class="xBoton2 xAzul xDerecha" onclick="xEnviarResumenBoletas()">Enviar Resumen de boletas</button>
 <br>
@@ -57,6 +66,14 @@ registrar, es decir los documentos
 que se emitieron en modo offline ó los que por algún motivo en su momento no se pudo establecer conexión con la
 Sunat.<br>Este proceso es el mismo que se realiza al cierre de caja.</p>
 <p id="xTituloRpt" class="xColorRow_Rojo"></p>
+</div>
+<div id="div_opciones_contador" hidden$=[[!isContador]]>
+<button class="xBoton2 xAzul" style="display:inline-flex" onclick="xGenerarReporteExcelMesAnterior()" title="Bajar a excel" id="btn_mes_anterior"><img src="../../../images/excel.png" alt="" style="padding-right:3px">
+<span id="txt_btn_mes_anterior"></span>
+</button>
+<button class="xBoton2 xVerde" style="display:inline-flex" onclick="xGenerarReporteExcel()" title="Bajar a excel"><img src="../../../images/excel.png" alt="" style="padding-right:3px">
+<span> Descargar busqueda</span>
+</button>
 </div>
 <br>
 <hr>
@@ -196,8 +213,8 @@ Sunat.<br>Este proceso es el mismo que se realiza al cierre de caja.</p>
 <script type="text/javascript" src="../../view/xSOAPSunat.js"></script>
 <script type="text/javascript" src="../../view/cpe_interno.js"></script>
 <script type="text/javascript" src="../../view/export.excel.js"></script>
-<script>/*<![CDATA[*/var xThisCpe,lastPos=0,xPopupLoad,p_upadate=true,p_rows_re=0,p_rows=0,p_fecha='',p_filter='',p_desde=0,data_pagination={},data_pagination_re={},xdebounce,xe_debounce=false,index_anular;function xExportarExcel(){tableToExcel('testTable','Comprobantes')}
-function xIniCpe(){xThisCpe.ListCpe=[];xThisCpe.ListCpeResumen=[];xLoadCpeEmitidos('6');xIniPagination();setTimeout(()=>{$('body').addClass('loaded');},500);xThisCpe.$.paginator.addEventListener('page-limit-change',(e)=>{data_pagination=e.detail.value;p_desde=data_pagination.pageDesde;lastPos=$(window).scrollTop();xLoadCpeEmitidos('6');});$("#txt_fecha").on('change',function(){var d=$(this).val().split('-');p_fecha=d[1]===undefined?'':d[2]+'/'+d[1]+'/'+d[0];xThisCpe.$.paginator.currentPage=1;xLoadCpeEmitidos('6');});$("#tab_cpe").on('iron-select',function(){switch(xThisCpe.selected){}});xListRe_ini();}
+<script>/*<![CDATA[*/var xThisCpe,lastPos=0,xPopupLoad,p_upadate=true,p_rows_re=0,p_rows=0,p_fecha='',p_filter='',p_desde=0,data_pagination={},data_pagination_re={},xdebounce,xe_debounce=false,index_anular;var cpe_mes_anterior='',cpe_yy_actual='',_us_cpe='';function xExportarExcel(){tableToExcel('testTable','Comprobantes')}
+function xIniCpe(){xThisCpe.ListCpe=[];xThisCpe.ListCpeResumen=[];xCPE_getMesYYActual();xCPEValidUs();xLoadCpeEmitidos('6');xIniPagination();setTimeout(()=>{$('body').addClass('loaded');},500);xThisCpe.$.paginator.addEventListener('page-limit-change',(e)=>{data_pagination=e.detail.value;p_desde=data_pagination.pageDesde;lastPos=$(window).scrollTop();xLoadCpeEmitidos('6');});$("#txt_fecha").on('change',function(){var d=$(this).val().split('-');p_fecha=d[1]===undefined?'':d[2]+'/'+d[1]+'/'+d[0];xThisCpe.$.paginator.currentPage=1;xLoadCpeEmitidos('6');});$("#tab_cpe").on('iron-select',function(){switch(xThisCpe.selected){}});xListRe_ini();}
 function xIniPagination(){xThisCpe.$.paginator.currentPage=1;xThisCpe.$.paginator.pageRows=p_rows;xThisCpe.$.paginator.listRows=[10,20,30,40];}
 function xfiltrarDatos(){if(xe_debounce)return;xe_debounce=true;clearTimeout(xdebounce);xdebounce=setTimeout(()=>{xLoadCpeEmitidos('6');xe_debounce=false;xThisCpe.$.paginator.currentPage=1;},900);}
 function xLoadCpeEmitidos(op){p_filter=xThisCpe.$.txt_buscar.value;data_pagination.pageFilter=p_filter;data_pagination.pageFecha=p_fecha;let xDataRes=[];$.ajax({type:'POST',url:'../../bdphp/log_002.php',data:{op:op,pagination:data_pagination}}).done(function(res){res=res.split('**');p_rows=res[1];res=$.parseJSON(res[0]);xDataRes=res.datos;xDataRes.map(x=>{let msj_estado='';let class_estado='';const boleta=x.codsunat==='03'?true:false;const e_api=parseInt(x.estado_api)===0?true:false;const e_sunat=parseInt(x.estado_sunat)===0?true:false;let estado_cpe;let btn_enviar=false;let btn_anular=false;let style_reporte='';if(parseInt(x.anulado)===0){if(e_api&&e_sunat)estado_cpe=0;if(!e_api&&!e_sunat)estado_cpe=1;if(boleta&&e_api&&!e_sunat)estado_cpe=2;if(!boleta&&e_api&&!e_sunat)estado_cpe=3;}else{estado_cpe=4;}
@@ -208,9 +225,16 @@ class_estado+=' xBold xfont11';x.ico_pdf=x.pdf==='1'?true:false;x.ico_xml=x.xml=
 p_upadate=false;xThisCpe.$.paginator.pageRows=p_rows;if(op==='6'){xThisCpe.ListCpe=[];xThisCpe.ListCpe=xDataRes;setTimeout(()=>{$(window).scrollTop(lastPos);},5);}else{xThisCpe.ListCpeResumen=[];xThisCpe.ListReporte=xDataRes;setTimeout(()=>{xExportarExcel();},100);}});}
 function xEnviarResumenBoletas(){xPopupLoad.xclose();dialog_enviando_sunat.open();setTimeout(()=>{const rpt=xCocinarResumenBoletas();if(rpt===''){xLoadCpeEmitidos('6');}},1000);}
 function verDocuemnto(tipo,obj){const index=obj.parentElement.dataId;const external_id=xThisCpe.ListCpe[index].external_id;xSoapSunat_DownloadFile(tipo,external_id)}
-function xAnularComprobante(obj){index_anular=obj.parentElement.dataId;dialog_motivo_anular_comprobante.open();}
+function xAnularComprobante(obj){if(xThisCpe.isContador)return;index_anular=obj.parentElement.dataId;dialog_motivo_anular_comprobante.open();}
 async function xAnularComprobante_confirma(){const _external_id=xThisCpe.ListCpe[index_anular].external_id;const _codsunat=xThisCpe.ListCpe[index_anular].codsunat;const _fecha=xThisCpe.ListCpe[index_anular].fecha;const _motivo_anulacion=txt_motivo_anular.value;const dataAnulacion={codsunat:_codsunat,external_id:_external_id,motivo:_motivo_anulacion,fecha:_fecha}
 lastPos=$(window).scrollTop();xm_all_xToastOpen("Conectando con Sunat...");const res=await xSoapSunat_AnularComprobante(dataAnulacion);if(res){lastPos=$(window).scrollTop();xLoadCpeEmitidos('6');}
 xm_all_xToastClose();txt_motivo_anular.value='';}
 function xGenerarReporteExcel(){const org=xm_log_get('datos_org_sede');xThisCpe.nom_sede=org[0].sedenombre;xLoadCpeEmitidos('601');}
-Polymer({is:'x-cpe-emitidos',properties:{ListCpe:[],ListCpeResumen:[],ListReporte:[],nom_sede:''},attached:function(){this.selected=0,xThisCpe=this;xIniCpe();},displayIndex:function(index){return xCeroIzq(parseInt(p_desde)+(index+1),1);},})/*]]>*/</script>
+function xGenerarReporteExcelMesAnterior(){const param_busqueda_mes_anterior=xCeroIzq(cpe_mes_anterior,2)+'/'+cpe_yy_actual;const org=xm_log_get('datos_org_sede');xThisCpe.nom_sede=org[0].sedenombre;xPopupLoad.titulo="Procesando..."
+xPopupLoad.xopen();txt_buscar.value=param_busqueda_mes_anterior;setTimeout(()=>{xLoadCpeEmitidos('601');xPopupLoad.xclose();},1500);}
+function xCPE_getMesYYActual(){const _f_actual=new Date();cpe_mes_anterior=_f_actual.getMonth();cpe_mes_anterior=cpe_mes_anterior===0?1:cpe_mes_anterior;cpe_yy_actual=_f_actual.getFullYear();const cpe_nom_mes=xDevolverFechaParte('mmmm');const cpe_yy_mes=xDevolverFechaParte('yy');txt_btn_mes_anterior.textContent="Resporte "+cpe_nom_mes+' '+cpe_yy_mes;}
+function xCPEValidUs(){_us_cpe=xm_log_get('app3_us');xThisCpe.isContador=parseInt(_us_cpe.rol)==2?true:false;if(xThisCpe.isContador){xGetIdCpc();}}
+function xGetIdCpc(){$.ajax({type:'POST',url:'../../bdphp/log_004.php?op=40101',data:{id:_us_cpe.idus}}).done((res)=>{_us_cpe.idus_cpc=res;xLoadCpeListEstablecimientosCPC();});}
+function xLoadCpeListEstablecimientosCPC(){$.ajax({type:'POST',url:'../../bdphp/log_004.php?op=401',data:{id:_us_cpe.idus_cpc}}).done((res)=>{const _res=$.parseJSON(res);xThisCpe.listSedeUsContador=_res.datos;});}
+function selectOptionSedeCPC(){const index=xThisCpe.$.selectSedeCPC.value;if(index===-1)return;const sedeSelect=xThisCpe.listSedeUsContador[index];$.ajax({type:'POST',url:'../../bdphp/log_004.php?op=40102',data:{ido:sedeSelect.idorg,ids:sedeSelect.idsede}}).done((res)=>{updateapp3_woDUS_changeSede(sedeSelect.idorg,sedeSelect.idsede);xIniCpe();});}
+Polymer({is:'x-cpe-emitidos',properties:{ListCpe:[],ListCpeResumen:[],ListReporte:[],listSedeUsContador:[],nom_sede:'',isContador:false,},attached:function(){this.selected=0,xThisCpe=this;xIniCpe();},displayIndex:function(index){return xCeroIzq(parseInt(p_desde)+(index+1),1);},})/*]]>*/</script>

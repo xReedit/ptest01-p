@@ -1,150 +1,53 @@
-<!-- <script src="../web_components/webcomponentsjs/webcomponents-lite.js"></script> -->
 <dom-module id="x-recuperar-stock">
-	<template>
-        <br>
-        <div class="xMiCard xradius" style="width:85%">
-            <div class="xEncanezadoCard xFondoRowAmarillo2">                
-                <p>Restablesca el stock de los items borrados el control de pedidos. <strong>Esta lista se borra al cerrar la caja.</strong> </p>                
-            </div>
-            <div class="xContentCard" style="height: 100%;">
-                <!-- <div class="xdivEnLinea2"> -->
-                    <h3>Lista de items borrados desde control de pedidos.</h3>
-                    <br>
-
-                    <button class="xBoton2 xAzul" id="btn_restablecer" onclick="xRestablecerStock()" disabled="[[hayDatosRestaurar]]">Listo, restablecer stock de seleccionados</button>
-                    <br>
-                    <table width="100%" id="tb_pedidos_borrados" class="xtable2">
-						<thead>
-                            <th>#</th>                                               
-                            <th class="xNoVisibleMenos720" width="40px">Fecha</th>
-                            <th class="xNoVisibleMenos720" width="40px">Hora</th>
-                            <th >Borrado por</th>
-                            <th>Item</th>
-                            <th align="center">Cantidad</th>
-                            <th align="right">Importe</th>
-                        </thead>
-                        <tbody>
-                            <template is="dom-repeat" items="{{ListPedidosBorrados}}" as="item">
-                                <tr class="xCursor" >
-                                    <td>
-                                        <paper-checkbox class="check_item_recuperar" id="{{index}}"></paper-checkbox>
-                                        <span class="xNoVisibleMenos720">{{displayIndex(index)}}</span>
-                                    </td>
-                                    <td class="xNoVisibleMenos720">{{item.fecha}}</td>
-                                    <td class="xNoVisibleMenos720">{{item.hora}}</td>
-                                    <td>{{item.usuario}}</td>
-                                    <td>{{item.dscitem}}</td>
-                                    <td align="center">01</td>
-                                    <td align="right" class="ximporte_row">{{item.importe}}</td>
-                                </tr>
-                            </template>
-                        </tbody>
-                    </table>
-                    
-                    <br><br><br>
-
-                <!-- </div> -->
-            </div>
-        </div>
-
-    </template>
+<template>
+<br>
+<div class="xMiCard xradius" style="width:85%">
+<div class="xEncanezadoCard xFondoRowAmarillo2">
+<p>Restablesca el stock de los items borrados el control de pedidos. <strong>Esta lista se borra al cerrar la caja.</strong> </p>
+</div>
+<div class="xContentCard" style="height:100%">
+<h3>Lista de items borrados desde control de pedidos.</h3>
+<br>
+<button class="xBoton2 xAzul" id="btn_restablecer" onclick="xRestablecerStock()" disabled="[[hayDatosRestaurar]]">Listo, restablecer stock de seleccionados</button>
+<br>
+<table width="100%" id="tb_pedidos_borrados" class="xtable2">
+<thead>
+<th>#</th>
+<th class="xNoVisibleMenos720" width="40px">Fecha</th>
+<th class="xNoVisibleMenos720" width="40px">Hora</th>
+<th>Borrado por</th>
+<th>Item</th>
+<th align="center">Cantidad</th>
+<th align="right">Importe</th>
+</thead>
+<tbody>
+<template is="dom-repeat" items="{{ListPedidosBorrados}}" as="item">
+<tr class="xCursor">
+<td>
+<paper-checkbox class="check_item_recuperar" id="{{index}}"></paper-checkbox>
+<span class="xNoVisibleMenos720">{{displayIndex(index)}}</span>
+</td>
+<td class="xNoVisibleMenos720">{{item.fecha}}</td>
+<td class="xNoVisibleMenos720">{{item.hora}}</td>
+<td>{{item.usuario}}</td>
+<td>{{item.dscitem}}</td>
+<td align="center">01</td>
+<td align="right" class="ximporte_row">{{item.importe}}</td>
+</tr>
+</template>
+</tbody>
+</table>
+<br><br><br>
+</div>
+</div>
+</template>
 </dom-module>
-<script>
-var xThisRecuperarStock, xPopupLoad, arrRestaurar=[], hayDatosRestaurar=true;
-
-
-    function xIniRecuperarStock() {
-        xPopupLoad=document.getElementById('xLoad');
-        xLoadPedidosBorradosData();
-
-
-        $(document).on('click', '#tb_pedidos_borrados tr', function(e) {
-            getIndexRow(this,e);
-        });
-
-        $(document).on('click', '.check_item_recuperar', function(e) {
-            getIndexRow(this,e);
-        });
-    }
-
-    function xLoadPedidosBorradosData() {
-        xThisRecuperarStock.ListPedidosBorrados = [];
-        $.ajax({ type: 'POST', url: '../../bdphp/log.php?op=2200'})
-	    .done( function (dtPB) {
-            dtPB=$.parseJSON(dtPB);	
-            xThisRecuperarStock.ListPedidosBorrados=dtPB.datos;
-
-            // esperamos que escriba en el dom
-            setTimeout(() => {
-                xThisRecuperarStock.hayDatosRestaurar=true
-                xSumarTotalLista();  
-                $("#tb_pedidos_borrados").trigger('create');         
-            }, 500);
-            
-        });
-    }
-
-    function xSumarTotalLista(){
-        var xTb_items=$("#tb_pedidos_borrados");
-        xImporte_total_list=xMoneda(xSumaCantRow(xTb_items,'.ximporte_row'));
-        var xtt_row='<tr class="tt_row xSinBorde"><td colspan="6" align="right"><h3>Total</h3></td><td align="right"><h3><strong>'+xImporte_total_list+'</strong></h3></td><td colspan="2"></td></tr>';
-        xTb_items.find(".tt_row").remove();
-        xTb_items.append(xtt_row).trigger('create');
-    }
-
-    function getIndexRow(item, e) {
-        const tipo = item.nodeName;  
-        const element = tipo !== 'TR' ? $(item)[0] : $(item).find('paper-checkbox')[0];
-        const check = tipo !== 'TR' ? element.checked : !element.checked; 
-        const index = element.id;
-        
-        element.checked =  check;
-
-        xThisRecuperarStock.ListPedidosBorrados[index].restablecer = check;
-        xCheckearArrayRestuarar();
-        e.stopPropagation();
-		e.stopImmediatePropagation();
-    }
-
-    function xCheckearArrayRestuarar() {
-        arrRestaurar = xThisRecuperarStock.ListPedidosBorrados.filter(x => x.restablecer === true);   
-        xThisRecuperarStock.hayDatosRestaurar = arrRestaurar.length > 0 ? false : true;
-    }
-
-    function xRestablecerStock() {
-        if (arrRestaurar.length === 0 ) return;
-        xPopupLoad.xopen();
-        // const arrRestaurar = xThisRecuperarStock.ListPedidosBorrados.filter(x => x.restablecer === true);        
-        console.log(arrRestaurar);
-
-        $.ajax({ type: 'POST', url: '../../bdphp/log.php?op=2201', data: {'arr_recuperar': arrRestaurar}})
-	    .done( function (xe_rpt) {            
-            xe_rpt=$.parseJSON(xe_rpt);
-            if(!xe_rpt.success){alert(xe_rpt.error);}
-            
-            xPopupLoad.xclose();
-            xLoadPedidosBorradosData();
-        })
-    }
-
-
-
-Polymer({
-	is:'x-recuperar-stock',
-	properties:{
-        ListPedidosBorrados: [],
-        // hayDatosRestaurar: boolean = true,
-	},
-	attached:function(){
-        console.log('llega items pedidos borrados');		
-    	xThisRecuperarStock=this;
-    	xIniRecuperarStock();
-    },
-    displayIndex: function(index) {
-        return xCeroIzq(index + 1,1);
-    },
-    // getIndexRow: function(event) {
-    //     console.log(event);
-    // }
-})
-</script>
+<script>/*<![CDATA[*/var xThisRecuperarStock,xPopupLoad,arrRestaurar=[],hayDatosRestaurar=true;function xIniRecuperarStock(){xPopupLoad=document.getElementById('xLoad');xLoadPedidosBorradosData();$('body').addClass('loaded');$(document).on('click','#tb_pedidos_borrados tr',function(e){getIndexRow(this,e);});$(document).on('click','.check_item_recuperar',function(e){getIndexRow(this,e);});}
+function xLoadPedidosBorradosData(){xThisRecuperarStock.ListPedidosBorrados=[];$.ajax({type:'POST',url:'../../bdphp/log.php?op=2200'}).done(function(dtPB){dtPB=$.parseJSON(dtPB);xThisRecuperarStock.ListPedidosBorrados=dtPB.datos;setTimeout(()=>{xThisRecuperarStock.hayDatosRestaurar=true
+xSumarTotalLista();$("#tb_pedidos_borrados").trigger('create');},500);});}
+function xSumarTotalLista(){var xTb_items=$("#tb_pedidos_borrados");xImporte_total_list=xMoneda(xSumaCantRow(xTb_items,'.ximporte_row'));var xtt_row='<tr class="tt_row xSinBorde"><td colspan="6" align="right"><h3>Total</h3></td><td align="right"><h3><strong>'+xImporte_total_list+'</strong></h3></td><td colspan="2"></td></tr>';xTb_items.find(".tt_row").remove();xTb_items.append(xtt_row).trigger('create');}
+function getIndexRow(item,e){const tipo=item.nodeName;const element=tipo!=='TR'?$(item)[0]:$(item).find('paper-checkbox')[0];const check=tipo!=='TR'?element.checked:!element.checked;const index=element.id;element.checked=check;xThisRecuperarStock.ListPedidosBorrados[index].restablecer=check;xCheckearArrayRestuarar();e.stopPropagation();e.stopImmediatePropagation();}
+function xCheckearArrayRestuarar(){arrRestaurar=xThisRecuperarStock.ListPedidosBorrados.filter(x=>x.restablecer===true);xThisRecuperarStock.hayDatosRestaurar=arrRestaurar.length>0?false:true;}
+function xRestablecerStock(){if(arrRestaurar.length===0)return;xPopupLoad.xopen();console.log(arrRestaurar);$.ajax({type:'POST',url:'../../bdphp/log.php?op=2201',data:{'arr_recuperar':arrRestaurar}}).done(function(xe_rpt){xe_rpt=$.parseJSON(xe_rpt);if(!xe_rpt.success){alert(xe_rpt.error);}
+xPopupLoad.xclose();xLoadPedidosBorradosData();})}
+Polymer({is:'x-recuperar-stock',properties:{ListPedidosBorrados:[],},attached:function(){console.log('llega items pedidos borrados');xThisRecuperarStock=this;xIniRecuperarStock();},displayIndex:function(index){return xCeroIzq(index+1,1);},})/*]]>*/</script>

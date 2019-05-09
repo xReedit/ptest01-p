@@ -11,11 +11,11 @@ window.localStorage.setItem("::app3_woDUS",dt);})}
 function xUsExtraer(){XX=window.localStorage.getItem("::app3_woDUS")
 AA=window.atob(XX);xaa=JSON.parse(AA)
 alert(xaa)}
-function xIniHome(){xLoadAcc();$("#panel_toolbar").show();$('body').addClass('loaded');$("#Titulo_page").text("Inicio");xm_log_get('ini_us');xThis.xt_org=xIdOrg;xThis.xt_idsede=xIdSede;xThis.xt_idus=xIdUsuario;$(document).on('click','.xMiBoton_icon',function(e){var xop=$(this).attr('data-op');xOpenPage(xop);event.stopPropagation();e.stopPropagation();e.stopImmediatePropagation()
+function xIniHome(){xLoadAcc();$("#panel_toolbar").show();$('body').addClass('loaded');$("#Titulo_page").text("Inicio");xm_log_get('ini_us');xThis.xt_org=xIdOrg;xThis.xt_idsede=xIdSede;xThis.xt_idus=xIdUsuario;$(document).on('click','.xMiBoton_icon',function(e){var xop=$(this).attr('data-op');xOpenPage(xop);e.stopPropagation();e.stopImmediatePropagation()
 return false;})}
 function xLoadAcc(){xVerificarAcc();}
 function xVerificarAcc(){xArray_us_home=xm_log_get('app3_Us_home');xper_bd=xm_log_get('app3_woA');var xCharAcc='';var xOpView=new Array();var xidGrupoBd;var xTituloSeccion;var xt;xper_bd=xper_bd.split(',')
-for(var i=0;i<xper_bd.length;i++){xCharFind=xper_bd[i];if(xper_bd.length===2){const _codOne=xArray_us_home.filter(x=>x.codigo===xCharFind).map(x=>x.num_opcion)[0];xOpenPage(_codOne);return;}
+for(var i=0;i<xper_bd.length;i++){xCharFind=xper_bd[i];if(xper_bd.length===2){const _codOne=xArray_us_home.filter(x=>x.codigo===xCharFind).map(x=>x.num_opcion)[0];xOneOptionPage(_codOne);return;}
 for(var z=0;z<xArray_us_home.length;z++){if(xArray_us_home[z].codigo==xCharFind){xidGrupoBd=xArray_us_home[z].idgrupo
 if(xOpView[xidGrupoBd]==undefined){switch(xidGrupoBd){case'0':xTituloSeccion='Operatividad';break;case'1':xTituloSeccion='Logistica';break;case'2':xTituloSeccion='Configuracion';break;}
 xOpView[xidGrupoBd]={'titulo':xTituloSeccion};}

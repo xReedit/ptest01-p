@@ -1,580 +1,100 @@
 <dom-module id="x-compras">
-	<template>
-		<paper-dialog id="dialog_additem_pro" modal entry-animation="scale-up-animation" exit-animation="fade-out-animation" with-backdrop>
-			<div class="xContent">
-				<h3>Registrar nuevo producto</h3>
-				<br>
-				<form id="frm_item_pro" method="post" action="#">
-					<input type="text" id="descripcion" name="descripcion" placeholder="Descripcion" class="xMiInput xPasarEnter2" onChange="conMayusculas(this)" required espaciar><br>
-					<input type="text" id="sel_familia" name="no_post" class="xMiInput xPasarEnter2" placeholder="Familia" onChange="conMayusculas(this)" required autofocus espaciar><br>
-					<input type="text" id="codigo_barra" name="codigo_barra" placeholder="Codigo de barras" class="xMiInput xPasarEnter2" onChange="conMayusculas(this)" espaciar><br>
-					<input type="text" id="stock_minimo" name="stock_minimo" placeholder="Stock minimo" class="xMiInput xPasarEnter2" onChange="conMayusculas(this)" espaciar><br>
-					<input type="text" id="precio" name="precio" placeholder="Precio de compra" onblur="xRetornaMoneda(this)" class="xMiInput xPasarEnter2" onChange="conMayusculas(this)" required espaciar><br>
-					<input type="text" id="precio_venta" name="precio_venta" placeholder="Precio de venta x unidad" onblur="xRetornaMoneda(this)" class="xMiInput xPasarEnter2 xPrecioAddPro" onChange="conMayusculas(this)" onkeyup="xEnterInInputDlg(event)" required espaciar><br>
-					<div class="xInvisible">
-						<input type="text" id="idproducto" name="idproducto">
-						<input type="text" id="idorg" name="idorg">
-						<input type="text" id="idsede" name="idsede">
-						<input type="text" id="idproducto_familia" name="idproducto_familia">
-						<input type="text" id="precio_unitario" name="precio_unitario">
-					</div>
-				</form>
-				<br><br>
-				<div class="xBoton2 xAzul" dialog-confirm  onclick="xGuardarItemProComp();">Listo, guardar</div>
-				<div class="xBoton2 xPlomo" dialog-dismiss>Cancelar</div>
-				<br><br><br>
-			</div>
-		</paper-dialog>
-		<paper-dialog modal id="dialog_pago" class="tall xNoScroll" entry-animation="scale-up-animation" exit-animation="fade-out-animation" with-backdrop>
-			<div id="div_pago">
-				<x-pago id="component_pago_pro"></x-pago>
-				<!-- <div class="xLinea"></div>
-				<br>
-				<div class="xBoton2 xAzul" onclick="xRegistrar_compra();" id="btn_pago">Listo, registrar compra</div>
-				<div class="xBoton2 xPlomo" dialog-dismiss>Regresar</div> -->
-				<!-- <br><br> -->
-			</div>
-		</paper-dialog>
-		<br>
-		<div class="xMiCard xradius" style="width:80%">
-			<div class="xInvisible">
-					<form id="frm_compra" method="post" action="#">
-						<input type="text" id="idorg" name="idorg" value$="[[xt_org]]">
-						<input type="text" id="idsede" name="idsede" value$="[[xt_idsede]]">
-						<input type="text" id="idproveedor" name="idproveedor">
-						<input type="text" id="idalmacen" name="idalmacen">
-
-						<input type="text" id="f_compra" name="f_compra">
-						<input type="text" id="f_registro" name="f_registro">
-						<input type="text" id="total" name="total">
-						<input type="text" id="nota_de_compra" name="nota_de_compra">
-					</form>
-			</div>
-			<div class="xEncanezadoCard xFondoRowIndigo2 xCursor xHoverOpaco xTransicion3s" id="div_proveedor" style="height:25px;">
-				<p><strong>Datos del proveedor</strong></p>
-				<br>
-				<div class="xInvisible" id="div_ínput">
-					<form id="frm_proveedor" method="post" action="#">
-						<input type="text" id="descripcion" name="descripcion" placeholder="Nombre / Razon social" onChange="conMayusculas(this)" class="xMiInput xPasarEnter2" style="width:40%" inline>
-						<input type="text" id="dni" name="dni" placeholder="DNI / RUC" class="xMiInput xPasarEnter2" onChange="conMayusculas(this)" inline>
-						<input type="text" id="direccion" name="direccion" placeholder="Direccion" class="xMiInput xPasarEnter2" onChange="conMayusculas(this)" inline>
-
-						<div class="xInvisible">
-							<input type="text" id="idorg" name="idorg">
-							<input type="text" id="idsede" name="idsede">
-							<input type="text" id="idproveedor" name="idproveedor">
-						</div>
-					</form>
-				</div>
-			</div>
-			<div class="xEncanezadoCard xFondoRowAmarillo4">
-				<p>Estos productos ingresa a:</p>
-				<select id="sel_alamcen" class="xTextRow2" inline></select>
-			</div>
-			<div class="xContentCard">
-				<table class="xtable4" width="100%" id="tb_input" data-TablaName="producto_historial_precio">
-					<thead>
-						<th class="xSinBorde" width="10px">Cant</th>
-						<th class="xSinBorde" width="60%">Producto</th>
-						<th class="xSinBorde" width="30px" align="right">Precio compra</th>
-						<th class="xSinBorde" width="10px"></th>
-					</thead>
-					<tr class="xSinBorde" data-id="">
-						<td><input type="number" class="xMiInput xPasarEnter2" style="width:100%;" placeholder="Cantidad" onChange="conMayusculas(this)" required id="cant_item" autofocus></td>
-						<td><input type="text" class="xMiInput xPasarEnter2" style="width:100%;" placeholder="Descripcion" onChange="conMayusculas(this)" required id="des_item"></td>
-						<td><input type="text" class="xMiInput xAlinearDerecha xprecio" placeholder="Precio" onChange="conMayusculas(this)" onblur="xRetornaMoneda(this)"  placeholder="Precio" id="precio_item" name="precio" required></td>
-						<td><paper-fab icon="add" onclick="xAddItemCompra()" title="Agregar item"></paper-fab></td>
-					</tr>
-					<tr class="tt_row"></tr>
-				</table>
-				<div class="xDerecha">
-					<h3 id="tt_row"></h3>
-				</div>
-				<div class="xInvisible">
-					<table id="tb_update_precio" data-TablaName="producto"></table>
-					<table id="tb_compra_items" data-TablaName="compra_items"></table>
-					<table id="tb_compra_pago" data-TablaName="compra_pago"></table>
-					<!-- <table id="tb_almacen_items" data-TablaName="almacen_items"></table> -->
-				</div>
-			</div>
-			<div class="xPieCard">
-				<br>
-				<div class="xBoton2 xAzul" onclick="xOpenRegistrarPago();">Listo, definir pago</div>
-				<br><br>
-			</div>
-		</div>
-	</template>
+<template>
+<paper-dialog id="dialog_additem_pro" modal entry-animation="scale-up-animation" exit-animation="fade-out-animation" with-backdrop>
+<div class="xContent">
+<h3>Registrar nuevo producto</h3>
+<br>
+<form id="frm_item_pro" method="post" action="#">
+<input type="text" id="descripcion" name="descripcion" placeholder="Descripcion" class="xMiInput xPasarEnter2" onChange="conMayusculas(this)" required espaciar><br>
+<input type="text" id="sel_familia" name="no_post" class="xMiInput xPasarEnter2" placeholder="Familia" onChange="conMayusculas(this)" required autofocus espaciar><br>
+<input type="text" id="codigo_barra" name="codigo_barra" placeholder="Codigo de barras" class="xMiInput xPasarEnter2" onChange="conMayusculas(this)" espaciar><br>
+<input type="text" id="stock_minimo" name="stock_minimo" placeholder="Stock minimo" class="xMiInput xPasarEnter2" onChange="conMayusculas(this)" espaciar><br>
+<input type="text" id="precio" name="precio" placeholder="Precio de compra" onblur="xRetornaMoneda(this)" class="xMiInput xPasarEnter2" onChange="conMayusculas(this)" required espaciar><br>
+<input type="text" id="precio_venta" name="precio_venta" placeholder="Precio de venta x unidad" onblur="xRetornaMoneda(this)" class="xMiInput xPasarEnter2 xPrecioAddPro" onChange="conMayusculas(this)" onkeyup="xEnterInInputDlg(event)" required espaciar><br>
+<div class="xInvisible">
+<input type="text" id="idproducto" name="idproducto">
+<input type="text" id="idorg" name="idorg">
+<input type="text" id="idsede" name="idsede">
+<input type="text" id="idproducto_familia" name="idproducto_familia">
+<input type="text" id="precio_unitario" name="precio_unitario">
+</div>
+</form>
+<br><br>
+<div class="xBoton2 xAzul" dialog-confirm onclick="xGuardarItemProComp()">Listo, guardar</div>
+<div class="xBoton2 xPlomo" dialog-dismiss>Cancelar</div>
+<br><br><br>
+</div>
+</paper-dialog>
+<paper-dialog modal id="dialog_pago" class="tall xNoScroll" entry-animation="scale-up-animation" exit-animation="fade-out-animation" with-backdrop>
+<div id="div_pago">
+<x-pago id="component_pago_pro"></x-pago>
+</div>
+</paper-dialog>
+<br>
+<div class="xMiCard xradius" style="width:80%">
+<div class="xInvisible">
+<form id="frm_compra" method="post" action="#">
+<input type="text" id="idorg" name="idorg" value$="[[xt_org]]">
+<input type="text" id="idsede" name="idsede" value$="[[xt_idsede]]">
+<input type="text" id="idproveedor" name="idproveedor">
+<input type="text" id="idalmacen" name="idalmacen">
+<input type="text" id="f_compra" name="f_compra">
+<input type="text" id="f_registro" name="f_registro">
+<input type="text" id="total" name="total">
+<input type="text" id="nota_de_compra" name="nota_de_compra">
+</form>
+</div>
+<div class="xEncanezadoCard xFondoRowIndigo2 xCursor xHoverOpaco xTransicion3s" id="div_proveedor" style="height:25px">
+<p><strong>Datos del proveedor</strong></p>
+<br>
+<div class="xInvisible" id="div_ínput">
+<form id="frm_proveedor" method="post" action="#">
+<input type="text" id="descripcion" name="descripcion" placeholder="Nombre / Razon social" onChange="conMayusculas(this)" class="xMiInput xPasarEnter2" style="width:40%" inline>
+<input type="text" id="dni" name="dni" placeholder="DNI / RUC" class="xMiInput xPasarEnter2" onChange="conMayusculas(this)" inline>
+<input type="text" id="direccion" name="direccion" placeholder="Direccion" class="xMiInput xPasarEnter2" onChange="conMayusculas(this)" inline>
+<div class="xInvisible">
+<input type="text" id="idorg" name="idorg">
+<input type="text" id="idsede" name="idsede">
+<input type="text" id="idproveedor" name="idproveedor">
+</div>
+</form>
+</div>
+</div>
+<div class="xEncanezadoCard xFondoRowAmarillo4">
+<p>Estos productos ingresa a:</p>
+<select id="sel_alamcen" class="xTextRow2" inline></select>
+</div>
+<div class="xContentCard">
+<table class="xtable4" width="100%" id="tb_input" data-TablaName="producto_historial_precio">
+<thead>
+<th class="xSinBorde" width="10px">Cant</th>
+<th class="xSinBorde" width="60%">Producto</th>
+<th class="xSinBorde" width="30px" align="right">Precio compra</th>
+<th class="xSinBorde" width="10px"></th>
+</thead>
+<tr class="xSinBorde" data-id="">
+<td><input type="number" class="xMiInput xPasarEnter2" style="width:100%" placeholder="Cantidad" onChange="conMayusculas(this)" required id="cant_item" autofocus></td>
+<td><input type="text" class="xMiInput xPasarEnter2" style="width:100%" placeholder="Descripcion" onChange="conMayusculas(this)" required id="des_item"></td>
+<td><input type="text" class="xMiInput xAlinearDerecha xprecio" placeholder="Precio" onChange="conMayusculas(this)" onblur="xRetornaMoneda(this)" placeholder="Precio" id="precio_item" name="precio" required></td>
+<td><paper-fab icon="add" onclick="xAddItemCompra()" title="Agregar item"></paper-fab></td>
+</tr>
+<tr class="tt_row"></tr>
+</table>
+<div class="xDerecha">
+<h3 id="tt_row"></h3>
+</div>
+<div class="xInvisible">
+<table id="tb_update_precio" data-TablaName="producto"></table>
+<table id="tb_compra_items" data-TablaName="compra_items"></table>
+<table id="tb_compra_pago" data-TablaName="compra_pago"></table>
+</div>
+</div>
+<div class="xPieCard">
+<br>
+<div class="xBoton2 xAzul" onclick="xOpenRegistrarPago()">Listo, definir pago</div>
+<br><br>
+</div>
+</div>
+</template>
 </dom-module>
-<script>
-var xThis;
-var xNewItemPro=false;
-var xNewFamilia=false;
-var xPrecio_item_Add=0;
-var xCan_item;
-var xDes_item;
-var xPrecio_item;
-var xnom_familia;
-var xPrecio_und_pro;
-var xIdProducto_sel;
-var xValPago;
-var xImporte_total_list=0;
-var xlo_idorg;
-var xlo_idsede;
-var xsel_proveedor;
-var xsel_almacen;
-var xRpt_pago;
-function xIniCompras(){
-	//xloadProductoItem();
-	//xLoadFamilias();
-	//xLoadProveedores();
-	//xVerificarSession();
-	xPopupLoad=document.getElementById('xLoad');
-	xm_LogChequea(function(){
-		xm_log_get('ini_us');
-
-		//if(xIdOrg=='' || xIdOrg==undefined){	xIdOrg=window.localStorage.getItem('::app3_wo');}
-		//if(xIdSede=='' || xIdSede==undefined){	xIdSede=window.localStorage.getItem('::app3_woS');}
-		xlo_idorg=xIdOrg;
-		xlo_idsede=xIdSede;
-		xloadAlamcen();
-	});
-
-	$("#Titulo_page").text("Registrar Compras");
-	$('.xPasarEnter2').on('keyup',function(e){
-			var code=e.which;
-			if ( code==13||code==186 ) {
-				var inputs = $('input'); // storage a array of Inputs
-			    var a = inputs.index(document.activeElement);
-			    if (inputs[a + 1] !== null)
-			    {
-			      var nextBox = inputs[a + 1];
-			      if(nextBox===undefined){return}
-			      if(nextBox.disabled){nextBox = inputs[a + 2]}
-
-			      if(nextBox==undefined){return;}
-			  	  nextBox.focus();
-			  	  nextBox.select();
-			    }
-			    event.stopPropagation();
-			    e.stopPropagation();
-			    e.stopImmediatePropagation()
-			    return false;
-	  		}
-		});
-	$(".xprecio").on('keyup',function(e){
-		var code=e.which;
-		if ( code==13||code==186 ) {
-			xAddItemCompra(this);
-		}
-	});
-
-	xValPago=document.getElementById('component_pago_pro');
-	xValPago._tipo=2
-	xValPago.addEventListener('xSend', function (e) {
-		xRpt_pago=e.detail.xRpts;
-		var p=e.detail.xRpts[0].ok;
-		if(p==0){
-			// $("#btn_pago").attr('disabled', true);
-
-		}else{
-			xRegistrar_compra();
-			// btn_pago.removeAttribute("disabled")
-			// if(e.detail.xRpts[0].paseEnterTxt==1){xRegistrar_compra();}
-		}
-	});
-
-	xValPago.addEventListener('xCancelarCerrar', function (e) {		
-		xThis.$.dialog_pago.close()
-	});
-
-	// xValPago.addEventListener('xListoRegistraPago', function (e) {	
-	// 	xRegistrar_compra();	
-	// 	xThis.$.dialog_pago.close()
-	// });
-
-	$("#div_proveedor").on('click',function(e){
-		$(this).css('height','80px')
-		$(this).find('#div_ínput').removeClass('xInvisible');
-		$("#sel_proveedor").focus();
-	})
-
-	$("#dialog_pago").on('iron-overlay-opened',function(){component_pago_pro.setFocusTxt();})
-}
-function xEnterInInputDlg(e){
-	var code=e.which;
-	if ( code==13||code==186 ) {
-		xGuardarItemProComp();
-	}
-}
-function xOpenRegistrarPago(){
-	xValPago.setModoSoloProveedor();
-
-	$("#component_pago_pro").focus();component_pago_pro.setVal(xMoneda(xImporte_total_list));
-	dialog_pago.open();
-}
-
-function xAddItemCompra(){
-	xCan_item=$("#cant_item").val();
-	xDes_item=$("#des_item").val();
-	xPrecio_item=xMoneda($("#precio_item").val(),2);
-	if(xCan_item=='' || xDes_item=='' && xPrecio_item==''){return}
-	xnom_familia="";
-	//registrar producto
-	if(xNewItemPro==true){
-		$("#frm_item_pro #descripcion").val(xDes_item);
-		$("#frm_item_pro #precio").val(xPrecio_item);
-		xnom_familia=$("#sel_familia").val();
-		dialog_additem_pro.open();
-		xCargarFamiliaInput();
-		//$("#frm_item_pro #sel_familia").focus();
-	}else{
-		xnom_familia=$("#des_item").attr('data-des-familia');
-		xPrecio_und_pro=parseFloat(xPrecio_item)/parseFloat(xCan_item);
-		xAddItemLista()
-		xResetInputPro();
-	}
-	//
-}
-function xAddItemLista(){
-	//agregar a lista
-	var xTb_items=$("#tb_input");
-	var xcount_row=xTb_items.find('.row').length;
-	xcount_row=xcount_row+xIdProducto_sel;
-	var xrow_pro='<tr class="row" id="'+xcount_row+'"><td>'+xCan_item+'</td>'+
-				'<td> '+xnom_familia+' | '+xDes_item+'</td>'+
-				'<td align="right" class="ximporte_row">'+xPrecio_item+'</td>'+
-				'<td><span class="xDeleteRowNeutro" title="Borrar" onclick="xBorrarItemLocalPro(this);"></span></td>'+
-				'<td class="xInvisible" data-ColumName="idproducto">'+xIdProducto_sel+'</td>'+
-				'<td class="xInvisible" data-ColumName="fecha">'+xDevolverFecha()+'</td>'+
-				'<td class="xInvisible" data-ColumName="idorg">'+xlo_idorg+'</td>'+
-				'<td class="xInvisible" data-ColumName="idsede">'+xlo_idsede+'</td>'+
-				'<td class="xInvisible" data-ColumName="precio">'+xPrecio_und_pro+'</td>'+
-				'<td class="xInvisible" data-ColumName="idproveedor">-proveedor</td>'+
-				'</tr>';
-	//tabla actualiza precios en productos
-	var xrow_pro_update='<tr class="row" data-update="'+xIdProducto_sel+'" id="'+xcount_row+'"><td data-ColumName="precio_unitario">'+xPrecio_und_pro+'</td></tr>';
-	$("#tb_update_precio").append(xrow_pro_update).trigger('create');
-
-	//guardar item en compra
-	var xrow_pro_compra='<tr class="row" id="'+xcount_row+'">'+
-				'<td data-ColumName="idcompra">-compra</td>'+
-				'<td data-ColumName="idproducto">'+xIdProducto_sel+'</td>'+
-				'<td data-ColumName="cantidad">'+xCan_item+'</td>'+
-				'<td data-ColumName="punitario">'+xPrecio_und_pro+'</td>'+
-				'<td data-ColumName="ptotal">'+xPrecio_item+'</td>'+
-				'</tr>';
-	$("#tb_compra_items").append(xrow_pro_compra).trigger('create');
-
-	//almacen items
-	// var xrow_pro_almacen='<tr class="row" id="'+xcount_row+'">'+
-	// 			'<td data-ColumName="idalmacen">-almacen</td>'+
-	// 			'<td data-ColumName="idproducto">'+xIdProducto_sel+'</td>'+
-	// 			'<td data-ColumName="stock">'+xCan_item+'</td>'+
-	// 			'<td data-ColumName="f_ingreso">'+xDevolverFecha()+'</td>'+
-	// 			'</tr>';
-	// $("#tb_almacen_items").append(xrow_pro_almacen).trigger('create');
-
-	if(xTb_items.find('.row').length==0){
-		xTb_items.append(xrow_pro).trigger('create');
-	}else{
-		$("#tb_input tr.row:first").before(xrow_pro).trigger('create');}
-	xSumarTotalLista();
-}
-
-function xRegistrar_compra(){
-	var xTb_items=$("#tb_input");
-	if (xTb_items.find('.row').length===0) { alert('No tiene ningun producto en la lista de compras'); return; }
-	//proveedor
-	var xobj_proveedor=$("#frm_proveedor #descripcion");
-	xsel_almacen=$("#sel_alamcen option:selected").val();
-	xsel_proveedor=xobj_proveedor.attr('data-id') || 0;
-	if(xobj_proveedor.val()!=''){
-	//	if(xsel_proveedor==''){
-			//nuevo // o modifica
-			xPopupLoad.xopen();
-			$("#frm_proveedor #idorg").val(xlo_idorg)
-			$("#frm_proveedor #idsede").val(xlo_idsede)
-			$.post("../../bdphp/ManejoBD_IUD.php?tb=proveedor",$("#frm_proveedor").serialize(),function(xUltimo_id_proveedor){
-				xsel_proveedor=xUltimo_id_proveedor;
-				xGuardarRegistroCompra();
-			})
-			//return;
-		//}
-	} else { xGuardarRegistroCompra(); }
-	//xGuardarRegistroCompra();
-
-}
-function xGuardarRegistroCompra(){
-	//Obtener tipos de  pago
-	var xArrayTp=xRpt_pago[0].xtipo_pagos;
-	var xrow_tipo_pago='';
-	for (var i = 0; i < xArrayTp.length; i++) {
-		xrow_tipo_pago=String(xrow_tipo_pago+'<tr class="row">'+
-			'<td data-ColumName="idcompra">-compra</td>'+
-			'<td data-ColumName="idtipo_pago">'+xArrayTp[i].id+'</td>'+
-			'<td data-ColumName="importe">'+xArrayTp[i].importe+'</td>'+
-			'</tr>')
-	};
-	$("#tb_compra_pago").append(xrow_tipo_pago).trigger('create');
-	//
-
-	//armar sql
-	xPopupLoad.xopen();
-	var xIdCompra;
-	var sql_update_pro=xArmarInsertDetalle($("#tb_update_precio"),'idproducto','','',1);
-	var sql_historial_precio_pro=xArmarInsertDetalle($("#tb_input"),'','','');
-	var sql_compra_items=xArmarInsertDetalle($("#tb_compra_items"),'','','');
-	var sql_compra_tp=xArmarInsertDetalle($("#tb_compra_pago"),'','','');
-	// var sql_almacen = ''; // ArmarInsertDetalle($("#tb_almacen_items"),'','','');
-	sql_historial_precio_pro=sql_historial_precio_pro.replace(/-proveedor/g,xsel_proveedor)
-
-
-	//guardar datos de la compra
-	$("#frm_compra #idproveedor").val(xsel_proveedor);
-	$("#frm_compra #idalmacen").val(xsel_almacen);
-	$("#frm_compra #f_registro").val(xDevolverFecha());
-	$("#frm_compra #f_compra").val(xDevolverFecha());
-	$("#frm_compra #total").val(xImporte_total_list);
-	$("#frm_compra #idorg").val(xlo_idorg);
-	$("#frm_compra #idsede").val(xlo_idsede);
-	$("#frm_compra #nota_de_compra").val(xRpt_pago[0].nota_compra);
-	$.post("../../bdphp/ManejoBD_IUD.php?tb=compra",$("#frm_compra").serialize(),function(xUltimo_id_compra){
-		xIdCompra=xUltimo_id_compra;
-		sql_compra_items=sql_compra_items.replace(/-compra/g,xIdCompra)
-		sql_compra_tp=sql_compra_tp.replace(/-compra/g,xIdCompra)
-		// sql_almacen=sql_almacen.replace(/-almacen/g,xsel_almacen)
-
-		// +sql_almacen
-		var xunion_sql=String(sql_compra_items+'; '+sql_compra_tp+'; '+sql_historial_precio_pro+'; '+sql_update_pro)
-		$.ajax({ type: 'POST', url: '../../bdphp/log.php?op=100', data:{xsql:xunion_sql}})
-		.done( function (DtIdFamRpt) {
-			xPopupLoad.xclose();
-			xNuevaCompra();
-		})
-	})
-}
-function xNuevaCompra(){
-	$("#tb_update_precio tr").remove();
-	$("#tb_input tr.row").remove();
-	$("#tb_input tr.tt_row").remove();
-	$("#tb_compra_items tr").remove();
-	// $("#tb_almacen_items tr").remove();
-	$("#frm_compra").reset();
-	$("#frm_proveedor").reset();
-	$("#frm_item_pro").reset();
-	dialog_pago.close();
-
-	$("#div_proveedor").css('height','30px');
-	$("#div_proveedor #div_ínput").addClass('xInvisible');
-
-}
-function xSumarTotalLista(){
-	var xTb_items=$("#tb_input");
-	xImporte_total_list=xMoneda(xSumaCantRow(xTb_items,'.ximporte_row'));
-	var xtt_row='<tr class="tt_row xSinBorde"><td colspan="2" align="right"><h3>Total</h3></td><td align="right"><h3><strong>'+xImporte_total_list+'</strong></h3></td><td colspan="2"></td></tr>';
-	xTb_items.find(".tt_row").remove();
-	xTb_items.append(xtt_row).trigger('create');
-}
-function xBorrarItemLocalPro(obj){
-	var xObj=$(obj).parent().parent();
-	var xtb=xObj.parents('table');
-	var xtb_row_id=xObj.attr('id');
-	//xObj.fadeTo(550, 0, function () {$(this).remove(); xSumarTotal(xtb);});
-	xObj.fadeTo(550, 0, function () {
-		$(this).remove();
-		$('#tb_update_precio #'+xtb_row_id).remove();
-		$('#tb_compra_items #'+xtb_row_id).remove();
-		// $('#tb_almacen_items #'+xtb_row_id).remove(); 
-		xSumarTotalLista()});
-}
-function xResetInputPro(){
-	$("#des_item").val('');
-	$("#des_item").attr('data-id','')
-	$("#cant_item").val('');
-	$("#precio_item").val('');
-	$("#cant_item").focus();
-}
-function xGuardarItemProComp(){
-	//guardar familia
-	xPopupLoad.xopen();
-	xnom_familia=$("#sel_familia").val();
-	xPrecio_item=xMoneda($("#frm_item_pro #precio").val());
-	if(xNewFamilia==true){
-		$.ajax({ type: 'POST', url: '../../bdphp/log.php?op=1602', data:{f:xnom_familia}})
-		.done( function (DtIdFamRpt) {
-			$("#frm_item_pro #idproducto_familia").val(DtIdFamRpt);
-			//$("#sel_familia").attr('data-value')=xnom_familia;
-			xGuardarItemProDtCompra();
-			xLoadFamilias();
-		})
-	}else{ xGuardarItemProDtCompra();}
-}
-function xGuardarItemProDtCompra(){
-	//guardar producto
-	xPrecio_und_pro=parseFloat(xPrecio_item)/parseFloat(xCan_item);
-	$("#frm_item_pro #idorg").val(xlo_idorg)
-	$("#frm_item_pro #idsede").val(xlo_idsede)
-	$("#frm_item_pro #precio_unitario").val(xPrecio_und_pro)
-	$.post("../../bdphp/ManejoBD_IUD.php?tb=producto",$("#frm_item_pro").serialize(),function(xUltimo_id_pro){
-		xIdProducto_sel=xUltimo_id_pro;
-		xAddItemLista()
-		dialog_additem_pro.close();
-		$("#frm_item_pro").reset();
-		xPopupLoad.xclose();
-		xResetInputPro();
-	})
-}
-function xCargarProductoItem () {
-	var xPrecio_pro_calc=0;
-	var xObjTxtItemPro=$("#des_item");
-		xObjTxtItemPro.autocomplete({
-			autoFocus:true,
-			source:xThis.dtProItem,
-			select: function( event, ui ) {
-				xObjTxtItemPro.val(ui.item.label);
-		        xObjTxtItemPro.attr('data-id',ui.item.value);
-		        xObjTxtItemPro.attr('data-des-familia',ui.item.familia);
-		        $("#frm_item_pro #idproducto").val(ui.item.value);
-		        xIdProducto_sel=ui.item.value;
-
-		        //calc precio
-		        if(ui.item.precio_unitario==null){xPrecio_pro_calc=0}else{xPrecio_pro_calc=ui.item.precio_unitario;}
-		        xPrecio_pro_calc=parseFloat(parseFloat(xPrecio_pro_calc)*parseFloat($("#cant_item").val())).toFixed(2);
-		        if(isNaN(xPrecio_pro_calc)){xPrecio_pro_calc=0;}
-
-		        $("#frm_item_pro #precio").val(xPrecio_pro_calc);
-		        $("#frm_item_pro #precio_venta").val(ui.item.precio_venta);
-		        $("#precio_item").val(xPrecio_pro_calc);
-		        return false;
-		    },
-		    focus:function(event, ui){return false;},
-		    change:function( event, ui ) {
-		    	if(ui.item===null){
-		    		xObjTxtItemPro.attr('data-value',"");
-		    		xObjTxtItemPro.attr('data-id',"");
-		    		$("#frm_item_pro #precio").val("");
-		    		$("#frm_item_pro #precio_venta").val("");
-		    		$("#frm_item_pro #idproducto").val("");
-		    		xNewItemPro=true;
-		    	}else{xNewItemPro=false; $("#frm_item_pro #idproducto").val(ui.item.value);}
-		    	return false;
-		    }
-		});
-}
-
-///load
-function xloadAlamcen(){
-	xPopupLoad.titulo='Cargando...';
-	xPopupLoad.xopen();
-	$.ajax({ type: 'POST', url: '../../bdphp/log.php?op=1604'})
-	.done( function (DtAlm) {
-		var xDtAlam=$.parseJSON(DtAlm);
-		var xcandena_alm='';
-		xDtAlam=xDtAlam.datos;
-		for (var i = 0; i < xDtAlam.length; i++) {
-			xcandena_alm=String(xcandena_alm+'<option value="'+xDtAlam[i].idalmacen+'">'+xDtAlam[i].descripcion+'</option>')
-		};
-		$("#sel_alamcen").html(xcandena_alm).trigger('create');
-
-		xloadProductoItem();
-	})
-}
-function xloadProductoItem(){
-	$.ajax({ type: 'POST', url: '../../bdphp/log.php?op=16'})
-	.done( function (DtItems) {
-		var xDtItems=$.parseJSON(DtItems);
-		xThis.dtProItem=xDtItems.datos;
-		xCargarProductoItem();
-
-		xLoadFamilias()
-		xLoadProveedores()
-	})
-}
-function xLoadFamilias(){
-	$.ajax({ type: 'POST', url: '../../bdphp/log.php?op=1601'})
-	.done( function (DtFam) {
-		var xDtFam=$.parseJSON(DtFam);
-		xThis.dtProFam=xDtFam.datos;
-		xCargarFamiliaInput();
-	})
-}
-function xLoadProveedores(){
-	$.ajax({ type: 'POST', url: '../../bdphp/log.php?op=1603'})
-	.done( function (DtProv) {
-		var xDtProv=$.parseJSON(DtProv);
-		xThis.dtProProveedor=xDtProv.datos;
-		xCargarProveedores();
-
-		xPopupLoad.xclose();
-	})
-}
-function xCargarProveedores(){
-	//cargan en control
-		var xObjTxtProveedor=$("#frm_proveedor #descripcion");
-		xObjTxtProveedor.autocomplete({
-			autoFocus:true,
-			source:xThis.dtProProveedor,
-			select: function( event, ui ) {
-				xsel_proveedor=ui.item.value;
-				xObjTxtProveedor.val(ui.item.label);
-		        xObjTxtProveedor.attr('data-id',xsel_proveedor);
-		        $("#frm_proveedor #idproveedor").val(xsel_proveedor);
-		        $("#frm_proveedor #direccion").val(ui.item.direccion);
-		        $("#frm_proveedor #dni").val(ui.item.dni);
-		        return false;
-		    },
-		    focus:function(event, ui){return false;},
-		    change:function( event, ui ) {
-		    	if(ui.item===null){
-		    		xObjTxtProveedor.attr('data-id',"");
-		    		xsel_proveedor="";
-		    		$("#frm_proveedor #idproveedor").val('');
-		    	}
-		    	return false;
-		    }
-		});
-}
-function xCargarFamiliaInput(){
-	//cargan en control
-		var xObjTxtFam=$("#sel_familia");
-		xObjTxtFam.autocomplete({
-			autoFocus:true,
-			source:xThis.dtProFam,
-			appendTo : $('#dialog_additem_pro'),
-			select: function( event, ui ) {
-				xObjTxtFam.val(ui.item.label);
-		        xObjTxtFam.attr('data-id',ui.item.value);
-		        $("#frm_item_pro #idproducto_familia").val(ui.item.value);
-		        return false;
-		    },
-		    focus:function(event, ui){return false;},
-		    change:function( event, ui ) {
-		    	if(ui.item===null){
-		    		xObjTxtFam.attr('data-value',"");
-		    		xObjTxtFam.attr('data-id',"");
-		    		$("#frm_item_pro #idproducto_familia").val("");
-		    		xNewFamilia=true;
-		    	}else{xNewFamilia=false; $("#frm_item_pro #idproducto_familia").val(ui.item.value);}
-		    	return false;
-		    }
-		});
-}
-///
-
-Polymer({
-	is:'x-compras',
-	properties:{
-		xt_org:Number,
-		xt_idsede:Number,
-		xt_idus:Number,
-		dtProItem:Object,
-		dtProFam:Object,
-		dtProProveedor:Object,
-	},
-	attached:function(){
-    	xThis=this;
-    	xIniCompras();
-    	this.selected_page=0;
-    }
-})
-</script>
+<script>/*<![CDATA[*/var xThis;var xNewItemPro=false;var xNewFamilia=false;var xPrecio_item_Add=0;var xCan_item;var xDes_item;var xPrecio_item;var xnom_familia;var xPrecio_und_pro;var xIdProducto_sel;var xValPago;var xImporte_total_list=0;var xlo_idorg;var xlo_idsede;var xsel_proveedor;var xsel_almacen;var xRpt_pago;function xIniCompras(){xPopupLoad=document.getElementById("xLoad");xm_LogChequea(function(){xm_log_get("ini_us");$("body").addClass("loaded");xlo_idorg=xIdOrg;xlo_idsede=xIdSede;xloadAlamcen()});$("#Titulo_page").text("Registrar Compras");$(".xPasarEnter2").on("keyup",function(g){var f=g.which;if(f==13||f==186){var c=$("input");var b=c.index(document.activeElement);if(c[b+1]!==null){var d=c[b+1];if(d===undefined){return}if(d.disabled){d=c[b+2]}if(d==undefined){return}d.focus();d.select()}event.stopPropagation();g.stopPropagation();g.stopImmediatePropagation();return false}});$(".xprecio").on("keyup",function(b){var a=b.which;if(a==13||a==186){xAddItemCompra(this)}});xValPago=document.getElementById("component_pago_pro");xValPago._tipo=2;xValPago.addEventListener("xSend",function(b){xRpt_pago=b.detail.xRpts;var a=b.detail.xRpts[0].ok;if(a==0){}else{xRegistrar_compra()}});xValPago.addEventListener("xCancelarCerrar",function(a){xThis.$.dialog_pago.close()});$("#div_proveedor").on("click",function(a){$(this).css("height","80px");$(this).find("#div_ínput").removeClass("xInvisible");$("#sel_proveedor").focus()});$("#dialog_pago").on("iron-overlay-opened",function(){component_pago_pro.setFocusTxt()})}function xEnterInInputDlg(b){var a=b.which;if(a==13||a==186){xGuardarItemProComp()}}function xOpenRegistrarPago(){xValPago.setModoSoloProveedor();$("#component_pago_pro").focus();component_pago_pro.setVal(xMoneda(xImporte_total_list));dialog_pago.open()}function xAddItemCompra(){xCan_item=$("#cant_item").val();xDes_item=$("#des_item").val();xPrecio_item=xMoneda($("#precio_item").val(),2);if(xCan_item==""||xDes_item==""&&xPrecio_item==""){return}xnom_familia="";if(xNewItemPro==true){$("#frm_item_pro #descripcion").val(xDes_item);$("#frm_item_pro #precio").val(xPrecio_item);xnom_familia=$("#sel_familia").val();dialog_additem_pro.open();xCargarFamiliaInput()}else{xnom_familia=$("#des_item").attr("data-des-familia");xPrecio_und_pro=parseFloat(xPrecio_item)/parseFloat(xCan_item);xAddItemLista();xResetInputPro()}}function xAddItemLista(){var d=$("#tb_input");var c=d.find(".row").length;c=c+xIdProducto_sel;var b='<tr class="row" id="'+c+'"><td>'+xCan_item+"</td><td> "+xnom_familia+" | "+xDes_item+'</td><td align="right" class="ximporte_row">'+xPrecio_item+'</td><td><span class="xDeleteRowNeutro" title="Borrar" onclick="xBorrarItemLocalPro(this);"></span></td><td class="xInvisible" data-ColumName="idproducto">'+xIdProducto_sel+'</td><td class="xInvisible" data-ColumName="fecha">'+xDevolverFecha()+'</td><td class="xInvisible" data-ColumName="idorg">'+xlo_idorg+'</td><td class="xInvisible" data-ColumName="idsede">'+xlo_idsede+'</td><td class="xInvisible" data-ColumName="precio">'+xPrecio_und_pro+'</td><td class="xInvisible" data-ColumName="idproveedor">-proveedor</td></tr>';var e='<tr class="row" data-update="'+xIdProducto_sel+'" id="'+c+'"><td data-ColumName="precio_unitario">'+xPrecio_und_pro+"</td></tr>";$("#tb_update_precio").append(e).trigger("create");var a='<tr class="row" id="'+c+'"><td data-ColumName="idcompra">-compra</td><td data-ColumName="idproducto">'+xIdProducto_sel+'</td><td data-ColumName="cantidad">'+xCan_item+'</td><td data-ColumName="punitario">'+xPrecio_und_pro+'</td><td data-ColumName="ptotal">'+xPrecio_item+"</td></tr>";$("#tb_compra_items").append(a).trigger("create");if(d.find(".row").length==0){d.append(b).trigger("create")}else{$("#tb_input tr.row:first").before(b).trigger("create")}xSumarTotalLista()}function xRegistrar_compra(){var a=$("#tb_input");if(a.find(".row").length===0){alert("No tiene ningun producto en la lista de compras");return}var b=$("#frm_proveedor #descripcion");xsel_almacen=$("#sel_alamcen option:selected").val();xsel_proveedor=b.attr("data-id")||0;if(b.val()!=""){xPopupLoad.xopen();$("#frm_proveedor #idorg").val(xlo_idorg);$("#frm_proveedor #idsede").val(xlo_idsede);$.post("../../bdphp/ManejoBD_IUD.php?tb=proveedor",$("#frm_proveedor").serialize(),function(c){xsel_proveedor=c;xGuardarRegistroCompra()})}else{xGuardarRegistroCompra()}}function xGuardarRegistroCompra(){var a=xRpt_pago[0].xtipo_pagos;var h="";for(var c=0;c<a.length;c++){h=String(h+'<tr class="row"><td data-ColumName="idcompra">-compra</td><td data-ColumName="idtipo_pago">'+a[c].id+'</td><td data-ColumName="importe">'+a[c].importe+"</td></tr>")}$("#tb_compra_pago").append(h).trigger("create");xPopupLoad.xopen();var g;var b=xArmarInsertDetalle($("#tb_update_precio"),"idproducto","","",1);var e=xArmarInsertDetalle($("#tb_input"),"","","");var f=xArmarInsertDetalle($("#tb_compra_items"),"","","");var d=xArmarInsertDetalle($("#tb_compra_pago"),"","","");e=e.replace(/-proveedor/g,xsel_proveedor);$("#frm_compra #idproveedor").val(xsel_proveedor);$("#frm_compra #idalmacen").val(xsel_almacen);$("#frm_compra #f_registro").val(xDevolverFecha());$("#frm_compra #f_compra").val(xDevolverFecha());$("#frm_compra #total").val(xImporte_total_list);$("#frm_compra #idorg").val(xlo_idorg);$("#frm_compra #idsede").val(xlo_idsede);$("#frm_compra #nota_de_compra").val(xRpt_pago[0].nota_compra);$.post("../../bdphp/ManejoBD_IUD.php?tb=compra",$("#frm_compra").serialize(),function(i){g=i;f=f.replace(/-compra/g,g);d=d.replace(/-compra/g,g);var j=String(f+"; "+d+"; "+e+"; "+b);$.ajax({type:"POST",url:"../../bdphp/log.php?op=100",data:{xsql:j}}).done(function(k){xPopupLoad.xclose();xNuevaCompra()})})}function xNuevaCompra(){$("#tb_update_precio tr").remove();$("#tb_input tr.row").remove();$("#tb_input tr.tt_row").remove();$("#tb_compra_items tr").remove();$("#frm_compra").reset();$("#frm_proveedor").reset();$("#frm_item_pro").reset();dialog_pago.close();$("#div_proveedor").css("height","30px");$("#div_proveedor #div_ínput").addClass("xInvisible")}function xSumarTotalLista(){var a=$("#tb_input");xImporte_total_list=xMoneda(xSumaCantRow(a,".ximporte_row"));var b='<tr class="tt_row xSinBorde"><td colspan="2" align="right"><h3>Total</h3></td><td align="right"><h3><strong>'+xImporte_total_list+'</strong></h3></td><td colspan="2"></td></tr>';a.find(".tt_row").remove();a.append(b).trigger("create")}function xBorrarItemLocalPro(d){var c=$(d).parent().parent();var b=c.parents("table");var a=c.attr("id");c.fadeTo(550,0,function(){$(this).remove();$("#tb_update_precio #"+a).remove();$("#tb_compra_items #"+a).remove();xSumarTotalLista()})}function xResetInputPro(){$("#des_item").val("");$("#des_item").attr("data-id","");$("#cant_item").val("");$("#precio_item").val("");$("#cant_item").focus()}function xGuardarItemProComp(){xPopupLoad.xopen();xnom_familia=$("#sel_familia").val();xPrecio_item=xMoneda($("#frm_item_pro #precio").val());if(xNewFamilia==true){$.ajax({type:"POST",url:"../../bdphp/log.php?op=1602",data:{f:xnom_familia}}).done(function(a){$("#frm_item_pro #idproducto_familia").val(a);xGuardarItemProDtCompra();xLoadFamilias()})}else{xGuardarItemProDtCompra()}}function xGuardarItemProDtCompra(){xPrecio_und_pro=parseFloat(xPrecio_item)/parseFloat(xCan_item);$("#frm_item_pro #idorg").val(xlo_idorg);$("#frm_item_pro #idsede").val(xlo_idsede);$("#frm_item_pro #precio_unitario").val(xPrecio_und_pro);$.post("../../bdphp/ManejoBD_IUD.php?tb=producto",$("#frm_item_pro").serialize(),function(a){xIdProducto_sel=a;xAddItemLista();dialog_additem_pro.close();$("#frm_item_pro").reset();xPopupLoad.xclose();xResetInputPro()})}function xCargarProductoItem(){var b=0;var a=$("#des_item");a.autocomplete({autoFocus:true,source:xThis.dtProItem,select:function(c,d){a.val(d.item.label);a.attr("data-id",d.item.value);a.attr("data-des-familia",d.item.familia);$("#frm_item_pro #idproducto").val(d.item.value);xIdProducto_sel=d.item.value;if(d.item.precio_unitario==null){b=0}else{b=d.item.precio_unitario}b=parseFloat(parseFloat(b)*parseFloat($("#cant_item").val())).toFixed(2);if(isNaN(b)){b=0}$("#frm_item_pro #precio").val(b);$("#frm_item_pro #precio_venta").val(d.item.precio_venta);$("#precio_item").val(b);return false},focus:function(c,d){return false},change:function(c,d){if(d.item===null){a.attr("data-value","");a.attr("data-id","");$("#frm_item_pro #precio").val("");$("#frm_item_pro #precio_venta").val("");$("#frm_item_pro #idproducto").val("");xNewItemPro=true}else{xNewItemPro=false;$("#frm_item_pro #idproducto").val(d.item.value)}return false}})}function xloadAlamcen(){xPopupLoad.titulo="Cargando...";xPopupLoad.xopen();$.ajax({type:"POST",url:"../../bdphp/log.php?op=1604"}).done(function(c){var d=$.parseJSON(c);var b="";d=d.datos;for(var a=0;a<d.length;a++){b=String(b+'<option value="'+d[a].idalmacen+'">'+d[a].descripcion+"</option>")}$("#sel_alamcen").html(b).trigger("create");xloadProductoItem()})}function xloadProductoItem(){$.ajax({type:"POST",url:"../../bdphp/log.php?op=16"}).done(function(b){var a=$.parseJSON(b);xThis.dtProItem=a.datos;xCargarProductoItem();xLoadFamilias();xLoadProveedores()})}function xLoadFamilias(){$.ajax({type:"POST",url:"../../bdphp/log.php?op=1601"}).done(function(a){var b=$.parseJSON(a);xThis.dtProFam=b.datos;xCargarFamiliaInput()})}function xLoadProveedores(){$.ajax({type:"POST",url:"../../bdphp/log.php?op=1603"}).done(function(b){var a=$.parseJSON(b);xThis.dtProProveedor=a.datos;xCargarProveedores();xPopupLoad.xclose()})}function xCargarProveedores(){var a=$("#frm_proveedor #descripcion");a.autocomplete({autoFocus:true,source:xThis.dtProProveedor,select:function(b,c){xsel_proveedor=c.item.value;a.val(c.item.label);a.attr("data-id",xsel_proveedor);$("#frm_proveedor #idproveedor").val(xsel_proveedor);$("#frm_proveedor #direccion").val(c.item.direccion);$("#frm_proveedor #dni").val(c.item.dni);return false},focus:function(b,c){return false},change:function(b,c){if(c.item===null){a.attr("data-id","");xsel_proveedor="";$("#frm_proveedor #idproveedor").val("")}return false}})}function xCargarFamiliaInput(){var a=$("#sel_familia");a.autocomplete({autoFocus:true,source:xThis.dtProFam,appendTo:$("#dialog_additem_pro"),select:function(b,c){a.val(c.item.label);a.attr("data-id",c.item.value);$("#frm_item_pro #idproducto_familia").val(c.item.value);return false},focus:function(b,c){return false},change:function(b,c){if(c.item===null){a.attr("data-value","");a.attr("data-id","");$("#frm_item_pro #idproducto_familia").val("");xNewFamilia=true}else{xNewFamilia=false;$("#frm_item_pro #idproducto_familia").val(c.item.value)}return false}})}Polymer({is:"x-compras",properties:{xt_org:Number,xt_idsede:Number,xt_idus:Number,dtProItem:Object,dtProFam:Object,dtProProveedor:Object,},attached:function(){xThis=this;xIniCompras();this.selected_page=0}});/*]]>*/</script>

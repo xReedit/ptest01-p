@@ -1,0 +1,77 @@
+<dom-module id="x-us-contador">
+<template>
+<paper-dialog id="dialog_us_conta_asingar" entry-animation="scale-up-animation" exit-animation="fade-out-animation" class="dialog_redondo" style="width:500px" with-backdrop>
+<div class="xContent">
+<p><strong>Seleccione un contador</strong></p>
+<input type="text" class="xMiInput" placeholder="BUSCAR" onkeyup="xbuscarListIUsContadores(this)">
+<br>
+<table width="100%" id="tb_us_contador">
+<thead>
+<th align="left"></th>
+<th align="left"></th>
+</thead>
+<tbody>
+<template is="dom-repeat" items="{{ListUsContadores}}" as="item">
+<tr data-id="{{index}}" class="xCursor" onclick="xSelectUsContador(this)">
+<td class="xfont11">{{item.nombre_cpc}}</td>
+<td class="xfont11">{{item.ciudad}}</td>
+</template>
+</tbody>
+</table>
+</div>
+</paper-dialog>
+<br>
+<div class="xMiCard xradius" style="width:calc(100% - 10%)">
+<div class="xEncanezadoCard xFondoRowAmarillo4">
+<strong>Asingar contadores.</strong>
+Seleccione un contador con el que trabajara. El Contador podra acceder, descargar y trabajar su informacion contable desde la plataforma web.<br>
+Si el contador de su preferencia no esta registrado. Contactece con nosotros al correo papaya.restobar@gmail.com, en facebook o instagran.
+</div>
+<div class="xContent">
+<br><br>
+<h3>Listado de sedes</h3>
+<br>
+<table width="100%" id="tb_sedes">
+<thead>
+<th>#</th>
+<th>Sede</th>
+<th>Contador Asignado</th>
+<th></th>
+</thead>
+<tbody>
+<template is="dom-repeat" items="{{ListSedeUsCpc}}" as="item">
+<tr data-id="{{index}}">
+<td>{{displayIndex(index)}}</td>
+<td>
+<div>
+<p class="xfont13 xBold">{{item.nombre}}</p>
+<p class="xfont11">{{item.ciudad}} - {{item.direccion}}</p>
+<p class="xfont11">{{item.telefono}}</p>
+</div>
+</td>
+<td>
+<div>
+<p class="xfont13 xBold">{{item.nombre_cpc}}</p>
+<p class="xfont11">{{item.u_ciudad}} - {{item.u_direccion}}</p>
+</div>
+</td>
+<td data-id="{{index}}">
+<button class="xBoton2 xVerde" hidden$=[[!item.asignado]] onclick="xUsOpenDialogContadores(this)">Asignar</button>
+<button class="xBoton2 xAzul" hidden$=[[item.asignado]] onclick="xUsOpenDialogContadores(this)">Cambiar</button>
+</td>
+</tr>
+</template>
+</tbody>
+</table>
+</div>
+<br><br><br>
+</div>
+</template>
+</dom-module>
+<script>var xThisUsConta,xPopupLoad,dataBusUsContador,idSedeSelect=0;function xIniUsConta(){xLoadListSedeUsCpc();xLoadLIstUsContadores();$('body').addClass('loaded');}
+function xLoadListSedeUsCpc(){$.ajax({type:'POST',url:'../../bdphp/log_004.php?op=404'}).done(function(res){const _res=$.parseJSON(res);xThisUsConta.ListSedeUsCpc=_res.datos.map(x=>{x.asignado=parseInt(x.asignado)==0?true:false;return x});});}
+function xLoadLIstUsContadores(){$.ajax({type:'POST',url:'../../bdphp/log_004.php?op=405'}).done(function(res){const _res=$.parseJSON(res);xThisUsConta.ListUsContadores=_res.datos;dataBusUsContador=_res.datos;});}
+function xbuscarListIUsContadores(obj){const _valTextBus=obj.value.toUpperCase();xThisUsConta.ListUsContadores=dataBusUsContador.filter(x=>(x.nombre_cpc+x.ciudad).indexOf(_valTextBus)>-1).map(x=>x);}
+function xSelectUsContador(obj){const index=obj.dataId;const _idUsContador=xThisUsConta.ListUsContadores[index].idus_cpc;$.ajax({type:'POST',url:'../../bdphp/log_004.php?op=406',data:{id:_idUsContador,idsede:idSedeSelect}}).done(function(res){xLoadListSedeUsCpc();dialog_us_conta_asingar.close();});}
+function xUsOpenDialogContadores(obj){const index=obj.parentElement.dataId;idSedeSelect=xThisUsConta.ListSedeUsCpc[index].idsede;dialog_us_conta_asingar.open();}
+Polymer({is:'x-us-contador',properties:{ListSedeUsCpc:[],ListUsContadores:[],},attached:function(){xThisUsConta=this;xIniUsConta();},displayIndex:function(index){return xCeroIzq(index+1,1);},})</script>
