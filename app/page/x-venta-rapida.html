@@ -274,7 +274,7 @@ var xThisVentaRapida
 
 
 function xIniVentaRapida(){
-	xm_LogChequea(function(){
+	// xm_LogChequea(function(){
 		xm_log_get('ini_us');
 		//if(xIdOrg=='' || xIdOrg==undefined){xIdOrg=window.localStorage.getItem('::app3_wo');}
 		//if(xIdSede=='' || xIdSede==undefined){xIdSede=window.localStorage.getItem('::app3_woS');}
@@ -299,7 +299,7 @@ function xIniVentaRapida(){
 				xdelivery = 1;
 			}
 		})
-	})
+	// })
 
 	compFindCategoria=document.getElementById('compFindCategoria');
 	compFindCategoria.addEventListener('getValorIncial', function (e) {
@@ -932,7 +932,7 @@ function xLoadCartaVR(){
 		//$(".xMenu_body_vr .spinner").remove();
 		$(".xMenu_body_vr").append(xCadenaCarta).trigger('create');
 
-		xDisparaEventoLoadItemInactividad()
+		// xDisparaEventoLoadItemInactividad()
 		xLoadItemsDetalleCartaALL();
 
 		setTimeout(() => {			
