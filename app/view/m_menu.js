@@ -30,35 +30,41 @@ window.addEventListener("error", function (e) {
 //   });
 // });
 
-// $(document).ready(function () {  
-//   $("#PanelDe").on("transitionend", function(a) {
-//     if (this.selected == "main") {
-//       $("#PanelDe").css("z-index", "0");
-//     }
-//   });
+$(document).ready(function () {  
+  $("#PanelDe").on("transitionend", function(a) {
+    if (this.selected == "main") {
+      $("#PanelDe").css("z-index", "0");
+    }
+  });
 
-  
+  xIniMenAAA();
+  // inactivityTime();
+  setGalleta();
+  listenCookieChange(function () {
+    dialog_inactividad.open();
+  });
+});
 
   // setTimeout(() => {  
   //   xIniMenAAA();  
   // }, 1500);
 // });
 
-document.addEventListener("WebComponentsReady", function componentsReady() {
-  $("#PanelDe").on("transitionend", function (a) {
-    if (this.selected == "main") {
-      $("#PanelDe").css("z-index", "0");
-    }
-  });
+// document.addEventListener("WebComponentsReady", function componentsReady() {
+//   $("#PanelDe").on("transitionend", function (a) {
+//     if (this.selected == "main") {
+//       $("#PanelDe").css("z-index", "0");
+//     }
+//   });
 
-  xIniMenAAA();  
-  // inactivityTime();
-  setGalleta();
-  listenCookieChange(function() {
-    dialog_inactividad.open();
-  });
+//   xIniMenAAA();  
+//   // inactivityTime();
+//   setGalleta();
+//   listenCookieChange(function() {
+//     dialog_inactividad.open();
+//   });
   
-});
+// });
 
 // window.addEventListener('DOMContentLoaded', function () {
 //   $("#PanelDe").on("transitionend", function (a) {
@@ -101,8 +107,8 @@ function xIniMenAAA() {
   //xLoadDtPrint();
 
   /*xOnlyAccPedido=window.localStorage.getItem('::app3_woUOn');
-	if(xIdUsuario==''){	xIdUsuario=window.localStorage.getItem('::app3_woU');}
-	if(xOnlyAccPedido==null){xOnlyAccPedido=1;}else{xOnlyAccPedido=0;}*/
+  if(xIdUsuario==''){ xIdUsuario=window.localStorage.getItem('::app3_woU');}
+  if(xOnlyAccPedido==null){xOnlyAccPedido=1;}else{xOnlyAccPedido=0;}*/
 }
 function xOpenPageCarta(xop, parametro) {
 // debugger

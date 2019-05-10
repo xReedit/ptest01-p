@@ -5,9 +5,13 @@ var xPopupLoad;
 var xRouterTime_cp = false;
 // window.onload = function(){setTimeout( function(){ xIniControlPedido(); }, 600); };
 
-document.addEventListener("DOMContentLoaded", function componentsReady() {
+$(document).ready(function () {
 	xIniControlPedido();
 });
+
+// document.addEventListener("DOMContentLoaded", function componentsReady() {
+// 	xIniControlPedido();
+// });
 
 function xIniControlPedido(){
 	xVerificarSession();
