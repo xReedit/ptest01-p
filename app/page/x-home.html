@@ -6,12 +6,12 @@
 </div>
 </template>
 </dom-module>
-<script>/*<![CDATA[*/var xThis;var xArray_us_home;function xUs(){$.ajax({type:'POST',url:'../../bdphp/log.php?op=-1111'}).done(function(dt){alert(dt)
+<script>/*<![CDATA[*/var xThisHome;var xArray_us_home;function xUs(){$.ajax({type:'POST',url:'../../bdphp/log.php?op=-1111'}).done(function(dt){alert(dt)
 window.localStorage.setItem("::app3_woDUS",dt);})}
 function xUsExtraer(){XX=window.localStorage.getItem("::app3_woDUS")
 AA=window.atob(XX);xaa=JSON.parse(AA)
 alert(xaa)}
-function xIniHome(){xLoadAcc();$("#panel_toolbar").show();$('body').addClass('loaded');$("#Titulo_page").text("Inicio");xm_log_get('ini_us');xThis.xt_org=xIdOrg;xThis.xt_idsede=xIdSede;xThis.xt_idus=xIdUsuario;$(document).on('click','.xMiBoton_icon',function(e){var xop=$(this).attr('data-op');xOpenPage(xop);e.stopPropagation();e.stopImmediatePropagation()
+function xIniHome(){xLoadAcc();$("#panel_toolbar").show();$('body').addClass('loaded');$("#Titulo_page").text("Inicio");xm_log_get('ini_us');xThisHome.xt_org=xIdOrg;xThisHome.xt_idsede=xIdSede;xThisHome.xt_idus=xIdUsuario;$(document).on('click','.xMiBoton_icon',function(e){var xop=$(this).attr('data-op');xOpenPage(xop);e.stopPropagation();e.stopImmediatePropagation()
 return false;})}
 function xLoadAcc(){xVerificarAcc();}
 function xVerificarAcc(){xArray_us_home=xm_log_get('app3_Us_home');xper_bd=xm_log_get('app3_woA');var xCharAcc='';var xOpView=new Array();var xidGrupoBd;var xTituloSeccion;var xt;xper_bd=xper_bd.split(',')
@@ -23,4 +23,4 @@ xOpView[xidGrupoBd][i]={op:'<div class="xMiBoton_icon" data-id="'+xCharFind+'" d
 $.map(xOpView[i],function(n,z){if(typeof n=="object"){xHtmlOpView=String(xHtmlOpView+xOpView[i][z].op);}})
 xHtmlOpView=String(xHtmlOpView+'</div><br>');};$("#xBodyOp").html(xHtmlOpView).trigger('create');}
 function abrirToast(){toast=document.getElementById('toast');toast.text="aaaaaaaaaaa";toast.show();}
-Polymer({is:'x-home',properties:{xt_org:Number,xt_idsede:Number,xt_idus:Number},attached:function(){xThis=this;xIniHome();}})/*]]>*/</script>
+Polymer({is:'x-home',properties:{xt_org:Number,xt_idsede:Number,xt_idus:Number},attached:function(){xThisHome=this;xIniHome();}})/*]]>*/</script>
