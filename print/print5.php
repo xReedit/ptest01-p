@@ -55,6 +55,28 @@ else {
 	$imLogo="./logo/".$xArray_print[0]['logo'];
 }
 
+// tamaño de papel
+// 0 = 80mm 1 = 58mm
+$papel_size = (int)$xArray_print[0]['papel_size'];
+
+// lineas hr - divisor
+$linea_hr = '';
+$linea_titulo = '';
+$GLOBALS['leftCols'] = 38;
+switch ($papel_size) {
+	case '0': // 80mm
+		$linea_hr = "------------------------------------------------\n";
+		$linea_titulo = '******';
+		$GLOBALS['leftCols'] = 38;
+		break;
+	case '1': // 58mm
+		$linea_hr = "------------------------------------------\n";
+		$linea_titulo = '***';
+		$GLOBALS['leftCols'] = 32;
+		break;	
+}
+
+
 
 // encabezado
 $nom_empresa = $ArrayEnca[0]['nombre'];
@@ -86,9 +108,11 @@ $printer -> setFont($var_size_font);
 // el hash define si es CPE
 $denominacion_comprobante = "COMPROBANTE";
 $incial_comprobante = "";
+$nomOtroDoc = $xArrayComprobante['descripcion']." ";
 if ($hash) {
-	$denominacion_comprobante = "COMPROBANTE ELECTRONICO";
+	$denominacion_comprobante = $nomOtroDoc."DE VENTA ELECTRONICA";
 	$incial_comprobante = $xArrayComprobante['inicial'];
+	$nomOtroDoc="";
 }
 
 // if($num_mesa=='' || $num_mesa=='00'){$num_mesa='Pedido: '.$correlativo_dia;}else{$num_mesa='MESA: '.$num_mesa;}
@@ -121,7 +145,7 @@ while($num_copias>=0){
 			$printer->bitImage($imLogo, $size);
 		} else {			
 			$logoPic = EscposImage::load($imLogo, false);
-			$printer -> graphics($logoPic);
+			$printer -> bitImage($logoPic);
 		}
 		
 		$printer -> feed();
@@ -137,12 +161,16 @@ while($num_copias>=0){
     $printer -> text($ciudad_empresa."\n");
     $printer -> text("Telefono: ".$telefono_empresa."\n");
 	$printer -> selectPrintMode();
-	$printer -> text("------------------------------------------------\n");
-    $printer -> selectPrintMode(Printer::MODE_DOUBLE_WIDTH);
-	$printer -> text($denominacion_comprobante."\n");
-	$printer -> text($xArrayComprobante['descripcion']." ".$incial_comprobante.$xArrayComprobante['serie']."-".$xArrayComprobante['correlativo']."\n");
+	$printer -> text($linea_hr);
+
 	$printer -> selectPrintMode();
-    $printer -> text("------------------------------------------------\n");
+	$printer -> setEmphasis(true);
+	$printer -> text($denominacion_comprobante."\n");
+	$printer -> setEmphasis(false);	
+    $printer -> selectPrintMode(Printer::MODE_DOUBLE_WIDTH);	
+	$printer -> text($nomOtroDoc.$incial_comprobante.$xArrayComprobante['serie']."-".$xArrayComprobante['correlativo']."\n");
+	$printer -> selectPrintMode();
+    $printer -> text($linea_hr);
 	$printer -> feed();
 
 	// cliente, fecha
@@ -161,7 +189,7 @@ while($num_copias>=0){
 	if ($cliente_direcicon.trim()!=''){ $printer -> text("DIRECCION: ".$cliente_direcicon. "\n"); }	
 	
 	$printer -> selectPrintMode();
-	$printer -> text("------------------------------------------------\n");
+	$printer -> text($linea_hr);
 	$printer -> feed();
 
 
@@ -180,7 +208,7 @@ while($num_copias>=0){
 		$tipo_consumo=$item["seccion"];
 		/*$printer -> setEmphasis(true);
 		$printer -> text($item["des"]."\n");
-		$printer -> text("------------------------------------------------\n");
+		$printer -> text($linea_hr);
 		$printer -> setEmphasis(false);*/
 		
 		$si_tiene_item=0;
@@ -209,7 +237,7 @@ while($num_copias>=0){
 				$printer -> setEmphasis(true);			
 				if($cuenta_tpc>0){$printer -> text("\n\n");}
 				$printer -> text("*** ".$tipo_consumo." ***\n");
-				//$printer -> text("------------------------------------------------\n");
+				//$printer -> text($linea_hr);
 				$printer -> setEmphasis(false);
 				$printer -> selectPrintMode();
 				$cuenta_tpc++;
@@ -223,7 +251,7 @@ while($num_copias>=0){
 				if($cuenta_row>0){$printer -> text("\n");}	
 				$seccion=$subitem["seccion"];
 				$printer -> text($seccion."\n");
-				$printer -> text("------------------------------------------------\n");	
+				$printer -> text($linea_hr);	
 				$printer -> setEmphasis(false);
 				$cuenta_row++;
 			}		
@@ -261,7 +289,7 @@ while($num_copias>=0){
 
 	/* TOTALES */
 	$printer -> feed();
-	$printer -> text("------------------------------------------------\n");
+	$printer -> text($linea_hr);
 	$printer -> setEmphasis(true);
 	$r_subt_t=0;		
 	/*foreach ($xArray_print as $item) {
@@ -321,11 +349,13 @@ while($num_copias>=0){
 	// $printer -> feed();
 	$printer -> setJustification(Printer::JUSTIFY_CENTER);
 	$printer -> text($xArray_print[0]['pie_pagina']."\n");
-	$printer -> feed(2);
+	$printer -> feed();
 	$printer -> text("Atendido por:".$nom_us[0]."\n");
 	$printer -> text($fecha_actual.' | '.$hora_actual. "\n");
 
 	$printer -> text("www.papaya.com.pe\n");
+	$printer -> feed();
+
 	$printer -> cut();
 	$printer -> pulse();
 
@@ -351,7 +381,8 @@ class item
     public function __toString()
     {
         $rightCols = 10;
-        $leftCols = 38;
+		// $leftCols = 38;
+		$leftCols = $GLOBALS['leftCols'];
         if ($this -> dollarSign) {
             $leftCols = $leftCols / 2 - $rightCols / 2;
         }
