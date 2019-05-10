@@ -1,107 +1,309 @@
 <!DOCTYPE html>
 <html>
-<head>
-<title>Papaya RestoBar</title>
-<meta http-equiv=content-type content="text/html; charset=UTF-8;" />
-<meta http-equiv=Content-Language content=es />
-<meta name=viewport content="width=device-width, user-scalable=no, initial-scale=1.0, maximum-scale=1.0, minimum-scale=1.0"/>
-<meta name=apple-mobile-web-app-capable content=yes />
-<meta name=mobile-web-app-capable content=yes />
-<meta http-equiv=cache-control content="max-age=31536000" />
-<meta http-equiv=Pragma content="max-age=31536000">
-<link rel=stylesheet href=../../css/load_style.css />
-<script rel=preload src=../web_components/webcomponentsjs/webcomponents.min.js></script>
-<link rel=import href=../web_components/polymer/polymer.html>
-<link rel=import href=../web_components/paper-button/paper-button.html>
-<link rel=import href=../web_components/paper-input/paper-input.html>
-<link rel=import href=../web_components/paper-input/paper-textarea.html>
-<link rel=import href=../web_components/paper-styles/paper-styles.html>
-<link rel=import href=../web_components/neon-animation/neon-animated-pages.html>
-<link rel=import href=../web_components/neon-animation/neon-animatable.html>
-<link rel=import href=../web_components/neon-animation/neon-animations.html>
-<link rel=import href=../web_components/paper-spinner/paper-spinner.html>
-<link rel=import href=../web_components/paper-drawer-panel/paper-drawer-panel.html>
-<link rel=import href=../web_components/paper-toolbar/paper-toolbar.html>
-<link rel=import href=../web_components/paper-icon-button/paper-icon-button.html>
-<link rel=import href=../web_components/iron-icons/iron-icons.html>
-<link rel=import href=../web_components/paper-card/paper-card.html>
-<link rel=import href=../web_components/paper-fab/paper-fab.html>
-<link rel=import href=../web_components/paper-menu/paper-menu.html>
-<link rel=import href=../web_components/paper-item/paper-item.html>
-<link rel=import href=../web_components/paper-checkbox/paper-checkbox.html>
-<link rel=import href=../web_components/paper-dropdown-menu/paper-dropdown-menu.html>
-<link rel=import href=../web_components/iron-dropdown/iron-dropdown.html>
-<link rel=import href=../web_components/iron-pages/iron-pages.html>
-<link rel=import href=../web_components/paper-radio-button/paper-radio-button.html>
-<link rel=import href=../web_components/paper-tooltip/paper-tooltip.html>
-<link rel=import href=../web_components/paper-toggle-button/paper-toggle-button.html>
-<link rel=import href=../web_components/paper-progress/paper-progress.html>
-<link rel=import href=../web_components/paper-toast/paper-toast.html>
-<link rel=import href=../web_components/iron-collapse/iron-collapse.html />
-<link rel=import href=../web_components/iron-icons/maps-icons.html>
-<link rel=import href=../web_components/x-dialog/x-dialog.html>
-<link rel=import href=../web_components/app-router/app-router.html>
-<link rel=import href=../web_components/x-router/x-router.html>
-<link rel=stylesheet href=../../css/micss.css />
-<link type=image/x-icon href=../../images/logo_app.png rel="shortcut icon" />
-<style is=custom-style>body{width:100%;margin:0;padding:0;background-color:white}paper-toolbar{--paper-toolbar-background:#1e88e5;top:0;left:0;right:0;position:fixed;height:60px;z-index:2}.content{position:absolute;width:100%;top:60px}paper-drawer-panel{position:fixed;height:100%;--paper-drawer-panel-left-drawer-container:{background-color:#303030;color:#e0e0e0;position:fixed;height:100%;overflow-y:auto}}.xHeadertoolbar{background-color:#212121}.xBtnPanel{display:block;text-align:left;margin-bottom:90px}.xBtnPanel paper-button{width:100%;margin-left:0;padding:5px;text-align:left;display:block}.xBtnPanel paper-button:hover{background:#383838}paper-drawer-panel #navbarmenu1{display:none}.xMarginAlinear{margin-right:4%}#dialog_us{border-radius:5px;width:250px;position:fixed;top:10px;right:10px}</style>
-</head>
-<body oncontextmenu="return false">
-<x-dialog id=xLoad></x-dialog>
-<paper-dialog id=dialog_inactividad class=dialog_redondo modal entry-animation=scale-up-animation exit-animation=fade-out-animation with-backdrop>
-<p>
-Mucho tiempo de inactividad.
-Desea continuar?
-</p>
-<br />
-<div class=buttons>
-<button class="xBoton2 xRojo" dialog-dismiss onclick=xCerrarSession()>Cerrar session.</button>
-<button class="xBoton2 xVerde" dialog-dismiss onclick=xMantenerSession()>Si, continuar</button>
-</div>
-</paper-dialog>
-<div class=wrapper>
-<div id=loader-wrapper>
-<div id=loader></div>
-<div class="loader-section section-left"></div>
-<div class="loader-section section-right"></div>
-</div>
-</div>
-<paper-drawer-panel force-narrow hasTransform id=PanelDe>
-<paper-header-panel drawer>
-<paper-toolbar class=xHeadertoolbar>
-<div>OPCIONES</div>
-</paper-toolbar>
-<div main class="xBtnPanel ul_menu">
-<br /><br /><br />
-<ul></ul>
-</div>
-</paper-header-panel>
-</paper-drawer-panel>
-<paper-header-panel main>
-<paper-toolbar>
-<paper-icon-button paper-drawer-toggle icon=menu onclick=xOpenPanelDe()></paper-icon-button>
-<span class=title id=xtitulo_bar>RESTOBAR</span>
-<paper-icon-button onclick=goBack() icon=arrow-back title=Regresar></paper-icon-button>
-<paper-icon-button onclick=xOpenPageCarta(5) icon=search title=Buscar></paper-icon-button>
-<div class=xIco_MiPedido onclick=xOpenPageCarta(3)>
-<span class="xCantPedio_ico xInvisible"></span>
-<paper-icon-button icon=content-paste title="Mi pedido"></paper-icon-button>
-</div>
-</paper-toolbar>
-<div fit layout vertical class=content>
-<x-router></x-router>
-<paper-toast id=toast duration=0 text=. style=z-index:1000>
-<paper-progress id=loading indeterminate style=width:100%;float:left></paper-progress>
-</paper-toast>
-</div>
-</paper-header-panel>
-<script src=../../js/jquery_external.js async></script>
-<script type=text/javascript src=../view/xm_all.js async></script>
-<script type=text/javascript src=../view/m_menu.js async></script>
-<script type=text/javascript src=../view/onGalleta.js></script>
-<script type=text/javascript src=../view/manager_storage.js></script>
-<script type=text/javascript src=../view/verifyConnection.js async></script>
-<script type=text/javascript src=../view/item_pedidos.js async></script>
-<script type=text/javascript src=../../js/mifuncion_web.js async></script>
-</body>
+  <head>
+    <title>Papaya RestoBar</title>
+    <meta http-equiv="content-type" content="text/html; charset=UTF-8;" />
+    <meta http-equiv="Content-Language" content="es" />
+    <meta name="viewport" content="width=device-width, user-scalable=no, initial-scale=1.0, maximum-scale=1.0, minimum-scale=1.0"/>
+    <meta name="apple-mobile-web-app-capable" content="yes" />
+    <meta name="mobile-web-app-capable" content="yes" />
+    <meta http-equiv="cache-control" content="max-age=31536000" />
+    <meta http-equiv="Pragma" content="max-age=31536000">
+    
+    <!--
+      meta name="viewport" content="width=device-width, minimum-scale=1.0, initial-scale=1, user-scalable=yes"
+    -->
+    <!-- <link rel="stylesheet" href="../../css/load_normalize.css"/> -->
+    <link rel="stylesheet" href="../../css/load_style.css" />
+
+    <!-- script src="../../js/jquery.js"></script -->
+    <!-- <link rel="stylesheet" href="../../css/daterangepicker.css" /> -->
+    <!-- <link rel="stylesheet" href="../../js/jquery-ui.min.11.4.css" /> -->
+    <!-- <script src="../../js/jquery_external.js"></script> -->
+    <!-- <script src="../../js/jquery-ui.min.11.4.js"></script> -->
+
+    
+    <!-- script src="../../js/perfect-scrollbar.min.js"></script -->
+    
+    <script src="../web_components/webcomponentsjs/webcomponents.min.js"></script>
+    <link rel="import" href="../web_components/polymer/polymer.html">
+    <link rel="import" href="../web_components/paper-button/paper-button.html">
+    <link rel="import" href="../web_components/paper-input/paper-input.html">
+    <link rel="import" href="../web_components/paper-input/paper-textarea.html">
+    <link rel="import" href="../web_components/paper-styles/paper-styles.html">
+    <link rel="import" href="../web_components/neon-animation/neon-animated-pages.html">
+    <link rel="import" href="../web_components/neon-animation/neon-animatable.html">
+    <link rel="import" href="../web_components/neon-animation/neon-animations.html">
+    <link rel="import" href="../web_components/paper-spinner/paper-spinner.html">
+    <link rel="import" href="../web_components/paper-drawer-panel/paper-drawer-panel.html">
+    
+    <link rel="import" href="../web_components/paper-toolbar/paper-toolbar.html">
+    <link rel="import" href="../web_components/paper-icon-button/paper-icon-button.html">
+    <link rel="import" href="../web_components/iron-icons/iron-icons.html">
+    <link rel="import" href="../web_components/paper-card/paper-card.html">
+    <link rel="import" href="../web_components/paper-fab/paper-fab.html">
+    <link rel="import" href="../web_components/paper-menu/paper-menu.html">
+    <link rel="import" href="../web_components/paper-item/paper-item.html">
+    <!-- <link rel="import" href="../web_components/paper-dialog-scrollable/paper-dialog-scrollable.html"> -->
+    <link rel="import" href="../web_components/paper-checkbox/paper-checkbox.html">
+    <link rel="import" href="../web_components/paper-dropdown-menu/paper-dropdown-menu.html">
+    <link rel="import" href="../web_components/iron-dropdown/iron-dropdown.html">
+    <link rel="import" href="../web_components/iron-pages/iron-pages.html">
+    <link rel="import" href="../web_components/paper-radio-button/paper-radio-button.html">
+    <!-- <link rel="import" href="../web_components/paper-slider/paper-slider.html"> -->
+    <!-- <link rel="import" href="../web_components/paper-tabs/paper-tabs.html"> -->
+    <link rel="import" href="../web_components/paper-tooltip/paper-tooltip.html">
+    <link rel="import" href="../web_components/paper-toggle-button/paper-toggle-button.html">
+    <!-- <link rel="import" href="../web_components/paper-badge/paper-badge.html"> -->
+    <!-- <link rel="import" href="../web_components/paper-progress/paper-progress.html"> -->
+    <link rel="import" href="../web_components/paper-progress/paper-progress.html">
+    <link rel="import" href="../web_components/paper-toast/paper-toast.html">
+    <link rel="import" href="../web_components/iron-collapse/iron-collapse.html" />
+    <!--router-->
+    <link rel="import" href="../web_components/iron-icons/maps-icons.html">
+    
+    
+    <link rel="import" href="../web_components/x-dialog/x-dialog.html">
+    
+
+    <link rel="import" href="../web_components/app-router/app-router.html">
+    <link rel="import" href="../web_components/x-router/x-router.html">
+
+
+
+    <!-- <script src="../web_components/webcomponentsjs/webcomponents-lite.js"></script>
+    <link rel="import" href="../web_components/polymer/polymer.html"/>
+    <link rel="import" href="../web_components/paper-spinner/paper-spinner.html">
+    <link
+      rel="import"
+      href="../web_components/paper-drawer-panel/paper-drawer-panel.html"
+    />
+    <link
+      rel="import"
+      href="../web_components/paper-scroll-header-panel/paper-scroll-header-panel.html"
+    />
+    <link
+      rel="import"
+      href="../web_components/iron-flex-layout/iron-flex-layout.html"
+    />
+    <link
+      rel="import"
+      href="../web_components/paper-toolbar/paper-toolbar.html"
+    />
+    <link
+      rel="import"
+      href="../web_components/paper-icon-button/paper-icon-button.html"
+    />
+    <link rel="import" href="../web_components/iron-icons/iron-icons.html" />
+
+    <link rel="import" href="../web_components/iron-pages/iron-pages.html" />
+    <link
+      rel="import"
+      href="../web_components/neon-animation/neon-animated-pages.html"
+    />
+    <link
+      rel="import"
+      href="../web_components/neon-animation/neon-animations.html"
+    />
+    <link
+      rel="import"
+      href="../web_components/iron-collapse/iron-collapse.html"
+    />
+    <link
+      rel="import"
+      href="../web_components/paper-checkbox/paper-checkbox.html"
+    /> -->
+    <!-- <link rel="import" href="../web_components/paper-input/paper-input.html"> -->
+    <!--
+      link rel="import" href="../web_components/paper-tabs/paper-tabs.html"
+    -->
+    <!--
+      link rel="import" href="../web_components/iron-flex-layout/classes/iron-flex-layout.html">
+      <link rel="import" href="../web_components/neon-animation/neon-animatable-behavior.html">
+      <link rel="import" href="../web_components/neon-animation/animations/slide-from-left-animation.html">
+      <link rel="import" href="../web_components/neon-animation/animations/fade-out-animation.html"
+    -->
+
+    <!-- <link rel="import" href="../web_components/x-dialog/x-dialog.html" />
+    <link rel="import" href="../web_components/app-router/app-router.html" />
+    <link rel="import" href="../web_components/x-router/x-router.html" /> -->
+
+    <link rel="stylesheet" href="../../css/micss.css" />
+    <!-- link rel="stylesheet" href="../../css/perfect-scrollbar.css" -->
+    <link
+      type="image/x-icon"
+      href="../../images/logo_app.png"
+      rel="shortcut icon"
+    />
+
+    <style is="custom-style">
+      body {
+        width: 100%;
+        margin: 0;
+        padding: 0;
+        background-color: white;
+      }
+      
+      paper-toolbar {
+        --paper-toolbar-background: #1e88e5;
+        top: 0;
+        left: 0;
+        right: 0;
+        position: fixed;
+        height: 60px;
+        z-index: 2;
+      }
+      .content {
+        position: absolute;
+        width: 100%;
+        top: 60px;
+      }
+
+      paper-drawer-panel {
+        /*z-index: 4;*/
+        /*position: absolute;
+	    	top:0;
+	    	left: 0;
+	    	right: 0;
+	    	margin 0 0 0 0;
+	    	overflow-y:auto;   */
+        position: fixed;
+        height: 100%;
+
+        --paper-drawer-panel-left-drawer-container: {
+          background-color: #303030;
+          color: #e0e0e0;
+          position: fixed;
+          height: 100%;
+          overflow-y: auto;
+          /*
+		    	top: 0;
+		    	bottom: 0;		    	*/
+        }
+      }
+      /* --paper-drawer-panel-scrim: {
+			    background-color: red;
+			  };		 */
+      .xHeadertoolbar {
+        background-color: #212121;
+      }
+      .xBtnPanel {
+        display: block;
+        text-align: left;
+        margin-bottom: 90px;
+      }
+      .xBtnPanel paper-button {
+        width: 100%;
+        margin-left: 0px;
+        padding: 5px;
+        text-align: left;
+        display: block;
+      }
+      .xBtnPanel paper-button:hover {
+        background: #383838;
+      }
+      paper-drawer-panel #navbarmenu1 {
+        display: none;
+      }
+      .xMarginAlinear {
+        margin-right: 4%;
+      }
+      #dialog_us {
+        border-radius: 5px;
+        width: 250px;
+        position: fixed;
+        top: 10px;
+        right: 10px;
+      }
+    </style>
+
+    
+  </head>
+
+  <body oncontextmenu="return false">
+    <x-dialog id="xLoad"></x-dialog>
+
+
+    <!-- <app-router mode="auto|pushstate|hash">
+      <app-route path="/sub_menu" import="x-submenu.html"></app-route>
+      <app-route path="/categoria" import="x-categoria.html"></app-route>
+      <app-route path="/mipedido" import="x-mipedido.html"></app-route>
+    </app-router> -->
+    <paper-dialog id="dialog_inactividad" class="dialog_redondo" modal entry-animation="scale-up-animation" exit-animation="fade-out-animation"
+      with-backdrop>      
+      <p>
+        Mucho tiempo de inactividad.
+        Desea continuar?
+      </p>
+      <br />      
+      <div class="buttons">
+        <button class="xBoton2 xRojo" dialog-dismiss onclick="xCerrarSession();">Cerrar session.</button>
+        <button class="xBoton2 xVerde" dialog-dismiss onclick="xMantenerSession()">Si, continuar</button>
+      </div>
+    </paper-dialog>
+
+
+    <div class="wrapper">
+      <div id="loader-wrapper">
+        <div id="loader"></div>
+        <div class="loader-section section-left"></div>
+        <div class="loader-section section-right"></div>
+      </div>
+    </div>
+
+    <paper-drawer-panel force-narrow hasTransform id="PanelDe">
+      <paper-header-panel drawer>
+        <paper-toolbar class="xHeadertoolbar">
+          <div>OPCIONES</div>
+        </paper-toolbar>
+        <div main class="xBtnPanel ul_menu">
+          <br /><br /><br />
+          <ul></ul>
+        </div>
+      </paper-header-panel>
+    </paper-drawer-panel>
+    <paper-header-panel main>
+      <paper-toolbar>
+        
+        <paper-icon-button
+          paper-drawer-toggle
+          icon="menu"
+          onclick="xOpenPanelDe();"
+        ></paper-icon-button>
+        <span class="title" id="xtitulo_bar">RESTOBAR</span>
+        <!--
+          paper-icon-button icon="icons:add" class="xInvisible" title="Adicional" id="btn_add_adicional"></paper-icon-button
+        -->        
+        <paper-icon-button onclick="goBack()" icon="arrow-back" title="Regresar"></paper-icon-button>
+        <paper-icon-button onclick="xOpenPageCarta(5)" icon="search" title="Buscar"></paper-icon-button>
+        
+        <div class="xIco_MiPedido" onclick="xOpenPageCarta(3)">
+          <span class="xCantPedio_ico xInvisible"></span>
+          <paper-icon-button
+            icon="content-paste"
+            title="Mi pedido"
+          ></paper-icon-button>
+        </div>
+      </paper-toolbar>
+      <div fit layout vertical class="content">
+        <x-router></x-router>
+        <paper-toast id="toast" duration=0 text="." style="z-index: 1000;">
+          <paper-progress id="loading" indeterminate style="width: 100%; float: left;"></paper-progress>
+        </paper-toast>
+      </div>
+    </paper-header-panel>
+
+    <script src="../../js/jquery_external.js" async></script>
+    
+    <script type="text/javascript" src="../view/xm_all.js" async></script>
+    <script type="text/javascript" src="../view/m_menu.js" async></script>
+    
+    <script type="text/javascript" src="../view/onGalleta.js"></script>
+    <script type="text/javascript" src="../view/manager_storage.js"></script>
+    <script type="text/javascript" src="../view/verifyConnection.js" async></script>
+
+    <script type="text/javascript" src="../view/item_pedidos.js" async></script>
+    <script type="text/javascript" src="../../js/mifuncion_web.js" async></script>
+    <!-- <script type="text/javascript" src="../view/onGalleta.js" async></script> -->
+  </body>
 </html>
