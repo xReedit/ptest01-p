@@ -330,7 +330,7 @@ while($num_copias>=0){
 	//
 
 	/* CODIGO QR */	
-	$printer -> feed();
+	
 	if ( $hash !== "" ) { // si hay hash significa que no es factura electronica
 		$testStr = $hash;
 		$printer -> setJustification(Printer::JUSTIFY_CENTER);
@@ -341,6 +341,8 @@ while($num_copias>=0){
 		$printer -> setJustification(Printer::JUSTIFY_LEFT);
 		$printer -> text($xArray_print[0]['pie_pagina_comprobante']."\n");
 		$printer -> feed();
+	} else {
+		$printer -> feed();
 	}
 
 	/* PIE DE PAGINA */	
@@ -349,12 +351,12 @@ while($num_copias>=0){
 	// $printer -> feed();
 	$printer -> setJustification(Printer::JUSTIFY_CENTER);
 	$printer -> text($xArray_print[0]['pie_pagina']."\n");
-	$printer -> feed();
+	// $printer -> feed();
 	$printer -> text("Atendido por:".$nom_us[0]."\n");
 	$printer -> text($fecha_actual.' | '.$hora_actual. "\n");
 
 	$printer -> text("www.papaya.com.pe\n");
-	$printer -> feed();
+	$printer -> feed(2);
 
 	$printer -> cut();
 	$printer -> pulse();

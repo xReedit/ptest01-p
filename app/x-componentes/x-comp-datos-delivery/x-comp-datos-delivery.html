@@ -9,16 +9,16 @@
 				<div style="display: flex;">
 
 					<input type="text" class="xMiInput xPasarEnter2" placeholder="DNI" autofocus
-						onkeyup="xValidarDNIRUC(this.value, event, true)" onChange="conMayusculas(this)" id="txt_delivery_dni"
+						onkeyup="xValidarDNIRUCDel(this.value, event, true)" onChange="conMayusculas(this)" id="txt_delivery_dni"
 						espaciar required>
 					<paper-icon-button icon="icons:search" title="Buscar DNI"
-						onclick="xValidarDNIRUC(txt_delivery_dni.value, event, false)"
+						onclick="xValidarDNIRUCDel(txt_delivery_dni.value, event, false)"
 						style="position: absolute; right: 38px; margin-top: -5px;"></paper-icon-button>
 				</div>
 				<!-- <input type="text" class="xMiInput xPasarEnter2" placeholder="DNI"
-            autofocus onkeyup="xValidarDNIRUC(this.value, event)"
+            autofocus onkeyup="xValidarDNIRUCDel(this.value, event)"
             onChange="conMayusculas(this)" id="txt_delivery_dni" espaciar required> -->
-				<div class="xInvisible" id="progress_cliente"
+				<div class="xInvisible" id="progress_cliente_del"
 					style="width: calc(100% - 30px);margin: 0;padding: 0;margin-top: -16px;margin-left: 5px;">
 					<paper-progress indeterminate style="width: 100%;"></paper-progress>
 				</div>
@@ -43,11 +43,11 @@
 <script>
 	var xThisComDatosDelivery, xIdCliente_pedido, xClientePedidoFnac, arrCompDatosAdjuntoDelivery = [];
 	
-	function xValidarDNIRUC(valor, e, tecla) {
+	function xValidarDNIRUCDel(valor, e, tecla) {
 		if ( valor.length < 8 ) return;
 			if ( e.keyCode === 13 || !tecla) { // buscar cliente
 				xIdCliente_pedido = '';
-				$("#progress_cliente").removeClass("xInvisible");
+				$("#progress_cliente_del").removeClass("xInvisible");
 				xGetFindCliente(valor, 'dni', (rpt)=>{
 					if (rpt.success) {
 						xIdCliente_pedido=rpt.idcliente;
@@ -56,7 +56,7 @@
 						$("#txt_delivery_direccion").val(rpt.direccion);
 						$("#txt_delivery_telefono").val(rpt.telefono);
 					}
-					$("#progress_cliente").addClass("xInvisible");
+					$("#progress_cliente_del").addClass("xInvisible");
 			});
 		}
 	}
