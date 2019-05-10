@@ -18,7 +18,7 @@ function xIniControlPedido(){
 	//setInterval(function(){ xVerificarSession(); }, 5000); // constantemente actualiza
 
 	xPopupLoad=document.getElementById('xLoad');
-	xm_LogChequea(function(){
+	// xm_LogChequea(function(){
 		xm_log_get('ini_us');
 		var xDatos_p=xm_log_get('sede_generales');//$.parseJSON(window.localStorage.getItem("::app3_sys_dta_prt"));
 		$("#en_nom_sede").text(xDatos_p[0].des_sede);
@@ -32,7 +32,7 @@ function xIniControlPedido(){
 
 		xOpenPage(2, "?f1=1?df1=LOCAL");
 		
-	})
+	// })
 	//if(xIdUsuario==''){	xIdUsuario=window.localStorage.getItem('::app3_woU');}
 
 
