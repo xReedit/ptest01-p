@@ -66,3 +66,8 @@ function xm_all_xToastOpen(msj,duracion=0,loading=true){msj=msj===null?'Cargando
 toast=document.getElementById("toast");toast.duration=duracion;toast.text=msj;toast.show();}
 function xm_all_xToastClose(){toast=document.getElementById("toast");toast.hide();}
 function delay(callback,ms){var timer=0;return function(){var context=this,args=arguments;clearTimeout(timer);timer=setTimeout(function(){callback.apply(context,args);},ms||0);};}
+function setImportHTML(_linkImport){_linkImport=_linkImport.trim().split(',');let link=document.createElement('link');link.rel='import';_linkImport.map(x=>{link.href=x;link.onload=onload;document.head.appendChild(link);})}
+function xConstAjax(){$.ajax=(($oldAjax)=>{function check(a,b,c){var shouldRetry=b!='success'&&b!='parsererror';if(shouldRetry&&--this.retries>0)
+setTimeout(()=>{$.ajax(this)},this.retryInterval||100);}
+return settings=>$oldAjax(settings).always(check)})($.ajax);$.ajaxSetup({timeout:4000,retries:3,tryCount:0,retryLimit:3,retryInterval:4000,error:function(jqXHR,textStatus,errorThrown){this.tryCount++;if(this.tryCount>=this.retryLimit){alert('No se pudo establecer conexion. Intentelo mas tarde.');try{xPopupLoad.xclose();}catch(error){}
+return;}},});}

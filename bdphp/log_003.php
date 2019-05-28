@@ -29,9 +29,10 @@
 			print $estadoPrint;
 		break;
 		case '2': // buscar documentos no imprimidos
+			// pse.estructura_json,
 			$UltimoId=$_POST['ultimoId'];
 			if ( $UltimoId!='' ) { $UltimoId=' and psd.idprint_server_detalle>'.$UltimoId.' '; }
-			$sql="SELECT psd.*, pse.estructura_json, pse.nom_documento, u.nombres as nomUs
+			$sql="SELECT psd.*, pse.nom_documento, u.nombres as nomUs
 						FROM print_server_detalle as psd
 							INNER JOIN print_server_estructura as pse on pse.idprint_server_estructura = psd.idprint_server_estructura
 							INNER JOIN usuario as u on u.idusuario = psd.idusuario
@@ -40,7 +41,7 @@
 			break;
 		case '201': //verificar si hay nuevos registros
 			$UltimoId=$_POST['ultimoId'];
-			if ( $UltimoId!='' ) { $UltimoId=' and idprint_server_detalle>'.$UltimoId.' '; }
+			if ( $UltimoId!='' ) { $UltimoId=' and idprint_server_detalle > '.$UltimoId.' '; }
 
 			$sql="SELECT MAX(idprint_server_detalle) FROM print_server_detalle
 						where (idorg=".$_SESSION['ido']." and idsede=".$_SESSION['idsede']." and impreso=0)".$UltimoId;

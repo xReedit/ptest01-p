@@ -10,9 +10,9 @@
 <link rel=stylesheet href=../../js/jquery-ui.min.11.4.css>
 <script src=../../js/jquery_external.js></script>
 <script src=../../js/jquery-ui.min.11.4.js></script>
-<script src=../../js/isotope.pkgd.min.js></script>
 <script src=../web_components/webcomponentsjs/webcomponents-lite.min.js></script>
 <link rel=import href=../web_components/polymer/polymer.html>
+<link rel=import href=../web_components/x-router/x-router.html>
 <link rel=import href=../web_components/paper-input/paper-input.html>
 <link rel=import href=../web_components/paper-button/paper-button.html>
 <link rel=import href=../web_components/paper-spinner/paper-spinner.html>
@@ -31,8 +31,6 @@
 <link rel=import href=../web_components/paper-fab/paper-fab.html>
 <link rel=import href=../web_components/paper-toast/paper-toast.html>
 <link rel=import href=../web_components/x-dialog/x-dialog.html>
-<link rel=import href=../web_components/app-router/app-router.html>
-<link rel=import href=../web_components/x-router/x-router.html>
 <link rel=import href=../web_components/x-pass/x-pass.html>
 <link rel=import href=../web_components/x-pago/x-pago.html>
 <link rel=stylesheet href=../../css/micss.css>
@@ -121,12 +119,13 @@
 </paper-header-panel>
 </paper-drawer-panel>
 <script type=text/javascript src=../../js/mifuncion_web.js async></script>
-<script type=text/javascript src=../view/xm_all.js async></script>
+<script rel=preload type=text/javascript src=../view/xm_all.js async></script>
 <script type=text/javascript src=../view/onGalleta.js></script>
 <script type=text/javascript src=../view/manager_storage.js></script>
 <script type=text/javascript src=../view/verifyConnection.js async></script>
-<script type=text/javascript src=../view/x-views.js async></script>
-<script type=text/javascript src=../view/m_control_pedidos.js async></script>
-<script type=text/javascript src=../view/item_pedidos.js></script>
-<script type=text/javascript src=../view/config.const.js></script>
+<script rel=preload src=../../js/isotope.pkgd.min.js async></script>
+<script type=text/javascript src=../view/x-views.js defer></script>
+<script type=text/javascript src=../view/m_control_pedidos.js defer></script>
+<script rel=preload type=text/javascript src=../view/config.const.js></script>
+<script type=text/javascript src=../view/item_pedidos.js defer></script>
 </body>
