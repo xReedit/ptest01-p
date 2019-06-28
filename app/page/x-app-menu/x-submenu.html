@@ -1,67 +1,403 @@
 <link rel="import" href="x-mipedido.html">
 <link rel="import" href="x-menu.html">
 <dom-module id="x-submenu">
-<script type="text/javascript" src="../../view/item_pedidos.js"></script>
-<template>
-<div id="contenedor-x" style="display:flex">
-<div class="xBordeDe2 xNoVisibleMenos720" style="position:relative;width:41%;height:calc(100vh - 60px);overflow-y:auto">
-<x-menu small-page="true"></x-menu>
-<div class="xNoVisibleMenos920">
-<br><br><br>
-</div>
-</div>
-<div class="div_submenu_p">
-<div class="xSubMenu_body" id="_xSubMenu_body">
-<div class="xAlinearCentro spinner">
-<paper-spinner active></paper-spinner>
-</div>
-</div>
-<div class="xNoVisibleMenos920">
-<br><br><br>
-</div>
-</div>
-<div class="xBordeIz2 xNoVisibleMenos720 xNoVisibleMenos920" style="position:relative;width:41%;height:calc(100vh - 60px);overflow-y:auto">
-<x-mipedido id="mipedido-view"></x-mipedido>
-</div>
-</div>
-</template>
+  <script type="text/javascript" src="../../view/item_pedidos.js"></script>
+  <template>
+    <div id="contenedor-x" style="display: flex;">
+      <!-- menu -->
+      <div class="xBordeDe2 xNoVisibleMenos720" style="position: relative; width: 41%; height: calc(100vh - 60px); overflow-y: auto">
+        <x-menu small-page="true"></x-menu>
+        <div class="xNoVisibleMenos920">
+          <br><br><br>
+        </div>
+      </div>
+      
+      <!-- sub menu -->
+      <div class="div_submenu_p">
+        <div class="xSubMenu_body" id="_xSubMenu_body">
+          <div class="xAlinearCentro spinner">
+            <paper-spinner active></paper-spinner>
+          </div>
+        </div>
+        <div class="xNoVisibleMenos920">
+          <br><br><br>
+        </div>
+      </div>
+
+      <!-- mi pedido -->
+      <div class="xBordeIz2 xNoVisibleMenos720 xNoVisibleMenos920" style="position: relative; width: 41%; height: calc(100vh - 60px); overflow-y: auto">
+        <x-mipedido id="mipedido-view"></x-mipedido>
+      </div>
+    </div>
+  </template>
 </dom-module>
-<script>/*<![CDATA[*/var xThis;var xCadenaTC="",xTituloDet,xArrayPedidoObj,xidItem_selected,xreloj_update_subItem_sel,xobj_row_selected,xdt_sub_Item=[];function xxaa(){}
-function xCallMiPedidoSize(){}
-function xIniSubMenu(){xArrayPedidoObj=$.parseJSON(window.localStorage.getItem("::app3_sys_dta_pe"));xArmarMenuLateral(2);xCadenaTC=xArmarTipoConsumo();setTimeout(()=>{xLoadItems();},100);$(document.body).on('click','#_xSubMenu_body div.xmenu_item_2',function(e){xobj_row_selected=$(this);const indexSelect=xobj_row_selected.data('index');itemPedidos_objItemSelected=xdt_sub_Item[indexSelect];itemPedidos_objItemSelected.stock_actual=itemPedidos_objItemSelected.cantidad;if(xobj_row_selected.find("input:radio")[0].disabled==true){e.stopPropagation();e.stopImmediatePropagation();return false;}
-objOptionItemSelect=xobj_row_selected.find("input:radio")[0];objOptionItemSelect.checked=true;xVerificarCheckItem();var xCantArray;var xindicaciones="";var xidTipoConsumoItem;xTituloDet=itemPedidos_objItemSelected.des_seccion;xidItem=itemPedidos_objItemSelected.idcarta_lista;_xcantidad=itemPedidos_objItemSelected.cantidad;xidItem_selected=xidItem;xobj_row_selected.find(".xpedir_row").each(function(a,element){xidTipoConsumoItem=$(element).attr("data-id");if(xArrayPedidoObj[xidTipoConsumoItem][xidItem]!=null){xidTipoConsumo=xidTipoConsumoItem;xCantArray=xArrayPedidoObj[xidTipoConsumo][xidItem].cantidad;xindicaciones=xArrayPedidoObj[xidTipoConsumo][xidItem].indicaciones||'';itemPedidos_objItemSelected.xCant_item=xCeroIzq(xCantArray,2);itemPedidos_objItemSelected.xindicaciones=xindicaciones;$(element).find(".xCant_item").text(xCeroIzq(xCantArray,2));}});xobj_row_selected.find("#txt_referencia").val(xindicaciones);e.stopPropagation();e.stopImmediatePropagation();e.preventDefault()
-if(_xcantidad==='ND'){return false;};xUpdateStockSubItem_selected();return false;});}
-function xVerificarCheckItem(){$("#_xSubMenu_body div.xmenu_item_2 .xcheck_item").each(function(index,element){if($(element).is(":checked")){$(this).parent().addClass("xitem_seleccionado");}else{$(this).parent().removeClass("xitem_seleccionado");}});}
-async function xLoadItems(){$("#_xSubMenu_body").html('<div class="xAlinearCentro spinner"><paper-spinner active></paper-spinner></div>').trigger("create");xTituloDet=window.localStorage.getItem("::app3_sys_dt_c");$("#xtitulo_bar").text(xTituloDet);const _DataLoadBack=JSON.parse(window.localStorage.getItem("::app3_sys_dt_back"));xidCatProcedencia=_DataLoadBack.p;$.ajax({type:"POST",url:"../../bdphp/log.php?op=2042",data:_DataLoadBack}).done(function(dtItem){xdt_sub_Item=JSON.parse(dtItem),xCadenaItem='',xCadenaItem_encabezado='',xCadenaItem_des_foto='',xCadena_foto='',xCadena_des='',xCadenaItem_Detalle='',xCantItem,xCheck_desactivado='',xClassEstadoStock="";xdt_sub_Item=xdt_sub_Item.datos;xCadenaTC=xArmarTipoConsumo();for(var i=0;i<xdt_sub_Item.length;i++){xCheck_desactivado="";var xCantItem=xdt_sub_Item[i].cantidad,xClassEstadoStock=xClassEstadoItem(xCantItem),xClassEstado=xClassEstadoStock.split("|")[0],xClassEstadoStock=xClassEstadoStock.split("|")[1];if(xCantItem<=0){xCheck_desactivado="disabled";}
-xCadenaItem_encabezado='<input class="xcheck_item" type="radio" name="option" data-index='+i+' value="other" '+
-xCheck_desactivado+">"+'<p class="xprecio_item xEnLinea">'+
-xdt_sub_Item[i].precio+"</p>"+'<div id class="xstock_item '+
-xClassEstadoStock+'"><span>stock</span><p class="num_stock">'+
-xCeroIzq(xCantItem,2)+"</p></div>"+'<p class="xtitulo_item xEnLinea">'+
-xdt_sub_Item[i].des_item+"</p>";xCadenaItem_des_foto="";if(xdt_sub_Item[i].img!=""){xCadena_foto='<img src="../img/'+xdt_sub_Item[i].img+'">';xCadenaItem_des_foto="1";}
-if(xdt_sub_Item[i].detalle!=""){xCadena_des='<div class="xsub_titulo_item">'+
-xMayusculaPrimera(xdt_sub_Item[i].detalle)+"</div>";xCadenaItem_des_foto="1";}
-if(xCadenaItem_des_foto=="1"){xCadenaItem_des_foto='<div class="xdescripcion_foto">'+
-xCadena_des+
-xCadena_foto+"</div>";}else{xCadenaItem_des_foto="";}
-xCadenaItem_Detalle='<div class="xdetalle_item">'+
-xCadenaItem_des_foto+'<div class="xreferencia_item"><input type="text" autocomplete="on" placeholder="Escribe aqui las especificaciones..." class="xMiTextReferencia" id="txt_referencia"></div>'+
-xCadenaTC+"</div></div>";xCadenaItem=String(xCadenaItem+'<div onclick="xxaa();" class="xmenu_item_2 xPading10 '+
-xClassEstado+'" data-id="'+xdt_sub_Item[i].idcarta_lista+'" data-index='+i+' data-item="'+
-xdt_sub_Item[i].iditem+'" data-idseccion="'+
-xdt_sub_Item[i].idseccion+'" data-idseccionindex="'+
-xdt_sub_Item[i].idseccion_index+'" data-desseccion="'+xdt_sub_Item[i].des_seccion+'" data-cantidad="'+xdt_sub_Item[i].cantidad+'"  data-idimpresora="'+
-xdt_sub_Item[i].idimpresora+'" data-idprocede="'+
-xdt_sub_Item[i].idprocede+'" data-procede="'+
-xdt_sub_Item[i].procede+'" data-procedeindex="'+
-xdt_sub_Item[i].procede_index+'" data-imprimircomanda="'+
-xdt_sub_Item[i].imprimir_comanda+'" data-iddescontar="'+
-xdt_sub_Item[i].idprocede+'" data-cant_descontar="'+
-xdt_sub_Item[i].cant_descontar+'" data-idalmacen_items="'+
-xdt_sub_Item[i].idalmacen_items+'">'+
-xCadenaItem_encabezado+
-xCadenaItem_Detalle);}
-$("#_xSubMenu_body div").remove();$("#_xSubMenu_body .spinner").remove();$("#_xSubMenu_body").append(xCadenaItem).trigger("create");$(window).scrollTop(window.localStorage.getItem("::app3_sys_scroll_pos")||0);});}
-function xUpdateStockSubItem_selected(){if(xidCatProcedencia=="almacen_items"){xidItem_selected=$(xobj_row_selected).attr("data-idalmacen_items");}
-$.ajax({type:"POST",url:"../../bdphp/log.php?op=2043",data:{i:xidItem_selected,p:xidCatProcedencia}}).done(function(dt_num_stock){xClassEstadoStock=xClassEstadoItem(dt_num_stock);xClassEstado=xClassEstadoStock.split("|")[0];xClassEstadoStock=xClassEstadoStock.split("|")[1];$(xobj_row_selected).addClass(xClassEstado);$(xobj_row_selected).find(".xstock_item").addClass(xClassEstadoStock);$(xobj_row_selected).find(".num_stock").text(xCeroIzq(dt_num_stock,2));});}
-Polymer({is:"x-submenu",properties:{xt_org:Number,xt_idsede:Number,xt_idus:Number},attached:function(){xThis=this;xIniSubMenu();},detached:function(){}});/*]]>*/</script>
+<script>
+  var xThis;
+  //var xidCategoria;
+  //var xidCategoriaSeccion;
+  //var xArrayItem=new Array();
+  var xCadenaTC = "",
+  xTituloDet,
+  xArrayPedidoObj,
+  xidItem_selected,
+  xreloj_update_subItem_sel,
+  xobj_row_selected,
+  xdt_sub_Item = []; // list data items carta
+  
+  //var xidTipoConsumo;
+  //var xidItem;
+
+  function xxaa() {
+    // alert('aaaaaaaaaa');
+    // truco para que funcione en iphone // otro dia investigamos porque
+  }
+
+  // window.addEventListener('popstate', function (e) {
+  //     if(window.location.hash === "#/sub_menu") {
+  //       if ( $("#_xSubMenu_body .xmenu_item_2").length === 0 ) {
+  //         xLoadItems();
+  //       }
+  //     }
+  //   });
+
+  // window.onresize = function(event) {
+  //   if ( screen.width >= 920 ) {
+  //     const xVistaMiPedido = document.getElementById('mipedido-view');
+  //     xVistaMiPedido._outLoadPedido();
+  //     console.log('ok size');
+  //   }
+  // };
+
+  function xCallMiPedidoSize() {
+
+  }
+
+  function xIniSubMenu() {
+    //xVerificarSession();
+    xArrayPedidoObj = $.parseJSON(window.localStorage.getItem("::app3_sys_dta_pe"));
+    xArmarMenuLateral(2);
+
+    xCadenaTC = xArmarTipoConsumo();
+    setTimeout(() => {      
+      xLoadItems();
+    }, 100);
+    
+
+    $(document.body).on('click', '#_xSubMenu_body div.xmenu_item_2', function(e) {
+      // alert('on click');
+    // $(document).click(function (e) {
+      //$('.xmenu_item_2').click(function() {  
+                      
+      xobj_row_selected = $(this);
+      const indexSelect = xobj_row_selected.data('index');
+      
+      // itemPedidos_objItemSelected = [];
+      itemPedidos_objItemSelected = xdt_sub_Item[indexSelect];
+      itemPedidos_objItemSelected.stock_actual = itemPedidos_objItemSelected.cantidad;
+
+      if (xobj_row_selected.find("input:radio")[0].disabled == true) {
+        // e.stopPropagation();
+        e.stopPropagation();
+        e.stopImmediatePropagation();
+        return false;
+      }
+      // esto -> unchek cuando abre en mipedido - > pantalla compartidad / para obligar  a seleccionar
+      objOptionItemSelect = xobj_row_selected.find("input:radio")[0];
+      objOptionItemSelect.checked = true;
+
+      xVerificarCheckItem();
+
+      var xCantArray;
+      var xindicaciones = "";
+      var xidTipoConsumoItem;
+      xTituloDet = itemPedidos_objItemSelected.des_seccion; // $(this).attr("data-desseccion");
+      xidItem = itemPedidos_objItemSelected.idcarta_lista; // $(this).attr("data-id");
+      _xcantidad = itemPedidos_objItemSelected.cantidad; // $(this).attr("data-cantidad");
+      xidItem_selected = xidItem;
+      
+      xobj_row_selected
+        .find(".xpedir_row")
+        .each(function(a, element) {
+          xidTipoConsumoItem = $(element).attr("data-id");
+          if (xArrayPedidoObj[xidTipoConsumoItem][xidItem] != null) {
+            xidTipoConsumo = xidTipoConsumoItem;
+            xCantArray = xArrayPedidoObj[xidTipoConsumo][xidItem].cantidad;
+            xindicaciones = xArrayPedidoObj[xidTipoConsumo][xidItem].indicaciones || '';
+
+            itemPedidos_objItemSelected.xCant_item = xCeroIzq(xCantArray, 2);
+            itemPedidos_objItemSelected.xindicaciones = xindicaciones;
+            $(element)
+              .find(".xCant_item")
+              .text(xCeroIzq(xCantArray, 2));
+          }
+        });
+      xobj_row_selected
+        .find("#txt_referencia")
+        .val(xindicaciones);
+
+      // e.stopPropagation();
+      e.stopPropagation();
+      e.stopImmediatePropagation();
+      e.preventDefault()
+
+      
+      // clearInterval(xreloj_update_subItem_sel);
+      if (_xcantidad === 'ND') {return false;};
+
+      //if(xidCatProcedencia=='almacen_items'){return;}
+
+      xUpdateStockSubItem_selected();      
+      // considerar si esto es necesario
+      // xreloj_update_subItem_sel = setInterval(function() {
+      //   xUpdateStockSubItem_selected();
+      // }, 5000);
+      
+      return false;
+    });
+  }
+  function xVerificarCheckItem() {
+    $("#_xSubMenu_body div.xmenu_item_2 .xcheck_item").each(function(index, element) {
+      if ($(element).is(":checked")) {
+        $(this)
+          .parent()
+          .addClass("xitem_seleccionado");
+      } else {
+        $(this)
+          .parent()
+          .removeClass("xitem_seleccionado");
+      }
+    });
+  }
+
+  async function xLoadItems() {
+    $("#_xSubMenu_body").html('<div class="xAlinearCentro spinner"><paper-spinner active></paper-spinner></div>').trigger("create");
+    xTituloDet = window.localStorage.getItem("::app3_sys_dt_c");
+    $("#xtitulo_bar").text(xTituloDet);
+
+    //$.ajax({ type: 'POST', url: '../../bdphp/log.php?op=301', data:{i:xidCategoria,s:xidCategoriaSeccion,p:xidCatProcedencia}})
+    //.done( function (dtItem) {
+    const _DataLoadBack = JSON.parse(window.localStorage.getItem("::app3_sys_dt_back"));   
+    xidCatProcedencia = _DataLoadBack.p;
+    
+    $.ajax({
+      type: "POST",
+      url: "../../bdphp/log.php?op=2042",
+      // data: { i: xidCategoria, s: xidCategoriaSeccion, p: xidCatProcedencia }
+      data: _DataLoadBack
+    }).done(function(dtItem) {
+      // if(!xdt_sub_Item.success){alert(xdt_sub_Item.error); return;}
+      xdt_sub_Item = JSON.parse(dtItem)
+      ,xCadenaItem = ''
+      ,xCadenaItem_encabezado = ''
+      ,xCadenaItem_des_foto = ''
+      ,xCadena_foto = ''
+      ,xCadena_des = ''
+      ,xCadenaItem_Detalle = ''
+      ,xCantItem
+      ,xCheck_desactivado = ''
+      ,xClassEstadoStock = "";
+
+      xdt_sub_Item = xdt_sub_Item.datos;
+
+      xCadenaTC = xArmarTipoConsumo();
+
+      for (var i = 0; i < xdt_sub_Item.length; i++) {
+        //if(xdt_sub_Item[i].idseccion!=xidCategoriaSeccion){continue}
+        xCheck_desactivado = "";
+        var xCantItem = xdt_sub_Item[i].cantidad,
+        xClassEstadoStock = xClassEstadoItem(xCantItem),
+        xClassEstado = xClassEstadoStock.split("|")[0],
+        xClassEstadoStock = xClassEstadoStock.split("|")[1];
+
+        if (xCantItem <= 0) {
+          xCheck_desactivado = "disabled";
+        }
+
+        xCadenaItem_encabezado =
+          '<input class="xcheck_item" type="radio" name="option" data-index=' + i + ' value="other" ' +
+          xCheck_desactivado +
+          ">" +
+          '<p class="xprecio_item xEnLinea">' +
+          xdt_sub_Item[i].precio +
+          "</p>" +
+          '<div id class="xstock_item ' +
+          xClassEstadoStock +
+          '"><span>stock</span><p class="num_stock">' +
+          xCeroIzq(xCantItem, 2) +
+          "</p></div>" +
+          '<p class="xtitulo_item xEnLinea">' +
+          xdt_sub_Item[i].des_item +
+          "</p>";
+
+        xCadenaItem_des_foto = "";
+        if (xdt_sub_Item[i].img != "") {
+          xCadena_foto = '<img src="../img/' + xdt_sub_Item[i].img + '">';
+          xCadenaItem_des_foto = "1";
+        }
+        if (xdt_sub_Item[i].detalle != "") {
+          xCadena_des =
+            '<div class="xsub_titulo_item">' +
+            xMayusculaPrimera(xdt_sub_Item[i].detalle) +
+            "</div>";
+          xCadenaItem_des_foto = "1";
+        }
+        if (xCadenaItem_des_foto == "1") {
+          xCadenaItem_des_foto =
+            '<div class="xdescripcion_foto">' +
+            xCadena_des +
+            xCadena_foto +
+            "</div>";
+        } else {
+          xCadenaItem_des_foto = "";
+        }
+
+        xCadenaItem_Detalle =
+          '<div class="xdetalle_item">' +
+          xCadenaItem_des_foto +
+          '<div class="xreferencia_item"><input type="text" autocomplete="on" placeholder="Escribe aqui las especificaciones..." class="xMiTextReferencia" id="txt_referencia"></div>' +
+          xCadenaTC +
+          "</div></div>";
+
+        xCadenaItem = String(
+          xCadenaItem +
+            '<div onclick="xxaa();" class="xmenu_item_2 xPading10 ' +
+            xClassEstado +
+            '" data-id="' + xdt_sub_Item[i].idcarta_lista + '" data-index='+i+' data-item="' +
+            xdt_sub_Item[i].iditem +
+            '" data-idseccion="' +
+            xdt_sub_Item[i].idseccion +
+            '" data-idseccionindex="' +
+            xdt_sub_Item[i].idseccion_index +
+            '" data-desseccion="' + xdt_sub_Item[i].des_seccion +
+            '" data-cantidad="' + xdt_sub_Item[i].cantidad +
+            '"  data-idimpresora="' +
+            xdt_sub_Item[i].idimpresora +
+            '" data-idprocede="' +
+            xdt_sub_Item[i].idprocede +
+            '" data-procede="' +
+            xdt_sub_Item[i].procede +
+            '" data-procedeindex="' +
+            xdt_sub_Item[i].procede_index +
+            '" data-imprimircomanda="' +
+            xdt_sub_Item[i].imprimir_comanda +
+            '" data-iddescontar="' +
+            xdt_sub_Item[i].idprocede +
+            '" data-cant_descontar="' +
+            xdt_sub_Item[i].cant_descontar +
+            '" data-idalmacen_items="' +
+            xdt_sub_Item[i].idalmacen_items +
+            '">' +
+            xCadenaItem_encabezado +
+            xCadenaItem_Detalle
+        );
+      }
+      $("#_xSubMenu_body div").remove();
+      $("#_xSubMenu_body .spinner").remove();
+      $("#_xSubMenu_body").append(xCadenaItem).trigger("create");
+
+      // al cargar ir a la posicion de donde vino
+      $(window).scrollTop(
+        window.localStorage.getItem("::app3_sys_scroll_pos") || 0
+      );
+    });
+  }
+
+  function xUpdateStockSubItem_selected() {
+    if (xidCatProcedencia == "almacen_items") {
+      xidItem_selected = $(xobj_row_selected).attr("data-idalmacen_items");
+    }
+    $.ajax({
+      type: "POST",
+      url: "../../bdphp/log.php?op=2043",
+      data: { i: xidItem_selected, p: xidCatProcedencia }
+    }).done(function(dt_num_stock) {
+      xClassEstadoStock = xClassEstadoItem(dt_num_stock);
+      xClassEstado = xClassEstadoStock.split("|")[0];
+      xClassEstadoStock = xClassEstadoStock.split("|")[1];
+      $(xobj_row_selected).addClass(xClassEstado);
+      $(xobj_row_selected)
+        .find(".xstock_item")
+        .addClass(xClassEstadoStock);
+      $(xobj_row_selected)
+        .find(".num_stock")
+        .text(xCeroIzq(dt_num_stock, 2));
+    });
+  }
+  /*function xLoadItems(){
+	$("#_xSubMenu_body").html('<div class="xAlinearCentro spinner"><paper-spinner active></paper-spinner></div>').trigger('create');
+	xTituloDet=window.localStorage.getItem("::app3_sys_dt_c")
+	$("#xtitulo_bar").text(xTituloDet);
+
+	$.ajax({ type: 'POST', url: '../../bdphp/log.php?op=301', data:{i:xidCategoria,s:xidCategoriaSeccion,p:xidCatProcedencia}})
+	.done( function (dtItem) {
+		var xdtItem=$.parseJSON(dtItem);
+		var xCadenaItem='';
+		var xCadenaItem_encabezado='';
+		var xCadenaItem_des_foto='';
+		var xCadena_foto='';
+		var xCadena_des='';
+		var xCadenaItem_Detalle='';
+		var xCantItem;
+		var xCheck_desactivado='';
+
+
+		var xClassEstadoStock='';
+		xdtItem=xdtItem.datos;
+		for (var i = 0; i < xdtItem.length; i++) {
+			xCheck_desactivado='';
+			xCantItem=xdtItem[i].cantidad;
+			xClassEstadoStock=xClassEstadoItem(xCantItem);
+			xClassEstado=xClassEstadoStock.split('|')[0];
+			xClassEstadoStock=xClassEstadoStock.split('|')[1];
+
+			if(xCantItem<=0){
+				xCheck_desactivado='disabled'}
+
+			xCadenaItem_encabezado='<input class="xcheck_item" type="radio" name="option" value="other" '+xCheck_desactivado+'>'+
+					'<p class="xprecio_item xEnLinea">'+xdtItem[i].precio+'</p>'+
+					'<div class="xstock_item '+xClassEstadoStock+'"><span>stock</span><p>'+xCeroIzq(xCantItem,2)+'</p></div>'+
+					'<p class="xtitulo_item xEnLinea">'+xdtItem[i].des_item+'</p>';
+
+			xCadenaItem_des_foto='';
+			if(xdtItem[i].img!=''){
+				xCadena_foto='<img src="../img/'+xdtItem[i].img+'">';
+				xCadenaItem_des_foto='1';
+			}
+			if(xdtItem[i].detalle!=''){
+				xCadena_des='<div class="xsub_titulo_item">'+xMayusculaPrimera(xdtItem[i].detalle)+'</div>';
+				xCadenaItem_des_foto='1';
+			}
+			if(xCadenaItem_des_foto=='1'){xCadenaItem_des_foto='<div class="xdescripcion_foto">'+xCadena_des+xCadena_foto+'</div>'}else{xCadenaItem_des_foto='';}
+
+			xCadenaItem_Detalle='<div class="xdetalle_item">'+xCadenaItem_des_foto+
+						'<div class="xreferencia_item"><input type="text" autocomplete="on" placeholder="Escribe aqui las especificaciones..." class="xMiTextReferencia" id="txt_referencia"></div>'+
+						xCadenaTC+'</div></div>';
+
+			xCadenaItem=String(xCadenaItem+'<div class="xmenu_item_2 xPading10 '+xClassEstado+'" data-id="'+xdtItem[i].idcarta_lista+'" data-item="'+xdtItem[i].iditem+'" data-idseccion="'+xidCategoriaSeccion+'" data-idseccionindex="'+xdtItem[i].idseccion_index+'"  data-idimpresora="'+xdtItem[i].idimpresora+'" data-idprocede="'+xdtItem[i].idprocede+'" data-procede="'+xdtItem[i].procede+'" data-procedeindex="'+xdtItem[i].procede_index+'" data-imprimircomanda="'+xdtItem[i].imprimir_comanda+'" data-iddescontar="'+xdtItem[i].idprocede+'" data-cant_descontar="'+xdtItem[i].cant_descontar+'">'+
+					xCadenaItem_encabezado+
+					xCadenaItem_Detalle);
+
+		};
+		$("#_xSubMenu_body div").remove();
+		$("#_xSubMenu_body .spinner").remove();
+		$("#_xSubMenu_body").append(xCadenaItem).trigger('create');
+	});
+}
+*/
+
+  Polymer({
+    is: "x-submenu",
+    properties: {
+      xt_org: Number,
+      xt_idsede: Number,
+      xt_idus: Number
+    },
+    attached: function() {
+      xThis = this;
+      xIniSubMenu();
+    },
+    detached: function() {
+      // clearInterval(xreloj_update_subItem_sel);
+    }
+  });
+</script>
