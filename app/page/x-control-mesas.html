@@ -2405,7 +2405,8 @@ function xActualizarItems(){
 function xResetMesaDefault(_num) {
 	$(".xMiCardPedido.xOcupado .numero").each(function(index,element){
 		const _eparent = $(element).parent();
-		if ( _num.indexOf(element.textContent) === -1 ) {
+		const _t_find = '|'+element.textContent+'|';
+		if ( _num.indexOf(_t_find) === -1 ) {
 			_eparent.addClass('xNeutro');
 			_eparent.removeClass('xOcupado');
 			_eparent.removeClass('xCursor');
