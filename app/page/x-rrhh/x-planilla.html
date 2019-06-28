@@ -1,0 +1,241 @@
+<link rel="import" href="../../x-componentes/x-comp-find-colaborador/x-comp-find-colaborador.html">
+<link rel="import" href="../../x-componentes/x-comp-find-cargo/x-comp-find-cargo.html">
+<link rel="import" href="../../x-componentes/x-comp-find-planilla-tiempo-pago/x-comp-find-planilla-tiempo-pago.html">
+
+<dom-module id="x-planilla">
+	<template is="dom">
+		<paper-dialog class="dialog_redondo dialog_titulo" id="dialog_new_pla_co" style="width: 345px;" modal
+			entry-animation="scale-up-animation" exit-animation="fade-out-animation">			
+			<div class="dialog_titulo xFondoColorPlomo">
+				<h4>Colaborador.</h4>
+			</div>
+			<div>				
+				<form id="form_new_co_pla" method="POST">
+
+					<x-comp-find-colaborador id="selColaborador" espaciar></x-comp-find-colaborador><br>
+					<x-comp-find-cargo id="selCargo" espaciar></x-comp-find-cargo><br>
+					<x-comp-find-planilla-tiempo-pago id="selPeriodo" espaciar></x-comp-find-planilla-tiempo-pago><br>
+					<input type="text" class="xMiInput xPasarEnter2" id="area" name="area" value$="[[selPlaColaborador.area]]"
+						placeholder="AREA" espaciar required>
+
+					
+					<div class="xInvisible">
+						<input type="text" id="idorg" name="idorg" value$="[[xt_org]]">
+						<input type="text" id="idsede" name="idsede" value$="[[xt_idsede]]">
+						<input type="text" id="idplanilla" name="idplanilla" value$="[[selPlaColaborador.idplanilla]]">
+						<input type="text" id="idcolaborador" name="idcolaborador" value$="[[selPlaColaborador.idcargo]]">
+						<input type="text" id="idcargo" name="idcargo" value$="[[selPlaColaborador.idcargo]]">
+						<input type="text" id="idplanilla_periodo" name="idplanilla_periodo" value$="[[selPlaColaborador.idcargo]]">
+						<input type="text" id="mes_activo" name="mes_activo" value$="[[selPlaColaborador.mes_activo]]">
+					</div>
+				</form>
+				<br><br>
+				<button dialog-dismiss onclick="newPlaColaborador()" class="xBoton2 xVerde">Listo Guardar</button>
+				<button dialog-dismiss class="xBoton2 xRojo">Cerrar</button>
+			</div>
+		</paper-dialog>
+
+		<div>
+			<button class="xBoton2 xAzul xDerecha" onclick="openNewColaborador()">Agregar Colaborador</button>
+			<div style="width: 250px;">
+				<label for="f_filtro_mes" class="xColorRow_Plomo">Mes activo:</label>
+				<input type="month" 
+					class="xMiInput xPasarEnter2 xfont18" 
+					id="f_filtro_mes" 
+					onchange="getLoadPlanilla();">
+			</div>
+			<!-- <div class="xLinea2"></div> -->
+			<br>
+			<table width="100%">
+				<thead>
+					<th>#</th>
+					<th align="left">Colaborador</th>
+					<th align="left">Cargo</th>
+					<th align="left">Pago</th>
+					<th align="right">Ingresos</th>
+					<th align="right">Descuentos</th>
+					<th align="right">Neto a pagar</th>
+					<th></th>
+					<th></th>
+				</thead>
+				<tbody>
+					<template is="dom-repeat" items="{{ListPlanilla}}" as="item">
+						<tr data-t="planilla" data-id="{{item.idplanilla}}" class$="[[item.debaja]]"
+							id="{{index}}" onclick="_selRowPlanilla(this)">
+							<td data-id="{{index}}"><span>{{displayIndex(index)}}</span></td>
+							<td>
+								<p class="xfont15">{{item.nombres}}</p>
+								<span>Profesion: <strong>{{item.profesion}}</strong></span>
+								<!-- <span>F. Ingreso: <strong>{{item.f_ingreso}}</strong></span> -->
+							</td>
+							<td>
+								<p class="xfont15">{{item.descargo}}</p>
+								<span>Area: <strong>{{item.area}}</strong></span>
+							</td>
+							<td>
+								{{item.periodo_pago}}
+							</td>
+							<td align="right">
+								<p class="xfont13">{{item.ingresos}}</p>
+							</td>
+							<td align="right">
+								<p class="xfont13">{{item.descuentos}}</p>
+							</td>
+							<td align="right">
+								<p class="xfont13">{{item.neto_pagar}}</p>
+							</td>
+							<td>
+								<span class="xFileRow xCursor" title="File" onclick="_selColaboradorDetalle(this);"></span>
+							</td>
+							<td>
+								<span class="xDeleteRow2 xCursor" title="Anular" onclick="xDialogBorrarObj(this);"></span>
+							</td>
+						</tr>
+					</template>
+				</tbody>
+			</table>
+			<br>			
+		</div>
+	</template>
+</dom-module>
+<style>
+	.dialog_titulo .paper-dialog-0 > *:first-child{
+		margin-top: -7px;
+	}
+</style>
+<script>
+	var xThisPPlanilla, dateNow;
+
+	function xIniPPlanilla() {
+		var _dtUs = xm_log_get('app3_us');
+		xThisPPlanilla.xt_org = _dtUs.ido;
+		xThisPPlanilla.xt_idsede = _dtUs.idsede;
+		xThisPPlanilla.xt_idus = _dtUs.idus;
+
+		dateNow = new Date();
+		const mesNow = dateNow.getFullYear() + '-'+xCeroIzq(dateNow.getMonth()+1,2);
+		f_filtro_mes.max = mesNow;
+		f_filtro_mes.value = mesNow;
+
+		getLoadPlanilla();
+		// $('body').addClass('loaded');
+
+		$('.xPasarEnter2').on('keyup', function (e) {
+			var code = e.which;
+			if (code == 13 || code == 186) {
+				var inputs = $('input'); // storage a array of Inputs
+				var a = inputs.index(document.activeElement);
+				if (inputs[a + 1] !== null) {
+					var nextBox = inputs[a + 1];
+					if (nextBox === undefined) {
+						return
+					}
+					if (nextBox.disabled) {
+						nextBox = inputs[a + 2]
+					}
+
+					if (nextBox == undefined) {
+						return;
+					}
+					nextBox.focus();
+					nextBox.select();
+					//event.preventDefault();
+				}
+				return false;
+			}
+		});
+	}
+
+	function getLoadPlanilla() {
+		$.ajax({
+				type: 'POST',
+				url: '../../bdphp/log_005.php?op=502',
+				data: {mes: xDevolverFechaFormatInputDate(f_filtro_mes.value)}
+			})
+			.done((res) => {
+				const _res = JSON.parse(res);
+				console.log(_res.datos);
+				var sumTotal = 0;
+
+				xThisPPlanilla.ListPlanilla = _res.datos.map(x => {
+					x.neto_pagar = parseFloat(x.ingresos.replace(',','')) - parseFloat(x.descuentos.replace(',',''));
+					x.neto_pagar = numeroConComas(parseFloat(x.neto_pagar).toFixed(2));
+					x.fecha_baja = x.fecha_baja === null ? '' : x.fecha_baja;
+					x.debaja = x.fecha_baja !='' ? 'animated fadeIn fast xCursor xColorRow_Ambar' : 'animated fadeIn fast xCursor';
+					return x;
+				});
+			});
+	}	
+
+	function openNewColaborador() {
+		selColaborador.$.compFindListColaborador.disabled=false;
+		dialog_new_pla_co.open();
+	}
+
+	function newPlaColaborador() {
+		const frm = $("#form_new_co_pla");
+		const mes_yy_activo = xDevolverFechaFormatInputDate(f_filtro_mes.value); //xDevolverFechaParte('mm')+'/'+xDevolverFechaParte('yy');
+		frm.find("#idorg").val(xThisPPlanilla.xt_org);
+		frm.find("#idsede").val(xThisPPlanilla.xt_idsede);
+		frm.find("#idcolaborador").val(selColaborador.getColaborador().idcolaborador);
+		frm.find("#idcargo").val(selCargo.getCargo().idcargo);
+		frm.find("#idplanilla_periodo").val(selPeriodo.getPlatiempo().idplanilla_periodo);
+		frm.find("#mes_activo").val(mes_yy_activo);
+
+		const dataform = objectifyForm($("#form_new_co_pla").serializeArray());
+		console.log(JSON.stringify(dataform));
+		return;
+		$.ajax({
+			type: 'POST',
+			url: '../../bdphp/log_005.php?op=504',
+			data: {item: dataform}
+		}).done(res => {
+			console.log(res);
+		});
+	}
+
+	function _selRowPlanilla(obj) {
+		if (dialog_borrar.opened) return;
+		const index = obj.id;		
+		xThisPPlanilla.selPlaColaborador = xThisPPlanilla.ListPlanilla[index];
+
+		selColaborador.setValue(xThisPPlanilla.selPlaColaborador.idcolaborador);
+		selColaborador.$.compFindListColaborador.disabled=true;
+
+		selCargo.setValue(xThisPPlanilla.selPlaColaborador.idcargo);
+		selPeriodo.setValue(xThisPPlanilla.selPlaColaborador.idplanilla_periodo);
+
+
+		dialog_new_pla_co.open();
+	}
+
+	function _selColaboradorDetalle(obj) {		
+		const index = obj.parentElement.parentElement.id;
+		xThisPPlanilla.selPlaColaborador = xThisPPlanilla.ListPlanilla[index];
+		var _parametros = {
+				id: xThisPPlanilla.selPlaColaborador.idplanilla,
+				mes: xDevolverFechaFormatInputDate(f_filtro_mes.value)
+			};
+
+		_parametros = btoa(JSON.stringify(_parametros));
+		router.go('/recursos_humanos_file?'+_parametros);
+	}
+
+	Polymer({
+		is: 'x-planilla',
+		properties: {
+			xt_org: Number,
+			xt_idsede: Number,
+			ListPlanilla: [],
+			selPlaColaborador: [],
+		},
+		attached: function () {
+			// this.selected = 0,
+			xThisPPlanilla = this;
+			xIniPPlanilla();
+		},
+		displayIndex: function (index) {
+			return xCeroIzq(index + 1, 1);
+		},
+	})
+</script>

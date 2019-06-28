@@ -77,7 +77,7 @@ function sheetDataProductos($sheet) {
         if($idt==''){
           $sql="insert into producto_familia(descripcion,idorg,idsede)value('".$cell."',".$idorg.",".$idsede.")";                    
           $bdP->xConsulta_NoReturn($sql); 
-    //$idt=$bdP->xConsulta_NoReturn($sql);    
+	  //$idt=$bdP->xConsulta_NoReturn($sql);    
           // $idt=$bdP->xConsulta_UltimoId($sql);     
           
           // 191118 -- el id es char ej: f1

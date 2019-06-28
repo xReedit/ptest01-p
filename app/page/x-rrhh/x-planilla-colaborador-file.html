@@ -1,0 +1,309 @@
+<dom-module id="x-planilla-colaborador-file">
+	<template is="dom">
+
+		<paper-dialog class="dialog_redondo" id="dialog_borrar" entry-animation="scale-up-animation"
+			exit-animation="fade-out-animation" with-backdrop>
+			<div class="xtxtCentro">
+				<img src="../../../images/_dlg_remove.gif" alt="" width="150px">
+			</div>
+			<p>Esta seguro de querer borrar este registro?</p>
+			<br>
+			<div class="buttons">
+				<button class="xBoton2 xPlomo" dialog-dismiss>Cancelar</button>
+				<button class="xBoton2 xRojo" onclick="xDlgBorrar();">Si, borrar</button>
+			</div>
+		</paper-dialog>
+
+		<paper-dialog class="dialog_redondo" id="dialog_baja" entry-animation="scale-up-animation"
+			exit-animation="fade-out-animation" with-backdrop>			
+			<br>
+			<h4>Esta seguro de querer dar de baja a este colaborador?</h4>
+			<br>
+			<div class="buttons">
+				<button class="xBoton2 xPlomo" dialog-dismiss>Cancelar</button>
+				<button class="xBoton2 xRojo" onclick="xDarDeBaja();">Si, borrar</button>
+			</div>
+		</paper-dialog>
+		
+		<paper-dialog class="dialog_redondo" id="dialog_new_planilla_detalle" style="width: 345px;" modal
+			entry-animation="scale-up-animation" exit-animation="fade-out-animation">
+			<div class$="[[classDialog]]">
+				<h4>Nuevo {{titulo_dialog}}.</h4>
+			</div>
+			<div>				
+				<br>
+				<form id="form_new_planilla_detalle" method="POST">
+					<input type="text" class="xMiInput xPasarEnter2" placeholder="CONCEPTO" onChange="conMayusculas(this)"
+						id="descripcion" name="descripcion" espaciar required>
+					<input type="number" class="xMiInput xPasarEnter2" placeholder="IMPORTE" onChange="conMayusculas(this)"
+						id="importe" name="importe" espaciar required>
+					<div class="xInvisible">
+						<input type="text" id="idplanilla" name="idplanilla">						
+						<input type="text" id="tipo" name="tipo" value$="[[tipo_registro]]">
+						<input type="text" id="fecha" name="fecha">
+						<input type="text" id="mes_activo" name="mes_activo">
+					</div>
+				</form>
+				<br><br>
+				<button dialog-dismiss id="dlg_sunat_btn" onclick="newPlanillaDetalle()" class="xBoton2 xVerde">Listo
+					Guardar</button>
+				<button dialog-dismiss class="xBoton2 xRojo">Cerrar</button>
+			</div>
+		</paper-dialog>
+
+		<br><br>
+		<div class="xMiCard xradius animated fadeIn" style="width:85%">
+			<div class="xContentCard">
+				<div class="xDerecha" style="text-align: right">
+					<button class="xBoton2 xAzul" onclick="window.history.back()">Regresar</button>
+					<button class="xBoton2 xRojo" hidden$="{{dataEnca.debaja}}" onclick="dialog_baja.open()">Dar de baja</button>
+					
+				</div>
+				<div>
+					<h3>{{dataEnca.nombres}} | {{dataEnca.dni}}</h3>
+					<p>Cargo: <strong>{{dataEnca.descargo}}</strong></p>
+					<p>Profesion: <strong>{{dataEnca.profesion}}</strong></p>
+					<div class="xDerecha" style="text-align: right"><h3>Junio 2019</h3></div>					
+					<p>Area: <strong>{{dataEnca.area}}</strong></p>
+					<p>F. Ingreso: <strong>{{dataEnca.f_ingreso}} | {{dataEnca.tiempo_laborando}} DE SERVICIO.</strong></p>
+					<div hidden$="{{!dataEnca.debaja}}">
+						<p class="xColorRow_Rojo">F. de baja: <strong>{{dataEnca.fecha_baja}}</strong></p>
+					</div>
+				</div>
+				<!-- <h3 class="xDerecha">Junio 2019</h3> -->
+				<br>
+				<div class="xLinea2"></div>
+				<div class="x_div_linea">
+					<div id="div_ingresos" class="xitem1 xBordeDe" style="height: 50vh; overflow-y: auto;">
+						<div hidden$="{{dataEnca.debaja}}">
+							<paper-fab mini icon="add" onclick="_newIngreso()" title="Agregar" tabindex="0"
+								class="xDerecha"
+								style="top: 30px; margin: -5px;"></paper-fab>
+							<h4>Ingresos</h4>
+						</div>
+						<table style="width: 100%">
+							<thead>
+								<th align="left">Concepto</th>
+								<th align="right">Importe</th>
+								<th width="20px"></th>
+							</thead>
+							<tbody>
+								<tr>
+									<td>REMUNERACION BASICA MENSUAL</td>
+									<td align="right">{{dataEnca.sueldo}}</td>
+									<td>										
+									</td>
+								</tr>
+								<template is="dom-repeat" items="{{ListIngresos}}" as="item">
+									<tr data-t="planilla_detalle" data-id="{{item.idplanilla_detalle}}"
+										class="animated fadeIn fast" id="{{index}}" onclick="_setSelIngreso(this)">																														
+										<td><span class="xfont9 xColorRow_Plomo">{{item.fecha}}</span> {{item.descripcion}}</td>
+										<td align="right">{{item.monto}}</td>										
+										<td>
+											<span class="xDeleteRow2" title="Anular" onclick="xDialogBorrarObj(this);"></span>
+										</td>
+									</tr>
+								</template>
+								<tr>
+									<td colspan="2" align="right"><span class="xfont14 xBold">{{sumListIngresos}}</span></td>
+									<td></td>
+								</tr>
+							</tbody>
+						</table>
+					</div>
+					<div id="div_descuentos" class="xitem2">
+						<div hidden$="{{dataEnca.debaja}}">
+							<paper-fab mini icon="add" onclick="_newDescuento()" title="Agregar" tabindex="0"
+								class="xDerecha"
+								style="top: 30px; margin: -5px;"></paper-fab>
+							<h4>Descuentos</h4>
+						</div>
+						<table style="width: 100%">
+							<thead>
+								<th align="left">Concepto</th>
+								<th align="right">Importe</th>
+								<th></th>
+							</thead>
+							<tbody>
+								<template is="dom-repeat" items="{{ListDescuentos}}" as="item">
+									<tr data-t="planilla_detalle" data-id="{{item.idplanilla_detalle}}" class="animated fadeIn fast"
+										id="{{index}}" onclick="_setSelIngreso(this)">
+										<td><span class="xfont9 xColorRow_Plomo">{{item.fecha}}</span> {{item.descripcion}}</td>
+										<td align="right">{{item.monto}}</td>										
+										<td>
+											<span class="xDeleteRow2" title="Anular" onclick="xDialogBorrarObj(this);"></span>
+										</td>
+									</tr>
+								</template>
+								<tr>
+									<td colspan="2" align="right"><span class="xfont14 xBold">{{sumListDescuentos}}</span></td>
+									<td></td>
+								</tr>
+							</tbody>
+						</table>						
+					</div>
+				</div>
+				<div class="xLinea2"></div>
+				<br>
+				<div class="xIzquierda">
+					<p>Cuenta de abono: <strong>{{ dataEnca.cuenta }}</strong></p>
+				</div>
+				<div class="xDerecha" style="text-align: right;">					
+					<p class="xfont20">Neto a pagar: <strong>{{ netoPagar }}</strong></p>
+				</div>
+				<br><br>
+			</div>
+		</div>
+	</template>
+</dom-module>
+<style>
+	.paper-dialog-0>*:first-child {
+		margin-top: -7px;
+	}
+</style>
+<script>
+	var xThisPColFile, dataUrl, _mesactivo;
+
+	function xIniPlanillaDetalle() {
+		const ulr_val = router.activeRoute.baseURI.split('?');
+		dataUrl = JSON.parse(atob(ulr_val[1]));		
+		console.log(dataUrl);
+
+		xLoadPlanillaColaborador();
+		$('body').addClass('loaded');
+	}
+
+	function xLoadPlanillaColaborador() {
+		// encabezado;
+		$.ajax({
+			type: 'POST',
+			url: '../../bdphp/log_005.php?op=503', data:{id: dataUrl.id, mes: dataUrl.mes}
+		})
+		.done((res) => {
+			const _res = JSON.parse(res);			
+			xThisPColFile.dataEnca = _res.datos.map(x => {
+				x.tiempo_laborando = xTiempoTrascurridoYYMMDD(x.laborando);
+				x.fecha_baja = x.fecha_baja === null ? '' : x.fecha_baja;
+				x.debaja = x.fecha_baja !='' ? true : false;
+				return x;
+			})[0];
+
+			xloadDetallesPlanilla();
+		});
+
+		// listas;
+	}
+
+	function xloadDetallesPlanilla() {
+		// planilla detalle ingresos descuentos
+			$.ajax({
+				type: 'POST',
+				url: '../../bdphp/log_005.php?op=5031', data:{id: dataUrl.id, mes: dataUrl.mes}
+			}).done((res) => {
+				const _resD = JSON.parse(res);
+				var sumListI = parseFloat(xThisPColFile.dataEnca.sueldo.replace(',','')),
+					sumListD = 0;
+
+				console.log(_resD.datos);
+				xThisPColFile.ListIngresos = _resD.datos.filter(x => x.tipo === "0").map(x => {
+					sumListI += parseFloat(x.importe); 
+					return x;
+				});
+
+				xThisPColFile.ListDescuentos = _resD.datos.filter(x => x.tipo === "1").map(x => {
+					sumListD += parseFloat(x.importe);
+					return x; 
+				});
+
+				
+				xThisPColFile.sumListIngresos = numeroConComas(sumListI.toFixed(2));
+				xThisPColFile.sumListDescuentos = numeroConComas(sumListD.toFixed(2));
+				xThisPColFile.netoPagar = numeroConComas((sumListI - sumListD).toFixed(2));
+			});
+	}
+
+	function newPlanillaDetalle() {
+		xPopupLoad.xopen();		
+		const frm = $("#form_new_planilla_detalle");
+		frm.find("#fecha").val(xDevolverFecha());
+		frm.find("#idplanilla").val(dataUrl.id);
+		frm.find("#mes_activo").val(dataUrl.mes);
+		xvalidateForm('form_new_planilla_detalle', function (a) {
+			if (a === false) {
+				return;
+			}
+
+			$.post("../../bdphp/ManejoBD_IUD.php?tb=planilla_detalle", $("#form_new_planilla_detalle").serialize(),
+				function (a) {
+					xPopupLoad.xclose();
+					$("#form_new_planilla_detalle").reset();
+					xPopupLoad.xclose();					
+					dialog_new_planilla_detalle.close();
+					xloadDetallesPlanilla();
+				})
+		})
+
+	}
+
+	function _newIngreso() {
+		xThisPColFile.titulo_dialog = "Ingreso";
+		xThisPColFile.tipo_registro = 0;
+		xThisPColFile.classDialog = 'dialog_titulo xFondoColorVerde';
+		dialog_new_planilla_detalle.open();
+	}
+	function _newDescuento() {
+		xThisPColFile.titulo_dialog = "Descuento";
+		xThisPColFile.tipo_registro = 1;
+		xThisPColFile.classDialog = 'dialog_titulo xFondoColorRojo';
+		dialog_new_planilla_detalle.open();		
+	}
+
+	function xDarDeBaja() {
+		$.ajax({
+			type: 'POST',
+			url: '../../bdphp/log_005.php?op=505', data:{id: dataUrl.id}
+		}).done((res) => {
+			dialog_baja.close();
+		});
+	}
+
+	function xDialogBorrarObj(obj, event) {
+		xObjBorrar = obj;
+		dialog_borrar.open();		
+	}
+
+	function xDlgBorrar() {
+		xBorrarItem(xObjBorrar);
+		dialog_borrar.close();
+		xloadDetallesPlanilla();
+	}
+
+	Polymer({
+		is: 'x-planilla-colaborador-file',
+		properties: {
+			xt_org: Number,
+			xt_idsede: Number,
+			titulo_dialog: String,
+			tipo_registro: Number, // 0 ingrso 1 descuento
+			classDialog: String,
+			dataEnca: [],
+			listDetalle:[],
+			ListIngresos: [],
+			ListDescuentos:[],
+			sumListIngresos: String,
+			sumListDescuentos: String,
+			netoPagar: String,
+			// sumList: String,
+			// ListIngresos: [],
+			// ListDescuentos: [],
+		},
+		attached: function () {
+			xThisPColFile = this;
+			xIniPlanillaDetalle();
+			// xIniGastosVariables();
+		},
+		displayIndex: function (index) {
+			return xCeroIzq(index + 1, 1);
+		},
+	})
+</script>

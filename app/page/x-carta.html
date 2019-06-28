@@ -42,9 +42,9 @@
 </paper-dialog>
 <br>
 <div class="xContent" id="content_carta">
-<paper-tabs selected="{{selected}}">
+<paper-tabs selected="{{selected}}" id="tab_carta">
 <paper-tab>CARTA ACTUAL</paper-tab>
-<paper-tab>ITEMS</paper-tab>
+<paper-tab>HISTORIAL</paper-tab>
 </paper-tabs>
 <div class="xLinea2"></div>
 <br><br>
@@ -105,15 +105,44 @@
 </div>
 </div>
 </div>
+</div>
+<div id="historial carta">
+<h3>Historial carta</h3>
+<br>
+<input type="text" class="xMiInput xfont18 xitem2" style="width:100%" placeholder="Buscar" autofocus onkeyup="xfiltrarCartaHistorial()" id="txt_buscar" enlinea>
+<table width="100%">
+<thead>
+<th>#</th>
+<th align="left">Seccion</th>
+<th align="left">Item</th>
+<th align="right">Precio</th>
+<th align="right">Cant. Vendido</th>
+<th align="right">Imp. Vendido</th>
+</thead>
+<tbody>
+<template is="dom-repeat" items="{{ListHistorial}}" as="item">
+<tr class="animated fadeIn fast" id="{{index}}">
+<td data-id="{{index}}"><span>{{displayIndex(index)}}</span></td>
+<td align="left">{{item.desseccion}}</td>
+<td align="left">{{item.desitem}}</td>
+<td align="right">{{item.precio}}</td>
+<td align="right">{{item.cant_vendido}}</td>
+<td align="right">{{item.importe_vendido}}</td>
+</tr>
+</template>
+</tbody>
+</table>
+</div>
 </iron-pages>
+<br><br>
 </div>
 <style type="text/css">paper-checkbox.blue{--paper-checkbox-checked-color:var(--paper-grey-50);--paper-checkbox-checked-ink-color:var(--paper-blue-900);--paper-checkbox-unchecked-color:var(--paper-grey-100);--paper-checkbox-unchecked-ink-color:var(--paper-grey-100);--paper-checkbox-label-color:var(--paper-grey-50);--paper-checkbox-label-checked-color:var(--paper-grey-100);--paper-checkbox-checkmark-color:var(--paper-blue-900)}</style>
 </template>
 </dom-module>
 <style>paper-button[raised].colorful{background:#4285f4;color:#fff}paper-button[raised].xverde{background:#43a047;color:#fff}paper-button[raised].xnegro{background:#424242;color:#fff}#xCardCarta,.xMiCard{width:80%}.div_foto{width:250px;height:260px;background:#e0e0e0;cursor:pointer;display:inline-block}.div_foto #dlg_label_foto{opacity:.8;text-align:center;z-index:0}.div_foto img{width:250px;height:260px;z-index:10;clear:both}</style>
-<script>/*<![CDATA[*/var xThisCarta;var xdes_item;var xdes_categoria;var xprecio;var xcant;var xTbSeccion='';var xSeccActual;var xTopHeaderPersiste;var xIdCarta='';var xIdObjImgDet='';var xObjImgDet;var xIdCartaAnterior;var xidCategoria;var xFechaUltimaCarta;function xInicarta(){xPopupLoad=document.getElementById('xLoad');xm_LogChequea(function(){xm_log_get('ini_us');$('body').addClass('loaded');$("#Titulo_page").text("Elaborar Carta");xIdCarta='';xLoadItemsCategoria();xLoadCarta();});xPasaEnterClass();$(document).scroll(function(){try{if($(this).scrollTop()>($("#Lista_Carta").offset().top+100)){$("#opPersiste").addClass("xHeaderPersiste");}
+<script>/*<![CDATA[*/var xThisCarta,xdes_item,xdes_categoria,xprecio,xcant,xTbSeccion='',xSeccActual,xTopHeaderPersiste,xIdCarta='',xObjImgDet,xIdCartaAnterior,xIdObjImgDet='',xidCategoria,xFechaUltimaCarta,xdebounce,xe_debounce=false;function xInicarta(){xPopupLoad=document.getElementById('xLoad');xm_LogChequea(function(){xm_log_get('ini_us');$('body').addClass('loaded');$("#Titulo_page").text("Elaborar Carta");xIdCarta='';xLoadItemsCategoria();xLoadCarta();});xPasaEnterClass();$(document).scroll(function(){try{if($(this).scrollTop()>($("#Lista_Carta").offset().top+100)){$("#opPersiste").addClass("xHeaderPersiste");}
 else{$('#opPersiste').removeClass("xHeaderPersiste");}}catch(error){}});$("#ctrl_open_file").change(function(e){for(var i=0;i<e.originalEvent.srcElement.files.length;i++){var file=e.originalEvent.srcElement.files[i];var img=document.createElement("img");var reader=new FileReader();reader.onloadend=function(){img.src=reader.result;}
-reader.readAsDataURL(file);$("#dlg_foto_vista_previa img").remove();$("#dlg_foto_vista_previa").append(img).trigger('create');}});$('.SelCarta').on('change',(e)=>{xidCategoria=e.target.value;xLoadListadoCartaActual();});$(document).change('.txt_modifica_bd',function(e){$(e.target.parentElement.parentElement).attr('data-modificado','1');});$(document).change('.txt_modifica_bd_sec',function(e){$(e.target.parentElement).attr('data-modificado','1');});}
+reader.readAsDataURL(file);$("#dlg_foto_vista_previa img").remove();$("#dlg_foto_vista_previa").append(img).trigger('create');}});$('.SelCarta').on('change',(e)=>{xidCategoria=e.target.value;xLoadListadoCartaActual();});$(document).change('.txt_modifica_bd',function(e){$(e.target.parentElement.parentElement).attr('data-modificado','1');});$(document).change('.txt_modifica_bd_sec',function(e){$(e.target.parentElement).attr('data-modificado','1');});$("#tab_carta").on('iron-select',function(){switch(xThisCarta.selected){case 1:xloadCartaHistorial();break;}});}
 function xPasaEnterClass(){$('.xPasarEnter2').on('keyup',function(e){var code=e.which;if(code==13||code==186){var inputs=$('input');var a=inputs.index(document.activeElement);if(inputs[a+1]!==null)
 {var nextBox=inputs[a+1];if(nextBox===undefined){return}
 if(nextBox.disabled){nextBox=inputs[a+2]}
@@ -130,7 +159,7 @@ xArraySeccionItem[index]={'des_seccion':xdes_seccion,'id_seccion':xidSeccion,'se
 $(element).find('.tb_item tr.row').each(function(indexI,item){var xidItem=$(item).attr('data-id');const x_se_a_modificado=parseInt($(item).attr('data-modificado'))===0?false:true;var xidCartaRow=$(item).attr('data-idcarta')||xIdCarta;var xDes=$(item).find("#td_des").text();var xprecio=$(item).find("#td_precio").text();var xdet=$(item).find("#td_detalle").text();var ximg=$(item).find("#td_img").text();var xCant=$(item).find("#td_cant").text().toLocaleUpperCase();var _idcarta_lista=$(item).find("#td_idcarta_lista").text();let pasa=false;xIdItemCarList=_idcarta_lista;if(xidItem==undefined||xidItem==''){xidItem='';pasa=true;};if(x_se_a_modificado){pasa=true;}
 if(!pasa){return;}
 contador_row++;xArraySeccionItem[index][indexI]={'idcarta':xidCartaRow,'id_item':xidItem,'id_seccion':xidSeccion,'id_carta_lista':xIdItemCarList,'des_item':xDes,'precio_item':xprecio,'det_item':xdet,'img_item':ximg,'cant_item':xCant,'cant_preparado_item':xCant,'sec_orden':xsec_orden}})});array_enviar_carta=[];if(contador_row>70){array_enviar_carta.push(xArraySeccionItem.splice(0,(xArraySeccionItem.length/2)));array_enviar_carta.push(xArraySeccionItem.splice(0,xArraySeccionItem.length));}else{array_enviar_carta.push(xArraySeccionItem);}
-xPopupLoad.xopen();array_enviar_carta.map(x=>{console.log(x);$.ajax({type:'POST',url:'../../bdphp/log.php?op=204',data:{idc:xidCategoria,f:xFechaInsert,id_carta_anterior:xIdCartaAnterior,sql_array:x}}).done(function(xid){xIdCartaAnterior=xid;xIdCarta=xid;xLoadCarta();})});setTimeout(()=>{xPopupLoad.xclose();},1000);}
+xPopupLoad.xopen();array_enviar_carta.map(x=>{console.log(x);$.ajax({type:'POST',url:'../../bdphp/log.php?op=204',data:{idc:xidCategoria,f:xFechaInsert,id_carta_anterior:xIdCartaAnterior,sql_array:x}}).done(function(xid){xIdCartaAnterior=xid;xIdCarta=xid;xLoadCarta();$.ajax({type:'POST',url:'../../bdphp/log.php?op=204001',data:{id:xIdCartaAnterior}});})});setTimeout(()=>{xPopupLoad.xclose();},1000);}
 function xGuardarSeccion(obj,responde){var xId=$(obj).attr('data-id');var xDes=$(obj).val();var xval_print=$(obj).attr('data-print');if(xval_print==undefined){xval_print=0;}
 if(xDes==''){responde(xId);return;}
 $.ajax({type:'POST',url:'../../bdphp/log.php?op=203',data:{i:xId,des:xDes,p:xval_print},async:false}).done(function(xid){responde(xid)})}
@@ -196,4 +225,6 @@ $(obj).parent().parent().find("#seccion_des").attr('data-print',xval);$.ajax({ty
 function xVerSiStockCero(obj){var xid=$(obj).parent().parent().find("#seccion_des").attr('data-id');var xval;if($(obj).hasClass('xImgCheck')){$(obj).removeClass('xImgCheck');$(obj).addClass('xImgNoCheck');$(obj).attr('title',"NO Mostrar items si su stock es cero");xval=1;}
 else{$(obj).removeClass('xImgNoCheck');$(obj).addClass('xImgCheck');$(obj).attr('title',"Mostrar items si su stock es cero");xval=0;}
 $(obj).parent().parent().find("#seccion_des").attr('data-stockcero',xval);$.ajax({type:'POST',url:'../../bdphp/log.php?op=2033',data:{i:xid,p:xval}})}
-Polymer({is:'x-carta',properties:{dt_item:Object,dt_seccion:Object,},attached:function(){this.selected=0;xThisCarta=this;xInicarta();}})/*]]>*/</script>
+function xloadCartaHistorial(){const _filtro=txt_buscar.value;$.ajax({type:'POST',url:'../../bdphp/log_005.php?op=6',data:{filtro:_filtro}}).done(res=>{res=JSON.parse(res);xThisCarta.ListHistorial=res.datos;});}
+function xfiltrarCartaHistorial(){if(xe_debounce)return;xe_debounce=true;clearTimeout(xdebounce);xdebounce=setTimeout(()=>{xe_debounce=false;xloadCartaHistorial();},900);}
+Polymer({is:'x-carta',properties:{dt_item:Object,dt_seccion:Object,ListHistorial:[],},attached:function(){this.selected=0;xThisCarta=this;xInicarta();},displayIndex:function(index){return xCeroIzq(index+1,1);},})/*]]>*/</script>

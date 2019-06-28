@@ -1,150 +1,37 @@
 <link rel="import" href="../../web_components/polymer/polymer.html">
 <dom-module id="x-comp-sede-toolbar">
-	<template>
-		<paper-dialog id="dialog_sede" class="dialog_redondo xFondoRowPlomo4" style="min-width: 350px;" entry-animation="scale-up-animation" exit-animation="fade-out-animation">
-			<div class="">
-				<h4>Seleccione Sede de trabajo:</h4>
-				<hr>
-				<div>
-					<table width="100%" class="xtable5">
-						<tbody>
-							<template is="dom-repeat" items="{{listSede}}" as="item">
-								<tr data-id="{{index}}" class="xCursor" onclick="xCompSedeToll_CambiarSede(this);">
-									<td>{{item.nombre}}</td>
-									<td>{{item.ciudad}}</td>
-								</tr>
-							</template>
-						</tbody>
-					</table>
-				</div>
-				<br>				
-			</div>
-		</paper-dialog>
-		
-		<div>
-			<span class="" title="Cambiar Sede" onclick="xCompSedeToll_MostarSeleccionSede();" id="txt_sede">
-				RESTOBAR
-			</span>
-		</div>
-
-	</template>
-	<script>
-		var xThisComToolSede, _opSelectSede = false;
-
-		function xCompSedeToll_MostarSeleccionSede(){
-			if (_opSelectSede) {
-				dialog_sede.open();
-			}		
-		}
-
-		function xCompSedeToll_CambiarSede(obj) {
-			const index = obj.dataId;
-			const objSede = xThisComToolSede.listSede[index];
-			$.ajax({ type: 'POST', url: '../../bdphp/log.php?op=-1001', data:{i: objSede.idsede} })
-			.done((x)=> {
-
-				// guardar los cambios de sede y org en variable local
-				updateapp3_woDUS_changeSede(objSede.idorg, objSede.idsede);
-
-				// reload page
-				localStorage.setItem('::app3_woUsS', objSede.idsede);
-				localStorage.removeItem('::app3_sys_descat');// en mi pedido
-
-				$('body').removeClass('loaded');
-				setTimeout(() => {					
-					$("#txt_sede").text(objSede.nombre + ' | ' + objSede.ciudad);
-					
-					dialog_sede.close();
-					$('body').addClass('loaded');
-				}, 500);
-				//document.location.href = 'm_panel.html';
-			});
-		}
-
-		function xCompSedeToll_getAllSedes() {
-			// sede actual
-			
-			const _infoSede = xm_log_get('app3_us');
-			const _idSedeBuscar = localStorage.getItem('::app3_woUsS') ? localStorage.getItem('::app3_woUsS') : _infoSede ? _infoSede.idsede : null;
-			const _rol = _infoSede ? _infoSede.rol : null;
-			
-			$.ajax({ type: 'POST', url: '../../bdphp/log_componentes.php?op=1' })
-				.done(function (dtSede) {
-					dtSede = $.parseJSON(dtSede);
-					xThisComToolSede.listSede = dtSede.datos;
-					xThisComToolSede.sedes = xThisComToolSede.listSede[0];
-					xThisComToolSede.getValorIncial(xThisComToolSede.sedes);					
-					_opSelectSede = dtSede.datos.length > 1 ? true : false;
-
-					if (_idSedeBuscar === null) {						
-						$.ajax({ url: '../../bdphp/log.php?op=-1002'})
-						.done((res) => {
-							res = res.split(',');
-							xCompSedeToll_buscarSede(res[0]);
-							xCompSedeToll_rol(res[1]);
-						})
-						// $("#txt_sede").text(xThisComToolSede.sedes.nombre + ' | ' + xThisComToolSede.sedes.ciudad);
-					} else {
-						xCompSedeToll_buscarSede(_idSedeBuscar);
-						xCompSedeToll_rol(_rol);
-					}
-					
-				});
-		}
-
-		function xCompSedeToll_rol(rol) {
-			var tool_title='';
-			_opSelectSede = false
-
-			if (parseInt(rol)===1 && xThisComToolSede.listSede.length > 1) {
-				tool_title = 'Click para cambiar sede';				
-				$("#txt_sede").addClass('clickSelToolSede xCursor');
-				_opSelectSede = true;
-			}
-			$("#txt_sede").attr('title', tool_title);
-		}
-
-		function xCompSedeToll_buscarSede(idbuscar) {			
-			const _arrSede = xThisComToolSede.listSede.filter(x=> x.idsede === idbuscar).map( x => x)[0];
-			$("#txt_sede").text(_arrSede.nombre + ' | ' + _arrSede.ciudad);
-		}		
-
-		// function xCompSedeToll_selectOptionSede() {
-		// 	const index = xThisComToolSede.$.compFindListSede.value;
-		// 	xThisComToolSede.sedes = xThisComToolSede.listSede[index];
-		// }
-
-
-		Polymer({
-			is: 'x-comp-sede-toolbar',
-			properties: {
-				listSede: [],
-				sedes: {
-					type: Object,
-					// value : {},
-					reflectToAttribute: true,
-					notify: true,
-					value: function () { return {}; },
-					observer: 'sedeNameChanged'
-				},
-			},
-			listeners: {
-				'onchange': 'getSede'
-			},
-			sedeNameChanged: function (sede) {
-				return sede;
-			},
-			getSede() {
-				return this.sedes;
-			},
-			attached: function () {
-				xThisComToolSede = this;
-				xCompSedeToll_getAllSedes();
-			},
-			getValorIncial: function (sede) {
-				this.fire('getValorIncial', { sedes: sede });
-			}
-		})
-	</script>
-
+<template>
+<paper-dialog id="dialog_sede" class="dialog_redondo xFondoRowPlomo4" style="min-width:350px" entry-animation="scale-up-animation" exit-animation="fade-out-animation">
+<div class="">
+<h4>Seleccione Sede de trabajo:</h4>
+<hr>
+<div>
+<table width="100%" class="xtable5">
+<tbody>
+<template is="dom-repeat" items="{{listSede}}" as="item">
+<tr data-id="{{index}}" class="xCursor" onclick="xCompSedeToll_CambiarSede(this)">
+<td>{{item.nombre}}</td>
+<td>{{item.ciudad}}</td>
+</tr>
+</template>
+</tbody>
+</table>
+</div>
+<br>
+</div>
+</paper-dialog>
+<div>
+<span class="" title="Cambiar Sede" onclick="xCompSedeToll_MostarSeleccionSede()" id="txt_sede">
+RESTOBAR
+</span>
+</div>
+</template>
+<script>/*<![CDATA[*/var xThisComToolSede,_opSelectSede=false;function xCompSedeToll_MostarSeleccionSede(){if(_opSelectSede){dialog_sede.open();}}
+function xCompSedeToll_CambiarSede(obj){const index=obj.dataId;const objSede=xThisComToolSede.listSede[index];$.ajax({type:'POST',url:'../../bdphp/log.php?op=-1001',data:{i:objSede.idsede}}).done((x)=>{updateapp3_woDUS_changeSede(objSede.idorg,objSede.idsede);localStorage.setItem('::app3_woUsS',objSede.idsede);localStorage.removeItem('::app3_sys_descat');$('body').removeClass('loaded');setTimeout(()=>{$("#txt_sede").text(objSede.nombre+' | '+objSede.ciudad);dialog_sede.close();$('body').addClass('loaded');},500);});}
+function xCompSedeToll_getAllSedes(){const _infoSede=xm_log_get('app3_us');const _idSedeBuscar=localStorage.getItem('::app3_woUsS')?localStorage.getItem('::app3_woUsS'):_infoSede?_infoSede.idsede:null;const _rol=_infoSede?_infoSede.rol:null;$.ajax({type:'POST',url:'../../bdphp/log_componentes.php?op=1'}).done(function(dtSede){dtSede=$.parseJSON(dtSede);xThisComToolSede.listSede=dtSede.datos;xThisComToolSede.sedes=xThisComToolSede.listSede[0];xThisComToolSede.getValorIncial(xThisComToolSede.sedes);_opSelectSede=dtSede.datos.length>1?true:false;if(_idSedeBuscar===null){$.ajax({url:'../../bdphp/log.php?op=-1002'}).done((res)=>{res=res.split(',');xCompSedeToll_buscarSede(res[0]);xCompSedeToll_rol(res[1]);})}else{xCompSedeToll_buscarSede(_idSedeBuscar);xCompSedeToll_rol(_rol);}});}
+function xCompSedeToll_rol(rol){var tool_title='';_opSelectSede=false
+if(parseInt(rol)===1&&xThisComToolSede.listSede.length>1){tool_title='Click para cambiar sede';$("#txt_sede").addClass('clickSelToolSede xCursor');_opSelectSede=true;}
+$("#txt_sede").attr('title',tool_title);}
+function xCompSedeToll_buscarSede(idbuscar){const _arrSede=xThisComToolSede.listSede.filter(x=>x.idsede===idbuscar).map(x=>x)[0];$("#txt_sede").text(_arrSede.nombre+' | '+_arrSede.ciudad);}
+Polymer({is:'x-comp-sede-toolbar',properties:{listSede:[],sedes:{type:Object,reflectToAttribute:true,notify:true,value:function(){return{};},observer:'sedeNameChanged'},},listeners:{'onchange':'getSede'},sedeNameChanged:function(sede){return sede;},getSede(){return this.sedes;},attached:function(){xThisComToolSede=this;xCompSedeToll_getAllSedes();},getValorIncial:function(sede){this.fire('getValorIncial',{sedes:sede});}})/*]]>*/</script>
 </dom-module>

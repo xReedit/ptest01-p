@@ -1,0 +1,261 @@
+<link rel="import" href="../../x-componentes/pagination-input/pagination-input.html">
+<dom-module id="x-cuentas-por-cobrar-pagar">
+<template is="dom">
+<paper-dialog class="dialog_redondo" id="dialog_borrar" entry-animation="scale-up-animation" exit-animation="fade-out-animation" with-backdrop>
+<div class="xtxtCentro">
+<img src="../../../images/_dlg_remove.gif" alt="" width="150px">
+</div>
+<p>Esta seguro de querer borrar este registro?</p>
+<br>
+<div class="buttons">
+<button class="xBoton2 xPlomo" dialog-dismiss>Cancelar</button>
+<button class="xBoton2 xRojo" onclick="xDlgBorrar()">Si, borrar</button>
+</div>
+</paper-dialog>
+<paper-dialog class="dialog_redondo" id="dialog_detalle_cp" modal entry-animation="scale-up-animation" exit-animation="fade-out-animation">
+<div>
+<h4>Registrar Pago</h4>
+<h4>{{selItemCP.des_proveedor}}</h4>
+<span>Deuda total: {{selItemCP.total_total}}</span>
+<hr>
+<br>
+<div class="x_div_linea">
+<div id="historial" class="xitem1 xBordeDe" style="height:50vh;overflow-y:auto">
+<div>
+<p><strong>Historial de abonos</strong></p>
+<table width="100%">
+<thead class="xfont10">
+<th>#</th>
+<th>Fecha</th>
+<th align="right">Importe</th>
+</thead>
+<tbody>
+<template is="dom-repeat" items="{{ListDetallesCP}}" as="subitem">
+<tr class="xfont10">
+<td data-id="{{index}}"><span>{{displayIndex(index)}}</span></td>
+<td>{{subitem.fecha}}</td>
+<td align="right">{{subitem.total}}</td>
+</tr>
+</template>
+<tr>
+<td colspan="2">
+<p class="xfont15 xBold">Total</p>
+</td>
+<td align="right">
+<p class="xfont15 xBold">{{sumTotalDetalleCP}}</p>
+</td>
+</tr>
+</tbody>
+</table>
+</div>
+</div>
+<div id="registrar-pago" class="xitem2">
+<table width="100%" class="table-like">
+<tr>
+<td>F. compra</td>
+<td>
+{{selItemCP.f_compra}}
+</td>
+</tr>
+<tr>
+<td>Pendiente</td>
+<td>
+{{selItemCP.total}}
+</td>
+</tr>
+<tr>
+<td>Pagar</td>
+<td><input type="number" class="xMiInput xPasarEnter2" onChange="conMayusculas(this)" onkeyup="comprobarValPagar(this)" id="importe_pagar" espaciar></td>
+</tr>
+</table>
+</div>
+</div>
+<hr>
+<div class="xDerecha">
+<button dialog-dismiss class="xBoton2 xRojo">Cerrar</button>
+<button dialog-dismiss id="dlg_sunat_btn" onclick="confimarPago()" class="xBoton2 xVerde" disabled$="[[!habiltarBtnPago]]">Listo confirmar
+pago</button>
+</div>
+<br>
+</div>
+</paper-dialog>
+<br><br>
+<div class="xMiCard xradius" style="width:90%">
+<div class="xContentCard" style="height:100%">
+<br>
+<paper-tabs selected="{{selected}}" id="tab_cpc">
+<paper-tab>Cuentas por Pagar</paper-tab>
+<paper-tab>Cuentas por Cobrar</paper-tab>
+</paper-tabs>
+<div class="xLinea2"></div>
+<br><br>
+<iron-pages selected="{{selected}}">
+<div id="div_cuentas_pagar">
+<h4>Cuentas por pagar</h4>
+<span>Compras realizadas al credito. <strong><a class="xColorRow_verde xCursor" onclick="xVerHistorialCuentasPagadas()">Ver historial
+de cuentas
+pagadas</a></strong></span>
+<br><br><br>
+<table width="100%">
+<thead>
+<th>#</th>
+<th>Proveedor</th>
+<th>F. Compra</th>
+<th>F. Pago</th>
+<th>Faltan</th>
+<th>Importe</th>
+<th></th>
+</thead>
+<tbody>
+<template is="dom-repeat" items="{{ListCuentasPagar}}" as="item">
+<tr data-t="compra" data-id="{{item.idcompra}}" class="animated fadeIn fast xCursor" id="{{index}}" onclick="_selItemCP(this)">
+<td data-id="{{index}}"><span>{{displayIndex(index)}}</span></td>
+<td>{{item.des_proveedor}}</td>
+<td>{{item.f_compra}}</td>
+<td>{{item.f_pago}}</td>
+<td>
+<span hidden="{{!item.resaltar}}" class="xRojo xBold">{{item.faltan}} dias</span>
+<span hidden="{{item.resaltar}}" class="xVerde xBold">{{item.faltan}} dias</span>
+</td>
+<td>{{item.total}}</td>
+<td>
+<span class="xDeleteRow2" title="Anular" onclick="xDialogBorrarObj(this)"></span>
+</td>
+</tr>
+</template>
+<tr>
+<td></td>
+<td colspan="4">
+<p class="xfont15 xBold">Total</p>
+</td>
+<td>
+<p class="xfont15 xBold">{{sumListCuentasPagar}}</p>
+</td>
+<td></td>
+</tr>
+</tbody>
+</table>
+<br><br>
+</div>
+<div id="div_cuentas_cobrar">
+<div class="xDerecha">
+<button class="xBoton2 xAzul" disabled$="[[!habilitarBtnPagado]]" onclick="xRegistrarComoPagado()">Registrar como
+pagado</button>
+</div>
+<h4>Cuentas por Cobrar</h4>
+<span>Listado de consumos registrados al credito de tus clientes.</span>
+<br><br>
+<input type="text" class="xMiInput xfont15" style="width:100%" placeholder="Buscar" autofocus onkeyup="xfiltrarDatos_re(1)" id="txt_buscar_re_cobrar" enlinea>
+<br><br>
+<table width="100%" id="table_cobrar">
+<thead>
+<th>#</th>
+<th>Cliente</th>
+<th>Tipo</th>
+<th>Fecha</th>
+<th>Pasaron</th>
+<th align="right">Importe</th>
+<th></th>
+</thead>
+<tbody>
+<template is="dom-repeat" items="{{ListCuentasCobrar}}" as="item">
+<tr data-t="registro_pago_detalle" data-id="{{item.idregistro_pago_detalle}}" class="animated fadeIn fast xCursor" id="{{index}}">
+<td data-id="{{index}}">
+<paper-checkbox class="check_item" id="{{index}}"></paper-checkbox>
+<span>{{displayIndex(index)}}</span>
+</td>
+<td>{{item.nomcliente}}</td>
+<td>{{item.tipoconsumo}}</td>
+<td>{{item.fecha}}</td>
+<td align="right">{{item.pasaron}} dias</td>
+<td align="right">{{item.total_total}}</td>
+<td><span class="xDeleteRow" title="Borrar" onclick="xDialogBorrarObj(this)"></span></td>
+</tr>
+</template>
+<tr>
+<td></td>
+<td colspan="4">
+<p class="xfont15 xBold">Total</p>
+</td>
+<td>
+<p class="xfont15 xBold" align="right">{{sumListCuentasCobrar}}</p>
+</td>
+<td colspan="2"></td>
+</tr>
+</tbody>
+</table>
+<br>
+<div>
+<pagination-input id="paginator_cobrar" date-log="cobrar" current-page="1" page-count="10" current-page-changed="onChangePagination($event)"></pagination-input>
+</div>
+<br>
+</div>
+<div id="div_historial_cuentas_pagadas">
+<button class="xDerecha xBoton2 xPlomo" onclick="xThisCpc.selected=0">Regresar</button>
+<h3>Historial de cuentas pagadas</h3>
+<br><br>
+<input type="text" class="xMiInput xfont15" style="width:100%" placeholder="Buscar" autofocus onkeyup="xfiltrarDatos_re(0)" id="txt_buscar_re" enlinea>
+<br>
+<table width="100%">
+<thead>
+<th>#</th>
+<th>Proveedor</th>
+<th>Pagar el</th>
+<th>Ultimo Pago</th>
+<th align="right">Pasaron</th>
+<th align="right">Importe</th>
+</thead>
+<tbody>
+<template is="dom-repeat" items="{{ListHistorialCuentasPagar}}" as="item">
+<tr data-t="compra" data-id="{{item.idcompra}}" class="animated fadeIn fast xCursor" id="{{index}}" onclick="_selItemCP(this)">
+<td data-id="{{index}}"><span>{{displayIndex(index)}}</span></td>
+<td>{{item.des_proveedor}}</td>
+<td>{{item.f_pago}}</td>
+<td>{{item.f_ultimo_pago}}</td>
+<td align="right">
+<span hidden="{{!item.resaltar}}" class="xRojo xBold">{{item.faltan}} dias</span>
+<span hidden="{{item.resaltar}}" class="xColorRow_verde xBold">{{item.faltan}} dias</span>
+</td>
+<td align="right">{{item.total_total}}</td>
+</tr>
+</template>
+</tbody>
+</table>
+<br>
+<div>
+<pagination-input id="paginator" current-page="1" page-count="10" current-page-changed="onChangePagination($event)"></pagination-input>
+</div>
+<br>
+</div>
+</iron-pages>
+</div>
+</div>
+</template>
+</dom-module>
+<script>/*<![CDATA[*/var xThisCpc,sel_idTipoIngreso,xObjBorrar,data_pagination={},p_rows=0,xdebounce,xe_debounce=false;function xIniPagination(){xThisCpc.$.paginator.currentPage=1;xThisCpc.$.paginator.pageRows=p_rows;xThisCpc.$.paginator.listRows=[30,60,90,120];xThisCpc.$.paginator_cobrar.currentPage=1;xThisCpc.$.paginator_cobrar.pageRows=p_rows;xThisCpc.$.paginator_cobrar.listRows=[30,60,90,120];}
+function xIniCpc(){$('body').addClass('loaded');var _dtUs=xm_log_get('app3_us');xThisCpc.xt_org=_dtUs.ido;xThisCpc.xt_idsede=_dtUs.idsede;xThisCpc.xt_idus=_dtUs.idus;xThisCpc.habiltarBtnPago=false;xIniPagination();getAllListCuentasPagar();$('.xPasarEnter2').on('keyup',function(e){var code=e.which;if(code==13||code==186){var inputs=$('input');var a=inputs.index(document.activeElement);if(inputs[a+1]!==null){var nextBox=inputs[a+1];if(nextBox===undefined){return}
+if(nextBox.disabled){nextBox=inputs[a+2]}
+if(nextBox==undefined){return;}
+nextBox.focus();nextBox.select();}
+return false;}});xThisCpc.$.paginator.addEventListener('page-limit-change',(e)=>{data_pagination=e.detail.value;p_desde=data_pagination.pageDesde;xloadHistorialCuentasPagar();});xThisCpc.$.paginator_cobrar.addEventListener('page-limit-change',(e)=>{data_pagination=e.detail.value;xloadCuentasCobrar();});$(document.body).on('click','#table_cobrar tr',function(e){getIndexRow(this,e);});$(document.body).on('click','#table_cobrar .check_item',function(e){getIndexRow(this,e);});$("#tab_cpc").on('iron-select',function(){console.log('iron ',xThisCpc.selected);switch(xThisCpc.selected){case 1:data_pagination={},p_rows=0;xIniPagination();xloadCuentasCobrar();break;}});}
+function getIndexRow(item,e){const tipo=item.nodeName;const element=tipo!=='TR'?$(item)[0]:$(item).find('paper-checkbox')[0];const check=tipo!=='TR'?element.checked:!element.checked;const index=element.id;element.checked=check;xThisCpc.ListCuentasCobrar[index].pagado=check;xChecCheksMarcados();e.stopPropagation();e.stopImmediatePropagation();}
+function xChecCheksMarcados(){const numChecks=xThisCpc.ListCuentasCobrar.filter(x=>x.pagado===true).length;xThisCpc.habilitarBtnPagado=numChecks>0?true:false;}
+function comprobarValPagar(obj){xThisCpc.habiltarBtnPago=obj.value.length>0&&xThisCpc.selItemCP?true:false;}
+function getAllListCuentasPagar(){$.ajax({type:'GET',url:'../../bdphp/log_005.php?op=3',}).done((res)=>{const _res=JSON.parse(res);console.log(_res.datos);var sumTotal=0,sumTotalHistorialCP=0;xThisCpc.ListCuentasPagar=_res.datos.map(x=>{sumTotal+=parseFloat(x.importe);x.resaltar=x.faltan<0?true:false;return x;});xThisCpc.sumListCuentasPagar=numeroConComas(sumTotal.toFixed(2));});}
+function newIO(){xPopupLoad.xopen();$("#form_new_io #idsede").val(xThisCpc.xt_idsede);$("#form_new_io #idorg").val(xThisCpc.xt_org);$("#form_new_io #idtipo_ingreso").val(sel_idTipoIngreso);$("#form_new_io #fecha_ingreso").val(xDevolverFechaFormatInputDate(date_fecha_ingreso.value));$("#form_new_io #fecha_registro").val(xDevolverFecha());xvalidateForm('form_new_io',function(a){if(a===false){return;}
+$.post("../../bdphp/ManejoBD_IUD.php?tb=contable_ingreso_otro",$("#form_new_io").serialize(),function(a){xPopupLoad.xclose();$("#form_new_io").reset();xPopupLoad.xclose();date_fecha_ingreso.value=dateNow.toISOString().split("T")[0];getAllListCuentasPagar();dialog_new_ingreso.close();})})}
+function _changeDateFiltro(obj){const _val=obj.value.split('-');_mm=_val[1];_yy=_val[0];getAllListCuentasPagar();}
+function xDialogBorrarObj(obj,event){xObjBorrar=obj;dialog_borrar.open();}
+function xDlgBorrar(){xBorrarItem(xObjBorrar);dialog_borrar.close();}
+function _getTipoIngreso(e){sel_idTipoIngreso=e.idtipo_ingreso;}
+function _selItemCP(obj){const index=obj.id;const itemCP=xThisCpc.ListCuentasPagar[index];const idgf=obj.dataId;xThisCpc.selItemCP=itemCP;importe_pagar.select();importe_pagar.focus();importe_pagar.value="";xThisCpc.habiltarBtnPago=false;dialog_detalle_cp.open();loadDetalleCP(idgf);}
+function loadDetalleCP(id){$.ajax({type:'POST',url:'../../bdphp/log_005.php?op=301',data:{i:id}}).done((res)=>{const dt=JSON.parse(res);xThisCpc.ListDetallesCP=dt.datos;var sumTotalDetalle=0;dt.datos.map(x=>{sumTotalDetalle+=parseFloat(x.importe.replace(',',''));});xThisCpc.sumTotalDetalleCP=numeroConComas(sumTotalDetalle.toFixed(2));console.log(dt.datos);})}
+function confimarPago(){xThisCpc.selItemCP.importe_pagar=importe_pagar.value;const _datos=xThisCpc.selItemCP;$.ajax({type:'POST',url:'../../bdphp/log_005.php?op=302',data:{item:_datos}}).done((res)=>{getAllListCuentasPagar();importe_pagar.value="";})}
+function xVerHistorialCuentasPagadas(){xThisCpc.selected=2;xloadHistorialCuentasPagar();}
+function xloadHistorialCuentasPagar(){const p_filter=xThisCpc.$.txt_buscar_re.value;data_pagination.pageFilter=p_filter;$.ajax({type:'POST',url:'../../bdphp/log_005.php?op=303',data:{pagination:data_pagination}}).done(function(res){res=res.split('**');p_rows=res[1];res=$.parseJSON(res[0]);xdt_h=res;if(!xdt_h.success){xPopupLoad.xclose();alert(xdt_h.error);return;}
+xThisCpc.ListHistorialCuentasPagar=xdt_h.datos.map(x=>{x.resaltar=x.faltan>0?true:false;return x;});p_upadate=false;xThisCpc.$.paginator.pageRows=p_rows;});}
+function xfiltrarDatos_re(val){if(xe_debounce)return;xe_debounce=true;clearTimeout(xdebounce);xdebounce=setTimeout(()=>{xe_debounce=false;if(val===0){xThisCpc.$.paginator.currentPage=1;xloadHistorialCuentasPagar();}else{xThisCpc.$.paginator_cobrar.currentPage=1;xloadCuentasCobrar();}},900);}
+function xloadCuentasCobrar(){const p_filter=xThisCpc.$.txt_buscar_re_cobrar.value;data_pagination.pageFilter=p_filter;$.ajax({type:'POST',url:'../../bdphp/log_005.php?op=304',data:{pagination:data_pagination}}).done(function(res){res=res.split('**');p_rows=res[1];res=$.parseJSON(res[0]);xdt_h=res;if(!xdt_h.success){xPopupLoad.xclose();alert(xdt_h.error);return;}
+var sumTotalImporte=0;xdt_h.datos.map(x=>{sumTotalImporte+=parseFloat(x.importe);});xThisCpc.sumListCuentasCobrar=numeroConComas(sumTotalImporte.toFixed(2));xThisCpc.ListCuentasCobrar=xdt_h.datos;p_upadate=false;xThisCpc.$.paginator_cobrar.pageRows=p_rows;});}
+function xRegistrarComoPagado(){var idsPagados=[];xThisCpc.ListCuentasCobrar.filter(x=>x.pagado===true).map(x=>{idsPagados.push(x.idregistro_pago_detalle);});$.ajax({type:'POST',url:'../../bdphp/log_005.php?op=305',data:{ids:idsPagados.join(',')}}).done(function(res){xloadCuentasCobrar();})}
+Polymer({is:'x-cuentas-por-cobrar-pagar',properties:{xt_org:Number,xt_idsede:Number,sumListCuentasPagar:String,sumListHistorialCuentasPagar:String,ListCuentasPagar:[],ListDetallesCP:[],ListHistorialCuentasPagar:[],selItemCP:[],sumTotalDetalleCP:String,ListCuentasCobrar:[],sumListCuentasCobrar:String,habilitarBtnPagado:false,habiltarBtnPago:false,},attached:function(){this.selected=0,this.habilitarBtnPagado=false;xThisCpc=this;xIniCpc();},displayIndex:function(index){return xCeroIzq(index+1,1);},})/*]]>*/</script>

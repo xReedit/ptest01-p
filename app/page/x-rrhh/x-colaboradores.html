@@ -1,0 +1,201 @@
+<dom-module id="x-colaboradores">
+	<template is="dom">
+		<paper-dialog class="dialog_redondo" id="dialog_new_colaborador" style="width: 345px;" modal
+			entry-animation="scale-up-animation" exit-animation="fade-out-animation">
+			<div>
+				<h4>Colaborador.</h4>
+				<br>
+				<form id="form_new_colaborador" method="POST">
+					<label for="date_fecha_ingreso" class="xColorRow_Plomo">Fecha de Ingreso:</label>
+					<input type="date" class="xMiInput xPasarEnter2" id="date_fecha_ingreso" espaciar>
+					
+					<br>
+					<input type="text" class="xMiInput xPasarEnter2" placeholder="NOMBRES Y APELLIDOS"
+						onChange="conMayusculas(this)" id="nombres" name="nombres"
+						value$="[[selColaborador.nombres]]" espaciar required>
+					
+					<input type="number" class="xMiInput xPasarEnter2" placeholder="DNI"
+						onChange="conMayusculas(this)" id="dni" name="dni" value$="[[selColaborador.dni]]"
+						espaciar required>
+					
+					<select id="sel_sex" class="xTextRow2 xCursor" espaciar required>
+						<option value="M">MASCULINO</option>
+						<option value="F">FEMENINO</option>
+					</select>					
+
+					<input type="text" class="xMiInput xPasarEnter2" placeholder="PROFESION" onChange="conMayusculas(this)"
+						id="profesion" name="profesion" value$="[[selColaborador.profesion]]" espaciar required>									
+					
+					<input type="text" class="xMiInput xPasarEnter2" placeholder="DIRECCION" onChange="conMayusculas(this)"
+						id="direccion" name="direccion" value$="[[selColaborador.direccion]]" espaciar required>
+					
+					<input type="text" class="xMiInput xPasarEnter2" placeholder="TELEFONO" onChange="conMayusculas(this)"
+						id="telefono" name="telefono" value$="[[selColaborador.telefono]]" espaciar required>
+					
+					<input type="text" class="xMiInput xPasarEnter2" placeholder="CORREO" onChange="conMayusculas(this)"
+						id="correo" name="correo" value$="[[selColaborador.correo]]" espaciar required>
+					
+					<input type="text" class="xMiInput xPasarEnter2" placeholder="CUENTA DE ABONO" onChange="conMayusculas(this)" id="cuenta"
+						name="cuenta" value$="[[selColaborador.cuenta]]" espaciar required>
+					
+					<br><br>
+					<label for="date_fecha_nacimiento" class="xColorRow_Plomo">Fecha de nacimiento:</label>
+					<input type="date" class="xMiInput xPasarEnter2" id="date_fecha_nacimiento" espaciar>
+
+					<div class="xInvisible">
+						<input type="text" id="idorg" name="idorg" value$="[[xt_org]]">
+						<input type="text" id="idsede" name="idsede" value$="[[xt_idsede]]">
+						<input type="text" id="idcargo" name="idcolaborador" value$="[[selColaborador.idcolaborador]]">
+						<input type="text" id="f_nac" name="f_nac">
+						<input type="text" id="f_ingreso" name="f_ingreso">
+					</div>
+				</form>
+				<br><br>
+				<button dialog-dismiss onclick="newColaborador()" class="xBoton2 xVerde">Listo Guardar</button>
+				<button dialog-dismiss class="xBoton2 xRojo">Cerrar</button>
+			</div>
+		</paper-dialog>
+
+		<div>
+			<!-- <paper-fab icon="add" onclick="dialog_new_colaborador.open()" title="Agregar" tabindex="0" class="xDerecha">
+			</paper-fab> -->
+			<table width="100%">
+				<thead>
+					<th align="left">#</th>
+					<th align="left">Nombres</th>
+					<th align="left">DNI</th>
+					<th align="left">Profesion</th>
+					<th align="left">Telefono</th>
+					<th align="left">Laborando</th>
+					<th align="left">Edad</th>
+					<th align="left">Cumpleaños</th>
+					<th></th>
+				</thead>
+				<tbody>
+					<template is="dom-repeat" items="{{ListColaboradores}}" as="item">
+						<tr data-t="colaborador" data-id="{{item.idcolaborador}}" class="animated fadeIn fast xCursor"
+							id="{{index}}" onclick="_selRowColaborador(this)">
+							<td data-id="{{index}}"><span>{{displayIndex(index)}}</span></td>
+							<td>{{item.nombres}}</td>
+							<td>{{item.dni}}</td>
+							<td>{{item.profesion}}</td>
+							<td>{{item.telefono}}</td>
+							<td>{{item.tiempo_laborando}}</td>
+							<td>{{item.edad}}</td>
+							<td>{{item.cumple}}</td>
+							<td>
+								<span class="xDeleteRow2" title="Anular" onclick="xDialogBorrarObj(this);"></span>
+							</td>
+						</tr>
+					</template>
+				</tbody>
+			</table>
+			<br>
+			<button class="xBoton2 xAzul" onclick="addColaborador()">Agregar</button>
+		</div>
+	</template>
+</dom-module>
+<script>
+	var xThisPColaborador, dateNow
+
+	function xIniPColaborador() {
+		var _dtUs = xm_log_get('app3_us');
+		xThisPColaborador.xt_org = _dtUs.ido;
+		xThisPColaborador.xt_idsede = _dtUs.idsede;
+		xThisPColaborador.xt_idus = _dtUs.idus;
+
+		
+
+		getLoadColaborador();
+		// $('body').addClass('loaded');
+
+		$('.xPasarEnter2').on('keyup', function (e) {
+			var code = e.which;
+			if (code == 13 || code == 186) {
+				var inputs = $('input'); // storage a array of Inputs
+				var a = inputs.index(document.activeElement);
+				if (inputs[a + 1] !== null) {
+					var nextBox = inputs[a + 1];
+					if (nextBox === undefined) {
+						return
+					}
+					if (nextBox.disabled) {
+						nextBox = inputs[a + 2]
+					}
+
+					if (nextBox == undefined) {
+						return;
+					}
+					nextBox.focus();
+					nextBox.select();
+					//event.preventDefault();
+				}
+				return false;
+			}
+		});
+	}
+
+	function addColaborador() {
+		xThisPColaborador.selColaborador = [];
+		dialog_new_colaborador.open();
+	}
+
+	function getLoadColaborador() {
+		$.ajax({
+				type: 'GET',
+				url: '../../bdphp/log_005.php?op=501',
+			})
+			.done((res) => {
+				const _res = JSON.parse(res);								
+				console.log(_res.datos);
+				xThisPColaborador.ListColaboradores = _res.datos.map(x => {
+					x.tiempo_laborando = xTiempoTrascurridoYYMMDD(x.laborando)
+					return x;
+				});
+			});
+	}
+
+	function newColaborador() {
+		$("#form_new_colaborador #idorg").val(xThisPColaborador.xt_org);
+		$("#form_new_colaborador #idsede").val(xThisPColaborador.xt_idsede);
+		$("#form_new_colaborador #f_nac").val(xDevolverFechaFormatInputDate(date_fecha_nacimiento.value));
+		$("#form_new_colaborador #f_ingreso").val(xDevolverFechaFormatInputDate(date_fecha_ingreso.value));
+		$.post("../../bdphp/ManejoBD_IUD.php?tb=colaborador", $("#form_new_colaborador").serialize(),
+			function (a) {
+				xPopupLoad.xclose();
+				$("#form_new_colaborador").reset();
+				xPopupLoad.xclose();
+				getLoadColaborador();
+				dialog_new_colaborador.close();
+			})
+	}
+
+	function _selRowColaborador(obj) {
+		if (dialog_borrar.opened) return;
+		const index = obj.id;
+		const idCargo = obj.dataId;
+		xThisPColaborador.selColaborador = xThisPColaborador.ListColaboradores[index];
+
+		date_fecha_ingreso.valueAsNumber = new Date(xSetInputDate(xThisPColaborador.selColaborador.f_ingreso));
+		date_fecha_nacimiento.valueAsNumber = new Date(xSetInputDate(xThisPColaborador.selColaborador.f_nac));
+		dialog_new_colaborador.open();
+	}
+
+	Polymer({
+		is: 'x-colaboradores',
+		properties: {
+			xt_org: Number,
+			xt_idsede: Number,
+			ListColaboradores: [],
+			selColaborador: [],
+		},
+		attached: function () {
+			// this.selected = 0,
+			xThisPColaborador = this;
+			xIniPColaborador();
+		},
+		displayIndex: function (index) {
+			return xCeroIzq(index + 1, 1);
+		},
+	})
+</script>

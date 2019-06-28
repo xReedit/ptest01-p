@@ -1,0 +1,80 @@
+<link rel="import" href="../../web_components/polymer/polymer.html">
+<link rel="import" href="../../web_components/paper-dropdown-menu/paper-dropdown-menu.html">
+<link rel="import" href="../../web_components/iron-dropdown/iron-dropdown.html">
+
+
+<dom-module id="x-comp-find-tipo-ingreso">
+	<template is="dom-bind">
+		<div>
+			<select id="compFindListCategoria" class="xTextRow2 xCursor" onchange="selectOptionIngreso()">
+				<template is="dom-repeat" items="{{list}}" as="categoria">
+					<option value="[[index]]">[[categoria.descripcion]] </option>
+				</template>
+			</select>
+		</div>
+
+	</template>
+	<script>
+		var xThisComTipoIngreso;
+
+		function getAllTipoIngreso() {
+			$.ajax({
+					type: 'GET',
+					url: '../../bdphp/log_componentes.php?op=5'
+				})
+				.done(function (dtValues) {
+					dtValues = $.parseJSON(dtValues);
+					xThisComTipoIngreso.list = dtValues.datos;
+					xThisComTipoIngreso.list_tipo_ingreso = xThisComTipoIngreso.list[0];
+					xThisComTipoIngreso.list_tipo_ingreso.index = 0;
+					xThisComTipoIngreso.valIdInt = xThisComTipoIngreso.list_tipo_ingreso;
+					xThisComTipoIngreso.getValorIncial(xThisComTipoIngreso.list_tipo_ingreso);
+				});
+		}
+
+		function selectOptionIngreso() {
+			const index = xThisComTipoIngreso.$.compFindListCategoria.value;
+			xThisComTipoIngreso.list_tipo_ingreso = xThisComTipoIngreso.list[index];
+			xThisComTipoIngreso.list_tipo_ingreso.index = index
+		}
+
+
+		Polymer({
+			is: 'x-comp-find-tipo-ingreso',
+			properties: {
+				// idTipoIngreso: {type : Number, notify: true, reflectToAttribute: true},
+				list: [],
+				list_tipo_ingreso: {
+					type: Object,
+					// value : {},
+					reflectToAttribute: true,
+					notify: true,
+					value: function () {
+						return {};
+					},
+					observer: 'tipoIngresoNameChanged'
+				},
+				valIdInt: {type : Object, notify: true, reflectToAttribute: true},
+			},
+			listeners: {
+				'onchange': 'getTipoIngreso'
+			},
+			tipoIngresoNameChanged: function (categoria) {
+				return categoria;
+			},
+			getTipoIngreso() {
+				return this.categoria;
+			},
+			attached: function () {
+				xThisComTipoIngreso = this;
+				getAllTipoIngreso();
+			},
+			getValorIncial: function (val) {
+				this.fire('getValorIncial', {
+					values: val
+				});
+			}
+		})
+	</script>
+
+</dom-module>

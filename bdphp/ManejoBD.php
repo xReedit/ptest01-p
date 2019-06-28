@@ -1,6 +1,5 @@
 <?php
-//extends SQLite3
-class xManejoBD extends mysqli
+class xManejoBD extends mysqli //extends SQLite3
 {
 	var $bd;
     function xManejoBD($BaseDatos)

@@ -43,9 +43,9 @@
 <link rel=import href=../web_components/x-dialog/x-dialog.html>
 <link rel=stylesheet href=../../css/micss.css />
 <link type=image/x-icon href=../../images/logo_app.png rel="shortcut icon" />
-<style is=custom-style>body{width:100%;margin:0;padding:0;background-color:white}paper-toolbar{--paper-toolbar-background:#1e88e5;top:0;left:0;right:0;position:fixed;height:60px;z-index:2}.content{position:absolute;width:100%;top:60px}paper-drawer-panel{position:fixed;height:100%;--paper-drawer-panel-left-drawer-container:{background-color:#303030;color:#e0e0e0;position:fixed;height:100%;overflow-y:auto}}.xHeadertoolbar{background-color:#212121}.xBtnPanel{display:block;text-align:left;margin-bottom:90px}.xBtnPanel paper-button{width:100%;margin-left:0;padding:5px;text-align:left;display:block}.xBtnPanel paper-button:hover{background:#383838}paper-drawer-panel #navbarmenu1{display:none}.xMarginAlinear{margin-right:4%}#dialog_us{border-radius:5px;width:250px;position:fixed;top:10px;right:10px}</style>
+<style is=custom-style>body{width:100%;margin:0;padding:0;background-color:white}paper-toolbar{--paper-toolbar-background:#1e88e5;top:0;left:0;right:0;position:fixed;height:60px;z-index:2}.content{position:absolute;width:100%;top:60px}paper-drawer-panel{height:100%;--paper-drawer-panel-left-drawer-container:{background-color:#303030;color:#e0e0e0;position:fixed;height:100%;overflow-y:auto}}.xHeadertoolbar{background-color:#212121}.xOnZindexPanelDe{z-index:2}.xBtnPanel{display:block;text-align:left;margin-bottom:90px}.xBtnPanel paper-button{width:100%;margin-left:0;padding:5px;text-align:left;display:block}.xBtnPanel paper-button:hover{background:#383838}paper-drawer-panel #navbarmenu1{display:none}.xMarginAlinear{margin-right:4%}#dialog_us{border-radius:5px;width:250px;position:fixed;top:10px;right:10px}</style>
 </head>
-<body oncontextmenu="return false">
+<body oncontextmenu="return false" unresolved>
 <x-dialog id=xLoad></x-dialog>
 <paper-dialog id=dialog_inactividad class=dialog_redondo modal entry-animation=scale-up-animation exit-animation=fade-out-animation with-backdrop>
 <p>
@@ -66,41 +66,38 @@ Desea continuar?
 </div>
 </div>
 <paper-drawer-panel force-narrow hasTransform id=PanelDe>
-<paper-header-panel drawer>
+<paper-header-panel drawer class=xOnZindexPanelDe>
 <paper-toolbar class=xHeadertoolbar>
 <div>OPCIONES</div>
 </paper-toolbar>
-<div main class="xBtnPanel ul_menu">
-<br /><br /><br />
-<ul></ul>
-</div>
+<div class="xBtnPanel ul_menu"><br><br><br></div>
 </paper-header-panel>
-</paper-drawer-panel>
 <paper-header-panel main>
-<paper-toolbar>
-<paper-icon-button paper-drawer-toggle icon=menu onclick=xOpenPanelDe()></paper-icon-button>
+<paper-toolbar style=position:relative;z-index:0>
+<paper-icon-button paper-drawer-toggle icon=menu></paper-icon-button>
 <span class=title id=xtitulo_bar>RESTOBAR</span>
 <paper-icon-button onclick=goBack() icon=arrow-back title=Regresar></paper-icon-button>
 <paper-icon-button onclick=xOpenPageCarta(5) icon=search title=Buscar></paper-icon-button>
-<div class=xIco_MiPedido onclick=xOpenPageCarta(3)>
+<div class=xIco_MiPedido onclick=xOpenPageCarta(3) id=_xIco_MiPedido>
 <span class="xCantPedio_ico xInvisible"></span>
 <paper-icon-button icon=content-paste title="Mi pedido"></paper-icon-button>
 </div>
 </paper-toolbar>
-<div fit layout vertical class=content>
+<div>
 <x-router></x-router>
 <paper-toast id=toast duration=0 text=. style=z-index:1000>
 <paper-progress id=loading indeterminate style=width:100%;float:left></paper-progress>
 </paper-toast>
 </div>
 </paper-header-panel>
+</paper-drawer-panel>
 <script src=../../js/jquery_external.js async></script>
-<script type=text/javascript src=../view/xm_all.js async></script>
+<script rel=preload type=text/javascript src=../../js/mifuncion_web.js async></script>
+<script rel=preload type=text/javascript src=../view/xm_all.js async></script>
 <script type=text/javascript src=../view/m_menu.js async></script>
 <script type=text/javascript src=../view/onGalleta.js></script>
 <script type=text/javascript src=../view/manager_storage.js></script>
 <script type=text/javascript src=../view/verifyConnection.js async></script>
 <script type=text/javascript src=../view/item_pedidos.js async></script>
-<script type=text/javascript src=../../js/mifuncion_web.js async></script>
 </body>
 </html>

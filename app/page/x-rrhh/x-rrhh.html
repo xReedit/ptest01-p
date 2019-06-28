@@ -1,0 +1,115 @@
+<link rel="import" href="./x-planilla.html">
+<link rel="import" href="./x-planilla-cargos.html">
+<link rel="import" href="./x-colaboradores.html">
+<!-- <link rel="import" href="./x-planilla-colaborador-file.html"> -->
+
+<dom-module id="x-rrhh">
+	<template is="dom">
+		<paper-dialog class="dialog_redondo" id="dialog_borrar" entry-animation="scale-up-animation"
+			exit-animation="fade-out-animation" with-backdrop>
+			<div class="xtxtCentro">
+				<img src="../../../images/_dlg_remove.gif" alt="" width="150px">
+			</div>
+			<p>Esta seguro de querer borrar este registro?</p>
+			<br>
+			<div class="buttons">
+				<button class="xBoton2 xPlomo" dialog-dismiss>Cancelar</button>
+				<button class="xBoton2 xRojo" onclick="xDlgBorrar();">Si, borrar</button>
+			</div>
+		</paper-dialog>
+
+		<br>
+		<div>			
+			<div style="display: flex;" class="fondoContent">
+				<h3>Recursos Humanos</h3>
+				<div>
+					<paper-tabs selected="{{selected}}" id="tab_cpe" scrollable>
+						<paper-tab>Planilla</paper-tab>
+						<paper-tab>Colaboradores</paper-tab>
+						<paper-tab>Cargos</paper-tab>
+					</paper-tabs>
+				</div>
+			</div>			
+			<div class="xLinea2"></div>			
+			<iron-pages selected="{{selected}}">
+				<div id="div_planilla" class="xContent">
+					<br>
+					<x-planilla></x-planilla>					
+				</div>
+				<div id="div_colaboradores" class="xContent">
+					<br>
+					<x-colaboradores></x-colaboradores>
+				</div>
+				<div id="div_cargo" class="xContent">
+					<br>
+					<x-planilla-cargos></x-planilla-cargos>
+				</div>
+			</iron-pages>
+			
+			<br>
+		</div>
+	</template>
+</dom-module>
+<script>
+var xThisRrhh, xObjBorrar
+function xIniRRHH() {
+	var _dtUs = xm_log_get('app3_us');
+	xThisRrhh.xt_org = _dtUs.ido;
+	xThisRrhh.xt_idsede = _dtUs.idsede;
+	xThisRrhh.xt_idus = _dtUs.idus;
+	$('body').addClass('loaded');
+
+	$('.xPasarEnter2').on('keyup', function (e) {
+			var code = e.which;
+			if (code == 13 || code == 186) {
+				var inputs = $('input'); // storage a array of Inputs
+				var a = inputs.index(document.activeElement);
+				if (inputs[a + 1] !== null) {
+					var nextBox = inputs[a + 1];
+					if (nextBox === undefined) {
+						return
+					}
+					if (nextBox.disabled) {
+						nextBox = inputs[a + 2]
+					}
+
+					if (nextBox == undefined) {
+						return;
+					}
+					nextBox.focus();
+					nextBox.select();
+					//event.preventDefault();
+				}
+				return false;
+			}
+		});
+		
+}
+
+	function xDialogBorrarObj(obj, event) {
+		xObjBorrar = obj;
+		dialog_borrar.open();		
+	}
+
+	function xDlgBorrar() {
+		xBorrarItem(xObjBorrar);
+		dialog_borrar.close();
+	}
+
+Polymer({
+	is: 'x-rrhh',
+	properties: {
+		xt_org: Number,
+		xt_idsede: Number,	
+		xt_idus: Number,
+	},
+	attached: function () {
+		this.selected = 0,
+		xThisRrhh = this;
+		xIniRRHH();
+	},
+	displayIndex: function (index) {
+		return xCeroIzq(index + 1, 1);
+	},
+})
+</script>

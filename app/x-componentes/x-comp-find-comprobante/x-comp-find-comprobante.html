@@ -1,66 +1,17 @@
 <link rel="import" href="../../web_components/polymer/polymer.html">
 <link rel="import" href="../../web_components/paper-dropdown-menu/paper-dropdown-menu.html">
 <link rel="import" href="../../web_components/iron-dropdown/iron-dropdown.html">
-
-
 <dom-module id="x-comp-find-comprobante">
-    <template>        
-        <div>
-          <select id="compFindListComprobante" class="xTextRow2 xCursor" onchange="selectOptionComprobante()">
-            <template is="dom-repeat" items="{{list}}" as="comprobante">
-              <option value="[[index]]">[[comprobante.descripcion]] </option>
-            </template>
-          </select>
-        </div>
-
-    </template>
-    <script>
-        var xThisComComprobante;
-
-        function getAllComprobantes() {            
-            const _op = xThisComComprobante.op === 1 ? '2' : '201'; // 201=no enlasa con tipo_comprobante_seriie
-            $.ajax({ type: 'POST', url: '../../bdphp/log_componentes.php?op='+_op})
-	        .done( function (dtValues) {
-                dtValues=$.parseJSON(dtValues);	
-                xThisComComprobante.list=dtValues.datos;
-                xThisComComprobante.comprobantes = xThisComComprobante.list[0];
-                xThisComComprobante.getValorIncial(xThisComComprobante.comprobantes);
-            });
-        }
-
-        function selectOptionComprobante() {
-            const index = xThisComComprobante.$.compFindListComprobante.value;
-            xThisComComprobante.comprobantes = xThisComComprobante.list[index];
-        }
-        
-
-        Polymer({
-        is: 'x-comp-find-comprobante',
-        properties: {
-            op:{
-                type:Number,
-                value:1
-            },
-            list: [],
-            comprobantes: {
-                type: Object,
-                reflectToAttribute: true,
-                notify: true,
-                observer: 'comprobanteNameChanged'
-            },
-        },
-        comprobanteNameChanged: function(comprobante) {
-            return comprobante;
-        },
-    
-        ready: function() {
-            xThisComComprobante=this;	
-            getAllComprobantes();
-        },
-        getValorIncial: function(comprobante) {
-            this.fire('getValorIncialx', {values: comprobante});
-        }
-    })
-    </script>
-
+<template>
+<div>
+<select id="compFindListComprobante" class$="[[applyClass]]" onchange="selectOptionComprobante()">
+<template is="dom-repeat" items="{{list}}" as="comprobante">
+<option value="[[index]]">[[comprobante.descripcion]] </option>
+</template>
+</select>
+</div>
+</template>
+<script>var xThisComComprobante;function getAllComprobantes(){const _op=xThisComComprobante.op===1?'2':'201';$.ajax({type:'POST',url:'../../bdphp/log_componentes.php?op='+_op}).done(function(dtValues){dtValues=$.parseJSON(dtValues);xThisComComprobante.list=dtValues.datos;xThisComComprobante.comprobantes=xThisComComprobante.list[0];xThisComComprobante.getValorIncial(xThisComComprobante.comprobantes);});}
+function selectOptionComprobante(){const index=xThisComComprobante.$.compFindListComprobante.value;xThisComComprobante.comprobantes=xThisComComprobante.list[index];}
+Polymer({is:'x-comp-find-comprobante',properties:{applyClass:{type:String,value:'xTextRow2 xCursor'},op:{type:Number,value:1},list:[],comprobantes:{type:Object,reflectToAttribute:true,notify:true,observer:'comprobanteNameChanged'},},comprobanteNameChanged:function(comprobante){return comprobante;},ready:function(){xThisComComprobante=this;getAllComprobantes();},getValorIncial:function(comprobante){this.fire('getValorIncialx',{values:comprobante});},getValorSelecionado:()=>{return xThisComComprobante.comprobantes;},reloadAllComprobantes:()=>{getAllComprobantes();}})</script>
 </dom-module>

@@ -1,0 +1,96 @@
+<link rel="import" href="../../web_components/polymer/polymer.html">
+<link rel="import" href="../../web_components/paper-dropdown-menu/paper-dropdown-menu.html">
+<link rel="import" href="../../web_components/iron-dropdown/iron-dropdown.html">
+
+
+<dom-module id="x-comp-find-planilla-tiempo-pago">
+	<template is="dom-bind">
+		<div>
+			<select id="compFindListPlaTiempo" class="xTextRow2 xCursor" onchange="selectOptionPlaTiempo()">
+				<template is="dom-repeat" items="{{list}}" as="categoria">
+					<option value="[[index]]">[[categoria.descripcion]] </option>
+				</template>
+			</select>
+		</div>
+
+	</template>
+	<script>
+		var xThisComPlaTiempo;
+
+		function getAllPlaTiempo() {
+			$.ajax({
+					type: 'GET',
+					url: '../../bdphp/log_componentes.php?op=10'
+				})
+				.done(function (dtValues) {
+					dtValues = $.parseJSON(dtValues);
+					xThisComPlaTiempo.list = dtValues.datos;
+					xThisComPlaTiempo.list_platiempo = xThisComPlaTiempo.list[0];
+					xThisComPlaTiempo.list_platiempo.index = 0;
+					xThisComPlaTiempo.valIdInt = xThisComPlaTiempo.list_platiempo;
+					xThisComPlaTiempo.getValorIncial(xThisComPlaTiempo.list_platiempo);
+				});
+		}
+
+		function selectOptionPlaTiempo() {
+			const index = xThisComPlaTiempo.$.compFindListPlaTiempo.value;
+			xThisComPlaTiempo.list_platiempo = xThisComPlaTiempo.list[index];
+			xThisComPlaTiempo.list_platiempo.index = index
+		}
+
+		Polymer({
+			is: 'x-comp-find-planilla-tiempo-pago',
+			properties: {
+				// idTipoIngreso: {type : Number, notify: true, reflectToAttribute: true},
+				list: [],
+				list_platiempo: {
+					type: Object,
+					// value : {},
+					reflectToAttribute: true,
+					notify: true,
+					value: function () {
+						return {};
+					},
+					observer: 'plaTiempoNameChanged'
+				},
+				valIdInt: {
+					type: Object,
+					notify: true,
+					reflectToAttribute: true
+				},
+			},
+			listeners: {
+				'onchange': 'getPlatiempo'
+			},
+			plaTiempoNameChanged: function (categoria) {
+				return categoria;
+			},
+			getPlatiempo() {
+				// return this.categoria;
+				return xThisComPlaTiempo.list_platiempo;
+			},
+			setValue(id) {
+				var _index;
+				xThisComPlaTiempo.list.map((x, index) => {
+					if (x.idplanilla_periodo === id) {
+						_index = index;
+						return;
+					}
+				});							
+				
+				compFindListPlaTiempo.selectedIndex = _index;
+				selectOptionPlaTiempo();
+			},
+			attached: function () {
+				xThisComPlaTiempo = this;
+				getAllPlaTiempo();
+			},
+			getValorIncial: function (val) {
+				this.fire('getValorIncial', {
+					values: val
+				});
+			}
+		})
+	</script>
+
+</dom-module>

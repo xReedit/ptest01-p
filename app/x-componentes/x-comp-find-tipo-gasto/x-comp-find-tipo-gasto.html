@@ -1,0 +1,81 @@
+<link rel="import" href="../../web_components/polymer/polymer.html">
+<link rel="import" href="../../web_components/paper-dropdown-menu/paper-dropdown-menu.html">
+<link rel="import" href="../../web_components/iron-dropdown/iron-dropdown.html">
+
+
+<dom-module id="x-comp-find-tipo-gasto">
+	<template is="dom-bind">
+		<div>
+			<select id="compFindListCategoria" class="xTextRow2 xCursor" onchange="selectOptionTipoGasto()">
+				<template is="dom-repeat" items="{{list}}" as="categoria">
+					<option value="[[index]]">[[categoria.descripcion]] </option>
+				</template>
+			</select>
+		</div>
+
+	</template>
+	<script>
+		var xThisComTipoPago;
+
+		function getAllTipoGasto() {
+			$.ajax({
+					type: 'POST',
+					url: '../../bdphp/log_componentes.php?op=4',
+					data: {id: xThisComTipoPago.idTipoGasto}
+				})
+				.done(function (dtValues) {
+					dtValues = $.parseJSON(dtValues);
+					xThisComTipoPago.list = dtValues.datos;
+					xThisComTipoPago.list_tipo_gasto = xThisComTipoPago.list[0];
+					xThisComTipoPago.list_tipo_gasto.index = 0;
+					xThisComTipoPago.valIdInt = xThisComTipoPago.list_tipo_gasto;
+					xThisComTipoPago.getValorIncial(xThisComTipoPago.list_tipo_gasto);
+				});
+		}
+
+		function selectOptionTipoGasto() {
+			const index = xThisComTipoPago.$.compFindListCategoria.value;
+			xThisComTipoPago.list_tipo_gasto = xThisComTipoPago.list[index];
+			xThisComTipoPago.list_tipo_gasto.index = index
+		}
+
+
+		Polymer({
+			is: 'x-comp-find-tipo-gasto',
+			properties: {
+				idTipoGasto: {type : Number, notify: true, reflectToAttribute: true},
+				list: [],
+				list_tipo_gasto: {
+					type: Object,
+					// value : {},
+					reflectToAttribute: true,
+					notify: true,
+					value: function () {
+						return {};
+					},
+					observer: 'tipoGastoNameChanged'
+				},
+				valIdInt: {type : Object, notify: true, reflectToAttribute: true},
+			},
+			listeners: {
+				'onchange': 'getTipoGasto'
+			},
+			tipoGastoNameChanged: function (categoria) {
+				return categoria;
+			},
+			getTipoGasto() {
+				return this.categoria;
+			},
+			attached: function () {
+				xThisComTipoPago = this;
+				getAllTipoGasto();
+			},
+			getValorIncial: function (val) {
+				this.fire('getValorIncial', {
+					values: val
+				});
+			}
+		})
+	</script>
+
+</dom-module>

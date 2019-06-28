@@ -1,0 +1,17 @@
+<link rel="import" href="../../web_components/polymer/polymer.html">
+<link rel="import" href="../../web_components/paper-dropdown-menu/paper-dropdown-menu.html">
+<link rel="import" href="../../web_components/iron-dropdown/iron-dropdown.html">
+<dom-module id="x-comp-find-colaborador">
+<template is="dom-bind">
+<div>
+<select id="compFindListColaborador" class="xTextRow2 xCursor" onchange="selectOptionColaborador()">
+<template is="dom-repeat" items="{{list}}" as="categoria">
+<option value="[[index]]">[[categoria.nombres]] </option>
+</template>
+</select>
+</div>
+</template>
+<script>var xThisComColaborador;function getAllColaborador(){$.ajax({type:'GET',url:'../../bdphp/log_componentes.php?op=9'}).done(function(dtValues){dtValues=$.parseJSON(dtValues);xThisComColaborador.list=dtValues.datos;xThisComColaborador.list_colaborador=xThisComColaborador.list[0];xThisComColaborador.list_colaborador.index=0;xThisComColaborador.valIdInt=xThisComColaborador.list_colaborador;xThisComColaborador.getValorIncial(xThisComColaborador.list_colaborador);});}
+function selectOptionColaborador(){const index=xThisComColaborador.$.compFindListColaborador.value;xThisComColaborador.list_colaborador=xThisComColaborador.list[index];xThisComColaborador.list_colaborador.index=index}
+Polymer({is:'x-comp-find-colaborador',properties:{list:[],list_colaborador:{type:Object,reflectToAttribute:true,notify:true,value:function(){return{};},observer:'colaboradorNameChanged'},valIdInt:{type:Object,notify:true,reflectToAttribute:true},},listeners:{'onchange':'getColaborador'},colaboradorNameChanged:function(categoria){return categoria;},getColaborador(){return xThisComColaborador.list_colaborador;},setValue(id){var _index;xThisComColaborador.list.map((x,index)=>{if(x.idcolaborador===id){_index=index;return;}});compFindListColaborador.selectedIndex=_index;selectOptionColaborador();},attached:function(){xThisComColaborador=this;getAllColaborador();},getValorIncial:function(val){this.fire('getValorIncial',{values:val});}})</script>
+</dom-module>

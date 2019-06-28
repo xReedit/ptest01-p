@@ -72,7 +72,7 @@ $logo_delivery = "_ico_delivery.png";
 $nom_us=explode(' ',$_SESSION['nomUs']);
 
 $fecha_actual=date('d').'/'.date('m').'/'.date('y');
-//$hora_actual=date('H').':'.date('i').':'.date('s');
+$hora_actual=date('H').':'.date('i').':'.date('s');
 $sum_total=0;
 $num_copias=(int)$xArray_print[0]['num_copias'];
 $cuenta_copias=0;

@@ -1,70 +1,18 @@
 <link rel="import" href="../../web_components/polymer/polymer.html">
 <link rel="import" href="../../web_components/paper-dropdown-menu/paper-dropdown-menu.html">
 <link rel="import" href="../../web_components/iron-dropdown/iron-dropdown.html">
-
-
 <dom-module id="x-comp-find-categoria">
-    <template is="dom-bind">        
-        <div>
-          <select id="compFindListCategoria" class="xTextRow2 xCursor" onchange="selectOptionCategoria()">
-            <template is="dom-repeat" items="{{list}}" as="categoria">
-              <option value="[[index]]">[[categoria.descripcion]] </option>
-            </template>
-          </select>
-        </div>
-
-    </template>
-    <script>
-        var xThisComCategoria;
-
-        function getAllCategoria() {
-            $.ajax({ type: 'POST', url: '../../bdphp/log_componentes.php?op=3'})
-	        .done( function (dtValues) {
-                dtValues=$.parseJSON(dtValues);	
-                xThisComCategoria.list=dtValues.datos;
-                xThisComCategoria.categorias = xThisComCategoria.list[0];
-                xThisComCategoria.categorias.index=0
-                xThisComCategoria.getValorIncial(xThisComCategoria.categorias);
-            });
-        }
-
-        function selectOptionCategoria() {
-            const index = xThisComCategoria.$.compFindListCategoria.value;            
-            xThisComCategoria.categorias = xThisComCategoria.list[index];
-            xThisComCategoria.categorias.index=index
-        }
-        
-
-        Polymer({
-        is: 'x-comp-find-categoria',
-        properties: {
-            list: [],
-            categorias: {
-                type: Object,
-                // value : {},
-                reflectToAttribute: true,
-                notify: true, 
-                value: function() { return {}; },
-                observer: 'categoriaNameChanged'
-            },
-        },
-        listeners: {
-            'onchange': 'getCategoria'
-        },
-        categoriaNameChanged: function(categoria) {
-            return categoria;
-        }, 
-        getCategoria() {            
-            return this.categoria;
-        },
-        attached: function() {
-            xThisComCategoria=this;	
-            getAllCategoria();
-        },
-        getValorIncial: function(categoria) {
-            this.fire('getValorIncial', {categorias: categoria});
-        }
-    })
-    </script>
-
+<template is="dom-bind">
+<div>
+<select id="compFindListCategoria" class="xTextRow2 xCursor" onchange="selectOptionCategoria()">
+<template is="dom-repeat" items="{{list}}" as="categoria">
+<option value="[[index]]">[[categoria.descripcion]] </option>
+</template>
+</select>
+</div>
+</template>
+<script>var xThisComCategoria;function getAllCategoria(){$.ajax({type:'POST',url:'../../bdphp/log_componentes.php?op=3'}).done(function(dtValues){dtValues=$.parseJSON(dtValues);xThisComCategoria.list=dtValues.datos;xThisComCategoria.categorias=xThisComCategoria.list[0];xThisComCategoria.categorias.index=0
+xThisComCategoria.getValorIncial(xThisComCategoria.categorias);});}
+function selectOptionCategoria(){const index=xThisComCategoria.$.compFindListCategoria.value;xThisComCategoria.categorias=xThisComCategoria.list[index];xThisComCategoria.categorias.index=index}
+Polymer({is:'x-comp-find-categoria',properties:{list:[],categorias:{type:Object,reflectToAttribute:true,notify:true,value:function(){return{};},observer:'categoriaNameChanged'},},listeners:{'onchange':'getCategoria'},categoriaNameChanged:function(categoria){return categoria;},getCategoria(){return this.categoria;},attached:function(){xThisComCategoria=this;getAllCategoria();},getValorIncial:function(categoria){this.fire('getValorIncial',{categorias:categoria});}})</script>
 </dom-module>

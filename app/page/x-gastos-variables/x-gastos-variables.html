@@ -1,0 +1,250 @@
+<link rel="import" href="../../x-componentes/x-comp-find-tipo-gasto/x-comp-find-tipo-gasto.html">
+<dom-module id="x-gastos-variables">
+	<template is="dom">
+
+		<paper-dialog class="dialog_redondo" id="dialog_borrar" entry-animation="scale-up-animation"
+			exit-animation="fade-out-animation" with-backdrop>
+			<div class="xtxtCentro">
+				<img src="../../../images/_dlg_remove.gif" alt="" width="150px">
+			</div>
+			<p>Esta seguro de querer borrar este registro?</p>
+			<br>
+			<div class="buttons">
+				<button class="xBoton2 xPlomo" dialog-dismiss>Cancelar</button>
+				<button class="xBoton2 xRojo" onclick="xDlgBorrar();">Si, borrar</button>
+			</div>
+		</paper-dialog>
+
+		<paper-dialog class="dialog_redondo" id="dialog_new_gasto_v" style="width: 345px;" modal
+			entry-animation="scale-up-animation" exit-animation="fade-out-animation">
+			<div>
+				<h4>Registrar nuevo gasto varialbe.</h4>
+				<br>
+				<form id="form_new_gasto_v" method="POST">
+					<x-comp-find-tipo-gasto id="compTpGasto" id-tipo-gasto=2
+						onchange="_getTipoGastoDetalle(list_tipo_gasto)"></x-comp-find-tipo-gasto>
+					<input type="date" class="xMiInput xPasarEnter2" id="date_fecha_pago" espaciar>
+					<input type="text" class="xMiInput xPasarEnter2" placeholder="DESCRIPCION" onChange="conMayusculas(this)" id="descripcion" name="descripcion" espaciar required>				
+					<input type="number" class="xMiInput xPasarEnter2" placeholder="IMPORTE"
+						onChange="conMayusculas(this)" id="importe" name="importe" espaciar required>					
+					<div class="xInvisible">
+						<input type="text" id="idsede" name="idsede" value$="[[xt_idsede]]">
+						<input type="text" id="idorg" name="idorg" value$="[[xt_org]]">
+						<input type="text" id="idtipo_gasto" name="idtipo_gasto">
+						<input type="text" id="idtipo_gasto_detalle" name="idtipo_gasto_detalle">
+						<input type="text" id="fecha_registro" name="fecha_registro">
+						<input type="text" id="fecha_pago" name="fecha_pago">
+					</div>
+				</form>
+				<br><br>
+				<button dialog-dismiss id="dlg_sunat_btn" onclick="newGasto()" class="xBoton2 xVerde">Listo
+					Guardar</button>
+				<button dialog-dismiss class="xBoton2 xRojo">Cerrar</button>
+			</div>
+		</paper-dialog>
+
+		<br><br>
+		<div class="xMiCard xradius" style="width:90%">
+			<div class="xEncanezadoCard xFondoRowAmarillo2">
+				<h3>Gastos Variables.</h3>
+				<p>Registra los gastos variables, por ejemplo: Compras no registradas, gastos administrativos, gastos de servicios ocacionales, etc.</p>
+			</div>
+			<div class="xContentCard" style="height: 100%;">
+				<!-- <button onclick="dialog_new_gasto_v.open()">new</button> -->
+				<div style="width: 200px;" class="xIzquierda">
+					<input  type="month" 
+							class="xMiInput xPasarEnter2 xfont18" id="f_filtro"
+							onchange="_changeDateFiltro(this);">
+				</div>
+				<paper-fab icon="add" onclick="dialog_new_gasto_v.open()" title="Agregar" tabindex="0" class="xDerecha">
+				</paper-fab>
+				<table width="100%">
+					<thead>
+						<th>#</th>
+						<th>Tipo Gasto</th>
+						<th>Descripcion</th>
+						<th>F. Registro</th>
+						<th>F. Pago</th>
+						<th>Importe</th>						
+						<th></th>
+					</thead>
+					<tbody>
+						<template is="dom-repeat" items="{{ListGastosVariables}}" as="item">
+							<tr data-t="contable_gasto_variable" data-id="{{item.idcontable_gasto_variable}}"
+								class="animated fadeIn fast" id="{{index}}" onclick="_selItemGastoFijo(this)">
+								<td data-id="{{index}}"><span>{{displayIndex(index)}}</span></td>
+								<td>{{item.tp_gasto}}</td>
+								<td>{{item.descripcion}}</td>
+								<td>{{item.fecha_registro}}</td>
+								<td>{{item.fecha_pago}}</td>								
+								<td>{{item.total}}</td>
+								<!-- <td><span class="xDeleteRow" title="Borrar" onclick="xDialogBorrarObj(this);"></span></td> -->
+								<td>
+									<span class="xDeleteRow2" title="Anular" onclick="xDialogBorrarObj(this);"></span>
+								</td>
+							</tr>
+						</template>
+						<tr>
+							<td></td>
+							<td colspan="4">
+								<p class="xfont15 xBold">Total</p>
+							</td>
+							<td>
+								<p class="xfont15 xBold">{{sumList}}</p>
+							</td>
+							<td></td>							
+						</tr>
+					</tbody>
+				</table>
+			</div>
+		</div>
+	</template>
+</dom-module>
+
+<script>
+	var xThisGV, sel_idTipoGastoDetalle, xObjBorrar, 
+		fecha_filtrar = new Date(), _mm, _yy, dateNow;
+
+	function xIniGastosVariables() {
+		
+		$('body').addClass('loaded');
+
+
+		var _dtUs = xm_log_get('app3_us');
+		xThisGV.xt_org = _dtUs.ido;
+		xThisGV.xt_idsede = _dtUs.idsede;
+		xThisGV.xt_idus = _dtUs.idus;
+
+		dateNow = new Date();
+		const maxDate = dateNow.toISOString().split("T")[0];
+		date_fecha_pago.max = maxDate;
+		date_fecha_pago.value = maxDate;
+
+		const mesNow = dateNow.getFullYear() + '-'+xCeroIzq(dateNow.getMonth()+1,2);
+		f_filtro.max = mesNow;
+		f_filtro.value = mesNow;
+
+		_mm = fecha_filtrar.getMonth() + 1;
+		_yy = fecha_filtrar.getFullYear();
+		getAllListGastosVariables();
+
+		$('.xPasarEnter2').on('keyup', function (e) {
+			var code = e.which;
+			if (code == 13 || code == 186) {
+				var inputs = $('input'); // storage a array of Inputs
+				var a = inputs.index(document.activeElement);
+				if (inputs[a + 1] !== null) {
+					var nextBox = inputs[a + 1];
+					if (nextBox === undefined) {
+						return
+					}
+					if (nextBox.disabled) {
+						nextBox = inputs[a + 2]
+					}
+
+					if (nextBox == undefined) {
+						return;
+					}
+					nextBox.focus();
+					nextBox.select();
+					//event.preventDefault();
+				}
+				return false;
+			}
+		});
+
+		setTimeout(() => {
+			sel_idTipoGastoDetalle = compTpGasto.__data__.list_tipo_gasto.idtipo_gasto_detalle;
+			console.log(sel_idTipoGastoDetalle);
+		}, 1000);
+	}
+
+	function getAllListGastosVariables() {
+		// xPopupLoad.xopen();
+		
+		$.ajax({
+				type: 'POST',
+				url: '../../bdphp/log_005.php?op=103', data:{mm: _mm, yy:_yy}
+			})
+			.done((res) => {
+				const _res = JSON.parse(res);
+				console.log(_res.datos);
+				var sumTotal = 0;				
+
+				xThisGV.ListGastosVariables = _res.datos.map(x => {
+					sumTotal += parseFloat(x.importe);					
+					return x;
+				});
+				xThisGV.sumList = numeroConComas(sumTotal.toFixed(2));
+				// xPopupLoad.xclose();
+			});
+	}
+
+	function newGasto() {
+		xPopupLoad.xopen();
+		const frm = $("#form_new_gasto_v");
+		frm.find("#idsede").val(xThisGV.xt_idsede);
+		frm.find("#idorg").val(xThisGV.xt_org);
+		frm.find("#idtipo_gasto").val(1);
+		frm.find("#idtipo_gasto_detalle").val(sel_idTipoGastoDetalle);
+		frm.find("#fecha_pago").val(xDevolverFechaFormatInputDate(date_fecha_pago.value));
+		frm.find("#fecha_registro").val(xDevolverFecha());
+		xvalidateForm('form_new_gasto_v', function (a) {
+			if (a === false) {
+				return;
+			}
+
+			$.post("../../bdphp/ManejoBD_IUD.php?tb=contable_gasto_variable", $("#form_new_gasto_v").serialize(),
+				function (a) {
+					xPopupLoad.xclose();
+					$("#form_new_gasto_v").reset();
+					xPopupLoad.xclose();
+					date_fecha_pago.value = dateNow.toISOString().split("T")[0];
+					getAllListGastosVariables();
+					dialog_new_gasto_v.close();
+				})
+		})
+
+	}
+
+	function _changeDateFiltro(obj) {
+		const _val = obj.value.split('-');
+		_mm = _val[1];
+		_yy = _val[0];
+		getAllListGastosVariables();
+	}
+
+	function xDialogBorrarObj(obj, event) {
+		xObjBorrar = obj;
+		dialog_borrar.open();
+		event.stopPropagation();
+	}
+
+	function xDlgBorrar() {
+		xBorrarItem(xObjBorrar);
+		dialog_borrar.close();
+	}
+
+	function _getTipoGastoDetalle(e) {
+		sel_idTipoGastoDetalle = e.idtipo_gasto_detalle;
+	}
+
+	Polymer({
+		is: 'x-gastos-variables',
+		properties: {
+			xt_org: Number,
+			xt_idsede: Number,
+			sumList: String,
+			ListGastosVariables: [],
+			selItemGastoVariable: [],
+		},
+		attached: function () {
+			this.selected = 0;
+			xThisGV = this;
+			xIniGastosVariables();
+		},
+		displayIndex: function (index) {
+			return xCeroIzq(index + 1, 1);
+		},
+	})
+</script>

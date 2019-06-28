@@ -1,4 +1,4 @@
-const URL_COMPROBANTE=xm_log_get('app3_sys_const')[0].value;async function xSoapSunat_getArrNoRegistrado(){var rpt=[];await $.ajax({type:'POST',url:'../../bdphp/log_002.php',data:{'op':'301'}}).done(function(rptDate){data_response=$.parseJSON(rptDate);if(!data_response.success){alert(data_response.error);return;}
+var URL_COMPROBANTE=xm_log_get('app3_sys_const')[0].value;async function xSoapSunat_getArrNoRegistrado(){var rpt=[];await $.ajax({type:'POST',url:'../../bdphp/log_002.php',data:{'op':'301'}}).done(function(rptDate){data_response=$.parseJSON(rptDate);if(!data_response.success){alert(data_response.error);return;}
 rpt=data_response.datos;});return rpt;}
 async function xSoapSunat_getArrNoRegistradoSunat(){var rpt=[];await $.ajax({type:'POST',url:'../../bdphp/log_002.php',data:{'op':'3011'}}).done(function(rptDate){data_response=$.parseJSON(rptDate);if(!data_response.success){alert(data_response.error);return;}
 rpt=data_response.datos;});return rpt;}

@@ -1,10 +1,11 @@
 <?php
-	// session_set_cookie_params('4000'); // 1 hour
-	// session_regenerate_id(true); 
+	session_set_cookie_params('4000'); // 1 hour
+	session_cache_expire(60); // minutes
+	session_regenerate_id(true); 
 	session_start();	
 	//header("Cache-Control: no-cache,no-store");
-	header('content-type: text/html; charset: utf-8');
-	header('Content-Type: text/event-stream');
+	// header('content-type: text/html; charset: utf-8');
+	// header('Content-Type: text/event-stream');
 	header('Cache-Control: no-cache');
 	include "ManejoBD.php";
 	include "token.php";
@@ -32,7 +33,7 @@
 		case 101://borrar tabla un solo criterio id
 			$sql="delete from ".$_POST['t']." where id".$_POST['t']."=".$_POST['id'];
 			$bd->xConsulta($sql);
-			break;
+			break;		
 		case 10101://borrar tabla 2 criterio tabla y id ej: en carta borrar de carta_lista la seccion
 			$sql="delete from ".$_POST['t']." where ".$_POST['campo']."=".$_POST['id'];
 			$bd->xConsulta($sql);
@@ -265,6 +266,23 @@
 			$rpt=encode_dataUS();
 			echo $rpt;
 			break;
+		case -11111:  // pruebas fech
+			$payload = json_decode(file_get_contents('php://input'), true);
+			$_sys_id = base64_decode($payload);
+
+			$content = trim(file_get_contents("php://input"));
+			$payload = json_decode($content, true);
+			$_sys_id = base64_decode($payload);
+			$_sys_id = explode(':', $_sys_id);
+			$_u = $_sys_id[1];
+			$_p = base64_decode($_sys_id[2]);
+
+
+			echo json_encode('idOrg: '.$_sys_id[3].'  Idsede'.$_sys_id[4]);
+			// header('Content-Type: application/json');
+			// $arr = 1;
+			// echo json_encode($arr);
+			break;
 		case -1://log
 			//if(($_SESSION['uid']==''))
 			//{			
@@ -275,13 +293,12 @@
 					$_p = $_POST['p'];
 				} else {
 					$reconex = true;					
-					$payload = $_POST['sys_data'];
-					// $data  =  json_decode ($payload); 
-					// echo var_dump($data);
-					// echo "ini ". $payload;
-					// $data = $data->_sys_id;
+					//$payload = $_POST['sys_data'];
 					
-					// echo $payload;
+					// from fecth
+					$content = trim(file_get_contents("php://input"));
+					$payload = json_decode($content, true);
+					// $_sys_id = base64_decode($payload);
 
 					$_sys_id = base64_decode($payload);
 					// echo "decodificado ".$_sys_id;
@@ -451,6 +468,7 @@
 			$sql_carta_historial="";
 			$sql_carta_lista_anterior="";
 			$sql_update_carta = '';
+			$sql_update_carta_delete = '';
 
 			//obtiene ultima carta segun fecha
 			// $sql="SELECT idcarta as d1 FROM carta WHERE (idorg=".$_SESSION['ido']." and idsede=".$_SESSION['idsede']." and idcategoria=".$idCategoria.") AND STR_TO_DATE(fecha, '%d/%m/%Y')=curdate()";
@@ -464,7 +482,10 @@
 				// }
 			}else{
 				//si ya existe carta guarda y pasa carta actual al historial
-				//$sql_carta_historial="delete from carta_lista_historial where idcarta=".$id_carta."; INSERT INTO carta_lista_historial (idcarta_lista,idcarta,idseccion,iditem,precio,cantidad,cant_preparado,sec_orden,estado) SELECT * from carta_lista WHERE idcarta=".$id_carta.";";
+				// $fecha_carta = date("d/m/Y");
+				// $sql_carta_historial = "CALL procedure_historial_carta(".$id_carta.")";
+				// $sql_update_carta_delete="delete from carta_lista_historial where idcarta=".$id_carta." and fecha='".$fecha_carta."';";
+				// $sql_carta_historial="INSERT INTO carta_lista_historial (fecha, idcarta_lista,idcarta,idseccion,iditem,precio,cantidad,cant_preparado,sec_orden,estado) SELECT '".$fecha_carta."', idcarta_lista,idcarta,idseccion,iditem,precio,cantidad,cant_preparado,sec_orden,estado from carta_lista WHERE idcarta=".$id_carta.";";
 
 				// 121118 | si ya existe actualiza la fecha de modificacion
 				$sql_update_carta = "update carta set fecha = DATE_FORMAT(now(),'%d/%m/%Y') where idcarta=".$id_carta."; ";
@@ -517,7 +538,7 @@
 								//guarda nuevo item
 								$sql="insert into item (idorg, idsede,descripcion,precio,detalle,img) values (".$_SESSION['ido'].",".$_SESSION['idsede'].",'".$item['des_item']."','".$item['precio_item']."','".$item['det_item']."','".$item['img_item']."')";
 								//echo $sql;
-								echo $sql;
+								// echo $sql;
 								$id_item=$bd->xConsulta_UltimoId($sql);
 							}
 							else{//actualizar
@@ -614,11 +635,21 @@
 			// echo $sql_carta_lista_insert_update;
 
 			$bd->xMultiConsultaNoReturn($sql_ejecuta);
+
+			// if (  $sql_carta_historial != ''){
+			// 	// $bd->xConsulta($sql_update_carta_delete);
+			// 	$bd->xConsulta($sql_carta_historial);
+			// }
+			
 			
 			echo $id_carta;
 			break;
 		//MI PEDIDO APP ANFITRION CLIENTE
 		//MI PEDIDO APP ANFITRION CLIENTE
+		case 204001: //guardar historial
+			$sql_carta_historial = "CALL procedure_historial_carta(".$_POST['id'].")";
+			$bd->xConsulta($sql_carta_historial);
+			break;
 		case 2041://solo secciones en mi pedido
 			/*$sql="
 				SELECT * FROM(
@@ -2894,24 +2925,26 @@
 			$bd->xConsulta($sql);
 			break;
 		case 2102://guardar como depachado //despacho=0=despachado 1=por defecto
-			$sql_pedido = "";
-			if($_POST['op']==0){//depachado
-				$hora=date('H:i:s');
-				$despachado_hora=$_POST['td'];
-				$valEstado=$_POST['valEstado'];
-				$sql="
-					UPDATE pedido_detalle
-						set despachado=1, despachado_hora='".$hora."' , despachado_tiempo='".$despachado_hora."'
-					WHERE idpedido_detalle in (".$_POST['id_pd'].");";
+			// $sql_pedido = "";
+			// if($_POST['op']==0){//depachado
+			// 	$hora=date('H:i:s');
+			// 	$despachado_hora=$_POST['td'];
+			// 	$valEstado=$_POST['valEstado'];
+			// 	$sql="
+			// 		UPDATE pedido_detalle
+			// 			set despachado=1, despachado_hora='".$hora."' , despachado_tiempo='".$despachado_hora."'
+			// 		WHERE idpedido_detalle in (".$_POST['id_pd'].");";
 				
-				// color del estado al despahcar 1=verde 2=ambar 3=alertado
-				$sql_pedido=" update pedido set val_color_despachado='".$valEstado."' where idpedido=".$_POST['idp'].";";
+			// 	// color del estado al despahcar 1=verde 2=ambar 3=alertado
+			// 	$sql_pedido=" update pedido set val_color_despachado='".$valEstado."' where idpedido=".$_POST['idp'].";";
 
-			}else{ //retirado
-				//$sql="update pedido set estado=4 where idpedido=".$_POST['idp'];
-				$sql="update pedido set despachado=2 where idpedido=".$_POST['idp'];
-			}
-			$bd->xMultiConsulta($sql.$sql_pedido);
+			// }else{ //retirado
+			// 	//$sql="update pedido set estado=4 where idpedido=".$_POST['idp'];
+			// 	$sql="update pedido set despachado=2 where idpedido=".$_POST['idp'];
+			// }
+
+			$sql="CALL procedure_marcar_despachado_zona_2102(".$_POST['idp'].",".$_POST['id_pd'].",".$_POST['op'].",'".$_POST['td']."','".$_POST['valEstado']."')";
+			$bd->xConsulta($sql);
 			break;
 		case 2103://ver pedidos despachados
 			$sql="
@@ -3079,9 +3112,9 @@ function xDtUS($op_us){
 			// 	LEFT JOIN (select idconf_print,descripcion,porcentaje from conf_print_detalle where estado=0) as cp_d ON cp.idconf_print=cp_d.idconf_print
 			//         LEFT JOIN (select idconf_print,idtipo_consumo,group_concat(idseccion) as idseccion,descripcion,importe from conf_print_adicionales where estado=0 group by idconf_print,descripcion,idtipo_consumo,importe)  as cp_a ON cp.idconf_print=cp_a.idconf_print
 			// 	LEFT JOIN sede AS s ON s.idorg=cp.idorg AND s.idsede=cp.idsede
-			// WHERE (cp.idorg=".$_SESSION['ido']." AND cp.idsede=".$_SESSION['idsede'].")";
+			// WHERE (cp.idorg=".$_SESSION['ido']." AND cp.idsede=".$_SESSION['idsede'].")"; s.logo64
 			$sql_us="
-			SELECT cp.var_size_font_tall_comanda, cp.ip_print, cp.num_copias, cp.pie_pagina, cp.pie_pagina_comprobante, cp.logo, s.logo64, s.nombre AS des_sede, s.eslogan, s.mesas, s.ciudad
+			SELECT cp.var_size_font_tall_comanda, cp.ip_print, cp.num_copias, cp.pie_pagina, cp.pie_pagina_comprobante, cp.logo, '' as logo64, s.nombre AS des_sede, s.eslogan, s.mesas, s.ciudad
 			FROM conf_print AS cp
             	INNER JOIN sede AS s ON cp.idsede = s.idsede
 			WHERE (cp.idorg=".$_SESSION['ido']." AND cp.idsede=".$_SESSION['idsede'].")";
@@ -3116,7 +3149,7 @@ function xDtUS($op_us){
 			";
 			break;
 		case 3012: // load datos del org sede 
-			$sql_us = "SELECT s.idorg, se.idsede, s.nombre, s.direccion,s.ruc, s.telefono , se.nombre as sedenombre , se.direccion as sededireccion, se.ciudad as sedeciudad, se.telefono as sedetelefono, se.eslogan, se.authorization_api_comprobante, se.id_api_comprobante, se.facturacion_e_activo, se.logo64, se.ubigeo, se.codigo_del_domicilio_fiscal
+			$sql_us = "SELECT s.idorg, se.idsede, s.nombre, s.direccion,s.ruc, s.telefono , se.nombre as sedenombre , se.direccion as sededireccion, se.ciudad as sedeciudad, se.telefono as sedetelefono, se.eslogan, se.authorization_api_comprobante, se.id_api_comprobante, se.facturacion_e_activo, '' as logo64, se.ubigeo, se.codigo_del_domicilio_fiscal
 							,se.sys_local, se.ip_server_local
 					from org as s 
 					inner JOIN sede as se on s.idorg = se.idorg 

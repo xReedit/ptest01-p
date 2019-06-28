@@ -2,16 +2,16 @@
     //log comprobantes electronicos
     // session_set_cookie_params('4000'); // 1 hour
     // session_regenerate_id(true); 
-    session_start();    
-    //header("Cache-Control: no-cache,no-store");
-    header('content-type: text/html; charset: utf-8');
-    header('Content-Type: text/event-stream');
-    header('Cache-Control: no-cache');
-    include "ManejoBD.php";
-    $bd=new xManejoBD("restobar");
+    session_start();	
+	//header("Cache-Control: no-cache,no-store");
+	header('content-type: text/html; charset: utf-8');
+	header('Content-Type: text/event-stream');
+	header('Cache-Control: no-cache');
+	include "ManejoBD.php";
+	$bd=new xManejoBD("restobar");
 
-    date_default_timezone_set('America/Lima');
-    
+	date_default_timezone_set('America/Lima');
+	
     $op = $_POST['op'];
 
     switch ($op) {
@@ -20,27 +20,40 @@
 
             $ce_anulado = array_key_exists('anulado', $obj) ? $obj['anulado'] : 0; 
             $ce_totales_json = array_key_exists('totales_json', $obj) ? $obj['totales_json'] : ''; 
-            
-            $sqlCpe = "
-                insert into ce (external_id, idorg, idsede, idusuario, idtipo_comprobante_serie, numero, fecha, hora, json_xml, estado_api, estado_sunat, viene_facturador, msj, anulado, idcliente, nomcliente, total, pdf, xml, cdr, totales_json)
-                values ('".$obj['external_id']."',".$_SESSION['ido'].",".$_SESSION['idsede'].",".$_SESSION['idusuario'].",".$obj['idtipo_comprobante_serie'].",
-                '".$obj['numero']."', DATE_FORMAT(now(),'%d/%m/%Y'), DATE_FORMAT(now(),'%H:%i:%s'), '".$obj['jsonxml']."', ".$obj['estado_api'].",".$obj['estado_sunat'].",".$obj['viene_facturador'].",'".$obj['msj']."',".$ce_anulado.",".$obj['idcliente'].",'".$obj['nomcliente']."','".$obj['total']."',".$obj['pdf'].",".$obj['xml'].",".$obj['cdr'].",'".$ce_totales_json."')";
 
-            echo $sqlCpe;
-            $idce = $bd->xConsulta_UltimoId($sqlCpe);
+            // procedure
+            $obj['ce_anulado'] = $ce_anulado;
+            $obj['totales_json'] = $ce_totales_json;
+            $obj['idregistro_pago'] = array_key_exists('idregistro_pago', $obj) ? $obj['idregistro_pago'] : '';
+            $obj['error_api'] = array_key_exists('error_api', $obj) ? $obj['error_api'] : '0'; // si el api no responde igual tiene que emitir comprobante offline
+
+            $arrItem=json_encode($obj);
+            // echo $arrItem;            
+            $sql = "CALL procedure_cpe_registro(".$_SESSION['ido'].",".$_SESSION['idsede'].",".$_SESSION['idusuario'].",'".$arrItem."')";
+            $bd->xConsulta($sql);
+            // //
+
             
-            // si el documento no es anulado // por validacion sunat
-            if ( $ce_anulado === 0 ) {
-                if (array_key_exists('idregistro_pago', $obj)) {
-                    if ( $obj['viene_facturador'] === "1") {
-                        $sqlRp= "update cpe_facturador set idce =".$idce." where idcpe_facturador=".$obj['idregistro_pago'];
-                        $bd->xConsulta_NoReturn($sqlRp);
-                    } else {
-                        $sqlRp= "update registro_pago set idce =".$idce." where idregistro_pago=".$obj['idregistro_pago'];
-                        $bd->xConsulta_NoReturn($sqlRp);
-                    }
-                }
-            }
+            // $sqlCpe = "
+            //     insert into ce (external_id, idorg, idsede, idusuario, idtipo_comprobante_serie, numero, fecha, hora, json_xml, estado_api, estado_sunat, viene_facturador, msj, anulado, idcliente, nomcliente, total, pdf, xml, cdr, totales_json)
+            //     values ('".$obj['external_id']."',".$_SESSION['ido'].",".$_SESSION['idsede'].",".$_SESSION['idusuario'].",".$obj['idtipo_comprobante_serie'].",
+            //     '".$obj['numero']."', DATE_FORMAT(now(),'%d/%m/%Y'), DATE_FORMAT(now(),'%H:%i:%s'), '".$obj['jsonxml']."', ".$obj['estado_api'].",".$obj['estado_sunat'].",".$obj['viene_facturador'].",'".$obj['msj']."',".$ce_anulado.",".$obj['idcliente'].",'".$obj['nomcliente']."','".$obj['total']."',".$obj['pdf'].",".$obj['xml'].",".$obj['cdr'].",'".$ce_totales_json."')";
+
+            // echo $sqlCpe;
+            // $idce = $bd->xConsulta_UltimoId($sqlCpe);
+            
+            // // si el documento no es anulado // por validacion sunat
+            // if ( $ce_anulado === 0 ) {
+            //     if (array_key_exists('idregistro_pago', $obj)) {
+            //         if ( $obj['viene_facturador'] === "1") {
+            //             $sqlRp= "update cpe_facturador set idce =".$idce." where idcpe_facturador=".$obj['idregistro_pago'];
+            //             $bd->xConsulta_NoReturn($sqlRp);
+            //         } else {
+            //             $sqlRp= "update registro_pago set idce =".$idce." where idregistro_pago=".$obj['idregistro_pago'];
+            //             $bd->xConsulta_NoReturn($sqlRp);
+            //         }
+            //     }
+            // }
 
             break;
         case '101': // registra documentos que 
@@ -168,7 +181,7 @@
             if ($x_array_comprobante['idtipo_comprobante'] != "0"){ // 0 = ninguno | no imprimir comprobante
 
         
-                $sql_doc_correlativo="select (correlativo + 1) as d1  from tipo_comprobante_serie where idtipo_comprobante_serie = ".$idtipo_comprobante_serie;     
+                $sql_doc_correlativo="select (correlativo + 1) as d1  from tipo_comprobante_serie where idtipo_comprobante_serie = ".$idtipo_comprobante_serie;		
                 $correlativo_comprobante = $bd->xDevolverUnDato($sql_doc_correlativo);
 
                 // guardamos el correlativo
@@ -192,18 +205,18 @@
             $filtroFechaCount = $fecha === '' ? '' : " and (c.fecha = '".$fecha."')";
             $filtro = $pagination['pageFilter'] === '' ? '' : " and CONCAT(c.hora,tp.descripcion,c.numero,c.nomcliente,c.fecha,(
                 if (c.anulado=1,'Anulado',
-                        CASE
-                            WHEN c.estado_api = 0 and c.estado_sunat = 0 THEN 'Aceptado'
-                            WHEN (c.estado_api = 1 and c.estado_sunat = 1) THEN 'Sin registrar'
-                            WHEN (tp.codsunat='03' and  c.estado_api = 0 and c.estado_sunat = 1) THEN 'Boleta registrada'
-                            WHEN (tp.codsunat!='03' and c.estado_api = 0 and c.estado_sunat = 1) THEN 'Boleta no aceptada'
-                        END)
+						CASE
+							WHEN c.estado_api = 0 and c.estado_sunat = 0 THEN 'Aceptado'
+							WHEN (c.estado_api = 1 and c.estado_sunat = 1) THEN 'Sin registrar'
+							WHEN (tp.codsunat='03' and  c.estado_api = 0 and c.estado_sunat = 1) THEN 'Boleta registrada'
+							WHEN (tp.codsunat!='03' and c.estado_api = 0 and c.estado_sunat = 1) THEN 'Boleta no aceptada'
+						END)
             )) LIKE '%".$pagination['pageFilter']."%' ";
 
             $sql="
                 SELECT tp.descripcion as nom_comprobante, tp.codsunat , c.* from ce as c
                     inner join tipo_comprobante_serie as tps on tps.idtipo_comprobante_serie=c.idtipo_comprobante_serie
-                    inner join tipo_comprobante as tp on tp.idtipo_comprobante=tps.idtipo_comprobante   
+                    inner join tipo_comprobante as tp on tp.idtipo_comprobante=tps.idtipo_comprobante	
                 where (c.idorg=".$_SESSION['ido']." and c.idsede=".$_SESSION['idsede'].") ".$filtro." ".$filtroFecha." 
                 ORDER BY c.idce desc limit ".$pagination['pageLimit']." OFFSET ".$pagination['pageDesde'];
                       
@@ -211,7 +224,7 @@
             $sqlCount="
                 SELECT count(c.idce) as d1 from ce as c
                     inner join tipo_comprobante_serie as tps on tps.idtipo_comprobante_serie=c.idtipo_comprobante_serie
-                    inner join tipo_comprobante as tp on tp.idtipo_comprobante=tps.idtipo_comprobante   
+                    inner join tipo_comprobante as tp on tp.idtipo_comprobante=tps.idtipo_comprobante	
                 where (c.idorg=".$_SESSION['ido']." and c.idsede=".$_SESSION['idsede'].") ".$filtro." ".$filtroFechaCount;            
             
             $rowCount = $bd->xDevolverUnDato($sqlCount);
@@ -225,20 +238,21 @@
             $filtroFecha = $fecha === '' ? '' : " HAVING c.fecha = '".$fecha."'";            
             $filtro = $pagination['pageFilter'] === '' ? '' : " and CONCAT(c.hora,tp.descripcion,c.numero,c.nomcliente,c.fecha,(
                 if (c.anulado=1,'Anulado',
-                        CASE
-                            WHEN c.estado_api = 0 and c.estado_sunat = 0 THEN 'Aceptado'
-                            WHEN (c.estado_api = 1 and c.estado_sunat = 1) THEN 'Sin registrar'
-                            WHEN (tp.codsunat='03' and  c.estado_api = 0 and c.estado_sunat = 1) THEN 'Boleta registrada'
-                            WHEN (tp.codsunat!='03' and c.estado_api = 0 and c.estado_sunat = 1) THEN 'Boleta no aceptada'
-                        END)
+						CASE
+							WHEN c.estado_api = 0 and c.estado_sunat = 0 THEN 'Aceptado'
+							WHEN (c.estado_api = 1 and c.estado_sunat = 1) THEN 'Sin registrar'
+							WHEN (tp.codsunat='03' and  c.estado_api = 0 and c.estado_sunat = 1) THEN 'Boleta registrada'
+							WHEN (tp.codsunat!='03' and c.estado_api = 0 and c.estado_sunat = 1) THEN 'Boleta no aceptada'
+						END)
             )) LIKE '%".$pagination['pageFilter']."%' ";
 
             $sql="
                 SELECT ifnull(clie.ruc,'') as ruc, tp.descripcion as nom_comprobante, tp.codsunat , c.* from ce as c
                     inner join tipo_comprobante_serie as tps on tps.idtipo_comprobante_serie=c.idtipo_comprobante_serie
-                    inner join tipo_comprobante as tp on tp.idtipo_comprobante=tps.idtipo_comprobante   
+                    inner join tipo_comprobante as tp on tp.idtipo_comprobante=tps.idtipo_comprobante	
                     left join cliente as clie on c.nomcliente=clie.nombres
                 where (c.idorg=".$_SESSION['ido']." and c.idsede=".$_SESSION['idsede'].") ".$filtro." ".$filtroFecha." 
+                GROUP by c.idce
                 ORDER BY c.idce desc";
             
             $bd->xConsulta($sql);

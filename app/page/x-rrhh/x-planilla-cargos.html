@@ -1,0 +1,144 @@
+<dom-module id="x-planilla-cargos">
+	<template is="dom">		
+		<paper-dialog class="dialog_redondo" id="dialog_new_cargo" style="width: 345px;" modal
+			entry-animation="scale-up-animation" exit-animation="fade-out-animation">
+			<div>
+				<h4>Cargo.</h4>
+				<br>
+				<form id="form_new_cargo" method="POST">					
+					<input type="text" class="xMiInput xPasarEnter2" placeholder="DESCRIPCION" onChange="conMayusculas(this)"
+						id="descripcion" name="descripcion" value$="[[selCargo.descripcion]]" espaciar required>
+					<input type="number" class="xMiInput xPasarEnter2" placeholder="REMUNERACION BASICA MENSUAL" onChange="conMayusculas(this)"
+						id="remuneracion" name="remuneracion" value$="[[selCargo.remuneracion]]" espaciar required>
+					<div class="xInvisible">
+						<input type="text" id="idorg" name="idorg" value$="[[xt_org]]">
+						<input type="text" id="idcargo" name="idcargo" value$="[[selCargo.idcargo]]">
+					</div>
+				</form>
+				<br><br>
+				<button dialog-dismiss onclick="newCargo()" class="xBoton2 xVerde">Listo Guardar</button>
+				<button dialog-dismiss class="xBoton2 xRojo">Cerrar</button>
+			</div>
+		</paper-dialog>
+
+		<div style="max-width: 400px">
+			<!-- <paper-fab icon="add" onclick="dialog_new_cargo.open()" title="Agregar" tabindex="0" class="xDerecha">
+			</paper-fab> -->			
+			<table width="100%">
+				<thead>
+					<th>#</th>
+					<th align="left">Descripcion</th>
+					<th align="right">Remuneracion</th>
+					<th></th>
+				</thead>
+				<tbody>
+					<template is="dom-repeat" items="{{ListCargos}}" as="item">
+						<tr data-t="cargo" data-id="{{item.idcargo}}" class="animated fadeIn fast xCursor"
+							id="{{index}}" onclick="_selRowCargo(this)">
+							<td data-id="{{index}}"><span>{{displayIndex(index)}}</span></td>
+							<td align="left">{{item.descripcion}}</td>
+							<td align="right">{{item.importe}}</td>
+							<td>
+								<span class="xDeleteRow2" title="Anular" onclick="xDialogBorrarObj(this);"></span>
+							</td>
+						</tr>
+					</template>
+				</tbody>
+			</table>
+			<br>
+			<button class="xBoton2 xAzul" onclick="dialog_new_cargo.open()">Agregar</button>
+		</div>
+	</template>
+</dom-module>
+<script>
+	var xThisPCargos
+
+	function xIniPCargos() {
+		var _dtUs = xm_log_get('app3_us');
+		xThisPCargos.xt_org = _dtUs.ido;
+		xThisPCargos.xt_idsede = _dtUs.idsede;
+		xThisPCargos.xt_idus = _dtUs.idus;
+
+		getLoadCargo();
+		// $('body').addClass('loaded');
+
+		$('.xPasarEnter2').on('keyup', function (e) {
+			var code = e.which;
+			if (code == 13 || code == 186) {
+				var inputs = $('input'); // storage a array of Inputs
+				var a = inputs.index(document.activeElement);
+				if (inputs[a + 1] !== null) {
+					var nextBox = inputs[a + 1];
+					if (nextBox === undefined) {
+						return
+					}
+					if (nextBox.disabled) {
+						nextBox = inputs[a + 2]
+					}
+
+					if (nextBox == undefined) {
+						return;
+					}
+					nextBox.focus();
+					nextBox.select();
+					//event.preventDefault();
+				}
+				return false;
+			}
+		});
+	}
+
+	function getLoadCargo() {
+		$.ajax({
+				type: 'GET',
+				url: '../../bdphp/log_005.php?op=5',				
+			})
+			.done((res) => {
+				const _res = JSON.parse(res);
+				console.log(_res.datos);
+				var sumTotal = 0;
+
+				xThisPCargos.ListCargos = _res.datos;
+			});
+	}
+
+	function newCargo() {
+		$("#form_new_cargo #idorg").val(xThisPCargos.xt_org);
+		$.post("../../bdphp/ManejoBD_IUD.php?tb=cargo", $("#form_new_cargo").serialize(),
+				function (a) {
+					xPopupLoad.xclose();
+					$("#form_new_cargo").reset();
+					xPopupLoad.xclose();					
+					getLoadCargo();
+					dialog_new_cargo.close();
+				})
+	}
+
+	function _selRowCargo(obj) {
+		if (dialog_borrar.opened) return;
+		const index = obj.id;
+		const idCargo = obj.dataId;
+		xThisPCargos.selCargo = xThisPCargos.ListCargos[index];
+
+		
+		dialog_new_cargo.open();
+	}
+
+	Polymer({
+		is: 'x-planilla-cargos',
+		properties: {
+			xt_org: Number,
+			xt_idsede: Number,
+			ListCargos: [],
+			selCargo: [],
+		},
+		attached: function () {
+			// this.selected = 0,
+			xThisPCargos = this;
+			xIniPCargos();
+		},
+		displayIndex: function (index) {
+			return xCeroIzq(index + 1, 1);
+		},
+	})
+</script>
