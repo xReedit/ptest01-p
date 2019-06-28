@@ -2396,7 +2396,7 @@ function xActualizarItems(){
 			$('.grid').isotope('updateSortData');	
 			
 			xResetMesaDefault(xdtPe.map(x => {
-				const _val = x.nummesa == 0 ? xCeroIzq(x.correlativo_dia,4) : xCeroIzq(x.nummesa,2);
+				const _val = x.nummesa == 0 ? '|'+xCeroIzq(x.correlativo_dia,4)+'|' : '|'+xCeroIzq(x.nummesa,2)+'|';
 				return _val;
 				}).join(','));
 		});
