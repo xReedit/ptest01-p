@@ -24,8 +24,11 @@
 <div style="width:150px">
 <x-comp-find-categoria id="compFindCategoria" onchange="_getCategoria(categorias)"></x-comp-find-categoria>
 </div>
-<div class="xDerecha xEnLinearTop" style="margin-top:-20px">
-<p><strong>Venta rapida.</strong> busca el producto por denominacion o codigo de barras.</p>
+<div class="xDerecha">
+<paper-button onclick="_pantallaCompleta()" style="float:right;top:-30px;right:-15px;margin:0">
+<iron-icon title="Datos Adicionales" icon$="{{xIconScreen}}">Datos
+</iron-icon>
+</paper-button>
 </div>
 </div>
 <div class="xEncanezadoCard xFondoRowAmarillo4">
@@ -102,10 +105,10 @@ Datos Adjuntos
 <script type="text/javascript" src="../view/manager_storage.js"></script>
 <script type="text/javascript" src="../view/cliente.service.js"></script>
 <script type="text/javascript" src="../../js/keynavigator-min.js"></script>
-<script>/*<![CDATA[*/var xThisVentaRapida,$li,$xlist_li,xedit_detalle_item=false,xArrayRegla=[],xDtPrint=[],xDtSubTotales=[],xenviar_cuenta=false,xregistrar_pago=false,xtxt_select=false,xidCategoriaVR,tt_pedido=0,xIdPedido='',xEstadoPedido,xnum_mesa_valido=false,xNumMesasBd,xarr_header=[],xarr_body=[],xarr_footer=[],xarr_tipo_pago=[],xRpt_pago=[],guardando=false,xdelivery=0,xReservar=0,xsolo_llevar=0,xid_cliente_pago=0,xarr_subtotales=[],arrDatosAdjuntoDelivery=[],xIdCliente_pedido='',xClientePedidoFnac='';function xIniVentaRapida(){xm_log_get('ini_us');$("#Titulo_page").text("Venta Rapida");document.title="Venta Rapida";$('body').addClass('loaded');xPopupLoad=document.getElementById('xLoad');xArrayRegla=xm_log_get('reglas_de_carta');xDtPrint=xm_log_get('sede_generales');xNumMesasBd=parseInt(xDtPrint[0].mesas);xLoadArrayPedido();xTraerDtTipoConsumo();$(document.body).on('change','#select_ulTPC',function(e){$('#div_btn_data_delivery').addClass('xInvisible');xdelivery=0;if($('#select_ulTPC :selected').text().toLowerCase()==="delivery"){$('#div_btn_data_delivery').removeClass('xInvisible');xdelivery=1;}})
+<script>/*<![CDATA[*/var xThisVentaRapida,$li,$xlist_li,xedit_detalle_item=false,xArrayRegla=[],xDtPrint=[],xDtSubTotales=[],xenviar_cuenta=false,xregistrar_pago=false,xtxt_select=false,xidCategoriaVR,tt_pedido=0,xIdPedido='',xEstadoPedido,xnum_mesa_valido=false,xNumMesasBd,xarr_header=[],xarr_body=[],xarr_footer=[],xarr_tipo_pago=[],xRpt_pago=[],guardando=false,xdelivery=0,xReservar=0,xsolo_llevar=0,xid_cliente_pago=0,xarr_subtotales=[],arrDatosAdjuntoDelivery=[],xIdCliente_pedido='',xClientePedidoFnac='',isSreenFull=false;function xIniVentaRapida(){xm_log_get('ini_us');$("#Titulo_page").text("Venta Rapida");document.title="Venta Rapida";$('body').addClass('loaded');xPopupLoad=document.getElementById('xLoad');xArrayRegla=xm_log_get('reglas_de_carta');xDtPrint=xm_log_get('sede_generales');xNumMesasBd=parseInt(xDtPrint[0].mesas);xLoadArrayPedido();xTraerDtTipoConsumo();$(document.body).on('change','#select_ulTPC',function(e){$('#div_btn_data_delivery').addClass('xInvisible');xdelivery=0;if($('#select_ulTPC :selected').text().toLowerCase()==="delivery"){$('#div_btn_data_delivery').removeClass('xInvisible');xdelivery=1;}})
 compFindCategoria=document.getElementById('compFindCategoria');compFindCategoria.addEventListener('getValorIncial',function(e){let valCategoriaLoalStorage;valCategoriaLoalStorage=e.detail.categorias
 if(getLocalStorage('::app3_cat_defualt')){valCategoriaLoalStorage=JSON.parse(getLocalStorage('::app3_cat_defualt'));xidCategoriaVR=valCategoriaLoalStorage.idcategoria;setTimeout(()=>{compFindCategoria.$.compFindListCategoria.value=valCategoriaLoalStorage.index;},500);}else{xidCategoriaVR=e.detail.categorias.idcategoria;}
-setLocalSotrage('::app3_cat_defualt',JSON.stringify(valCategoriaLoalStorage));xLoadCartaVR();});document.defaultAction=false;var eventHandler=true?detectEvent:empty;document['onkeydown']=eventHandler;$("#txt_mesa").on('keyup',function(){if(tt_pedido==0||this.value==''){$("#btn_enviar_cuenta").addClass('xInvisible');xenviar_cuenta=false}else{$("#btn_enviar_cuenta").removeClass('xInvisible');xenviar_cuenta=true}
+setLocalSotrage('::app3_cat_defualt',JSON.stringify(valCategoriaLoalStorage));xLoadCartaVR();});document.defaultAction=false;var eventHandler=true?detectEvent:empty;document.body['onkeydown']=eventHandler;$("#txt_mesa").on('keyup',function(){if(tt_pedido==0||this.value==''){$("#btn_enviar_cuenta").addClass('xInvisible');xenviar_cuenta=false}else{$("#btn_enviar_cuenta").removeClass('xInvisible');xenviar_cuenta=true}
 var xValtxtMesa=this.value;xnum_mesa_valido=true;if(xValtxtMesa<=0||xValtxtMesa>xNumMesasBd){xnum_mesa_valido=false;}})
 $xlist_li=$('#accordion li:visible').keynavigator({useCache:false,cycle:true,activeClass:'xitem_seleccionado_li',onBeforeActive:function($el){$el.toggleClass(this.options.activeClass);return $el.hasClass(this.options.activeClass);}});$(document.body).on('focusout','#accordion li',function(e){var element_input=$(this).find("#xinput_li");if($(element_input).css('display')=='inline-block'){if($(element_input)[0].value==''){$(element_input).css('display','none');}}
 xedit_detalle_item=false;})
@@ -181,4 +184,5 @@ function quitarSubTotal(obj,index){const tachado=$(obj).attr('data-tachado');con
 xLocal_SubTotal_Quitados+=idQuitar+',';}
 xSumarTotal();}
 function xTraerDtTipoConsumo(){var xCadenaSelectUlTPC='',xDtTpC=xm_log_get('estructura_pedido');for(var i=0;i<xDtTpC.length;i++){xCadenaSelectUlTPC=String(xCadenaSelectUlTPC+'<option value="'+xDtTpC[i].idtipo_consumo+'">'+xDtTpC[i].descripcion+'</option>');};$("#select_ulTPC").html(xCadenaSelectUlTPC).trigger('create');}
-Polymer({is:'x-venta-rapida',properties:{xt_org:Number,xt_idsede:Number,xt_idus:Number,xdt_items:Object,hidden_container_registro_pago:boolean=false,valid_form_cliente_pago:boolean=false,valid_monto_pago:boolean=false},attached:function(){this.selected_us=0;xThisVentaRapida=this;xIniVentaRapida();},detached:function(){document.defaultAction=false;document['onkeydown']=empty;clearInterval(xGeneralRelojUpdateItemsSolo);}})/*]]>*/</script>
+function _pantallaCompleta(){xThisVentaRapida.xIconScreen=isSreenFull?'icons:fullscreen-exit':'icons:fullscreen';isSreenFull=!isSreenFull;pantallaCompleta();}
+Polymer({is:'x-venta-rapida',properties:{xt_org:Number,xt_idsede:Number,xt_idus:Number,xdt_items:Object,hidden_container_registro_pago:boolean=false,valid_form_cliente_pago:boolean=false,valid_monto_pago:boolean=false,xIconScreen:String,},attached:function(){this.selected_us=0;this.xIconScreen='icons:fullscreen';xThisVentaRapida=this;xIniVentaRapida();},detached:function(){document.defaultAction=false;document['onkeydown']=empty;clearInterval(xGeneralRelojUpdateItemsSolo);}})/*]]>*/</script>

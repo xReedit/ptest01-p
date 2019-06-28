@@ -245,9 +245,7 @@ $("#dialog_motivo_anular").on('iron-overlay-closed',function(){$("#txt_motivo_an
 $("#dialog_motivo_anular #txt_motivo_anular").keyup(function(e){if(e.keyCode==13){dialog_motivo_anular.close();pass_us.open();}})
 $("#dialog_cambiar_mesa #txt_num_mesa_change").keyup(function(e){if(e.keyCode==13){xCambiarMesa();}})
 $("#content_page").on('iron-select',function(a,e){if(a.target.selected==1){component_pago.setFocusTxt();}});$(document).on('keyup','.xMiTextReferencia',function(e){const _itemIndex=e.target.parentElement.parentElement.dataset.index;xidTipoConsumo=$("#select_ulTPC option:selected").val();itemPedidos_objItemSelected=xGeneralDataCarta[_itemIndex];xidItem=itemPedidos_objItemSelected.idcarta_lista;})
-$(document).keydown(function(e){if(e.keyCode>=112||e.keyCode<=123){if(xbuscar_mesa==true){return;}
-$("#txt_bus_mesa").focus();if(xbuscar_mesa==true){$("#txt_bus_mesa").select();xbuscar_mesa=false;}}})
-$(document).on('keydown','#txt_bus_mesa',function(e){if(e.keyCode==13){var xval_bus_m=parseInt($(this).val());$(".xMiCardPedido.xOcupado").each(function(index,element){var xnum_obj=parseInt($(element).find(".numero").text());if(xnum_obj==xval_bus_m){xLoadDetallesPedido($(element))
+$(document.body).on('keydown','#txt_bus_mesa',function(e){if(e.keyCode==13){var xval_bus_m=parseInt($(this).val());$(".xMiCardPedido.xOcupado").each(function(index,element){var xnum_obj=parseInt($(element).find(".numero").text());if(xnum_obj==xval_bus_m){xLoadDetallesPedido($(element))
 $("#txt_bus_mesa").select();e.stopPropagation();e.stopImmediatePropagation();return;}
 $("#txt_bus_mesa").val('');})}
 e.stopPropagation();e.stopImmediatePropagation();})
@@ -272,6 +270,8 @@ function detectEvent(e){var evt=e||window.event;if(evt.keyCode==27){if(dialog_ca
 if(xopen_add_item){xCloseLULI();return;}
 if(content_page.selected==1){xIrPage(0);return;}
 if(dialog_detalle.opened){dialog_detalle.close();return;}}
+if((e.keyCode>=48&&e.keyCode<=57)||(e.keyCode>=96&&e.keyCode<=105)){if(xbuscar_mesa==true){return;}
+$("#txt_bus_mesa").focus();if(xbuscar_mesa==true){$("#txt_bus_mesa").select();xbuscar_mesa=false;}}
 if(evt.keyCode>=119&&evt.keyCode<=121){if(evt.keyCode==119){if(dialog_detalle.opened){xOpenLULI();}}
 if(evt.keyCode==120){if(xopen_add_item){xArmarSqlAddLUlI();}}
 if(evt.keyCode==121&&xkey_f10==true){if(xThisCM.$.content_page.selected!==1){xIrPage(1);evt.stopPropagation();e.stopPropagation();e.stopImmediatePropagation();}}

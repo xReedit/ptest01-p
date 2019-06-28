@@ -72,3 +72,4 @@ function delay(callback,ms){var timer=0;return function(){var context=this,args=
 function setImportHTML(_linkImport){_linkImport=_linkImport.trim().split(',');let link=document.createElement('link');link.rel='import';_linkImport.map(x=>{link.href=x;link.onload=onload;document.head.appendChild(link);})}
 function objectifyForm(formArray){var returnArray={};for(var i=0;i<formArray.length;i++){returnArray[formArray[i]['name']]=formArray[i]['value'];}
 return returnArray;}
+function pantallaCompleta(){var elem=document.documentElement;if(!window.screenTop&&!window.screenY){if(elem.mozRequestFullScreen){elem.mozRequestFullScreen();}else if(elem.webkitRequestFullscreen){elem.webkitRequestFullscreen();}}else{if(document.mozCancelFullScreen){document.mozCancelFullScreen();}else if(document.webkitExitFullscreen){document.webkitExitFullscreen();}}}
