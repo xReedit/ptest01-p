@@ -1,0 +1,934 @@
+<!--
+@license
+Copyright (c) 2015 The Polymer Project Authors. All rights reserved.
+This code may only be used under the BSD style license found at http://polymer.github.io/LICENSE.txt
+The complete set of authors may be found at http://polymer.github.io/AUTHORS.txt
+The complete set of contributors may be found at http://polymer.github.io/CONTRIBUTORS.txt
+Code distributed by Google as part of the polymer project is also
+subject to an additional IP rights grant found at http://polymer.github.io/PATENTS.txt
+-->
+<link rel="import" href="../polymer/polymer.html">
+<link rel="import" href="../iron-flex-layout/iron-flex-layout.html">
+<link rel="import" href="../paper-input/paper-input.html">
+<link rel="import" href="../paper-icon-button/paper-icon-button.html">
+<link rel="import" href="../iron-icons/iron-icons.html">
+<link rel="import" href="../paper-item/paper-item.html">
+<link rel="import" href="../paper-ripple/paper-ripple.html">
+<link rel="import" href="../paper-material/paper-material.html">
+
+<!--
+Paper Input Autocomplete field to offer a type-ahead functionality
+
+Example:
+
+    <paper-input-autocomplete id="fruits" label="Fruits"></paper-input-autocomplete>
+
+    <script>
+      document.getElementById('fruits').source = ['Apple', 'Orange', 'Bananas'];
+    </script>
+
+@group Paper Elements
+@element paper-input-autocomplete
+@demo demo/index.html
+@hero hero.svg
+-->
+<dom-module id="paper-input-autocomplete">
+	<style>
+		:host {
+			display: block;
+			box-sizing: border-box;
+			position: relative;
+		}
+
+		.input-wrapper {
+			/* @apply(--layout-horizontal); */
+			-ms-flex-direction: row;
+			-webkit-flex-direction: row;
+			flex-direction: row;
+		}
+
+		.input-wrapper paper-input {
+			/* @apply(--layout-flex); */
+			-ms-flex: 1 1 0.000000001px;
+			-webkit-flex: 1;
+			flex: 1;
+			-webkit-flex-basis: 0.000000001px;
+			flex-basis: 0.000000001px;
+		}
+
+		#suggestionsWrapper {
+			display: none;
+			background-color: white;
+		}
+
+		:host[suggestions-in-overlay="true"] #suggestionsWrapper {
+			width: 100%;
+			position: absolute;
+			z-index: 1000;
+		}
+
+		paper-item {
+			font-size: 11px;
+			position: relative;
+		}
+
+		#clear {
+			display: none;
+		}
+
+		paper-item,
+      :host ::slotted(paper-item) {
+        min-height: var(--paper-item-min-height, 36px);
+        padding: 0 16px;
+        position: relative;
+        line-height: 18px;
+
+        @apply --suggestions-item;
+      }
+
+      paper-item:hover,
+      :host ::slotted(paper-item:hover) {
+        background: #eee;
+        color: #333;
+        cursor: pointer;
+      }
+
+      paper-item.active,
+      :host ::slotted(paper-item.active) {
+        background: #eee;
+        color: #333;
+      }
+
+      /**
+       * IE11 paper-item min-height bug: https://github.com/PolymerElements/paper-item/issues/35
+       */
+      @media screen and (-ms-high-contrast: active), (-ms-high-contrast: none) {
+        paper-item {
+          height: var(--paper-item-min-height, 36px);
+        }
+      }
+	</style>
+
+	<template>
+		<div class="input-wrapper">
+			<paper-input id="input" label="{{label}}" on-keyup="_handleSuggestions" disabled="{{disabled}}"
+				invalid="{{invalid}}" prevent-invalid-input="{{preventInvalidInput}}"
+				allowedpattern="{{allowedPattern}}" type="{{type}}" list="{{list}}" pattern="{{pattern}}"
+				required="{{required}}" maxlength="{{maxlength}}" error-message="{{errorMessage}}"
+				char-counter="{{charCounter}}" auto-validate="{{autoValidate}}" validator="{{validator}}"
+				autocomplete="{{autocomplete}}" autofocus="{{autofocus}}" inputmode="{{inputmode}}"
+				minlength="{{minlength}}" name="{{name}}" placeholder="{{placeholder}}" readonly="{{readonly}}"
+				size="{{size}}" _aria-described-by="{{_ariaDescribedBy}}" value="{{inputValue}}"
+				no-label-float="{{noLabelFloat}}" always-float-label="{{alwaysFloatLabel}}"
+				display-options-on-focus="{{displayOptionsOnFocus}}" on-focus="_onFocus" on-blur="_onBlur" onChange="conMayusculas(this)">
+			</paper-input>
+			<paper-icon-button id="clear" icon="clear" on-click="clear"></paper-icon-button>
+		</div>
+		<paper-material elevation="1" id="suggestionsWrapper">
+			<template is="dom-repeat" items="{{_suggestions}}">
+				<paper-item on-click="_selectSuggestion">
+					<div>{{item.text}}</div>
+					<paper-ripple></paper-ripple>
+				</paper-item>
+			</template>
+		</paper-material>
+	</template>
+</dom-module>
+
+<script>
+
+	var DIRECTION = {
+      UP: 'up',
+      DOWN: 'down'
+    };
+	var KEY_CODES = {
+      LEFT_ARROW: 37,
+      RIGHT_ARROW: 39,
+      UP_ARROW: 38,
+      DOWN_ARROW: 40,
+      ENTER: 13,
+      ESCAPE: 27
+    };
+
+	Polymer({
+
+		is: 'paper-input-autocomplete',
+
+		properties: {
+
+			/**
+			 * `label` Text to display as the input label
+			 */
+			label: String,
+
+			/**
+			 * `source` Array of objects with the options to execute the autocomplete feature
+			 */
+			source: Array,
+
+			/**
+			 * `searchProperty` Property of the source objects that will be used to execute
+			 * the autocomplete feature
+			 */
+			searchProperty: String,
+
+			/**
+			 * `autocompleteSearchLength` Number that determines when the autocomplete will start
+			 * searching for matches
+			 */
+			autocompleteSearchLength: {
+				type: Number,
+				value: 1
+			},
+
+			/**
+			 * `value` Selected object from the suggestions
+			 */
+			value: {
+				type: Object,
+				notify: true
+			},
+
+			/**
+			 * `inputValue` Current value of the input-paper element
+			 */
+			inputValue: {
+				type: String,
+				notify: true,
+				observer: '_changeInputValue'
+			},
+
+			/**
+			 * `suggestionsInOverlay` Display the suggestions in an overlay above the next elements
+			 */
+			suggestionsInOverlay: Boolean,
+
+			/**
+			 * `_suggestions` Array with the actual suggestions to display
+			 */
+			_suggestions: Array,
+
+			/**
+			 * Set to true to disable this input. Bind this to both the `<paper-input-container>`'s
+			 * and the input's `disabled` property.
+			 */
+			disabled: {
+				type: Boolean,
+				value: false
+			},
+
+			/**
+			 * Returns true if the value is invalid. Bind this to both the `<paper-input-container>`'s
+			 * and the input's `invalid` property.
+			 */
+			invalid: {
+				type: Boolean,
+				value: false
+			},
+
+			/**
+			 * Set to true to prevent the user from entering invalid input. Bind this to the
+			 * `<input is="iron-input">`'s `preventInvalidInput` property.
+			 */
+			preventInvalidInput: {
+				type: Boolean
+			},
+
+			/**
+			 * Set this to specify the pattern allowed by `preventInvalidInput`. Bind this to the
+			 * `<input is="iron-input">`'s `allowedPattern` property.
+			 */
+			allowedPattern: {
+				type: String
+			},
+
+			/**
+			 * The type of the input. The supported types are `text`, `number` and `password`. Bind this
+			 * to the `<input is="iron-input">`'s `type` property.
+			 */
+			type: {
+				type: String
+			},
+
+			/**
+			 * The datalist of the input (if any). This should match the id of an existing <datalist>. Bind this
+			 * to the `<input is="iron-input">`'s `list` property.
+			 */
+			list: {
+				type: String
+			},
+
+			/**
+			 * A pattern to validate the `input` with. Bind this to the `<input is="iron-input">`'s
+			 * `pattern` property.
+			 */
+			pattern: {
+				type: String
+			},
+
+			/**
+			 * Set to true to mark the input as required. Bind this to the `<input is="iron-input">`'s
+			 * `required` property.
+			 */
+			required: {
+				type: Boolean,
+				value: false
+			},
+
+			/**
+			 * The maximum length of the input value. Bind this to the `<input is="iron-input">`'s
+			 * `maxlength` property.
+			 */
+			maxlength: {
+				type: Number
+			},
+
+			/**
+			 * The error message to display when the input is invalid. Bind this to the
+			 * `<paper-input-error>`'s content, if using.
+			 */
+			errorMessage: {
+				type: String
+			},
+
+			/**
+			 * Set to true to show a character counter.
+			 */
+			charCounter: {
+				type: Boolean,
+				value: false
+			},
+
+			/**
+			 * Set to true to disable the floating label. Bind this to the `<paper-input-container>`'s
+			 * `noLabelFloat` property.
+			 */
+			noLabelFloat: {
+				type: Boolean,
+				value: false,
+				notify: true,
+			},
+
+			/**
+			 * Set to true to always float the label. Bind this to the `<paper-input-container>`'s
+			 * `alwaysFloatLabel` property.
+			 */
+			alwaysFloatLabel: {
+				type: Boolean,
+				value: false
+			},
+
+			/**
+			 * Set to true to auto-validate the input value. Bind this to the `<paper-input-container>`'s
+			 * `autoValidate` property.
+			 */
+			autoValidate: {
+				type: Boolean,
+				value: false
+			},
+
+			/**
+			 * Name of the validator to use. Bind this to the `<input is="iron-input">`'s `validator`
+			 * property.
+			 */
+			validator: {
+				type: String
+			},
+
+			// HTMLInputElement attributes for binding if needed
+
+			/**
+			 * Bind this to the `<input is="iron-input">`'s `autocomplete` property.
+			 */
+			autocomplete: {
+				type: String,
+				value: 'off'
+			},
+
+			/**
+			 * Bind this to the `<input is="iron-input">`'s `autofocus` property.
+			 */
+			autofocus: {
+				type: Boolean
+			},
+
+			/**
+			 * Bind this to the `<input is="iron-input">`'s `inputmode` property.
+			 */
+			inputmode: {
+				type: String
+			},
+
+			/**
+			 * Bind this to the `<input is="iron-input">`'s `minlength` property.
+			 */
+			minlength: {
+				type: Number
+			},
+
+			/**
+			 * Bind this to the `<input is="iron-input">`'s `name` property.
+			 */
+			name: {
+				type: String
+			},
+
+			/**
+			 * A placeholder string in addition to the label. If this is set, the label will always float.
+			 */
+			placeholder: {
+				type: String,
+				// need to set a default so _computeAlwaysFloatLabel is run
+				value: ''
+			},
+
+			/**
+			 * Bind this to the `<input is="iron-input">`'s `readonly` property.
+			 */
+			readonly: {
+				type: Boolean,
+				value: false
+			},
+
+			/**
+			 * Bind this to the `<input is="iron-input">`'s `size` property.
+			 */
+			size: {
+				type: Number
+			},
+
+			_ariaDescribedBy: {
+				type: String,
+				value: ''
+			},
+
+			/**
+			 * Display all the options when the input is empty and when the user focus the input.
+			 */
+			displayOptionsOnFocus: {
+				type: Boolean,
+				value: false
+			},
+
+			isOpen: {
+          type: Boolean,
+          value: false,
+          notify: true
+        },
+
+        /**
+         * Minimum length to trigger suggestions
+         */
+        minLength: {
+          type: Number,
+          value: 1
+        },
+
+        /**
+         * Max number of suggestions to be displayed without scrolling
+         */
+        maxViewableItems: {
+          type: Number,
+          value: 7
+        },
+
+        /**
+         * Property of local datasource to as the text property
+         */
+        textProperty: {
+          type: String,
+          value: 'text'
+        },
+
+        /**
+         * Property of local datasource to as the value property
+         */
+        valueProperty: {
+          type: String,
+          value: 'value'
+        },
+
+        /**
+         * `source` Array of objects with the options to execute the autocomplete feature
+         */
+        source: {
+          type: Array
+        },
+
+        /**
+         *  Object containing information about the current selected option. The structure of the object depends on the
+         *  structure of each element in the data source.
+         */
+        selectedOption: {
+          type: Object,
+          notify: true
+        },
+
+        /**
+         * Binds to a remote data source
+         */
+        remoteSource: {
+          type: Boolean,
+          value: false
+        },
+
+        /**
+         * Event type separator
+         */
+        eventNamespace: {
+          type: String,
+          value: '-'
+        },
+
+        /**
+         * Current highlighted suggestion. The structure of the object is:
+         * ```
+         * {
+         *    elementId: ID // id of the highlighted DOM element
+         *    option: // highlighted option data
+         * }
+         * ```
+         */
+        highlightedSuggestion: {
+          type: Object,
+          value: {},
+          notify: true
+        },
+
+        /**
+         * Function used to filter available items. This function is actually used by paper-autocomplete-suggestions,
+         * it is also exposed here so it is possible to provide a custom queryFn.
+         */
+         queryFn: {
+          type: Function
+        },
+
+        /**
+         * If `true`, it will always highlight the first result each time new suggestions are presented.
+         */
+        highlightFirst: {
+          type: Boolean,
+          value: false
+        },
+
+        /**
+         * Set to `true` to show available suggestions on focus. This overrides the default behavior that only shows
+         * notifications after user types
+         */
+        showResultsOnFocus: {
+          type: Boolean,
+          value: false
+        },
+
+        /**
+         * `_suggestions` Array with the actual suggestions to display
+         */
+        _suggestions: {
+          type: Array,
+          observer: '_onSuggestionsChanged'
+        },
+
+        /**
+         * Indicates the position in the suggestions popup of the currently highlighted element, being `0` the first one,
+         * and `this._suggestions.length - 1` the position of the last one.
+         */
+        _currentIndex: {
+          type: Number,
+          value: -1
+        },
+
+        /**
+         * Indicates the current position of the scroll. Then the `scrollTop` position is calculated multiplying the
+         * `_itemHeight` with the current index.
+         */
+        _scrollIndex: {
+          type: Number,
+          value: 0
+        },
+
+        /**
+         * Height of each suggestion element in pixels
+         */
+        _itemHeight: {
+          type: Number,
+          value: 36,
+          observer: '_itemHeightChanged'
+        },
+
+        _value: {
+          value: undefined
+        },
+
+        _text: {
+          value: undefined
+        },
+
+        /**
+         * This value is used as a base to generate unique individual ids that need to be added to each suggestion for
+         * accessibility reasons.
+         */
+        _idItemSeed: {
+          type: String,
+          value: 'aria-' + new Date().getTime() + '-' + (Math.floor(Math.random() * 1000)),
+          readOnly: true
+        },
+
+        /**
+         * Reference to binded functions so we can call removeEventListener on element detached
+         */
+        _bindedFunctions: {
+          type: Object,
+          value: function () {
+            return {
+              _onKeypress: null,
+              _onFocus: null,
+              _onBlur: null
+            };
+          }
+        },
+
+        /**
+         * Indicates if the the height of each suggestion item has been already calculated.
+         * The assumption is that item height is fixed and it will not change.
+         */
+        _hasItemHighBeenCalculated: {
+          type: Boolean,
+          value: false
+        },
+
+        /**
+         * To avoid unnecessary access to the DOM, we keep a reference to the current template being used
+         */
+        __customTplRef: Object
+		},
+		
+
+		// Element Lifecycle
+
+		ready: function () {
+			// `ready` is called after all elements have been configured, but
+			// propagates bottom-up. This element's children are ready, but parents
+			// are not.
+			//
+			// This is the point where you should make modifications to the DOM (when
+			// necessary), or kick off any processes the element wants to perform.
+		},
+
+		attached: function () {
+			// `attached` fires once the element and its parents have been inserted
+			// into a document.
+			//
+			// This is a good place to perform any work related to your element's
+			// visual state or active behavior (measuring sizes, beginning animations,
+			// loading resources, etc).
+		},
+
+		detached: function () {
+			// The analog to `attached`, `detached` fires when the element has been
+			// removed from a document.
+			//
+			// Use this to clean up anything you did in `attached`.
+		},
+
+		// Element Behavior
+
+		/**
+		 * Clears the input text
+		 */
+		clear: function () {
+			this.$.input.value = '';
+			this.$.clear.style.display = 'none';
+			this.value = undefined;
+			this._hideSuggestionsWrapper();
+		},
+
+		_changeInputValue: function() {			
+			if ( this.$.input.value === '' ) {
+				this.alwaysFloatLabel = false;
+				this.clear();
+			} else {
+				this.alwaysFloatLabel = true;
+			}
+		},
+
+		/**
+		 * Hide the suggestions wrapper
+		 */
+		_hideSuggestionsWrapper: function () {
+			this.$.suggestionsWrapper.style.display = 'none';
+		},
+
+		/**
+		 * Event fired when the user types in the input field.
+		 *
+		 * @param {string} event fired
+		 */
+		_handleSuggestions: function (event) {
+			this.value = this.$.input.value;
+			var value = event.target.value;
+
+			if (value && value.length > 0) {
+				this._handleSuggestionsAux(value);
+				this._onKeypress(event);
+			} else {
+				this.$.clear.style.display = 'none';
+				this._suggestions = [];
+			}
+		},
+
+		/**
+		 * Auxiliary event to handle the suggestions.
+		 *
+		 * @param {string} event fired
+		 */
+		_handleSuggestionsAux: function (value) {
+			// Check if the given value should be processed according to the min length for search
+			if (value.length >= this.autocompleteSearchLength) {
+				var valueToProcess = value.toLowerCase();
+
+				// Shows the clear button.
+				// this.$.clear.style.display = 'block';
+
+				// Search for the word in the source properties.
+				if (this.source && this.source.length > 0) {
+					this._suggestions = [];
+					var length = this.source.length
+					var hasSearchProperty = this.searchProperty != null;
+					for (var i = 0; i < length; i++) {
+						var item = this.source[i];
+						if (hasSearchProperty) {
+							item = this.source[i][this.searchProperty];
+						}
+						if (item.toLowerCase().indexOf(valueToProcess) != -1) {
+							// Adds the item to the suggestions list.
+							this.push('_suggestions', {
+								text: item,
+								value: this.source[i]
+							});
+						}
+					}
+
+					if (this._suggestions.length > 0) {
+						this.$.suggestionsWrapper.style.display = 'block';
+					}
+				}
+			}
+		},
+
+		/**
+		 * Event fired when the user selects a suggestion
+		 *
+		 * @param {Object} event fired
+		 */
+		_selectSuggestion: function (event) {
+			var selectedOption = this._suggestions[event.model.index];
+			var self = this;
+
+			this.$.input.value = selectedOption.text;
+			this.value = selectedOption.value;
+
+			 this._fireEvent(selectedOption, 'selected');
+
+			setTimeout(function () {
+				self._hideSuggestionsWrapper();
+			}, 300);
+		},
+
+		_onFocus: function () {
+			if (this.displayOptionsOnFocus && (this.value === '' || this.value === undefined)) {
+				this.value = '';
+				this.autocompleteSearchLength = 0;
+				this._handleSuggestionsAux(this.value);
+			}
+		},
+
+		_onBlur: function (event) {
+			var self = this;
+
+			setTimeout(function () {
+				self._hideSuggestionsWrapper();
+
+				if (self.value === '') {
+					self.clear();
+				}
+			}, 300);
+		},
+
+		/**
+		 * Return the selected suggestion
+		 */
+		getValue: function () {
+			return this.value;
+		},
+
+		_getItems: function () {
+			return this.$.suggestionsWrapper.querySelectorAll('paper-item');
+		},
+		_moveHighlighted: function (direction) {
+        var items = this._getItems();
+
+        if (items.length === 0) {
+          return;
+        }
+
+        var numberOfItems = items.length - 1;
+
+        var isFirstItem = this._currentIndex === 0;
+        var isLastItem = this._currentIndex === numberOfItems;
+        var isNoItemHighlighted = this._currentIndex === -1;
+
+        if ((isNoItemHighlighted || isFirstItem) && direction === DIRECTION.UP) {
+          this._currentIndex = numberOfItems;
+        } else if (isLastItem && direction === DIRECTION.DOWN) {
+          this._currentIndex = 0;
+        } else {
+          var modifier = direction === DIRECTION.DOWN ? 1 : -1;
+          this._currentIndex = this._currentIndex + modifier;
+        }
+
+        var highlightedOption = this._suggestions[this._currentIndex];
+        var highlightedItem = items[this._currentIndex];
+
+        this._removeActive(items);
+
+        highlightedItem.classList.add('active');
+        highlightedItem.setAttribute('aria-selected', 'true');
+
+        this._setHighlightedSuggestion(highlightedOption, highlightedItem.id);
+
+        this._scroll(direction);
+			},
+
+			_onKeypress: function (event) {
+        var keyCode = event.which || event.keyCode;
+
+        switch (keyCode) {
+        case KEY_CODES.DOWN_ARROW:
+          this._moveHighlighted(DIRECTION.DOWN);
+          break;
+        case KEY_CODES.UP_ARROW:
+          this._moveHighlighted(DIRECTION.UP);
+          break;
+        case KEY_CODES.ENTER:
+          this._keyenter();
+          break;
+        case KEY_CODES.ESCAPE:
+          this._hideSuggestionsWrapper();
+          break;
+          // For left and right arrow, component should do nothing
+        case KEY_CODES.LEFT_ARROW:
+          // fall through
+        case KEY_CODES.RIGHT_ARROW:
+          break;
+        // default:
+        //   this._handleSuggestions(event);
+        }
+			},
+			
+			_removeActive: function (items) {
+        [].slice.call(items).forEach(function (item) {
+          item.classList.remove('active');
+          item.setAttribute('aria-selected', 'false');
+        });
+			},
+			
+			_keyenter: function () {
+        if (this.$.suggestionsWrapper.style.display === 'block' && this._currentIndex > -1) {
+          var index = this._currentIndex;
+          this._selection(index);
+        }
+			},
+			
+			_setHighlightedSuggestion: function (option, elementId) {
+        this.highlightedSuggestion = {
+          option: option,
+          elementId: elementId,
+          textValue: option[this.textProperty],
+          value: option[this.valueProperty]
+        };
+			},
+			
+			_scroll: function (direction) {
+        var newScrollValue, isSelectedOutOfView;
+
+        var viewIndex = this._currentIndex - this._scrollIndex;
+
+        // This happens only when user switch from last item to first one
+        var isFirstItemAndOutOfView = this._currentIndex === 0 && viewIndex < 0;
+
+        // This happens only when user switch from first or no item to last one
+        var isLastItemAndOutOfView =
+          this._currentIndex === this._suggestions.length - 1 && viewIndex >= this.maxViewableItems;
+
+        if (isFirstItemAndOutOfView && direction === DIRECTION.DOWN) {
+          newScrollValue = 0;
+          isSelectedOutOfView = true;
+        } else if (isLastItemAndOutOfView && direction === DIRECTION.UP) {
+          newScrollValue = this._suggestions.length - this.maxViewableItems;
+          isSelectedOutOfView = true;
+        } else if (direction === DIRECTION.UP) {
+          newScrollValue = this._scrollIndex - 1;
+          isSelectedOutOfView = viewIndex < 0;
+        } else {
+          newScrollValue = this._scrollIndex + 1;
+          isSelectedOutOfView = viewIndex >= this.maxViewableItems;
+        }
+
+        // Only when the current active element is out of view, we need to move the position of the scroll
+        if (isSelectedOutOfView) {
+          this._scrollIndex = newScrollValue;
+          this.$.suggestionsWrapper.scrollTop = this._scrollIndex * this._itemHeight;
+        }
+			},
+			
+
+			_selection: function (index) {
+        var selectedOption = this._suggestions[index];
+
+				// this._input.value = selectedOption[this.textProperty];
+				this.$.input.value = selectedOption.text;
+				this.value = selectedOption.value;
+				// this.$.input.value = selectedOption[this.textProperty];
+        this.selectedOption = selectedOption;
+
+        this._value = this.value;
+        this._text = this.text;
+        this._emptyItems();
+
+        this._fireEvent(selectedOption, 'selected');				
+
+        this.hideSuggestions();
+			},
+			
+			_emptyItems: function () {
+			this._suggestions = [];
+			},
+
+			_fireEvent: function (option, evt) {
+        var id = this._getId();
+        var event = 'autocomplete' + this.eventNamespace + evt;
+
+        this.fire(event, {
+          id: id,
+          value: option[this.valueProperty] || option.value,
+          text: option[this.textProperty] || option.text,
+          target: this,
+          option: option
+        });
+			},
+			
+			hideSuggestions: function () {
+        setTimeout(function () {
+          this._hideSuggestionsWrapper();
+        }.bind(this), 0);
+			},
+			
+			_getId: function () {
+        var id = this.getAttribute('id');
+        if (!id) id = this.dataset.id;
+        return id;
+      },
+
+
+	});
+</script>
