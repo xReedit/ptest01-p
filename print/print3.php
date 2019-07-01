@@ -240,7 +240,12 @@ while($num_copias>=0){
 			// $or_des_seccion[$key]  = !empty($row['des_seccion']) ? $row['des_seccion'] : '';
 			$or_des_seccion[$key]  = !empty($row['sec_orden']) ? $row['sec_orden'] : ''; 
 		}
-		array_multisort($procede, SORT_ASC,$or_des_seccion, SORT_ASC, $item);		
+		//array_multisort($procede, SORT_ASC,$or_des_seccion, SORT_ASC, $item);
+		array_multisort($procede, SORT_ASC, SORT_NUMERIC,
+						$or_des_seccion, SORT_ASC, SORT_NUMERIC,
+						$item, SORT_ASC, SORT_LOCALE_STRING);
+		
+		// print_r($item);
 		
 		foreach ($item as $subitem) {
 			if(is_array($subitem)==false){continue;}
