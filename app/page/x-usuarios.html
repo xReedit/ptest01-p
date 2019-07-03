@@ -1,10 +1,11 @@
 <dom-module id="x-usuarios">
 <template>
-<paper-dialog id="dialog_add_us" style="max-width:300px" modal entry-animation="scale-up-animation" exit-animation="fade-out-animation" with-backdrop>
+<paper-dialog id="dialog_add_us" class="dialog_redondo" style="max-width:350px" modal entry-animation="scale-up-animation" exit-animation="fade-out-animation" with-backdrop>
 <div class="xContent">
 <paper-tabs selected="{{selected_us}}">
 <paper-tab>DATOS</paper-tab>
 <paper-tab>ACCESOS</paper-tab>
+<paper-tab>ZONA</paper-tab>
 </paper-tabs>
 <div class="xLinea2"></div>
 <br>
@@ -77,13 +78,20 @@
 <paper-checkbox class="checkP" data-id='Pe4,'>Cambiar de mesa el pedido</paper-checkbox><br>
 </div>
 </div>
+<div id="div_zona">
+<h4>Asignar un almacen.</h4>
+<span class="xfont8">Esta opcion se utiliza en los siguientes escenarios: Discoteca, bares o locales que tengan mas zona de despacho de productos terminados o embotellados,
+<br><strong>Ejemplo:</strong> En una discoteca cuentan con varios bares de venta de cerveza, entonces al usuario se le asigna un bar(almacen) del que va ser responsable, entonces todas las ventas que haga el sistema descontara de este almacen(bar) asignado.
+<br><strong>Tenga en cuenta que si utiliza esta opcion, lo mejor es trabajar directamente con las cajas a la hora de hacer los pedidos. </strong>
+</span>
+</div>
 </iron-pages>
 <br>
-<br>
 <a href="#" onclick="xResetearClave()"> Resetear clave</a>
-<br><br>
+<br>
 <button class="xBoton2 xAzul" onclick="xGuardarUs()">Guardar</button>
 <button class="xBoton2 xPlomo" onclick="dialog_add_us.close()">Cancelar</button>
+<br><br>
 </div>
 </paper-dialog>
 <br>

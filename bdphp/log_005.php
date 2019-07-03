@@ -1,4 +1,6 @@
 <?php
+	session_set_cookie_params('14400'); // 4 hour
+	session_cache_expire(180); // minutes
 	// session_set_cookie_params('4000'); // 1 hour
 	// session_regenerate_id(true); 
 	session_start();	
@@ -14,6 +16,8 @@
 
 	$g_ido = $_SESSION['ido'];
 	$g_idsede = $_SESSION['idsede'];
+	$fecha_now = date("d/m/Y");
+	$hora_now = date("H:i:s");
 	
 	switch($_GET['op'])
 	{
@@ -202,7 +206,7 @@
 			$bd->xConsulta($sql);
 			break;
 		case 505: // dar de baja a colaborador
-			$sql = "update planilla set mes_cierre=DATE_FORMAT(LAST_DAY(NOW()),'%d/%m/%Y'), fecha_baja=DATE_FORMAT(NOW(),'%d/%m/%Y') where idplanilla=".$_POST['id'];
+			$sql = "update planilla set mes_cierre=DATE_FORMAT(LAST_DAY(NOW()),'%d/%m/%Y'), fecha_baja=".$fecha_now." where idplanilla=".$_POST['id'];
 			$bd->xConsulta($sql);
 			break;
 		case 6: // historial de la carta

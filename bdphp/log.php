@@ -1,7 +1,7 @@
 <?php
-	session_set_cookie_params('4000'); // 1 hour
-	session_cache_expire(60); // minutes
-	session_regenerate_id(true); 
+	session_set_cookie_params('14400'); // 4 hour
+	session_cache_expire(180); // minutes
+	// session_regenerate_id(true); 
 	session_start();	
 	//header("Cache-Control: no-cache,no-store");
 	// header('content-type: text/html; charset: utf-8');
@@ -21,6 +21,8 @@
 
 	$g_ido = $_SESSION['ido'];
 	$g_idsede = $_SESSION['idsede'];
+	$fecha_now = date("d/m/Y");
+	$hora_now = date("H:i:s");
 
 	switch($_GET['op'])
 	{
@@ -86,7 +88,7 @@
 				SELECT ut.descripcion, u.idusuario,u.nombres,u.apellidos,u.usuario, '*******' AS pass
 				FROM usuario AS u
 					INNER JOIN usuario_tipo as ut using(idusuario_tipo)
-				WHERE u.idorg=".$_SESSION['ido']." AND (u.idsede=".$_SESSION['idsede']." OR u.idsede=0) and u.estado=0
+				WHERE u.idorg=".$g_ido." AND (u.idsede=".$g_idsede." OR u.idsede=0) and u.estado=0
 				";
 			$bd->xConsulta($sql);
 			break;
@@ -149,33 +151,33 @@
 			$num_copias = $_POST['num_copias'];
 			$papel_size = $_POST['papel_size'];
 
-			$sql="SELECT idimpresora as d1 FROM impresora WHERE (idorg=".$_SESSION['ido']." AND idsede=".$_SESSION['idsede'].") AND descripcion='".$_POST['des']."' AND local=1";
+			$sql="SELECT idimpresora as d1 FROM impresora WHERE (idorg=".$g_ido." AND idsede=".$g_idsede.") AND descripcion='".$_POST['des']."' AND local=1";
 			$id_print_bus=$bd->xDevolverUnDato($sql);
 			if($id_print_bus!=''){
 				$sql="UPDATE impresora SET var_margen_iz=".$margen_iz.",var_size_font=".$font.",ip='".$ip_p."', descripcion='".$des."', copia_local=".$copia_local.", num_copias=".$num_copias.", papel_size=".$papel_size.", estado=0 where idimpresora=".$id_print_bus;
 			}else{
-				$sql="INSERT INTO impresora (idorg,idsede,ip,descripcion,var_margen_iz,var_size_font,copia_local,num_copias,papel_size,local)VALUES(".$_SESSION['ido'].",".$_SESSION['idsede'].",'".$ip_p."','".$des."',".$margen_iz.",".$font.",".$copia_local.",".$num_copias.",".$papel_size.",'1')";
+				$sql="INSERT INTO impresora (idorg,idsede,ip,descripcion,var_margen_iz,var_size_font,copia_local,num_copias,papel_size,local)VALUES(".$g_ido.",".$g_idsede.",'".$ip_p."','".$des."',".$margen_iz.",".$font.",".$copia_local.",".$num_copias.",".$papel_size.",'1')";
 			}
 			//print $sql;
 			$bd->xConsulta($sql);
 			break;
 		case -106://cargar imprimir otros
-			$sql="SELECT * FROM conf_print_otros WHERE (idorg=".$_SESSION['ido']." AND idsede=".$_SESSION['idsede'].") and estado=0";
+			$sql="SELECT * FROM conf_print_otros WHERE (idorg=".$g_ido." AND idsede=".$g_idsede.") and estado=0";
 			$bd->xConsulta($sql);
 			break;
 		case -105://cargar impresoras
-			$sql="SELECT * FROM impresora WHERE (idorg=".$_SESSION['ido']." AND idsede=".$_SESSION['idsede'].") and estado=0";
+			$sql="SELECT * FROM impresora WHERE (idorg=".$g_ido." AND idsede=".$g_idsede.") and estado=0";
 			$bd->xConsulta($sql);
 			break;
 		case -1051: //actualiza el copia_local a todas las impresoras locales
 			$copial_local = $_POST['copia_local'];
-			$sql="update impresora set copia_local=".$copial_local." where (idorg=".$_SESSION['ido']." AND idsede=".$_SESSION['idsede'].") and local=1 and estado=0";
+			$sql="update impresora set copia_local=".$copial_local." where (idorg=".$g_ido." AND idsede=".$g_idsede.") and local=1 and estado=0";
 			$bd->xConsulta($sql);
 			break;
 		case -104://verificar session
 			//session_start();
 			//session_destroy();
-			//echo session_status() == PHP_SESSION_ACTIVE ? 'activa'.$_SESSION['ido']:'desactivada';
+			//echo session_status() == PHP_SESSION_ACTIVE ? 'activa'.$g_ido:'desactivada';
 			if(!isset($_SESSION['idusuario'])){
 				print 1;
 			}else{
@@ -195,11 +197,11 @@
 			return true;
 			break;
 		case -102://verificar usuario
-			$sql="select idusuario, acc,per from usuario where (idorg=".$_SESSION['ido'].") and usuario='".$_POST['u']."' and pass='".$_POST['p']."' and estado=0";
+			$sql="select idusuario, acc,per from usuario where (idorg=".$g_ido.") and usuario='".$_POST['u']."' and pass='".$_POST['p']."' and estado=0";
 			$bd->xConsulta($sql);
 			break;
 		case -101:// devolver datos de session
-			$sql="select '".$_SESSION['ido']."' as ido,  '".$_SESSION['idsede']."' as idse, '".$_SESSION['idusuario']."' as idu, '".$_SESSION['acc']."' as acc, '".$_SESSION['nomU']."' as nomU, '".$_SESSION['cargoU']."' as cargoU, '".$_SESSION['nomUs']."' as nomUs";
+			$sql="select '".$g_ido."' as ido,  '".$g_idsede."' as idse, '".$_SESSION['idusuario']."' as idu, '".$_SESSION['acc']."' as acc, '".$_SESSION['nomU']."' as nomU, '".$_SESSION['cargoU']."' as cargoU, '".$_SESSION['nomUs']."' as nomUs";
 			$bd->xConsulta($sql);
 			break;
 		case -1113://get dataUS
@@ -356,7 +358,7 @@
 			if(!isset($_SESSION['uemail'])){$_SESSION['uemail']='';}
 			if(!isset($_SESSION['udepartamento'])){$_SESSION['udepartamento']='';}
 			if(!isset($_SESSION['ucostoenvio'])){$_SESSION['ucostoenvio']='';}
-			if(!isset($_SESSION['uPromoDirigidoA'])){$_SESSION['uPromoDirigidoA']=$bd->xDevolverUnDato("select tipous as d1 from webpromocion as wp where now() between wp.fini and wp.ffin and wp.estado=0 limit 1");}
+			if(!isset($_SESSION['uPromoDirigidoA'])){$_SESSION['uPromoDirigidoA']=$bd->xDevolverUnDato("select tipous as d1 from webpromocion as wp where ".$fecha_now." between wp.fini and wp.ffin and wp.estado=0 limit 1");}
 
 			// echo 'http://www.viudanegra.com.pe/tienda/viuda/app/file/|'.$_SESSION['uid'].'|'.$_SESSION['utipo'].'|'.$_SESSION['unom'].'|'.$_SESSION['unomCompleto'].'|'.$_SESSION['udireccion'].'|'.$_SESSION['uemail'].'|'.$_SESSION['udepartamento'].'|'.$_SESSION['ucostoenvio'].'|'.$_SESSION['uPromoDirigidoA'];
 			break;
@@ -364,7 +366,7 @@
 
 		//elaboracion de carta
 		case 1://load categoria
-			$sql="SELECT idcategoria, descripcion FROM categoria WHERE (idorg=".$_SESSION['ido']." AND idsede=".$_SESSION['idsede'].") AND estado=0";
+			$sql="SELECT idcategoria, descripcion FROM categoria WHERE (idorg=".$g_ido." AND idsede=".$g_idsede.") AND estado=0";
 			$bd->xConsulta($sql);
 			break;
 		case 2://load items
@@ -372,13 +374,13 @@
 			SELECT i.iditem,i.idseccion,c.descripcion AS des_seccion, i.descripcion AS des_item, i.precio
 			FROM item AS i
 				INNER JOIN seccion AS c using(idseccion)
-			WHERE (i.idorg=".$_SESSION['ido']." AND i.idsede=".$_SESSION['idsede'].") AND i.estado=0 ORDER BY i.descripcion
+			WHERE (i.idorg=".$g_ido." AND i.idsede=".$g_idsede.") AND i.estado=0 ORDER BY i.descripcion
 			";			*/
-			$sql="SELECT iditem as value,descripcion as label,precio FROM item WHERE (idorg=".$_SESSION['ido']." AND idsede=".$_SESSION['idsede'].") AND estado=0 ORDER BY descripcion";
+			$sql="SELECT iditem as value,descripcion as label,precio FROM item WHERE (idorg=".$g_ido." AND idsede=".$g_idsede.") AND estado=0 ORDER BY descripcion";
 			$bd->xConsulta($sql);
 			break;
 		case 201://load seccion
-			$sql="SELECT idseccion as value,descripcion as label FROM seccion WHERE (idorg=".$_SESSION['ido']." AND idsede=".$_SESSION['idsede'].") AND estado=0 ORDER BY descripcion";
+			$sql="SELECT idseccion as value,descripcion as label FROM seccion WHERE (idorg=".$g_ido." AND idsede=".$g_idsede.") AND estado=0 ORDER BY descripcion";
 			$bd->xConsulta($sql);
 			break;
 		case 2011://load seccion orden
@@ -386,7 +388,7 @@
 				SELECT s.idseccion,s.descripcion,s.sec_orden, s.sec_orden
 				FROM seccion AS s
 					INNER JOIN carta_lista AS cl using(idseccion)
-				WHERE (s.idorg=".$_SESSION['ido']." AND s.idsede=".$_SESSION['idsede'].") AND s.estado=0
+				WHERE (s.idorg=".$g_ido." AND s.idsede=".$g_idsede.") AND s.estado=0
 				GROUP BY s.idseccion
 				ORDER BY s.sec_orden
 			";
@@ -411,11 +413,11 @@
 			$des_seccion=$_POST['des'];
 			if($id==''){
 				//comprueba nombre que coicidan en la bd si no selecciono item con id
-				$sql="select idseccion as d1 from seccion where (idorg=".$_SESSION['ido']." and idsede=".$_SESSION['idsede'].") and descripcion='".$des_seccion."'";
+				$sql="select idseccion as d1 from seccion where (idorg=".$g_ido." and idsede=".$g_idsede.") and descripcion='".$des_seccion."'";
 				$id=$bd->xDevolverUnDato($sql);
 				if($id==''){
 					//guarda nuevo
-					$sql="insert into seccion (idorg, idsede,descripcion,imprimir) values (".$_SESSION['ido'].",".$_SESSION['idsede'].",'".$des_seccion."',".$_POST['p'].")";
+					$sql="insert into seccion (idorg, idsede,descripcion,imprimir) values (".$g_ido.",".$g_idsede.",'".$des_seccion."',".$_POST['p'].")";
 					$id=$bd->xConsulta_UltimoId($sql);
 				}
 			}
@@ -431,11 +433,11 @@
 			$img_item=$_POST['img'];
 			if($id==''){
 				//comprueba nombre que coicidan en la bd si no selecciono item con id
-				$sql="select iditem as d1 from item where (idorg=".$_SESSION['ido']." and idsede=".$_SESSION['idsede'].") and descripcion='".$des_item."'";
+				$sql="select iditem as d1 from item where (idorg=".$g_ido." and idsede=".$g_idsede.") and descripcion='".$des_item."'";
 				$id=$bd->xDevolverUnDato($sql);
 				if($id==''){
 					//guarda nuevo
-					$sql="insert into item (idorg, idsede,descripcion,precio,detalle,img) values (".$_SESSION['ido'].",".$_SESSION['idsede'].",'".$des_item."','".$precio_item."','".$det_item."','".$img_item."')";
+					$sql="insert into item (idorg, idsede,descripcion,precio,detalle,img) values (".$g_ido.",".$g_idsede.",'".$des_item."','".$precio_item."','".$det_item."','".$img_item."')";
 					$id=$bd->xConsulta_UltimoId($sql);
 				}
 				else{
@@ -471,10 +473,10 @@
 			$sql_update_carta_delete = '';
 
 			//obtiene ultima carta segun fecha
-			// $sql="SELECT idcarta as d1 FROM carta WHERE (idorg=".$_SESSION['ido']." and idsede=".$_SESSION['idsede']." and idcategoria=".$idCategoria.") AND STR_TO_DATE(fecha, '%d/%m/%Y')=curdate()";
+			// $sql="SELECT idcarta as d1 FROM carta WHERE (idorg=".$g_ido." and idsede=".$g_idsede." and idcategoria=".$idCategoria.") AND STR_TO_DATE(fecha, '%d/%m/%Y')=curdate()";
 			// $id_carta=$bd->xDevolverUnDato($sql);
 			if($id_carta==''){ //nueva carta
-				$sql_carta="insert into carta (idorg, idsede, idcategoria,fecha) value (".$_SESSION['ido'].",".$_SESSION['idsede'].",".$idCategoria.", DATE_FORMAT(now(),'%d/%m/%Y'))";
+				$sql_carta="insert into carta (idorg, idsede, idcategoria,fecha) value (".$g_ido.",".$g_idsede.",".$idCategoria.", '".$fecha_now."')";
 				$id_carta=$bd->xConsulta_UltimoId($sql_carta);
 
 				// if($id_carta_anterior!=""){
@@ -488,7 +490,7 @@
 				// $sql_carta_historial="INSERT INTO carta_lista_historial (fecha, idcarta_lista,idcarta,idseccion,iditem,precio,cantidad,cant_preparado,sec_orden,estado) SELECT '".$fecha_carta."', idcarta_lista,idcarta,idseccion,iditem,precio,cantidad,cant_preparado,sec_orden,estado from carta_lista WHERE idcarta=".$id_carta.";";
 
 				// 121118 | si ya existe actualiza la fecha de modificacion
-				$sql_update_carta = "update carta set fecha = DATE_FORMAT(now(),'%d/%m/%Y') where idcarta=".$id_carta."; ";
+				$sql_update_carta = "update carta set fecha = '".$fecha_now."' where idcarta=".$id_carta."; ";
 
 				// elimina el contenido antererior para guardar todo nueva mente con las filas modificadas o agregadas
 				// $sql_carta_lista_anterior="delete from carta_lista where idcarta=".$id_carta.";";
@@ -508,11 +510,11 @@
 				$id_seccion=$seccion['id_seccion'];
 				if($id_seccion==''){
 					//comprueba nombre que coicidan en la bd si no selecciono seccion con id
-					$sql="select idseccion as d1 from seccion where (idorg=".$_SESSION['ido']." and idsede=".$_SESSION['idsede'].") and descripcion='".$seccion['des_seccion']."'";
+					$sql="select idseccion as d1 from seccion where (idorg=".$g_ido." and idsede=".$g_idsede.") and descripcion='".$seccion['des_seccion']."'";
 					$id_seccion=$bd->xDevolverUnDato($sql);
 					if($id_seccion==''){
 						//nuevo seccion
-						$sql_seccion="insert into seccion (idorg,idsede,descripcion,sec_orden,idimpresora)values(".$_SESSION['ido'].",".$_SESSION['idsede'].",'".$seccion['des_seccion']."',".$seccion['sec_orden'].",".$seccion['idimpresora'].")";
+						$sql_seccion="insert into seccion (idorg,idsede,descripcion,sec_orden,idimpresora)values(".$g_ido.",".$g_idsede.",'".$seccion['des_seccion']."',".$seccion['sec_orden'].",".$seccion['idimpresora'].")";
 						$id_seccion=$bd->xConsulta_UltimoId($sql_seccion);
 					}
 				} else if ( $seccion['modificado'] ) {
@@ -530,13 +532,13 @@
 						$id_item=$item['id_item'];
 						if($id_item==''){
 							//comprueba nombre que coicidan en la bd si no selecciono item con id
-							$sql="select iditem as d1 from item where (idorg=".$_SESSION['ido']." and idsede=".$_SESSION['idsede'].") and descripcion='".$item['des_item']."'";
+							$sql="select iditem as d1 from item where (idorg=".$g_ido." and idsede=".$g_idsede.") and descripcion='".$item['des_item']."'";
 							// echo json_encode($item);
 							// echo $sql;
 							$id_item=$bd->xDevolverUnDato($sql);
 							if($id_item==''){
 								//guarda nuevo item
-								$sql="insert into item (idorg, idsede,descripcion,precio,detalle,img) values (".$_SESSION['ido'].",".$_SESSION['idsede'].",'".$item['des_item']."','".$item['precio_item']."','".$item['det_item']."','".$item['img_item']."')";
+								$sql="insert into item (idorg, idsede,descripcion,precio,detalle,img) values (".$g_ido.",".$g_idsede.",'".$item['des_item']."','".$item['precio_item']."','".$item['det_item']."','".$item['img_item']."')";
 								//echo $sql;
 								// echo $sql;
 								$id_item=$bd->xConsulta_UltimoId($sql);
@@ -553,8 +555,8 @@
 							}
 
 						$id_carta_lista=$item['id_carta_lista'];
-						// if($id_carta_lista==""){$id_carta_lista=$_SESSION['ido'].$_SESSION['idsede'].$id_item;}						
-						if($id_carta_lista==""){$id_carta_lista=$_SESSION['ido'].$_SESSION['idsede'].$id_carta.$id_seccion.$id_item;}
+						// if($id_carta_lista==""){$id_carta_lista=$g_ido.$g_idsede.$id_item;}						
+						if($id_carta_lista==""){$id_carta_lista=$g_ido.$g_idsede.$id_carta.$id_seccion.$id_item;}
 
 						$sql_carta_lista=$sql_carta_lista."('".$id_carta_lista."',".$id_carta.",".$id_seccion.",".$id_item.",'".$item['precio_item']."','".$item['cant_item']."','".$item['cant_item']."',".$item['sec_orden']."),";
 
@@ -659,7 +661,7 @@
 					INNER JOIN item AS i using(iditem)
 					INNER JOIN carta AS c using(idcarta)
 					INNER JOIN categoria AS cat using(idcategoria)
-				WHERE (s.idorg=".$_SESSION['ido']." AND s.idsede=".$_SESSION['ido'].") AND (cat.idcategoria=1) AND s.estado=0
+				WHERE (s.idorg=".$g_ido." AND s.idsede=".$g_ido.") AND (cat.idcategoria=1) AND s.estado=0
 				GROUP BY s.idseccion
 				ORDER BY cl.sec_orden) a
 				UNION ALL
@@ -670,7 +672,7 @@
 					INNER JOIN almacen_items AS ai using(idproducto)
 					INNER JOIN almacen AS a using(idalmacen)
 					LEFT JOIN (SELECT idorg, idsede, idtipo_otro, idimpresora FROM conf_print_otros WHERE esalmacen=1) AS cp ON idtipo_otro=ai.idalmacen AND (cp.idorg=a.idorg AND cp.idsede=a.idsede)
-				WHERE (pf.idorg=".$_SESSION['ido']." AND pf.idsede=".$_SESSION['ido'].") AND a.bodega=1 AND pf.estado=0
+				WHERE (pf.idorg=".$g_ido." AND pf.idsede=".$g_ido.") AND a.bodega=1 AND pf.estado=0
 				GROUP by pf.idproducto_familia
 				ORDER BY pf.descripcion)b
 
@@ -687,7 +689,7 @@
 					INNER JOIN item AS i using(iditem)
 					INNER JOIN carta AS c using(idcarta)
 					INNER JOIN categoria AS cat using(idcategoria)
-				WHERE (s.idorg=".$_SESSION['ido']." AND s.idsede=".$_SESSION['idsede'].") AND (cat.idcategoria=".$idcategoria.") AND s.estado=0
+				WHERE (s.idorg=".$g_ido." AND s.idsede=".$g_idsede.") AND (cat.idcategoria=".$idcategoria.") AND s.estado=0
 				GROUP BY s.idseccion
 				ORDER BY s.sec_orden) a
 				UNION ALL
@@ -697,13 +699,13 @@
 					INNER JOIN producto AS p using(idproducto_familia)
 					INNER JOIN producto_stock AS ps using(idproducto)
 					INNER JOIN almacen AS a using(idalmacen)					
-				WHERE (a.idorg=".$_SESSION['ido']." AND a.idsede=".$_SESSION['idsede'].") AND a.bodega=1 AND ps.estado=0 AND p.estado=0
+				WHERE (a.idorg=".$g_ido." AND a.idsede=".$g_idsede.") AND a.bodega=1 AND ps.estado=0 AND p.estado=0
 				GROUP by pf.idproducto_familia
 				ORDER BY pf.descripcion)b
 			";
 			$bd->xConsulta($sql);
 
-			//WHERE (pf.idorg=".$_SESSION['ido']." AND pf.idsede=".$_SESSION['idsede'].") AND a.bodega=1 AND ps.stock>0 AND pf.estado=0
+			//WHERE (pf.idorg=".$g_ido." AND pf.idsede=".$g_idsede.") AND a.bodega=1 AND ps.stock>0 AND pf.estado=0
 			break;
 		case 2042://submenu items //solo esto no lleva decimal en el sec_index, por que ordena cadena al reves
 			$idCatProcede=$_POST['p'];
@@ -722,7 +724,7 @@
 			// 											FROM item_ingrediente AS ii
 			// 											INNER JOIN porcion AS po ON ii.idporcion=po.idporcion
 			// 											WHERE ii.idporcion!=0 GROUP BY ii.iditem) AS it_p using(iditem)
-			// 		WHERE (c.idorg=".$_SESSION['ido']." AND c.idsede=".$_SESSION['idsede'].") AND cl.estado=0 AND c.idcategoria=".$idcategoria." AND s.idseccion=".$_POST['s']." AND IF(IF(cl.cantidad='SP',(IFNULL((SELECT FLOOR(p1.stock/i1.cantidad) FROM item_ingrediente AS i1 INNER JOIN porcion AS p1 ON i1.idporcion=p1.idporcion WHERE i1.iditem=cl.iditem GROUP BY i1.iditem ORDER BY i1.iditem_ingrediente),0)),cl.cantidad)=0,s.ver_stock_cero,0)=0 ORDER BY i.descripcion
+			// 		WHERE (c.idorg=".$g_ido." AND c.idsede=".$g_idsede.") AND cl.estado=0 AND c.idcategoria=".$idcategoria." AND s.idseccion=".$_POST['s']." AND IF(IF(cl.cantidad='SP',(IFNULL((SELECT FLOOR(p1.stock/i1.cantidad) FROM item_ingrediente AS i1 INNER JOIN porcion AS p1 ON i1.idporcion=p1.idporcion WHERE i1.iditem=cl.iditem GROUP BY i1.iditem ORDER BY i1.iditem_ingrediente),0)),cl.cantidad)=0,s.ver_stock_cero,0)=0 ORDER BY i.descripcion
 			// 	";
 			// }else{
 			// 	$sql="
@@ -732,7 +734,7 @@
 			// 			INNER JOIN producto_stock AS ps using(idproducto)
 			// 			INNER JOIN almacen AS a using(idalmacen)
 			// 			INNER JOIN producto_familia AS pf using(idproducto_familia)						
-			// 		WHERE (a.idorg=".$_SESSION['ido']." AND a.idsede=".$_SESSION['idsede'].") AND pf.idproducto_familia='".$_POST['s']."' AND a.bodega=1 AND ps.estado=0 AND p.estado=0
+			// 		WHERE (a.idorg=".$g_ido." AND a.idsede=".$g_idsede.") AND pf.idproducto_familia='".$_POST['s']."' AND a.bodega=1 AND ps.estado=0 AND p.estado=0
 			// 		GROUP by p.idproducto
 			// 		ORDER BY pf.descripcion, p.descripcion
 			// 	";
@@ -777,7 +779,7 @@
 			// 						INNER JOIN porcion AS po ON ii.idporcion=po.idporcion
 			// 						WHERE ii.idporcion!=0 GROUP BY ii.iditem) AS it_p using(iditem)
 			// 			LEFT JOIN (SELECT sa.idseccion, GROUP_CONCAT(ia.descripcion) AS descripcion FROM item AS ia INNER JOIN carta_lista AS cla using(iditem) INNER JOIN seccion AS sa using(idseccion) GROUP BY sa.idseccion) AS ii_detalle ON ii_detalle.idseccion=s.idseccion
-			// 		WHERE (c.idorg=".$_SESSION['ido']." AND c.idsede=".$_SESSION['idsede'].") and cl.estado=0 AND c.idcarta=uc.ultima_carta AND IF(IF(cl.cantidad='SP',(IFNULL((SELECT FLOOR(p1.stock/i1.cantidad) FROM item_ingrediente AS i1 INNER JOIN porcion AS p1 ON i1.idporcion=p1.idporcion WHERE i1.iditem=cl.iditem GROUP BY i1.iditem ORDER BY i1.iditem_ingrediente),0)),cl.cantidad)=0,s.ver_stock_cero,0)=0
+			// 		WHERE (c.idorg=".$g_ido." AND c.idsede=".$g_idsede.") and cl.estado=0 AND c.idcarta=uc.ultima_carta AND IF(IF(cl.cantidad='SP',(IFNULL((SELECT FLOOR(p1.stock/i1.cantidad) FROM item_ingrediente AS i1 INNER JOIN porcion AS p1 ON i1.idporcion=p1.idporcion WHERE i1.iditem=cl.iditem GROUP BY i1.iditem ORDER BY i1.iditem_ingrediente),0)),cl.cantidad)=0,s.ver_stock_cero,0)=0
 			// 		order by s.sec_orden
 			// 	) a
 			// 	UNION ALL
@@ -789,7 +791,7 @@
 			// 			INNER JOIN almacen AS a using(idalmacen)
 			// 			INNER JOIN producto_familia AS pf using(idproducto_familia)
 			// 			LEFT JOIN (SELECT idorg, idsede, idtipo_otro, idimpresora FROM conf_print_otros WHERE esalmacen=1) AS cp ON idtipo_otro=ps.idalmacen AND (cp.idorg=a.idorg AND cp.idsede=a.idsede)
-			// 		WHERE (a.idorg=".$_SESSION['ido']." AND a.idsede=".$_SESSION['idsede'].") AND a.bodega=1 AND ps.estado=0 AND p.estado=0
+			// 		WHERE (a.idorg=".$g_ido." AND a.idsede=".$g_idsede.") AND a.bodega=1 AND ps.estado=0 AND p.estado=0
 			// 		GROUP by p.idproducto
 			// 		ORDER BY pf.descripcion, p.descripcion
 			// 		) b
@@ -811,7 +813,7 @@
 			// 					INNER JOIN porcion AS po ON ii.idporcion=po.idporcion
 			// 					WHERE ii.idporcion!=0 GROUP BY ii.iditem) AS it_p using(iditem)
 			// 		LEFT JOIN (SELECT sa.idseccion, GROUP_CONCAT(ia.descripcion) AS descripcion FROM item AS ia INNER JOIN carta_lista AS cla using(iditem) INNER JOIN seccion AS sa using(idseccion) GROUP BY sa.idseccion) AS ii_detalle ON ii_detalle.idseccion=s.idseccion
-			// 	WHERE (c.idorg=".$_SESSION['ido']." AND c.idsede=".$_SESSION['idsede'].") and (c.idcategoria=".$_POST['idcategoria']." and cl.estado=0) AND IF(IF(cl.cantidad='SP',(IFNULL((SELECT FLOOR(p1.stock/i1.cantidad) FROM item_ingrediente AS i1 INNER JOIN porcion AS p1 ON i1.idporcion=p1.idporcion WHERE i1.iditem=cl.iditem GROUP BY i1.iditem ORDER BY i1.iditem_ingrediente),0)),cl.cantidad)=0,s.ver_stock_cero,0)=0
+			// 	WHERE (c.idorg=".$g_ido." AND c.idsede=".$g_idsede.") and (c.idcategoria=".$_POST['idcategoria']." and cl.estado=0) AND IF(IF(cl.cantidad='SP',(IFNULL((SELECT FLOOR(p1.stock/i1.cantidad) FROM item_ingrediente AS i1 INNER JOIN porcion AS p1 ON i1.idporcion=p1.idporcion WHERE i1.iditem=cl.iditem GROUP BY i1.iditem ORDER BY i1.iditem_ingrediente),0)),cl.cantidad)=0,s.ver_stock_cero,0)=0
 			// 	order by s.sec_orden, i.descripcion
 			// ) a
 			// UNION ALL
@@ -822,7 +824,7 @@
 			// 		INNER JOIN producto_stock AS ps using(idproducto)
 			// 		INNER JOIN almacen AS a using(idalmacen)
 			// 		INNER JOIN producto_familia AS pf using(idproducto_familia)					
-			// 	WHERE (a.idorg=".$_SESSION['ido']." AND a.idsede=".$_SESSION['idsede'].") AND a.bodega=1 AND ps.estado=0 AND p.estado=0
+			// 	WHERE (a.idorg=".$g_ido." AND a.idsede=".$g_idsede.") AND a.bodega=1 AND ps.estado=0 AND p.estado=0
 			// 	GROUP by p.idproducto
 			// 	ORDER BY pf.descripcion, p.descripcion
 			// 	) b
@@ -842,7 +844,7 @@
 									INNER JOIN porcion AS po ON ii.idporcion=po.idporcion
 									WHERE ii.idporcion!=0 GROUP BY ii.iditem) AS it_p using(iditem)
 						LEFT JOIN (SELECT sa.idseccion, GROUP_CONCAT(ia.descripcion) AS descripcion FROM item AS ia INNER JOIN carta_lista AS cla using(iditem) INNER JOIN seccion AS sa using(idseccion) GROUP BY sa.idseccion) AS ii_detalle ON ii_detalle.idseccion=s.idseccion
-					WHERE (c.idorg=".$_SESSION['ido']." AND c.idsede=".$_SESSION['idsede'].") and cl.estado=0 AND c.idcarta=uc.ultima_carta AND IF(IF(cl.cantidad='SP',(IFNULL((SELECT FLOOR(p1.stock/i1.cantidad) FROM item_ingrediente AS i1 INNER JOIN porcion AS p1 ON i1.idporcion=p1.idporcion WHERE i1.iditem=cl.iditem GROUP BY i1.iditem ORDER BY i1.iditem_ingrediente),0)),cl.cantidad)=0,s.ver_stock_cero,0)=0
+					WHERE (c.idorg=".$g_ido." AND c.idsede=".$g_idsede.") and cl.estado=0 AND c.idcarta=uc.ultima_carta AND IF(IF(cl.cantidad='SP',(IFNULL((SELECT FLOOR(p1.stock/i1.cantidad) FROM item_ingrediente AS i1 INNER JOIN porcion AS p1 ON i1.idporcion=p1.idporcion WHERE i1.iditem=cl.iditem GROUP BY i1.iditem ORDER BY i1.iditem_ingrediente),0)),cl.cantidad)=0,s.ver_stock_cero,0)=0
 					order by cl.sec_orden
 				) a
 				UNION ALL
@@ -854,7 +856,7 @@
 						INNER JOIN almacen AS a using(idalmacen)
 						INNER JOIN producto_familia AS pf using(idproducto_familia)
 						LEFT JOIN (SELECT idorg, idsede, idtipo_otro, idimpresora FROM conf_print_otros WHERE esalmacen=1) AS cp ON idtipo_otro=ps.idalmacen AND (cp.idorg=a.idorg AND cp.idsede=a.idsede)
-					WHERE (a.idorg=".$_SESSION['ido']." AND a.idsede=".$_SESSION['idsede'].") AND a.bodega=1 AND ps.estado=0 AND p.estado=0
+					WHERE (a.idorg=".$g_ido." AND a.idsede=".$g_idsede.") AND a.bodega=1 AND ps.estado=0 AND p.estado=0
 					GROUP by p.idproducto
 					ORDER BY pf.descripcion, p.descripcion
 					) b
@@ -872,7 +874,7 @@
 									INNER JOIN porcion AS po ON ii.idporcion=po.idporcion
 									WHERE ii.idporcion!=0 GROUP BY ii.iditem) AS it_p using(iditem)
 						LEFT JOIN (SELECT sa.idseccion, GROUP_CONCAT(ia.descripcion) AS descripcion FROM item AS ia INNER JOIN carta_lista AS cla using(iditem) INNER JOIN seccion AS sa using(idseccion) GROUP BY sa.idseccion) AS ii_detalle ON ii_detalle.idseccion=s.idseccion
-					WHERE (c.idorg=".$_SESSION['ido']." AND c.idsede=".$_SESSION['idsede'].") and cl.estado=0 AND c.idcarta=uc.ultima_carta
+					WHERE (c.idorg=".$g_ido." AND c.idsede=".$g_idsede.") and cl.estado=0 AND c.idcarta=uc.ultima_carta
 					order by cl.sec_orden
 				) a
 				UNION ALL
@@ -884,7 +886,7 @@
 						INNER JOIN producto AS p using(idproducto)
 						INNER JOIN producto_familia AS pf using(idproducto_familia)
 						LEFT JOIN (SELECT idorg, idsede, idtipo_otro, idimpresora FROM conf_print_otros WHERE esalmacen=1) AS cp ON idtipo_otro=ai.idalmacen AND (cp.idorg=a.idorg AND cp.idsede=a.idsede)
-					WHERE (a.idorg=".$_SESSION['ido']." AND a.idsede=".$_SESSION['idsede'].") AND a.bodega=1 AND ai.estado=0 AND p.estado=0
+					WHERE (a.idorg=".$g_ido." AND a.idsede=".$g_idsede.") AND a.bodega=1 AND ai.estado=0 AND p.estado=0
 					GROUP by ai.idproducto
 					ORDER BY pf.descripcion, p.descripcion
 					) b
@@ -903,7 +905,7 @@
 									INNER JOIN porcion AS po ON ii.idporcion=po.idporcion
 								GROUP BY i.iditem
 							 ) AS it_p using(iditem)
-					WHERE (c.idorg=".$_SESSION['ido']." AND c.idsede=".$_SESSION['idsede'].") and cl.estado=0 AND c.idcarta=uc.ultima_carta AND c.idcategoria=1
+					WHERE (c.idorg=".$g_ido." AND c.idsede=".$g_idsede.") and cl.estado=0 AND c.idcarta=uc.ultima_carta AND c.idcategoria=1
 					order by cl.sec_orden
 				) a
 				UNION ALL
@@ -915,7 +917,7 @@
 						INNER JOIN producto AS p using(idproducto)
 						INNER JOIN producto_familia AS pf using(idproducto_familia)
 						LEFT JOIN (SELECT idorg, idsede, idtipo_otro, idimpresora FROM conf_print_otros WHERE esalmacen=1) AS cp ON idtipo_otro=ai.idalmacen AND (cp.idorg=a.idorg AND cp.idsede=a.idsede)
-					WHERE (a.idorg=".$_SESSION['ido']." AND a.idsede=".$_SESSION['idsede'].") AND a.bodega=1 AND ai.estado=0 AND p.estado=0
+					WHERE (a.idorg=".$g_ido." AND a.idsede=".$g_idsede.") AND a.bodega=1 AND ai.estado=0 AND p.estado=0
 					GROUP by ai.idproducto
 					ORDER BY pf.descripcion, p.descripcion
 				) b
@@ -927,7 +929,7 @@
 				INNER JOIN seccion AS s using(idseccion)
 				INNER JOIN item AS i using(iditem)
 				LEFT JOIN (SELECT idorg, idsede, max(idcarta) AS ultima_carta FROM carta ) AS uc ON uc.idorg=c.idorg AND uc.idsede=c.idsede
-			WHERE (c.idorg=".$_SESSION['ido']." AND c.idsede=".$_SESSION['idsede'].") and cl.estado=0 AND c.idcarta=uc.ultima_carta AND c.idcategoria=".$_POST['i']." order by cl.sec_orden";
+			WHERE (c.idorg=".$g_ido." AND c.idsede=".$g_idsede.") and cl.estado=0 AND c.idcarta=uc.ultima_carta AND c.idcategoria=".$_POST['i']." order by cl.sec_orden";
 			*/
 
 			$bd->xConsulta($sql);
@@ -940,7 +942,7 @@
 			// 	INNER JOIN seccion AS s using(idseccion)
 			// 	INNER JOIN item AS i using(iditem)
 			// 	LEFT JOIN ( SELECT idorg, idsede, max(idcarta) AS ultima_carta FROM carta where idcategoria=".$_POST['i']." ) AS uc ON uc.idorg=c.idorg AND uc.idsede=c.idsede
-			// WHERE (c.idorg=".$_SESSION['ido']." AND c.idsede=".$_SESSION['idsede'].") and cl.estado=0 AND c.idcarta=uc.ultima_carta AND c.idcategoria=".$_POST['i']." order by s.sec_orden,i.descripcion
+			// WHERE (c.idorg=".$g_ido." AND c.idsede=".$g_idsede.") and cl.estado=0 AND c.idcarta=uc.ultima_carta AND c.idcategoria=".$_POST['i']." order by s.sec_orden,i.descripcion
 			// ";
 
 			// conciderar
@@ -960,7 +962,7 @@
 				INNER JOIN seccion AS s using(idseccion)
 				INNER JOIN item AS i using(iditem)
                 LEFT JOIN ( SELECT idorg, idsede, idcarta FROM carta where idcategoria=".$_POST['i']." ) AS uc ON uc.idorg=c.idorg AND uc.idsede=c.idsede
-			WHERE (c.idorg=".$_SESSION['ido']." AND c.idsede=".$_SESSION['idsede'].") and cl.estado=0 and (c.idcarta=uc.idcarta) order by s.sec_orden,s.descripcion,i.descripcion
+			WHERE (c.idorg=".$g_ido." AND c.idsede=".$g_idsede.") and cl.estado=0 and (c.idcarta=uc.idcarta) order by s.sec_orden,s.descripcion,i.descripcion
 			";
 			$bd->xConsulta($sql);
 			break;
@@ -969,7 +971,7 @@
 				SELECT pds.descripcion, sum(importe)AS importe
 				FROM pedido_subtotales AS pds
 					INNER JOIN pedido AS p using(idpedido)
-				WHERE (p.nummesa=".$_POST['m']." AND p.estado=0) AND pds.estado=0 AND pds.descripcion!='sub total' AND (p.idorg=".$_SESSION['ido']." AND p.idsede=".$_SESSION['idsede'].")
+				WHERE (p.nummesa=".$_POST['m']." AND p.estado=0) AND pds.estado=0 AND pds.descripcion!='sub total' AND (p.idorg=".$g_ido." AND p.idsede=".$g_idsede.")
 				GROUP BY pds.descripcion
 				ORDER BY sum(importe) desc
 			";
@@ -991,7 +993,7 @@
 			// 					FROM item_ingrediente AS ii
 			// 					INNER JOIN porcion AS po ON ii.idporcion=po.idporcion
 			// 					WHERE ii.idporcion!=0 GROUP BY ii.iditem) AS it_p using(iditem)					
-			// 	WHERE (c.idorg=".$_SESSION['ido']." AND c.idsede=".$_SESSION['idsede'].") and (c.idcategoria=".$_POST['i']." and cl.estado=0 and CONCAT(s.descripcion,i.descripcion) like '%".$parametro."%') AND IF(IF(cl.cantidad='SP',(IFNULL((SELECT FLOOR(p1.stock/i1.cantidad) FROM item_ingrediente AS i1 INNER JOIN porcion AS p1 ON i1.idporcion=p1.idporcion WHERE i1.iditem=cl.iditem GROUP BY i1.iditem ORDER BY i1.iditem_ingrediente),0)),cl.cantidad)=0,s.ver_stock_cero,0)=0
+			// 	WHERE (c.idorg=".$g_ido." AND c.idsede=".$g_idsede.") and (c.idcategoria=".$_POST['i']." and cl.estado=0 and CONCAT(s.descripcion,i.descripcion) like '%".$parametro."%') AND IF(IF(cl.cantidad='SP',(IFNULL((SELECT FLOOR(p1.stock/i1.cantidad) FROM item_ingrediente AS i1 INNER JOIN porcion AS p1 ON i1.idporcion=p1.idporcion WHERE i1.iditem=cl.iditem GROUP BY i1.iditem ORDER BY i1.iditem_ingrediente),0)),cl.cantidad)=0,s.ver_stock_cero,0)=0
 			// 	order by  cl.count_seleccionado desc, i.descripcion limit 15
 			// ) a
 			// UNION ALL
@@ -1002,7 +1004,7 @@
 			// 		INNER JOIN producto_stock AS ps using(idproducto)
 			// 		INNER JOIN almacen AS a using(idalmacen)
 			// 		INNER JOIN producto_familia AS pf using(idproducto_familia)					
-			// 	WHERE (a.idorg=".$_SESSION['ido']." AND a.idsede=".$_SESSION['idsede'].") and CONCAT(pf.descripcion,p.descripcion) like '%".$parametro."%' AND a.bodega=1 AND ps.estado=0 AND p.estado=0
+			// 	WHERE (a.idorg=".$g_ido." AND a.idsede=".$g_idsede.") and CONCAT(pf.descripcion,p.descripcion) like '%".$parametro."%' AND a.bodega=1 AND ps.estado=0 AND p.estado=0
 			// 	GROUP by p.idproducto
 			// 	ORDER BY pf.idproducto_familia, p.descripcion limit 6
 			// 	) b
@@ -1020,12 +1022,12 @@
 			break;
 		case 208://guardar logo print
 			$sql="update conf_print set logo='".$_POST['d']."' where idconf_print=".$_POST['i'];
-			$sqlLogo64 = "; update sede set logo64 = '".$_POST['logo']."' where idsede=".$_SESSION['idsede'];
+			$sqlLogo64 = "; update sede set logo64 = '".$_POST['logo']."' where idsede=".$g_idsede;
 			$bd->xMultiConsulta($sql.$sqlLogo64);
 			break;
 		//pedido
 		case 3: //amar array con tipo de consumo
-			$sql="SELECT * FROM tipo_consumo WHERE (idorg=".$_SESSION['ido']." AND idsede=".$_SESSION['idsede'].") AND estado=0";
+			$sql="SELECT * FROM tipo_consumo WHERE (idorg=".$g_ido." AND idsede=".$g_idsede.") AND estado=0";
 			$bd->xConsulta($sql);
 			break;
 		case 301: //load seccion
@@ -1043,7 +1045,7 @@
 									FROM item_ingrediente AS ii
 									INNER JOIN porcion AS po ON ii.idporcion=po.idporcion
 									WHERE ii.idporcion!=0 GROUP BY ii.iditem) AS it_p using(iditem)
-				WHERE (c.idorg=".$_SESSION['ido']." AND c.idsede=".$_SESSION['idsede'].") and cl.estado=0 AND c.idcarta=uc.ultima_carta AND c.idcategoria=".$_POST['i']." AND s.idseccion=".$_POST['s']."
+				WHERE (c.idorg=".$g_ido." AND c.idsede=".$g_idsede.") and cl.estado=0 AND c.idcarta=uc.ultima_carta AND c.idcategoria=".$_POST['i']." AND s.idseccion=".$_POST['s']."
 				ORDER BY i.descripcion
 				";
 			}
@@ -1055,7 +1057,7 @@
 					INNER JOIN almacen AS a using(idalmacen)
 					INNER JOIN producto AS p using(idproducto)
 					INNER JOIN producto_familia AS pf using(idproducto_familia)					
-				WHERE (a.idorg=".$_SESSION['ido']." AND a.idsede=".$_SESSION['ido'].") AND pf.idproducto_familia='".$_POST['s']."' AND ai.estado=0 AND p.estado=0
+				WHERE (a.idorg=".$g_ido." AND a.idsede=".$g_idsede.") AND pf.idproducto_familia='".$_POST['s']."' AND ai.estado=0 AND p.estado=0
 				GROUP by ai.idproducto
 				ORDER BY pf.descripcion, p.descripcion
 				";
@@ -1068,7 +1070,7 @@
 					INNER JOIN seccion AS s using(idseccion)
 					INNER JOIN item AS i using(iditem)
 					LEFT JOIN (SELECT idorg, idsede, max(idcarta) AS ultima_carta FROM carta ) AS uc ON uc.idorg=c.idorg AND uc.idsede=c.idsede
-				WHERE (c.idorg=".$_SESSION['ido']." AND c.idsede=".$_SESSION['idsede'].") and cl.estado=0 AND c.idcarta=uc.ultima_carta AND c.idcategoria=".$_POST['i']." AND s.idseccion=".$_POST['s']."
+				WHERE (c.idorg=".$g_ido." AND c.idsede=".$g_idsede.") and cl.estado=0 AND c.idcarta=uc.ultima_carta AND c.idcategoria=".$_POST['i']." AND s.idseccion=".$_POST['s']."
 				ORDER BY i.descripcion
 			";*/
 			$bd->xConsulta($sql);
@@ -1087,7 +1089,7 @@
 									INNER JOIN porcion AS po ON ii.idporcion=po.idporcion
 								GROUP BY i.iditem
 							 ) AS it_p using(iditem)
-				WHERE (c.idorg=".$_SESSION['ido']." AND c.idsede=".$_SESSION['idsede'].") and cl.estado=0 AND c.idcarta=uc.ultima_carta
+				WHERE (c.idorg=".$g_ido." AND c.idsede=".$g_idsede.") and cl.estado=0 AND c.idcarta=uc.ultima_carta
 				ORDER BY i.descripcion
 			";
 			/*$sql="
@@ -1097,18 +1099,19 @@
 					INNER JOIN seccion AS s using(idseccion)
 					INNER JOIN item AS i using(iditem)
 					LEFT JOIN (SELECT idorg, idsede, max(idcarta) AS ultima_carta FROM carta ) AS uc ON uc.idorg=c.idorg AND uc.idsede=c.idsede
-				WHERE (c.idorg=".$_SESSION['ido']." AND c.idsede=".$_SESSION['idsede'].") and cl.estado=0 AND c.idcarta=uc.ultima_carta
+				WHERE (c.idorg=".$g_ido." AND c.idsede=".$g_idsede.") and cl.estado=0 AND c.idcarta=uc.ultima_carta
 				ORDER BY s.idseccion, i.descripcion
 				";*/
 			$bd->xConsulta($sql);
 			break;
 		case 3012://verificar suma de peddido si aumenta se ingreso o modifico row // actualizar
-			$sql="SELECT sum(total) AS d1 FROM pedido WHERE (idorg=".$_SESSION['ido']." AND idsede=".$_SESSION['idsede'].") and fecha=DATE_FORMAT(now(),'%d/%m/%Y')";
+			$sql="SELECT sum(total) AS d1 FROM pedido WHERE (idorg=".$g_ido." AND idsede=".$g_idsede.") and fecha='".$fecha_now."'";
 			echo $bd->xDevolverUnDato($sql);
 			break;
 		case 302: //load categoria
-			// $sql="SELECT * FROM categoria WHERE (idorg=".$_SESSION['ido']." AND idsede=".$_SESSION['idsede'].") AND estado=0";
-			$sql = "SELECT * FROM categoria WHERE (idorg=".$_SESSION['ido']." AND idsede=".$_SESSION['idsede'].") AND estado=0 and (time(now()) BETWEEN time(if(hora_ini='',now(),hora_ini)) and time(if(hora_fin = '',now(), hora_fin)))";
+			// $sql="SELECT * FROM categoria WHERE (idorg=".$g_ido." AND idsede=".$g_idsede.") AND estado=0";
+			$time_now = date("H:i:s");
+			$sql = "SELECT * FROM categoria WHERE (idorg=".$g_ido." AND idsede=".$g_idsede.") AND estado=0 and (time(".$time_now.") BETWEEN time(if(hora_ini='',".$time_now.",hora_ini)) and time(if(hora_fin = '',".$time_now.", hora_fin)))";
 			$bd->xConsulta($sql);
 			break;
 		case 303: //load item carta, mi pedido
@@ -1119,7 +1122,7 @@
 					INNER JOIN seccion AS s using(idseccion)
 					INNER JOIN item AS i using(iditem)
 					LEFT JOIN (SELECT idorg, idsede, max(idcarta) AS ultima_carta FROM carta ) AS uc ON uc.idorg=c.idorg AND uc.idsede=c.idsede
-				WHERE (c.idorg=".$_SESSION['ido']." AND c.idsede=".$_SESSION['idsede'].") AND c.idcarta=uc.ultima_carta AND cl.idcarta_lista='".$_POST['i']."'
+				WHERE (c.idorg=".$g_ido." AND c.idsede=".$g_idsede.") AND c.idcarta=uc.ultima_carta AND cl.idcarta_lista='".$_POST['i']."'
 				ORDER BY i.descripcion
 			";*/
 
@@ -1137,7 +1140,7 @@
 				// 					FROM item_ingrediente AS ii
 				// 					INNER JOIN porcion AS po ON ii.idporcion=po.idporcion
 				// 					WHERE ii.idporcion!=0 GROUP BY ii.iditem) AS it_p using(iditem)
-				// WHERE (c.idorg=".$_SESSION['ido']." AND c.idsede=".$_SESSION['idsede'].") and cl.estado=0 AND c.idcarta=uc.ultima_carta and cl.idcarta_lista='".$_POST['i']."'
+				// WHERE (c.idorg=".$g_ido." AND c.idsede=".$g_idsede.") and cl.estado=0 AND c.idcarta=uc.ultima_carta and cl.idcarta_lista='".$_POST['i']."'
 				// ORDER BY i.descripcion
 				// ";
 
@@ -1151,7 +1154,7 @@
 									FROM item_ingrediente AS ii
 									INNER JOIN porcion AS po ON ii.idporcion=po.idporcion
 									WHERE ii.idporcion!=0 GROUP BY ii.iditem) AS it_p using(iditem)
-				WHERE (c.idorg=".$_SESSION['ido']." AND c.idsede=".$_SESSION['idsede'].") and cl.estado=0 and cl.idcarta_lista='".$_POST['i']."'
+				WHERE (c.idorg=".$g_ido." AND c.idsede=".$g_idsede.") and cl.estado=0 and cl.idcarta_lista='".$_POST['i']."'
 				ORDER BY i.descripcion
 				";
 			}
@@ -1164,7 +1167,7 @@
 					INNER JOIN producto AS p using(idproducto)
 					INNER JOIN producto_familia AS pf using(idproducto_familia)
 					LEFT JOIN (SELECT idorg, idsede, idtipo_otro, idimpresora FROM conf_print_otros WHERE esalmacen=1) AS cp ON idtipo_otro=ai.idalmacen AND (cp.idorg=a.idorg AND cp.idsede=a.idsede)
-				WHERE (a.idorg=".$_SESSION['ido']." AND a.idsede=".$_SESSION['ido'].") and cl.idcarta_lista='".$_POST['i']."' AND ai.estado=0 AND p.estado=0
+				WHERE (a.idorg=".$g_ido." AND a.idsede=".$g_ido.") and cl.idcarta_lista='".$_POST['i']."' AND ai.estado=0 AND p.estado=0
 				GROUP by ai.idproducto
 				ORDER BY pf.descripcion, p.descripcion
 				";
@@ -1177,7 +1180,7 @@
 						INNER JOIN producto_stock AS ps using(idproducto)
 						INNER JOIN almacen AS a using(idalmacen)
 						INNER JOIN producto_familia AS pf using(idproducto_familia)						
-					WHERE (a.idorg=".$_SESSION['ido']." AND a.idsede=".$_SESSION['ido'].") AND ps.idproducto_stock='".$_POST['i']."' AND a.bodega=1 AND ps.estado=0 AND p.estado=0
+					WHERE (a.idorg=".$g_ido." AND a.idsede=".$g_idsede.") AND ps.idproducto_stock='".$_POST['i']."' AND a.bodega=1 AND ps.estado=0 AND p.estado=0
 					GROUP by p.idproducto
 					ORDER BY pf.descripcion, p.descripcion
 				";
@@ -1226,16 +1229,17 @@
 			break;
 		case 304://guardar pedido
 			//num pedido
-			$sql="select count(idpedido) as d1 from pedido where idorg=".$_SESSION['ido']." and idsede=".$_SESSION['idsede'];
+			$sql="select count(idpedido) as d1 from pedido where idorg=".$g_ido." and idsede=".$g_idsede;
 			$numpedido=$bd->xDevolverUnDato($sql);
 			$numpedido++;
 
-			$sql="SELECT count(fecha) AS d1 FROM pedido WHERE (idorg=".$_SESSION['ido']." and idsede=".$_SESSION['idsede'].") and STR_TO_DATE(fecha,'%d/%m/%Y')=curdate()";
+			// $fecha_now = date("d/m/Y");
+			$sql="SELECT count(fecha) AS d1 FROM pedido WHERE (idorg=".$g_ido." and idsede=".$g_idsede.") and fecha='".$fecha_now."'";
 			$correlativo_dia=$bd->xDevolverUnDato($sql);
 			$correlativo_dia++;
 
 			if(!isset($_POST['estado_p'])){$estado_p=0;}else{$estado_p=$_POST['estado_p'];}//para el caso de venta rapida si ya pago no figura en control de pedidos
-			$sql="insert into pedido (idorg, idsede,fecha,hora,fecha_hora,nummesa,numpedido,correlativo_dia,referencia,total,total_r,solo_llevar,idtipo_consumo,idcategoria,reserva,idusuario,estado)values(".$_SESSION['ido'].",".$_SESSION['idsede'].",DATE_FORMAT(now(),'%d/%m/%Y'),DATE_FORMAT(now(),'%H:%i:%s'),now(),'".$_POST['mesa']."','".$numpedido."','".$correlativo_dia."','".$_POST['ref']."','".$_POST['t']."','".$_POST['t']."',".$_POST['sl'].",".$_POST['idtpc'].",".$_POST['idcat'].",".$_POST['r'].",".$_SESSION['idusuario'].",".$estado_p.")";
+			$sql="insert into pedido (idorg, idsede,fecha,hora,fecha_hora,nummesa,numpedido,correlativo_dia,referencia,total,total_r,solo_llevar,idtipo_consumo,idcategoria,reserva,idusuario,estado)values(".$g_ido.",".$g_idsede.",'".$fecha_now."','".$hora_now."',now(),'".$_POST['mesa']."','".$numpedido."','".$correlativo_dia."','".$_POST['ref']."','".$_POST['t']."','".$_POST['t']."',".$_POST['sl'].",".$_POST['idtpc'].",".$_POST['idcat'].",".$_POST['r'].",".$_SESSION['idusuario'].",".$estado_p.")";
 			$id_pedido=$bd->xConsulta_UltimoId($sql);
 
 			$xsql_p=$_POST['sql_p'];
@@ -1319,16 +1323,16 @@
 			if(!isset($_POST['idpedido'])){$id_pedido=0;}else{$id_pedido=$_POST['idpedido'];}//si se agrea en un pedido / para control de pedidos al agregar
 			if($id_pedido==0){
 					//num pedido
-				$sql="select count(idpedido) as d1 from pedido where idorg=".$_SESSION['ido']." and idsede=".$_SESSION['idsede'];
+				$sql="select count(idpedido) as d1 from pedido where idorg=".$g_ido." and idsede=".$g_idsede;
 				$numpedido=$bd->xDevolverUnDato($sql);
 				$numpedido++;
 
-				//numcorrelativo segun fecha
-				$sql="SELECT count(fecha) AS d1 FROM pedido WHERE (idorg=".$_SESSION['ido']." and idsede=".$_SESSION['idsede'].") and STR_TO_DATE(fecha,'%d/%m/%Y')=curdate()";
+				//numcorrelativo segun fecha				
+				$sql="SELECT count(fecha) AS d1 FROM pedido WHERE (idorg=".$g_ido." and idsede=".$g_idsede.") and fecha='".$fecha_now."'";
 				$correlativo_dia=$bd->xDevolverUnDato($sql);
 				$correlativo_dia++;
 
-				$sql="insert into pedido (idorg, idsede,fecha,hora,fecha_hora,nummesa,numpedido,correlativo_dia,referencia,total,total_r,solo_llevar,idtipo_consumo,idcategoria,reserva,idusuario,estado)values(".$_SESSION['ido'].",".$_SESSION['idsede'].",DATE_FORMAT(now(),'%d/%m/%Y'),DATE_FORMAT(now(),'%H:%i:%s'),now(),'".$xarr['mesa']."','".$numpedido."','".$correlativo_dia."','".$xarr['referencia']."','".$xarr['ImporteTotal']."','".$xarr['ImporteTotal']."',".$solo_llevar.",".$tipo_consumo.",".$xarr['idcategoria'].",".$xarr['reservar'].",".$_SESSION['idusuario'].",".$estado_p.")";
+				$sql="insert into pedido (idorg, idsede,fecha,hora,fecha_hora,nummesa,numpedido,correlativo_dia,referencia,total,total_r,solo_llevar,idtipo_consumo,idcategoria,reserva,idusuario,estado)values(".$g_ido.",".$g_idsede.",'".$fecha_now."','".$hora_now."',now(),'".$xarr['mesa']."','".$numpedido."','".$correlativo_dia."','".$xarr['referencia']."','".$xarr['ImporteTotal']."','".$xarr['ImporteTotal']."',".$solo_llevar.",".$tipo_consumo.",".$xarr['idcategoria'].",".$xarr['reservar'].",".$_SESSION['idusuario'].",".$estado_p.")";
 				$id_pedido=$bd->xConsulta_UltimoId($sql);
 				//print $sql;
 			}else{
@@ -1382,7 +1386,7 @@
 			$sql_pedido_detalle='';
 
 			//registra pedido borrado
-			$sqlpedido_borrado="insert into pedido_borrados (idpedido,idpedido_detalle,iditem,idcarta_lista,idusuario,idusuario_permiso,importe,fecha,hora,procede_tabla) values(".$idpedido.",".$idpedido_detalle.",".$iditem.",".$idcarta_lista.",".$_POST["u"].",".$_SESSION['idusuario'].",".$precio_unitario_item.",DATE_FORMAT(now(),'%d/%m/%Y'),DATE_FORMAT(now(),'%H:%i:%s'),".$tabla_procede."); ";
+			$sqlpedido_borrado="insert into pedido_borrados (idpedido,idpedido_detalle,iditem,idcarta_lista,idusuario,idusuario_permiso,importe,fecha,hora,procede_tabla) values(".$idpedido.",".$idpedido_detalle.",".$iditem.",".$idcarta_lista.",".$_POST["u"].",".$_SESSION['idusuario'].",".$precio_unitario_item.",'".$fecha_now."','".$hora_now."',".$tabla_procede."); ";
 
 			//descuenta en pedido_detalle
 			$campo_precio='';
@@ -1409,7 +1413,7 @@
 				INNER JOIN pedido_detalle AS pd using(idpedido)
 				INNER JOIN seccion AS s using(idseccion)
 				INNER JOIN tipo_consumo AS tp ON tp.idtipo_consumo=p.idtipo_consumo
-			WHERE p.nummesa='".$_POST['i']."' and (p.idorg=".$_SESSION['ido']." and p.idsede=".$_SESSION['idsede'].") AND p.estado IN (0)
+			WHERE p.nummesa='".$_POST['i']."' and (p.idorg=".$g_ido." and p.idsede=".$g_idsede.") AND p.estado IN (0)
 			ORDER BY pd.idtipo_consumo,pd.idseccion, pd.idpedido_detalle
 			";
 			$bd->xConsulta($sql);
@@ -1435,7 +1439,7 @@
 			// 		INNER JOIN tipo_consumo AS tp ON tp.idtipo_consumo=pd.idtipo_consumo
 			// 		INNER JOIN carta_lista AS cl using(idcarta_lista)
 			// 		LEFT JOIN (SELECT iditem, GROUP_CONCAT(idporcion) AS idporcion,GROUP_CONCAT(cantidad) AS cant_porcion FROM item_ingrediente WHERE idporcion!=0 GROUP BY iditem) AS ii ON pd.iditem=ii.iditem
-			// 	WHERE ".$condicion." and (p.idorg=".$_SESSION['ido']." and p.idsede=".$_SESSION['idsede'].") AND p.estado IN (0) AND pd.pagado=0 AND pd.estado=0
+			// 	WHERE ".$condicion." and (p.idorg=".$g_ido." and p.idsede=".$g_idsede.") AND p.estado IN (0) AND pd.pagado=0 AND pd.estado=0
 			// 	ORDER BY pd.idtipo_consumo,s.sec_orden, pd.descripcion
 			// ) a
 			// UNION all
@@ -1444,8 +1448,8 @@
 			// 	FROM pedido AS p
 			// 		INNER JOIN pedido_detalle AS pd using(idpedido)
 			// 		INNER JOIN tipo_consumo AS tp ON tp.idtipo_consumo=pd.idtipo_consumo
-			// 		JOIN (SELECT idproducto_familia,descripcion FROM producto_familia WHERE idorg=".$_SESSION['ido']." AND idsede=".$_SESSION['idsede'].") AS pf ON pd.idseccion=pf.idproducto_familia
-			// 	WHERE ".$condicion." and (p.idorg=".$_SESSION['ido']." and p.idsede=".$_SESSION['idsede'].") AND pd.procede_tabla=0 AND p.estado IN (0) AND pd.pagado=0 AND pd.estado=0
+			// 		JOIN (SELECT idproducto_familia,descripcion FROM producto_familia WHERE idorg=".$g_ido." AND idsede=".$g_idsede.") AS pf ON pd.idseccion=pf.idproducto_familia
+			// 	WHERE ".$condicion." and (p.idorg=".$g_ido." and p.idsede=".$g_idsede.") AND pd.procede_tabla=0 AND p.estado IN (0) AND pd.pagado=0 AND pd.estado=0
 			// 	ORDER BY pd.idtipo_consumo,pd.idseccion, pd.descripcion) b
 			// ";
 
@@ -1456,7 +1460,7 @@
 				INNER JOIN pedido_detalle AS pd using(idpedido)
 				INNER JOIN seccion AS s using(idseccion)
 				INNER JOIN tipo_consumo AS tp ON tp.idtipo_consumo=pd.idtipo_consumo
-			WHERE ".$condicion." and (p.idorg=".$_SESSION['ido']." and p.idsede=".$_SESSION['idsede'].") AND p.estado IN (0,1) AND pd.pagado=0
+			WHERE ".$condicion." and (p.idorg=".$g_ido." and p.idsede=".$g_idsede.") AND p.estado IN (0,1) AND pd.pagado=0
 			ORDER BY pd.idtipo_consumo,pd.idseccion, pd.idpedido_detalle
 			";*/
 			$bd->xConsulta($sql);
@@ -1465,12 +1469,12 @@
 			/*$sql="
 			SELECT r.idregla_carta,r.idseccion,rd.idseccion AS idseccion_detalle
 			FROM regla_carta AS r INNER JOIN regla_carta_detalle AS rd using(idregla_carta)
-			WHERE (r.idorg=".$_SESSION['ido']." AND r.idsede=".$_SESSION['idsede'].") AND (r.estado=0 AND rd.estado=0)
+			WHERE (r.idorg=".$g_ido." AND r.idsede=".$g_idsede.") AND (r.estado=0 AND rd.estado=0)
 			";*/
 			$sql="
 			SELECT idregla_carta, idseccion, idseccion_detalle
 			FROM regla_carta
-			WHERE (idorg=".$_SESSION['ido']." AND idsede=".$_SESSION['idsede'].") AND (idcategoria='".$_POST['i']."' and estado=0)
+			WHERE (idorg=".$g_ido." AND idsede=".$g_idsede.") AND (idcategoria='".$_POST['i']."' and estado=0)
 			";
 			$bd->xConsulta($sql);
 			break;
@@ -1481,16 +1485,16 @@
 				LEFT JOIN (select idconf_print,descripcion,porcentaje from conf_print_detalle where estado=0) as cp_d ON cp.idconf_print=cp_d.idconf_print
 			        LEFT JOIN (select idconf_print,idtipo_consumo,group_concat(idseccion) as idseccion,descripcion,importe from conf_print_adicionales where estado=0 group by descripcion,idtipo_consumo)  as cp_a ON cp.idconf_print=cp_a.idconf_print
 				LEFT JOIN sede AS s ON s.idorg=cp.idorg AND s.idsede=cp.idsede
-			WHERE (cp.idorg=".$_SESSION['ido']." AND cp.idsede=".$_SESSION['idsede'].")
+			WHERE (cp.idorg=".$g_ido." AND cp.idsede=".$g_idsede.")
 			";
 			$bd->xConsulta($sql);
 			break;
 		case 308://otros datos de la sede
-			$sql="select maximo_pedidos_x_hora from sede where idorg=".$_SESSION['ido']." and idsede=".$_SESSION['ido'];
+			$sql="select maximo_pedidos_x_hora from sede where idorg=".$_SESSION['ido']." and idsede=".$g_idsede;
 			$bd->xConsulta($sql);
 			break;
 		case 309://cambiar maximo pedidos x hora
-			$sql="update sede set maximo_pedidos_x_hora=".$_POST['p']." where idorg=".$_SESSION['ido']." and idsede=".$_SESSION['ido'];
+			$sql="update sede set maximo_pedidos_x_hora=".$_POST['p']." where idorg=".$_SESSION['ido']." and idsede=".$g_idsede;
 			$bd->xConsulta($sql);
 			break;
 		/////////////
@@ -1502,16 +1506,16 @@
 				INNER JOIN categoria AS c using(idcategoria)
 				INNER JOIN seccion AS s using(idseccion)
 				INNER JOIN seccion AS s2 ON r.idseccion_detalle=s2.idseccion
-			WHERE (r.idorg=".$_SESSION['ido']." AND r.idsede=".$_SESSION['idsede'].") AND r.estado=0
+			WHERE (r.idorg=".$g_ido." AND r.idsede=".$g_idsede.") AND r.estado=0
 			";
 			$bd->xConsulta($sql);
 			break;
 		case 401://conf print
-			$sql="SELECT * FROM conf_print WHERE (idorg=".$_SESSION['ido']." AND idsede=".$_SESSION['idsede'].") AND estado=0";
+			$sql="SELECT * FROM conf_print WHERE (idorg=".$g_ido." AND idsede=".$g_idsede.") AND estado=0";
 			$bd->xConsulta($sql);
 			break;
 		case 402://load usuarios
-			$sql="SELECT * FROM usuario WHERE idorg=".$_SESSION['ido']." AND idsede=".$_SESSION['idsede']." AND estado=0 and super=0";
+			$sql="SELECT * FROM usuario WHERE idorg=".$g_ido." AND idsede=".$g_idsede." AND estado=0 and super=0";
 			$bd->xConsulta($sql);
 			break;
 		case 403://load usuarios modificar
@@ -1527,15 +1531,15 @@
 				SELECT o.*, s.idsede, s.nombre AS nom_sede, s.direccion as dir_sede, s.ciudad,s.eslogan,s.mesas, s.ubigeo, s.codigo_del_domicilio_fiscal
 				FROM org AS o
 					INNER JOIN sede AS s using(idorg)
-				WHERE (o.idorg=".$_SESSION['ido'].") and s.estado=0
+				WHERE (o.idorg=".$g_ido.") and s.estado=0
 				";
 			$bd->xConsulta($sql);
 			break;
 		case 4041://generar token
-			// $sql="select * from org where idorg=".$_SESSION['ido'];
+			// $sql="select * from org where idorg=".$g_ido;
 			// $org = $bd->xConsulta3($sql);
 
-			// $sql="select * from sede where idsede=".$_SESSION['idsede'];
+			// $sql="select * from sede where idsede=".$g_idsede;
 			// $sede = $bd->xConsulta3($sql);
 				
 			
@@ -1544,20 +1548,20 @@
 			// $dataTK = $xTk->Asign($dataTK);
 
 			print $dataTK;
-			//$sql="update sede set token='".$dataTK."' where idsede=".$_SESSION['idsede'];
+			//$sql="update sede set token='".$dataTK."' where idsede=".$g_idsede;
 			//print $bd->xConsultaSucess($sql);
 			break;
 		case 405://categoria
-			$sql="SELECT * FROM categoria WHERE idorg=".$_SESSION['ido']." AND idsede=".$_SESSION['idsede']." AND estado=0";
+			$sql="SELECT * FROM categoria WHERE idorg=".$g_ido." AND idsede=".$g_idsede." AND estado=0";
 			$bd->xConsulta($sql);
 			break;
 		case 406://load tipos de consumo
-			$sql="select * from tipo_consumo where idorg=".$_SESSION['ido']." and idsede=".$_SESSION['idsede']." and estado=0";
+			$sql="select * from tipo_consumo where idorg=".$g_ido." and idsede=".$g_idsede." and estado=0";
 			$bd->xConsulta($sql);
 			break;
 		case 407://load conf print detalle
 			// $sql="select * from conf_print_detalle where idconf_print=".$_POST['i']." and estado=0";
-			$sql="select * from conf_print_detalle where idorg=".$_SESSION['ido']." and idsede=".$_SESSION['idsede']." and estado=0";
+			$sql="select * from conf_print_detalle where idorg=".$g_ido." and idsede=".$g_idsede." and estado=0";
 			$bd->xConsulta($sql);
 			break;
 		case 408://load conf print adicionales
@@ -1568,7 +1572,7 @@
 			$sql="
 				SELECT s.idseccion, s.descripcion AS plato,ifnull(i.idimpresora,0)AS idimpresora, ifnull(i.descripcion,'Ninguno') as descripcion FROM seccion AS s
 				left JOIN impresora AS i using(idimpresora)
-				WHERE (s.idorg=".$_SESSION['ido']." AND s.idsede=".$_SESSION['idsede'].")
+				WHERE (s.idorg=".$g_ido." AND s.idsede=".$g_idsede.")
 				ORDER BY s.idseccion
 				";
 			$bd->xConsulta($sql);
@@ -1581,7 +1585,7 @@
 					INNER JOIN producto_familia AS pf using(idproducto_familia)
 					INNER JOIN almacen AS a using(idalmacen)
 					LEFT JOIN impresora AS i on pf.idimpresora=i.idimpresora
-				WHERE (pf.idorg=".$_SESSION['ido']." AND pf.idsede=".$_SESSION['idsede'].") AND a.bodega=1 AND a.imprimir_comanda=1
+				WHERE (pf.idorg=".$g_ido." AND pf.idsede=".$g_idsede.") AND a.bodega=1 AND a.imprimir_comanda=1
 				GROUP BY pf.idproducto_familia
 				";
 			$bd->xConsulta($sql);
@@ -1599,7 +1603,7 @@
 			$bd->xConsulta($sql);
 			break;
 		case 4011://load config otros documentos
-			// $sql="SELECT s.conf_print_otros, s.idtipo_otro, ifnull(i.idimpresora,0)AS idimpresora,ifnull(i.descripcion,'Ninguno') as descripcion FROM conf_print_otros AS s left JOIN impresora AS i using(idimpresora) WHERE (s.idorg=".$_SESSION['ido']." AND s.idsede=".$_SESSION['idsede'].") AND s.idtipo_otro<0";
+			// $sql="SELECT s.conf_print_otros, s.idtipo_otro, ifnull(i.idimpresora,0)AS idimpresora,ifnull(i.descripcion,'Ninguno') as descripcion FROM conf_print_otros AS s left JOIN impresora AS i using(idimpresora) WHERE (s.idorg=".$g_ido." AND s.idsede=".$g_idsede.") AND s.idtipo_otro<0";
 			$sql="
 				SELECT ifnull(conf.conf_print_otros,0) as conf_print_otros, tpo.idtipo_otro, tpo.descripcion as nomdoc, ifnull(conf.idimpresora,0)AS idimpresora,ifnull(conf.descripcion,'Ninguno') as descripcion
 				from tipo_otro as tpo
@@ -1607,7 +1611,7 @@
 						SELECT cpo.conf_print_otros, cpo.idtipo_otro, i.idimpresora, i.descripcion
 						from conf_print_otros as cpo
 							left join impresora as i on cpo.idimpresora=i.idimpresora
-						where (cpo.idorg=".$_SESSION['ido']." and cpo.idsede=".$_SESSION['idsede'].") and cpo.estado=0
+						where (cpo.idorg=".$g_ido." and cpo.idsede=".$g_idsede.") and cpo.estado=0
 					) as conf on conf.idtipo_otro = tpo.idtipo_otro
 				ORDER BY tpo.idtipo_otro DESC
 			";
@@ -1618,7 +1622,7 @@
 			$id_doc=$_POST['iddoc'];			
 			$id_print=$_POST['idp'];
 			if($id_conf_otro_doc=='0'){//nuevo
-				$sql="insert into conf_print_otros(idorg,idsede,idtipo_otro,idimpresora) values (".$_SESSION['ido'].",".$_SESSION['idsede'].",".$id_doc.",".$id_print.")";
+				$sql="insert into conf_print_otros(idorg,idsede,idtipo_otro,idimpresora) values (".$g_ido.",".$g_idsede.",".$id_doc.",".$id_print.")";
 			}else{
 				$sql="update conf_print_otros set idimpresora=".$id_print." where conf_print_otros=".$id_conf_otro_doc;
 			}
@@ -1627,19 +1631,19 @@
 		///control de mesas
 		///control de mesas
 		case 5://load mesas
-			$sql="select mesas as d1 from sede where idorg=".$_SESSION['ido']." and idsede=".$_SESSION['idsede']." and estado=0";
+			$sql="select mesas as d1 from sede where idorg=".$g_ido." and idsede=".$g_idsede." and estado=0";
 			print $bd->xDevolverUnDato($sql);
 			break;
 		case 501:// pedidos
 			// $sql="
 			// 	SELECT p.idpedido,p.idcategoria, count(p.nummesa) AS num_pedidos ,p.idtipo_consumo,p.reserva,p.nummesa, p.numpedido,p.correlativo_dia, p.referencia, sum(p.total) AS importe, p.hora
 			// 	FROM pedido AS p
-			// 	WHERE (p.idorg=".$_SESSION['ido']." AND p.idsede=".$_SESSION['idsede'].") and p.estado IN (0) and p.nummesa>0
+			// 	WHERE (p.idorg=".$g_ido." AND p.idsede=".$g_idsede.") and p.estado IN (0) and p.nummesa>0
 			// 	GROUP BY p.nummesa
 			// 	UNION ALL
 			// 	SELECT p.idpedido,p.idcategoria, count(p.nummesa) AS num_pedidos ,p.idtipo_consumo,p.reserva,p.nummesa, p.numpedido,p.correlativo_dia, p.referencia, sum(p.total) AS importe, p.hora
 			// 	FROM pedido AS p
-			// 	WHERE (p.idorg=".$_SESSION['ido']." AND p.idsede=".$_SESSION['idsede'].") and p.estado IN (0) and p.nummesa=0
+			// 	WHERE (p.idorg=".$g_ido." AND p.idsede=".$g_idsede.") and p.estado IN (0) and p.nummesa=0
 			// 	GROUP BY p.idpedido
 			// ";
 			// $sql = "
@@ -1653,7 +1657,7 @@
 			// 						from pedido_detalle as pdt where pdt.pagado=0 and pdt.estado=0 
 			// 						GROUP BY pdt.idpedido, pdt.idtipo_consumo, pdt.idseccion order by pdt.idpedido desc
 			// 						) as pd on p.idpedido=pd.idpedido
-			// 	WHERE (p.idorg=".$_SESSION['ido']." AND p.idsede=".$_SESSION['idsede'].") and (p.estado=0) and p.nummesa>0
+			// 	WHERE (p.idorg=".$g_ido." AND p.idsede=".$g_idsede.") and (p.estado=0) and p.nummesa>0
 			// 	GROUP BY p.nummesa
 			// 	UNION ALL
 			// 	SELECT p.idpedido,p.idcategoria, count(p.nummesa) AS num_pedidos ,p.idtipo_consumo, p.subtotales_tachados,
@@ -1666,7 +1670,7 @@
 			// 						from pedido_detalle as pdt where pdt.pagado=0 and pdt.estado=0 
 			// 						GROUP BY pdt.idpedido, pdt.idtipo_consumo, pdt.idseccion order by pdt.idpedido desc
 			// 						) as pd on p.idpedido=pd.idpedido
-			// 	WHERE (p.idorg=".$_SESSION['ido']." AND p.idsede=".$_SESSION['idsede'].") and (p.estado=0) and p.nummesa=0
+			// 	WHERE (p.idorg=".$g_ido." AND p.idsede=".$g_idsede.") and (p.estado=0) and p.nummesa=0
 			// 	GROUP BY p.idpedido
 			// ";
 
@@ -1674,7 +1678,7 @@
 			$bd->xConsulta($sql);
 			break;
 		case 50101://count cantidad de pedidos para actualizar
-			$sql="SELECT count(idpedido) as d1 FROM pedido WHERE (idorg=".$_SESSION['ido']." AND idsede=".$_SESSION['idsede'].") AND estado IN (0,1)";
+			$sql="SELECT count(idpedido) as d1 FROM pedido WHERE (idorg=".$g_ido." AND idsede=".$g_idsede.") AND estado IN (0,1)";
 			print $bd->xDevolverUnDato($sql);
 			break;
 		case 502://detalle pedido
@@ -1684,18 +1688,18 @@
 				    INNER JOIN pedido_detalle AS pd using(idpedido)
 					INNER JOIN seccion AS s using(idseccion)
 					INNER JOIN tipo_consumo AS tp using(idtipo_consumo)
-				WHERE (p.idorg=".$_SESSION['ido']." and p.idsede=".$_SESSION['idsede'].") and p.nummesa=".$_POST['i']." AND (p.estado=0 OR p.estado=1)
+				WHERE (p.idorg=".$g_ido." and p.idsede=".$g_idsede.") and p.nummesa=".$_POST['i']." AND (p.estado=0 OR p.estado=1)
 				ORDER BY pd.idtipo_consumo,pd.idseccion, pd.idpedido_detalle
 			";
 			$bd->xConsulta($sql);
 			break;
 		case 503:// registrar borrar item
 			//procednecia 0:
-			$sql="insert into pedido_borrados (idpedido_detalle,idusuario,idusuario_permiso,fecha,hora) values(".$_POST["i"].",".$_POST["u"].",".$_SESSION['idusuario'].",DATE_FORMAT(now(),'%d/%m/%Y'),DATE_FORMAT(now(),'%H:%i:%s'))";
+			$sql="insert into pedido_borrados (idpedido_detalle,idusuario,idusuario_permiso,fecha,hora) values(".$_POST["i"].",".$_POST["u"].",".$_SESSION['idusuario'].",'".$fecha_now."','".$hora_now."')";
 			$bd->xMultiConsulta($sql);
 			break;
 		case 504:// registrar cambiar plato
-			$sql="insert into pedido_cambios (idpedido_detalle,idusuario,idusuario_permiso,fecha,hora) values(".$_POST["i"].",".$_POST["u"].",".$_SESSION['idusuario'].",DATE_FORMAT(now(),'%d/%m/%Y'),DATE_FORMAT(now(),'%H:%i:%s')); update pedido_detalle set secambio=secambio+1 where idpedido_detalle=".$_POST["i"];
+			$sql="insert into pedido_cambios (idpedido_detalle,idusuario,idusuario_permiso,fecha,hora) values(".$_POST["i"].",".$_POST["u"].",".$_SESSION['idusuario'].",'".$fecha_now."','".$hora_now."'); update pedido_detalle set secambio=secambio+1 where idpedido_detalle=".$_POST["i"];
 			$bd->xMultiConsulta($sql);
 			break;
 		case 505:// modificar importe en bd de pedido
@@ -1728,7 +1732,7 @@
 				    inner join seccion as s using(idseccion)
 					inner join item as i using(iditem)
 				        join (select max(idcarta) as idcarta, idorg,idsede from carta) as uc on (uc.idorg=c.idorg and uc.idsede=c.idsede)
-				where (c.idorg=".$_SESSION['ido']." and c.idsede=".$_SESSION['idsede'].") and (cl.cantidad>0 or cl.cantidad='ND') and c.idcarta=uc.idcarta and cl.estado=0
+				where (c.idorg=".$g_ido." and c.idsede=".$g_idsede.") and (cl.cantidad>0 or cl.cantidad='ND') and c.idcarta=uc.idcarta and cl.estado=0
 				order by s.sec_orden, i.descripcion
 			";
 			$bd->xConsulta($sql);
@@ -1749,7 +1753,7 @@
 					, p.tiempo_atencion, p.val_color_despachado, p.total
 				FROM pedido AS p
 					INNER JOIN usuario AS u using(idusuario)
-				WHERE ".$condicion." and (p.idorg=".$_SESSION['ido']." and p.idsede=".$_SESSION['idsede'].") AND p.estado IN(0,1)
+				WHERE ".$condicion." and (p.idorg=".$g_ido." and p.idsede=".$g_idsede.") AND p.estado IN(0,1)
 				";
 
 			$bd->xConsulta($sql);
@@ -1763,7 +1767,7 @@
 				if($nomclie==''){//publico general
 					$idclie=0;
 				}else{
-					$sql="insert into cliente (idorg,nombres)values(".$_SESSION['ido'].",'".$nomclie."')";
+					$sql="insert into cliente (idorg,nombres)values(".$g_ido.",'".$nomclie."')";
 					$idclie=$bd->xConsulta_UltimoId($sql);
 				}
 			}
@@ -1784,7 +1788,7 @@
 			//$idpedidos=$_POST['idp'];
 
 			//registro unico de pago
-			$sqlPago="insert into registro_pago(idorg,idsede,idusuario,idcliente,fecha,total,idtipo_consumo) values (".$_SESSION['ido'].",".$_SESSION['idsede'].",".$_SESSION['idusuario'].",".$idc.",DATE_FORMAT(now(),'%d/%m/%Y %H:%i:%s'),'".$tt."',".$idtipo_consumo.")";
+			$sqlPago="insert into registro_pago(idorg,idsede,idusuario,idcliente,fecha,total,idtipo_consumo) values (".$g_ido.",".$g_idsede.",".$_SESSION['idusuario'].",".$idc.",'".$fecha_now." ".$hora_now."','".$tt."',".$idtipo_consumo.")";
 			$idregistro_pago=$bd->xConsulta_UltimoId($sqlPago);
 
 			//registra los tipos de pago // efectivo tarjeta
@@ -1834,7 +1838,7 @@
 			$sql_pago_pedido='';
 
 			//guardar registro_pago
-			$sqlrp="insert into registro_pago(idorg,idsede,idusuario,idcliente,fecha,total,idtipo_consumo) values (".$_SESSION['ido'].",".$_SESSION['idsede'].",".$_SESSION['idusuario'].",".$idc.",DATE_FORMAT(now(),'%d/%m/%Y %H:%i:%s'),'".$tt."',".$idtipo_consumo.")";
+			$sqlrp="insert into registro_pago(idorg,idsede,idusuario,idcliente,fecha,total,idtipo_consumo) values (".$g_ido.",".$g_idsede.",".$_SESSION['idusuario'].",".$idc.",'".$fecha_now." ".$hora_now."','".$tt."',".$idtipo_consumo.")";
 			$idregistro_pago=$bd->xConsulta_UltimoId($sqlrp);
 
 			//tipo de pago // efectivo / tarjeta / etc
@@ -1931,7 +1935,7 @@
 			}
 
 			//registrar en pedidos_borrados.// en este caso los sub item se borran de los pedidos seleccionados
-			$sqlpedido_borrado="insert into pedido_borrados (idpedido,idpedido_detalle,iditem,idcarta_lista,idusuario,idusuario_permiso,importe,fecha,hora,procede_tabla) SELECT idpedido,idpedido_detalle,iditem,idcarta_lista,".$_SESSION["idusuario"].",".$_POST['u'].",IF(ptotal*1=0,ptotal_r,ptotal),DATE_FORMAT(now(),'%d/%m/%Y'),DATE_FORMAT(now(),'%H:%i:%s'), procede_tabla FROM pedido_detalle WHERE ".$condicion_pdb."; ";
+			$sqlpedido_borrado="insert into pedido_borrados (idpedido,idpedido_detalle,iditem,idcarta_lista,idusuario,idusuario_permiso,importe,fecha,hora,procede_tabla) SELECT idpedido,idpedido_detalle,iditem,idcarta_lista,".$_SESSION["idusuario"].",".$_POST['u'].",IF(ptotal*1=0,ptotal_r,ptotal),'".$fecha_now."','".$hora_now."', procede_tabla FROM pedido_detalle WHERE ".$condicion_pdb."; ";
 
 			//print $sql_todos.$sql_change_de.$sql_pdt.$sqlpedido_borrado.$sql_historial_rp;
 			$bd->xMultiConsulta($sql_todos.$sql_change_de.$sql_pdt.$sqlpedido_borrado.$sql_historial_rp);
@@ -1947,18 +1951,18 @@
 			$bd->xConsulta($sql);
 			break;
 		case 601://load clientes
-			$sql="SELECT * FROM cliente where (idorg=".$_SESSION['ido'].") AND estado=0 order by nombres";
+			$sql="SELECT * FROM cliente where (idorg=".$g_ido.") AND estado=0 order by nombres";
 			$bd->xConsulta($sql);
 			break;
 		case 602://buscar cliente		
-			$sql="SELECT * FROM cliente where (idorg=".$_SESSION['ido'].") AND estado=0 and ruc='".$_POST['doc']."' order by nombres";
+			$sql="SELECT * FROM cliente where (idorg=".$g_ido.") AND estado=0 and ruc='".$_POST['doc']."' order by nombres";
 			$bd->xConsulta($sql);
 			break;
 		case 603://Load tipo comprobante		
 			// $sql="SELECT * FROM tipo_comprobante where estado=0";
 			$sql = "SELECT tps.idtipo_comprobante_serie, tps.idtipo_comprobante, tp.descripcion, tp.codsunat, tps.serie, tp.requiere_cliente, tp.inicial FROM tipo_comprobante_serie tps 
 				inner join tipo_comprobante as tp using(idtipo_comprobante) 
-				WHERE (tps.idorg=".$_SESSION['ido']." and tps.idsede=".$_SESSION['idsede'].") and tps.estado = 0";
+				WHERE (tps.idorg=".$g_ido." and tps.idsede=".$g_idsede.") and tps.estado = 0";
 			$bd->xConsulta($sql);
 			break;
 		///////////////
@@ -1967,7 +1971,7 @@
 		//cierre de caja
 		//cierre de caja
 		case 7://resumen ventas
-			$ido=$_SESSION['ido'];
+			$ido=$g_ido;
 			$idsede=$_SESSION['idsede'];
 			$idus=$_SESSION['idusuario'];
 			$sql="
@@ -1994,7 +1998,7 @@
 			$bd->xConsulta($sql);
 			break;
 		case 7001://verificar caja
-			$ido=$_SESSION['ido'];
+			$ido=$g_ido;
 			$idsede=$_SESSION['idsede'];
 			$idus=$_SESSION['idusuario'];
 			$sql="
@@ -2025,24 +2029,24 @@
 			print $rpt;
 			break;
 		case 70012://cerrar seccion = cierre=1 pedido, registro_pago, ie_caja //el ultimo es para cerrar pedidos anulados
-			//UPDATE pedido AS p INNER JOIN registro_pago AS rp ON p.idregistro_pago=rp.idregistro_pago SET p.cierre=1 WHERE (p.idorg=".$_SESSION['ido']." AND p.idsede=".$_SESSION['idsede'].") and (p.cierre=0 AND rp.idusuario=".$_POST['i'].");
+			//UPDATE pedido AS p INNER JOIN registro_pago AS rp ON p.idregistro_pago=rp.idregistro_pago SET p.cierre=1 WHERE (p.idorg=".$g_ido." AND p.idsede=".$g_idsede.") and (p.cierre=0 AND rp.idusuario=".$_POST['i'].");
 			$sql="
-				UPDATE ie_caja SET cierre=1 WHERE idusuario=".$_POST['i']." AND cierre=0 and (idorg=".$_SESSION['ido']." AND idsede=".$_SESSION['idsede'].");
-				UPDATE registro_pago SET cierre=1, fecha_cierre=DATE_FORMAT(now(),'%H:%i:%s') WHERE idusuario=".$_POST['i']." and cierre=0 and (idorg=".$_SESSION['ido']." AND idsede=".$_SESSION['idsede'].");
-				UPDATE pedido AS p INNER JOIN registro_pago AS rp ON p.idregistro_pago=rp.idregistro_pago SET p.cierre=1 WHERE (rp.idorg=".$_SESSION['ido']." AND rp.idsede=".$_SESSION['idsede'].") AND rp.idusuario=".$_SESSION['idusuario']." AND p.cierre=0 ;
-				UPDATE pedido SET cierre=1 WHERE estado=3 AND (idorg=".$_SESSION['ido']." AND idsede=".$_SESSION['idsede'].");
+				UPDATE ie_caja SET cierre=1 WHERE idusuario=".$_POST['i']." AND cierre=0 and (idorg=".$g_ido." AND idsede=".$g_idsede.");
+				UPDATE registro_pago SET cierre=1, fecha_cierre='".$hora_now."' WHERE idusuario=".$_POST['i']." and cierre=0 and (idorg=".$g_ido." AND idsede=".$g_idsede.");
+				UPDATE pedido AS p INNER JOIN registro_pago AS rp ON p.idregistro_pago=rp.idregistro_pago SET p.cierre=1 WHERE (rp.idorg=".$g_ido." AND rp.idsede=".$g_idsede.") AND rp.idusuario=".$_SESSION['idusuario']." AND p.cierre=0 ;
+				UPDATE pedido SET cierre=1 WHERE estado=3 AND (idorg=".$g_ido." AND idsede=".$g_idsede.");
 				update pedido_borrados set fecha_cierre=now() where fecha_cierre='' and idusuario=".$_SESSION['idusuario'].";
-				DELETE FROM print_server_detalle WHERE (idorg=".$_SESSION['ido']." and idsede=".$_SESSION['idsede'].") and (impreso=1 or estado=1 or error=1);
+				DELETE FROM print_server_detalle WHERE (idorg=".$g_ido." and idsede=".$g_idsede.") and (impreso=1 or estado=1 or error=1);
 			";
-			//update pedido_borrados set cierre=1 where idusuario=".$_POST['i']." and cierre=0 and (idorg=".$_SESSION['ido']." AND idsede=".$_SESSION['idsede'].");
-			//UPDATE pedido AS p SET p.cierre=1 WHERE (p.idorg=".$_SESSION['ido']." AND p.idsede=".$_SESSION['idsede'].") and (p.cierre=0 AND p.idusuario=".$_POST['i'].");
-			//UPDATE pedido SET cierre=1 WHERE estado=3 AND (idorg=".$_SESSION['ido']." AND idsede=".$_SESSION['idsede'].");
+			//update pedido_borrados set cierre=1 where idusuario=".$_POST['i']." and cierre=0 and (idorg=".$g_ido." AND idsede=".$g_idsede.");
+			//UPDATE pedido AS p SET p.cierre=1 WHERE (p.idorg=".$g_ido." AND p.idsede=".$g_idsede.") and (p.cierre=0 AND p.idusuario=".$_POST['i'].");
+			//UPDATE pedido SET cierre=1 WHERE estado=3 AND (idorg=".$g_ido." AND idsede=".$g_idsede.");
 			$bd->xMultiConsulta($sql);
 			break;
 		case 701:// detalle ie caja ingreso
 			$sql="
 				SELECT ie.motivo AS descripcion ,'' as t1, '' as t2, format(ie.monto,2) as t3
-				FROM ie_caja AS ie WHERE (ie.idorg=".$_SESSION['ido']." AND ie.idsede=".$_SESSION['idsede']." AND ie.idusuario=".$_SESSION['idusuario'].") AND ie.estado=0 AND ie.cierre=0 and ie.tipo=1
+				FROM ie_caja AS ie WHERE (ie.idorg=".$g_ido." AND ie.idsede=".$g_idsede." AND ie.idusuario=".$_SESSION['idusuario'].") AND ie.estado=0 AND ie.cierre=0 and ie.tipo=1
 				ORDER BY ie.tipo
 			";
 			$bd->xConsulta($sql);
@@ -2050,7 +2054,7 @@
 		case 7002:// detalle ie caja salida
 			$sql="
 				SELECT ie.motivo AS descripcion ,'' as t1,'' as t2, format(ie.monto,2) as t3
-				FROM ie_caja AS ie WHERE (ie.idorg=".$_SESSION['ido']." AND ie.idsede=".$_SESSION['idsede']." AND ie.idusuario=".$_SESSION['idusuario'].") AND ie.estado=0 AND ie.cierre=0 and ie.tipo=2
+				FROM ie_caja AS ie WHERE (ie.idorg=".$g_ido." AND ie.idsede=".$g_idsede." AND ie.idusuario=".$_SESSION['idusuario'].") AND ie.estado=0 AND ie.cierre=0 and ie.tipo=2
 				ORDER BY ie.tipo
 			";
 			$bd->xConsulta($sql);
@@ -2062,7 +2066,7 @@
 					INNER JOIN registro_pago_detalle AS rpd using(idregistro_pago)
 					INNER JOIN tipo_pago AS tp using(idtipo_pago)
 					INNER JOIN cliente AS c using(idcliente)
-				WHERE (rp.idorg=".$_SESSION['ido']." AND rp.idsede=".$_SESSION['idsede']." AND rp.idusuario=".$_SESSION['idusuario'].") AND rpd.idtipo_pago=3 AND (rp.estado=0 AND rpd.estado=0) AND rp.cierre=0
+				WHERE (rp.idorg=".$g_ido." AND rp.idsede=".$g_idsede." AND rp.idusuario=".$_SESSION['idusuario'].") AND rpd.idtipo_pago=3 AND (rp.estado=0 AND rpd.estado=0) AND rp.cierre=0
 				GROUP BY rp.idcliente
 			";
 			$bd->xConsulta($sql);
@@ -2072,14 +2076,14 @@
 				SELECT tpc.descripcion, count(p.idtipo_consumo) AS t1, format(sum(p.total),2) AS t2
 				FROM pedido AS p
 					INNER JOIN tipo_consumo AS tpc using(idtipo_consumo)
-				WHERE (p.idorg=".$_SESSION['ido']." AND p.idsede=".$_SESSION['idsede'].") AND p.cierre=0 AND p.estado !=3
+				WHERE (p.idorg=".$g_ido." AND p.idsede=".$g_idsede.") AND p.cierre=0 AND p.estado !=3
 				GROUP BY p.idtipo_consumo
 				";-*/
 			$sql="
 			SELECT tpc.descripcion,'' as t1, count(rp.idregistro_pago) AS t2, format(sum(rp.total),2) AS t3
 				FROM registro_pago AS rp
 				INNER JOIN tipo_consumo AS tpc using(idtipo_consumo)
-			WHERE (rp.idorg=".$_SESSION['ido']." AND rp.idsede=".$_SESSION['idsede']." AND rp.idusuario=".$_SESSION['idusuario'].") AND rp.cierre=0 AND rp.estado=0
+			WHERE (rp.idorg=".$g_ido." AND rp.idsede=".$g_idsede." AND rp.idusuario=".$_SESSION['idusuario'].") AND rp.cierre=0 AND rp.estado=0
 			GROUP BY rp.idtipo_consumo
 			";
 			$bd->xConsulta($sql);
@@ -2088,7 +2092,7 @@
 			$sql="
 				SELECT (CASE p.estado WHEN '0' THEN 'POR DESPACHAR' WHEN '1' THEN 'DESPACHADOS' WHEN '2' THEN 'PAGADOS' WHEN '3' THEN 'ANULADO' END) AS descripcion, count(p.idpedido) as importe
 				FROM pedido AS p
-				WHERE (p.idorg=".$_SESSION['ido']." AND p.idsede=".$_SESSION['idsede'].") AND p.cierre=0
+				WHERE (p.idorg=".$g_ido." AND p.idsede=".$g_idsede.") AND p.cierre=0
 				GROUP BY p.estado
 			";
 			$bd->xConsulta($sql);
@@ -2101,7 +2105,7 @@
 					INNER JOIN carta_lista AS cl using(idcarta_lista)
 					INNER JOIN seccion AS s ON s.idseccion=cl.idseccion
 					INNER JOIN item AS i ON i.iditem=pd.iditem
-				WHERE (p.idorg=".$_SESSION['ido']." AND p.idsede=".$_SESSION['idsede']." AND p.cierre=0) AND p.estado IN (2)
+				WHERE (p.idorg=".$g_ido." AND p.idsede=".$g_idsede." AND p.cierre=0) AND p.estado IN (2)
 				GROUP BY cl.idseccion, pd.iditem
 				ORDER BY cl.idseccion,cl.sec_orden,count(idpedido_detalle) desc
 			";*/
@@ -2118,7 +2122,7 @@
 								INNER JOIN porcion AS po ON ii.idporcion=po.idporcion
 							GROUP BY i.iditem
 							) AS it_p ON pd.iditem=it_p.iditem
-			WHERE (p.idorg=".$_SESSION['ido']." AND p.idsede=".$_SESSION['idsede'].") AND (p.cierre=0 and rp.idusuario=".$_SESSION['idusuario'].") AND p.estado=2 AND (pd.procede=0 AND pd.estado=0 and pd.secambio=0 AND pd.borrado=0)
+			WHERE (p.idorg=".$g_ido." AND p.idsede=".$g_idsede.") AND (p.cierre=0 and rp.idusuario=".$_SESSION['idusuario'].") AND p.estado=2 AND (pd.procede=0 AND pd.estado=0 and pd.secambio=0 AND pd.borrado=0)
 			GROUP BY pd.iditem
 			ORDER BY pd.idseccion, pd.descripcion
 			";*/
@@ -2136,7 +2140,7 @@
 			// 						INNER JOIN porcion AS po ON ii.idporcion=po.idporcion
 			// 						GROUP BY i.iditem
 			// 					) AS it_p ON pd.iditem=it_p.iditem				
-			// 	WHERE rp.cierre=0 AND rp.idusuario=".$_SESSION['idusuario']." AND pd.procede_tabla!=0 and (rp.idorg=".$_SESSION['ido']." AND rp.idsede=".$_SESSION['idsede'].")
+			// 	WHERE rp.cierre=0 AND rp.idusuario=".$_SESSION['idusuario']." AND pd.procede_tabla!=0 and (rp.idorg=".$g_ido." AND rp.idsede=".$g_idsede.")
 			// 	GROUP BY pd.iditem
 			// 	ORDER BY t2 desc
 			// ";
@@ -2156,7 +2160,7 @@
 				inner join pedido_detalle as pd on rpp.idpedido_detalle = pd.idpedido_detalle
 				inner join item as i on pd.iditem = i.iditem
 				INNER JOIN carta_lista AS cl ON i.iditem=cl.iditem
-				where (rp.cierre = 0 AND rp.idusuario=".$_SESSION['idusuario']." AND rp.idsede=".$_SESSION['idsede'].") AND pd.procede_tabla!=0 
+				where (rp.cierre = 0 AND rp.idusuario=".$_SESSION['idusuario']." AND rp.idsede=".$g_idsede.") AND pd.procede_tabla!=0 
 				GROUP BY i.iditem
 				order BY sum(rpp.total) desc
 			";
@@ -2169,7 +2173,7 @@
 			FROM pedido AS p
 				INNER JOIN pedido_detalle AS pd using(idpedido)
 				LEFT JOIN(SELECT idproducto, sum(stock) AS stock FROM almacen_items WHERE estado=0 GROUP BY idproducto) AS ai ON pd.iditem=ai.idproducto
-			WHERE (p.idorg=".$_SESSION['ido']." AND p.idsede=".$_SESSION['idsede'].") AND p.cierre=0 AND p.estado=2 AND (pd.procede!=0 AND pd.estado=0 and pd.secambio=0 AND pd.borrado=0)
+			WHERE (p.idorg=".$g_ido." AND p.idsede=".$g_idsede.") AND p.cierre=0 AND p.estado=2 AND (pd.procede!=0 AND pd.estado=0 and pd.secambio=0 AND pd.borrado=0)
 			GROUP BY ai.idproducto
 			ORDER BY pd.idseccion, pd.descripcion
 			";*/
@@ -2181,7 +2185,7 @@
 					INNER JOIN registro_pago AS rp ON rp.idregistro_pago=pd.idregistro_pago
 					INNER JOIN producto AS pro ON pd.iditem=pro.idproducto
 					INNER JOIN producto_stock AS pos ON pos.idproducto_stock=pd.idcarta_lista
-				WHERE (p.idorg=".$_SESSION['ido']." AND p.idsede=".$_SESSION['idsede']." AND rp.idusuario=".$_SESSION['idusuario'].")  AND pd.procede!=0 AND p.cierre=0 AND p.estado=2 AND (pd.estado=0 and pd.secambio=0 AND pd.borrado=0)
+				WHERE (p.idorg=".$g_ido." AND p.idsede=".$g_idsede." AND rp.idusuario=".$_SESSION['idusuario'].")  AND pd.procede!=0 AND p.cierre=0 AND p.estado=2 AND (pd.estado=0 and pd.secambio=0 AND pd.borrado=0)
 				GROUP BY pro.idproducto
 				ORDER BY pd.descripcion
 			";*/
@@ -2192,7 +2196,7 @@
 					INNER JOIN pedido_detalle AS pd ON rpp.idpedido_detalle=pd.idpedido_detalle
 					INNER JOIN producto AS pro ON pd.iditem=pro.idproducto
 					INNER JOIN producto_stock AS pos ON pos.idproducto_stock=pd.idcarta_lista
-				WHERE (rp.idorg=".$_SESSION['ido']." AND rp.idsede=".$_SESSION['idsede'].") AND rp.cierre=0 AND rp.idusuario=".$_SESSION['idusuario']."  AND pd.procede_tabla=0
+				WHERE (rp.idorg=".$g_ido." AND rp.idsede=".$g_idsede.") AND rp.cierre=0 AND rp.idusuario=".$_SESSION['idusuario']."  AND pd.procede_tabla=0
 				GROUP BY pd.iditem
 				ORDER BY t2 desc
 			";
@@ -2206,7 +2210,7 @@
 					INNER JOIN item AS i using(iditem)
 					INNER JOIN item_ingrediente AS ii ON i.iditem=ii.iditem
 					INNER JOIN porcion AS p using(idporcion)
-				WHERE (i.idorg=".$_SESSION['ido']." AND i.idsede=".$_SESSION['idsede'].") AND (pro.cierre=0 AND pro.estado!=3 AND pd.estado=0)
+				WHERE (i.idorg=".$g_ido." AND i.idsede=".$g_idsede.") AND (pro.cierre=0 AND pro.estado!=3 AND pd.estado=0)
 				GROUP BY p.idporcion
 				ORDER BY p.descripcion
 			";*/
@@ -2219,7 +2223,7 @@
 						INNER JOIN carta_lista AS cl ON i.iditem=cl.iditem
 						INNER JOIN item_ingrediente AS ii ON i.iditem=ii.iditem
 						INNER JOIN porcion AS por ON ii.idporcion=por.idporcion
-				WHERE (rp.idorg=".$_SESSION['ido']." AND rp.idsede=".$_SESSION['idsede'].") AND rp.cierre=0 AND rp.idusuario=".$_SESSION['idusuario']." AND cl.cantidad='SP'
+				WHERE (rp.idorg=".$g_ido." AND rp.idsede=".$g_idsede.") AND rp.cierre=0 AND rp.idusuario=".$_SESSION['idusuario']." AND cl.cantidad='SP'
 				GROUP BY por.idporcion
 				ORDER BY por.descripcion
 			";
@@ -2233,16 +2237,16 @@
 							FROM almacen_items AS a1
 								INNER JOIN almacen AS am using(idalmacen)
 							WHERE a1.estado=0 AND am.bodega=1 GROUP BY a1.idproducto) AS a using(idproducto)
-			WHERE (pro.idorg=".$_SESSION['ido']." AND pro.idsede=".$_SESSION['idsede'].") and (a.stock<=pro.stock_minimo AND pro.stock_minimo!='')
+			WHERE (pro.idorg=".$g_ido." AND pro.idsede=".$g_idsede.") and (a.stock<=pro.stock_minimo AND pro.stock_minimo!='')
 			GROUP BY pro.idproducto
 			";
 			$bd->xConsulta($sql);
 			break;
 		case 709://pedidos anulados
 			$sql="
-			SELECT 'PEDIDOS ANULADOS' AS descripcion,'' as t1,'' as t2, count(idpedido) as t3 FROM pedido WHERE estado=3 and cierre=0 AND (idorg=".$_SESSION['ido']." AND idsede=".$_SESSION['idsede'].")
+			SELECT 'PEDIDOS ANULADOS' AS descripcion,'' as t1,'' as t2, count(idpedido) as t3 FROM pedido WHERE estado=3 and cierre=0 AND (idorg=".$g_ido." AND idsede=".$g_idsede.")
 			UNION all
-			SELECT 'ITEMS ANULADOS' AS descripcion, '' as t1,'' as t2, count(idpedido_detalle) as t3 FROM pedido_detalle AS pd INNER JOIN pedido using(idpedido) WHERE pd.estado=1 AND (idorg=".$_SESSION['ido']." AND idsede=".$_SESSION['idsede']." AND cierre=0)
+			SELECT 'ITEMS ANULADOS' AS descripcion, '' as t1,'' as t2, count(idpedido_detalle) as t3 FROM pedido_detalle AS pd INNER JOIN pedido using(idpedido) WHERE pd.estado=1 AND (idorg=".$g_ido." AND idsede=".$g_idsede." AND cierre=0)
 			";
 			$bd->xConsulta($sql);
 			break;
@@ -2252,7 +2256,7 @@
 				FROM pedido_borrados AS pb
 					INNER JOIN pedido AS p ON pb.idpedido=p.idpedido
 					INNER JOIN pedido_detalle AS pd ON pb.idpedido_detalle=pd.idpedido_detalle
-				where (p.idorg=".$_SESSION['ido']." AND p.idsede=".$_SESSION['idsede']." AND pb.idusuario=".$_SESSION['idusuario'].") AND pb.fecha_cierre='' AND pd.procede_tabla!=0
+				where (p.idorg=".$g_ido." AND p.idsede=".$g_idsede." AND pb.idusuario=".$_SESSION['idusuario'].") AND pb.fecha_cierre='' AND pd.procede_tabla!=0
 				GROUP BY pd.iditem
 				ORDER BY pd.descripcion
 			) a
@@ -2261,7 +2265,7 @@
 						FROM pedido_borrados AS pb
 							INNER JOIN pedido AS p using(idpedido)
 							INNER JOIN producto AS prod ON prod.idproducto=pb.iditem
-						where (p.idorg=".$_SESSION['ido']." AND p.idsede=".$_SESSION['idsede']." AND pb.idusuario=".$_SESSION['idusuario'].") AND pb.fecha_cierre='' AND pb.procede_tabla=0
+						where (p.idorg=".$g_ido." AND p.idsede=".$g_idsede." AND pb.idusuario=".$_SESSION['idusuario'].") AND pb.fecha_cierre='' AND pb.procede_tabla=0
 						GROUP BY pb.iditem
 						ORDER BY prod.descripcion) b
 			";
@@ -2273,7 +2277,7 @@
 				FROM pedido_borrados AS pb
 					INNER JOIN pedido AS p using(idpedido)
 					INNER JOIN usuario AS u ON pb.idusuario_permiso=u.idusuario
-				where (p.idorg=".$_SESSION['ido']." AND p.idsede=".$_SESSION['idsede']." AND pb.idusuario=".$_SESSION['idusuario'].") AND pb.fecha_cierre=''
+				where (p.idorg=".$g_ido." AND p.idsede=".$g_idsede." AND pb.idusuario=".$_SESSION['idusuario'].") AND pb.fecha_cierre=''
 				GROUP BY pb.hora
 			";
 			$bd->xConsulta($sql);
@@ -2285,7 +2289,7 @@
 					INNER JOIN pedido AS p using(idpedido)
 					INNER JOIN seccion AS s using(idseccion)
 					INNER JOIN registro_pago AS rp ON rp.idregistro_pago=pd.idregistro_pago
-				WHERE (p.idorg=".$_SESSION['ido']." AND p.idsede=".$_SESSION['idsede'].") AND (p.estado=2 AND pd.procede=0 AND p.cierre=0 AND rp.idusuario=".$_SESSION['idusuario'].")
+				WHERE (p.idorg=".$g_ido." AND p.idsede=".$g_idsede.") AND (p.estado=2 AND pd.procede=0 AND p.cierre=0 AND rp.idusuario=".$_SESSION['idusuario'].")
 				GROUP BY pd.idseccion
 				ORDER BY s.descripcion) a
 				UNION ALL
@@ -2295,7 +2299,7 @@
 					INNER JOIN pedido AS p using(idpedido)
 					INNER JOIN registro_pago AS rp ON rp.idregistro_pago=pd.idregistro_pago
 					INNER JOIN producto_familia AS pf ON pd.idseccion=pf.idproducto_familia
-				WHERE (p.idorg=".$_SESSION['ido']." AND p.idsede=".$_SESSION['idsede'].") and pd.procede>0 AND (p.estado=2 AND p.cierre=0 AND rp.idusuario=".$_SESSION['idusuario'].")
+				WHERE (p.idorg=".$g_ido." AND p.idsede=".$g_idsede.") and pd.procede>0 AND (p.estado=2 AND p.cierre=0 AND rp.idusuario=".$_SESSION['idusuario'].")
 				GROUP BY pd.procede
 				ORDER BY pf.descripcion ) b
 			";*/
@@ -2305,7 +2309,7 @@
 					INNER JOIN registro_pago AS rp ON rpp.idregistro_pago=rp.idregistro_pago
 					INNER JOIN pedido_detalle AS pd ON rpp.idpedido_detalle=pd.idpedido_detalle
 					INNER JOIN seccion AS s ON pd.idseccion=s.idseccion
-					WHERE (rp.idorg=".$_SESSION['ido']." AND rp.idsede=".$_SESSION['idsede'].") AND pd.procede_tabla!=0 AND rp.cierre=0 AND rp.idusuario=".$_SESSION['idusuario']."
+					WHERE (rp.idorg=".$g_ido." AND rp.idsede=".$g_idsede.") AND pd.procede_tabla!=0 AND rp.cierre=0 AND rp.idusuario=".$_SESSION['idusuario']."
 					GROUP BY pd.idseccion
 					ORDER BY sum(rpp.total) DESC) a
 					UNION all
@@ -2315,7 +2319,7 @@
 					INNER JOIN registro_pago AS rp ON rpp.idregistro_pago=rp.idregistro_pago
 					INNER JOIN pedido_detalle AS pd ON rpp.idpedido_detalle=pd.idpedido_detalle
 					INNER JOIN producto_familia AS pf ON pd.idseccion=pf.idproducto_familia
-					WHERE (rp.idorg=".$_SESSION['ido']." AND rp.idsede=".$_SESSION['idsede'].") AND pd.procede_tabla=0 AND rp.cierre=0 AND rp.idusuario=".$_SESSION['idusuario']."
+					WHERE (rp.idorg=".$g_ido." AND rp.idsede=".$g_idsede.") AND pd.procede_tabla=0 AND rp.cierre=0 AND rp.idusuario=".$_SESSION['idusuario']."
 					GROUP BY pd.idseccion
 					ORDER BY sum(rpp.total) DESC) b
 			";
@@ -2325,7 +2329,7 @@
 			$sql="
 				SELECT  fecha, IF(tipo=1,'INGRESO','SALIDA') AS des_tipo,tipo,motivo,monto
 					FROM ie_caja
-				WHERE (idorg=".$_SESSION['ido']." AND idsede=".$_SESSION['idsede'].") AND idusuario=".$_SESSION['idusuario']." AND cierre=0
+				WHERE (idorg=".$g_ido." AND idsede=".$g_idsede.") AND idusuario=".$_SESSION['idusuario']." AND cierre=0
 				ORDER BY idie_caja desc
 			";
 			$bd->xConsulta($sql);
@@ -2342,7 +2346,7 @@
 				SELECT p.idproducto as value, p.descripcion as label,p.precio_venta,p.precio,p.precio_unitario,pf.descripcion as familia, p.idproducto_familia,p.enlazar
 				FROM producto AS p
 					INNER JOIN producto_familia AS pf using(idproducto_familia)
-				WHERE (p.idorg=".$_SESSION['ido']." AND p.idsede=".$_SESSION['idsede'].") AND p.estado=0
+				WHERE (p.idorg=".$g_ido." AND p.idsede=".$g_idsede.") AND p.estado=0
 			";
 			$bd->xConsulta($sql);
 			break;
@@ -2352,14 +2356,14 @@
 				FROM producto AS p
 					INNER JOIN producto_familia AS pf using(idproducto_familia)
 					INNER JOIN almacen_items AS alm using(idproducto)
-				WHERE (p.idorg=".$_SESSION['ido']." AND p.idsede=".$_SESSION['idsede'].") AND (alm.idalmacen=".$_POST['i']." and alm.stock>0) AND p.estado=0
+				WHERE (p.idorg=".$g_ido." AND p.idsede=".$g_idsede.") AND (alm.idalmacen=".$_POST['i']." and alm.stock>0) AND p.estado=0
 			";*/
 			$sql="
 				SELECT ps.idproducto_stock ,p.idproducto as value, concat(pf.descripcion ,' | ',p.descripcion) as label, p.precio,p.precio_unitario,pf.descripcion as familia, p.idproducto_familia, ps.stock
 				FROM producto AS p
 					INNER JOIN producto_stock AS ps using(idproducto)
 					INNER JOIN producto_familia AS pf using(idproducto_familia)
-				WHERE (p.idorg=".$_SESSION['ido']." AND p.idsede=".$_SESSION['idsede'].") AND (ps.idalmacen=".$_POST['i'].") AND p.estado=0
+				WHERE (p.idorg=".$g_ido." AND p.idsede=".$g_idsede.") AND (ps.idalmacen=".$_POST['i'].") AND p.estado=0
 			";
 			$bd->xConsulta($sql);
 			break;
@@ -2370,7 +2374,7 @@
 					INNER JOIN producto_familia AS pf using(idproducto_familia)
 					INNER JOIN almacen_items AS alm using(idproducto)
 					INNER JOIN almacen AS al using (idalmacen)
-				WHERE (p.idorg=".$_SESSION['ido']." AND p.idsede=".$_SESSION['idsede'].") AND (alm.stock>0) AND p.estado=0
+				WHERE (p.idorg=".$g_ido." AND p.idsede=".$g_idsede.") AND (alm.stock>0) AND p.estado=0
 			";*/
 			$sql="
 				SELECT ps.idproducto_stock ,p.idproducto as value, concat(al.descripcion,' | ', pf.descripcion ,' | ',p.descripcion ) as label, p.precio,p.precio_unitario,pf.descripcion as familia, p.idproducto_familia, ps.stock,p.enlazar
@@ -2378,14 +2382,14 @@
 					INNER JOIN producto_stock AS ps using(idproducto)
 					INNER JOIN producto_familia AS pf using(idproducto_familia)
 					INNER JOIN almacen AS al using (idalmacen)
-				WHERE (p.idorg=".$_SESSION['ido']." AND p.idsede=".$_SESSION['idsede'].") AND ps.stock>0 AND p.estado=0
+				WHERE (p.idorg=".$g_ido." AND p.idsede=".$g_idsede.") AND ps.stock>0 AND p.estado=0
 			";
 			$bd->xConsulta($sql);
 			break;
 		case 16003://productos porcionados
 			$sql="
 				SELECT idporcion AS value, descripcion AS label FROM porcion
-				WHERE (idorg=".$_SESSION['ido']." AND idsede=".$_SESSION['idsede'].") AND estado=0
+				WHERE (idorg=".$g_ido." AND idsede=".$g_idsede.") AND estado=0
 			";
 			$bd->xConsulta($sql);
 			break;
@@ -2412,31 +2416,31 @@
 			$bd->xMultiConsulta($sql);
 			break;
 		case 1601://cargar familias
-			$sql="select idproducto_familia as value, descripcion as label from producto_familia where (idorg=".$_SESSION['ido']." AND idsede=".$_SESSION['idsede'].") and estado=0";
+			$sql="select idproducto_familia as value, descripcion as label from producto_familia where (idorg=".$g_ido." AND idsede=".$g_idsede.") and estado=0";
 			$bd->xConsulta($sql);
 			break;
 		case 1602://guardar familia
-			$sql="SELECT idproducto_familia AS d1 FROM producto_familia WHERE descripcion='".$_POST['f']."' and (idorg=".$_SESSION['ido']." AND idsede=".$_SESSION['idsede'].") AND estado=0";
+			$sql="SELECT idproducto_familia AS d1 FROM producto_familia WHERE descripcion='".$_POST['f']."' and (idorg=".$g_ido." AND idsede=".$g_idsede.") AND estado=0";
 			$xidFam=$bd->xDevolverUnDato($sql);
 			if($xidFam!=0){print $xidFam;}
 			else{
-				$sql="insert into producto_familia (idproducto_familia,idorg,idsede,descripcion) values (0,".$_SESSION['ido'].",".$_SESSION['idsede'].",'".$_POST['f']."')";
+				$sql="insert into producto_familia (idproducto_familia,idorg,idsede,descripcion) values (0,".$g_ido.",".$g_idsede.",'".$_POST['f']."')";
 				$bd->xConsulta_NoReturn($sql);
 				// print $bd->xConsulta_UltimoId($sql);
 
 				// idproducto_familia es char -> f1
-				$sql="SELECT idproducto_familia AS d1 FROM producto_familia WHERE descripcion='".$_POST['f']."' and (idorg=".$_SESSION['ido']." AND idsede=".$_SESSION['idsede'].") AND estado=0";
+				$sql="SELECT idproducto_familia AS d1 FROM producto_familia WHERE descripcion='".$_POST['f']."' and (idorg=".$g_ido." AND idsede=".$g_idsede.") AND estado=0";
 				$xidFam=$bd->xDevolverUnDato($sql);
 
 				print $xidFam;
 			}
 			break;
 		case 1603://load sel proveedores
-			$sql="select idproveedor as value, descripcion as label, direccion, dni from proveedor where (idorg=".$_SESSION['ido']." AND idsede=".$_SESSION['idsede'].") AND estado=0";
+			$sql="select idproveedor as value, descripcion as label, direccion, dni from proveedor where (idorg=".$g_ido." AND idsede=".$g_idsede.") AND estado=0";
 			$bd->xConsulta($sql);
 			break;
 		case 1604://load almacenes
-			$sql="select * from almacen where (idorg=".$_SESSION['ido']." AND idsede=".$_SESSION['idsede'].") AND estado=0";
+			$sql="select * from almacen where (idorg=".$g_ido." AND idsede=".$g_idsede.") AND estado=0";
 			$bd->xConsulta($sql);
 			break;
 		case 1605://guardar cambios en config almacen segun chek
@@ -2453,7 +2457,7 @@
 			from tipo_comprobante_serie tpcs
 				inner join tipo_comprobante tp using(idtipo_comprobante)
 				inner join sede s on s.idsede = tpcs.idsede
-			where (tpcs.idorg=".$_SESSION['ido'].") and tpcs.estado=0
+			where (tpcs.idorg=".$g_ido.") and tpcs.estado=0
 			";
 			$bd->xConsulta($sql);
 			break;
@@ -2463,7 +2467,7 @@
 				FROM item as i
 					left JOIN carta_lista AS cl using(iditem)
 					left JOIN seccion AS s using(idseccion)
-				WHERE (i.idorg=".$_SESSION['ido']." AND i.idsede=".$_SESSION['idsede'].") and i.estado=0
+				WHERE (i.idorg=".$g_ido." AND i.idsede=".$g_idsede.") and i.estado=0
 				ORDER BY IFNULL(s.descripcion,'----'),i.descripcion
 			";
 			$bd->xConsulta($sql);
@@ -2472,8 +2476,8 @@
 			$sql="
 			SELECT p.idporcion AS value, p.descripcion AS label, ifnull(format(pr.precio_unitario*p.peso,2),0) AS precio_unitario
 			FROM porcion AS p
-				left join (SELECT p1.idproducto, p1.precio_unitario FROM producto AS p1 WHERE p1.estado=0 AND (p1.idorg=".$_SESSION['ido']." AND p1.idsede=".$_SESSION['idsede'].")) AS pr ON pr.idproducto=p.idproducto_de
-			WHERE (p.idorg=".$_SESSION['ido']." AND p.idsede=".$_SESSION['idsede'].") and  p.estado=0
+				left join (SELECT p1.idproducto, p1.precio_unitario FROM producto AS p1 WHERE p1.estado=0 AND (p1.idorg=".$g_ido." AND p1.idsede=".$g_idsede.")) AS pr ON pr.idproducto=p.idproducto_de
+			WHERE (p.idorg=".$g_ido." AND p.idsede=".$g_idsede.") and  p.estado=0
 			ORDER BY descripcion
 			";
 			$bd->xConsulta($sql);
@@ -2490,7 +2494,7 @@
 					INNER JOIN producto AS p using(idproducto)
 					INNER JOIN almacen AS a using(idalmacen)
 					INNER JOIN producto_familia AS pf using(idproducto_familia)
-				WHERE (p.idorg=".$_SESSION['ido']." AND p.idsede=".$_SESSION['idsede'].") AND p.estado=0 AND alm.estado=0
+				WHERE (p.idorg=".$g_ido." AND p.idsede=".$g_idsede.") AND p.estado=0 AND alm.estado=0
 				GROUP BY alm.idalmacen, alm.idproducto
 				ORDER BY a.descripcion, p.descripcion
 			";*/
@@ -2500,7 +2504,7 @@
 					INNER JOIN producto_stock AS ps using(idproducto)
 					INNER JOIN almacen AS a using(idalmacen)
 					INNER JOIN producto_familia AS pf using(idproducto_familia)
-				WHERE (p.idorg=".$_SESSION['ido']." AND p.idsede=".$_SESSION['idsede'].") AND p.estado=0 AND ps.estado=0
+				WHERE (p.idorg=".$g_ido." AND p.idsede=".$g_idsede.") AND p.estado=0 AND ps.estado=0
 				GROUP BY ps.idalmacen, ps.idproducto
 				ORDER BY a.descripcion, p.descripcion
 			";
@@ -2536,7 +2540,7 @@
 				SELECT por.idporcion, ifnull(pf.descripcion,'no definido') as familia, por.descripcion as porcion, por.stock FROM porcion AS por
 					left JOIN producto AS p ON p.idproducto=por.idproducto_de
 					left JOIN producto_familia AS pf using(idproducto_familia)
-				WHERE (por.idorg=".$_SESSION['ido']." AND por.idsede=".$_SESSION['idsede'].") AND por.estado=0
+				WHERE (por.idorg=".$g_ido." AND por.idsede=".$g_idsede.") AND por.estado=0
 				ORDER BY pf.descripcion, por.descripcion
 			";
 			$bd->xConsulta($sql);
@@ -2547,7 +2551,7 @@
 			break;
 		case 1805://porciones mas productos para E/S almacen // entrada
 			/*$sql="
-				SELECT * FROM(SELECT p.idporcion AS value, concat('PORCION ',' | ', p.descripcion) AS label, '1' as procede FROM porcion AS p WHERE (p.idorg=".$_SESSION['ido']." AND p.idsede=".$_SESSION['idsede'].") and p.estado=0 ORDER BY p.descripcion) b
+				SELECT * FROM(SELECT p.idporcion AS value, concat('PORCION ',' | ', p.descripcion) AS label, '1' as procede FROM porcion AS p WHERE (p.idorg=".$g_ido." AND p.idsede=".$g_idsede.") and p.estado=0 ORDER BY p.descripcion) b
 				UNION ALL
 				SELECT * FROM(
 				SELECT alm.idproducto AS value, concat(pf.descripcion,' | ',p.descripcion) AS label, '0' as procede
@@ -2555,13 +2559,13 @@
 									INNER JOIN producto AS p using(idproducto)
 									INNER JOIN almacen AS a using(idalmacen)
 									INNER JOIN producto_familia AS pf using(idproducto_familia)
-								WHERE (p.idorg=".$_SESSION['ido']." AND p.idsede=".$_SESSION['idsede'].") AND p.estado=0 AND alm.estado=0
+								WHERE (p.idorg=".$g_ido." AND p.idsede=".$g_idsede.") AND p.estado=0 AND alm.estado=0
 								GROUP BY alm.idproducto
 								ORDER BY p.idproducto_familia, p.descripcion
 				) a
 			";*/
 			$sql="
-				SELECT * FROM(SELECT p.idporcion AS value, concat('PORCION ',' | ', p.descripcion) AS label, '1' as procede FROM porcion AS p WHERE (p.idorg=".$_SESSION['ido']." AND p.idsede=".$_SESSION['idsede'].") and p.estado=0 ORDER BY p.descripcion) b
+				SELECT * FROM(SELECT p.idporcion AS value, concat('PORCION ',' | ', p.descripcion) AS label, '1' as procede FROM porcion AS p WHERE (p.idorg=".$g_ido." AND p.idsede=".$g_idsede.") and p.estado=0 ORDER BY p.descripcion) b
 				UNION ALL
 				SELECT * FROM(
 				SELECT p.idproducto AS value, concat(pf.descripcion,' | ',p.descripcion) AS label, '0' as procede
@@ -2569,7 +2573,7 @@
 									INNER JOIN producto_stock AS ps using(idproducto)
 									INNER JOIN almacen AS a using(idalmacen)
 									INNER JOIN producto_familia AS pf using(idproducto_familia)
-								WHERE (p.idorg=".$_SESSION['ido']." AND p.idsede=".$_SESSION['idsede'].") AND p.estado=0 AND ps.estado=0
+								WHERE (p.idorg=".$g_ido." AND p.idsede=".$g_idsede.") AND p.estado=0 AND ps.estado=0
 								GROUP BY ps.idproducto
 								ORDER BY p.idproducto_familia, p.descripcion
 				) a
@@ -2608,7 +2612,7 @@
 			}
 
 			//guardar en almacen_ie
-			$sql_ai='insert into almacen_ie (idorg,idsede,idusuario,idalmacen,tipo,fecha,idproducto_motivo_es,motivo) values ('.$_SESSION['ido'].','.$_SESSION['idsede'].','.$_SESSION['idusuario'].','.$idalmacen.','.$tipo.',DATE_FORMAT(now(),"%d/%m/%Y"),'.$idmotivo.',"'.$motivo.'")';
+			$sql_ai='insert into almacen_ie (idorg,idsede,idusuario,idalmacen,tipo,fecha,idproducto_motivo_es,motivo) values ('.$g_ido.','.$g_idsede.','.$_SESSION['idusuario'].','.$idalmacen.','.$tipo.',"'.$fecha_now.'",'.$idmotivo.',"'.$motivo.'")';
 			$xIdUltimoIE=$bd->xConsulta_UltimoId($sql_ai);
 
 			/*if($sql_ai_producto!=''){
@@ -2640,10 +2644,10 @@
 			// 			SELECT pd1.iditem,sum(pd1.cantidad) AS cant_vendido
 			// 			FROM pedido AS p1
 			// 				INNER JOIN pedido_detalle AS pd1 using(idpedido)
-			// 			WHERE (p1.idorg=".$_SESSION['ido']." AND p1.idsede=".$_SESSION['idsede'].") AND p1.cierre=0 AND pd1.estado=0
+			// 			WHERE (p1.idorg=".$g_ido." AND p1.idsede=".$g_idsede.") AND p1.cierre=0 AND pd1.estado=0
 			// 			GROUP BY pd1.iditem
 			// 			) AS pd_v ON cl.iditem=pd_v.iditem
-			// 	WHERE c.idorg=".$_SESSION['ido']." AND c.idsede=".$_SESSION['idsede']." and c.idcategoria=".$_POST['idcategoria']."
+			// 	WHERE c.idorg=".$g_ido." AND c.idsede=".$g_idsede." and c.idcategoria=".$_POST['idcategoria']."
 			// 	ORDER BY s.sec_orden,s.descripcion,i.descripcion
 			// ";
 			$idCategoria = $_POST['idcategoria'];
@@ -2671,7 +2675,7 @@
 		case 1902://pedidos por hora // en el intervalo de 60min
 			$sql="
 				SELECT count(*) AS cantidad  FROM pedido
-				WHERE (idorg=".$_SESSION['ido']." AND idsede=".$_SESSION['idsede'].") AND fecha_hora >= NOW() - INTERVAL 45 MINUTE and estado!=3
+				WHERE (idorg=".$g_ido." AND idsede=".$g_idsede.") AND fecha_hora >= NOW() - INTERVAL 45 MINUTE and estado!=3
 			";
 			$bd->xConsulta($sql);
 			break;
@@ -2680,7 +2684,7 @@
 				SELECT count(*) AS cantidad, u.nombres
 				FROM pedido AS p
 					INNER JOIN usuario AS u using (idusuario)
-				WHERE (p.idorg=".$_SESSION['ido']." AND p.idsede=".$_SESSION['idsede'].") AND p.cierre=0 AND p.estado!=3
+				WHERE (p.idorg=".$g_ido." AND p.idsede=".$g_idsede.") AND p.cierre=0 AND p.estado!=3
 				GROUP BY p.idusuario
 				ORDER BY cantidad desc
 				";
@@ -2696,7 +2700,7 @@
 					INNER JOIN registro_pago AS rp using(idregistro_pago)
 					LEFT JOIN cliente AS c using(idcliente)
 					INNER JOIN pedido AS p using(idpedido)
-				WHERE (rp.idorg=".$_SESSION['ido']." AND rp.idsede=".$_SESSION['idsede'].") AND ".$condicion."
+				WHERE (rp.idorg=".$g_ido." AND rp.idsede=".$g_idsede.") AND ".$condicion."
 				GROUP BY rpp.idregistro_pago
 				ORDER BY rp.idregistro_pago desc
 			";*/
@@ -2705,7 +2709,7 @@
 			// FROM registro_pago_pedido AS rpp
 			// INNER JOIN registro_pago AS rp ON rpp.idregistro_pago=rp.idregistro_pago
 			// INNER JOIN pedido AS p ON rpp.idpedido=p.idpedido
-			// WHERE (rp.idorg=".$_SESSION['ido']." AND rp.idsede=".$_SESSION['idsede'].") AND ".$condicion."
+			// WHERE (rp.idorg=".$g_ido." AND rp.idsede=".$g_idsede.") AND ".$condicion."
 			// GROUP BY rpp.idregistro_pago
 			// ORDER BY rp.idregistro_pago desc
 			// ";
@@ -2721,7 +2725,7 @@
 						LEFT join cliente as c on c.idcliente = rp.idcliente
 						INNER join tipo_comprobante_serie as tpcs on tpcs.idtipo_comprobante_serie = rp.idtipo_comprobante_serie
 						INNER JOIN tipo_comprobante as tp on tp.idtipo_comprobante = tpcs.idtipo_comprobante
-			WHERE (rp.idorg=".$_SESSION['ido']." AND rp.idsede=".$_SESSION['idsede'].") AND ".$condicion."
+			WHERE (rp.idorg=".$g_ido." AND rp.idsede=".$g_idsede.") AND ".$condicion."
 			GROUP BY rpp.idregistro_pago
 			ORDER BY rp.idregistro_pago desc
 			";
@@ -2736,12 +2740,12 @@
 			$sql = "
 				select idregistro_pago, SUBSTRING_INDEX(fecha,' ',-1) AS hora, total, estado, cierre, idce
 				from registro_pago
-				where (idorg=".$_SESSION['ido']." and idsede=".$_SESSION['idsede'].") ".$filtroFecha."
+				where (idorg=".$g_ido." and idsede=".$g_idsede.") ".$filtroFecha."
 				order by idregistro_pago desc limit ".$pagination['pageLimit']." OFFSET ".$pagination['pageDesde'];				
 			
 			$sqlCount="
                 SELECT count(c.idregistro_pago) as d1 from registro_pago as c                    
-                where (c.idorg=".$_SESSION['ido']." and c.idsede=".$_SESSION['idsede'].")".$filtroFechaCount;            
+                where (c.idorg=".$g_ido." and c.idsede=".$g_idsede.")".$filtroFechaCount;            
             
 			$rowCount = $bd->xDevolverUnDato($sqlCount);
 			// echo $sql;
@@ -2769,13 +2773,13 @@
 			break;
 		case 2001://resumen total historial de venta x dia
 			$f_historial=$_POST['f'];
-			if($f_historial==''){$f_historial='curdate()';}else{$f_historial="STR_TO_DATE('".$f_historial."', '%d/%m/%Y')";}
+			if($f_historial==''){$f_historial="'".$fecha_now."'";}else{$f_historial="STR_TO_DATE('".$f_historial."', '%d/%m/%Y')";}
 			$sql="
 				SELECT tp.descripcion, format(sum(rpd.importe),2)  AS total
 				FROM registro_pago AS rp
 					INNER JOIN registro_pago_detalle AS rpd using(idregistro_pago)
 					INNER JOIN tipo_pago AS tp using(idtipo_pago)
-				WHERE (rp.idorg=".$_SESSION['ido']." AND rp.idsede=".$_SESSION['idsede'].") AND rp.estado=0 AND STR_TO_DATE(rp.fecha, '%d/%m/%Y')=".$f_historial."
+				WHERE (rp.idorg=".$g_ido." AND rp.idsede=".$g_idsede.") AND rp.estado=0 AND STR_TO_DATE(rp.fecha, '%d/%m/%Y')=".$f_historial."
 				GROUP BY tp.idtipo_pago
 			";
 			$bd->xConsulta($sql);
@@ -2816,7 +2820,7 @@
 						INNER JOIN tipo_consumo AS tp ON tp.idtipo_consumo=pd.idtipo_consumo
 						INNER JOIN carta_lista AS cl using(idcarta_lista)
 						LEFT JOIN (SELECT iditem, GROUP_CONCAT(idporcion) AS idporcion,GROUP_CONCAT(cantidad) AS cant_porcion FROM item_ingrediente WHERE idporcion!=0 GROUP BY iditem) AS ii ON pd.iditem=ii.iditem
-					WHERE pd.idregistro_pago=".$_POST['i']." and (p.idorg=".$_SESSION['ido']." and p.idsede=".$_SESSION['idsede'].") AND pd.estado=0
+					WHERE pd.idregistro_pago=".$_POST['i']." and (p.idorg=".$g_ido." and p.idsede=".$g_idsede.") AND pd.estado=0
 					ORDER BY pd.idtipo_consumo,s.sec_orden, pd.descripcion
 				) a
 				UNION all
@@ -2825,8 +2829,8 @@
 					FROM pedido AS p
 						INNER JOIN pedido_detalle AS pd using(idpedido)
 						INNER JOIN tipo_consumo AS tp ON tp.idtipo_consumo=pd.idtipo_consumo
-						JOIN (SELECT idproducto_familia,descripcion FROM producto_familia WHERE idorg=".$_SESSION['ido']." AND idsede=".$_SESSION['idsede'].") AS pf ON pd.idseccion=pf.idproducto_familia
-					WHERE pd.idregistro_pago=".$_POST['i']." and (p.idorg=".$_SESSION['ido']." and p.idsede=".$_SESSION['idsede'].") AND pd.procede_tabla=0 AND pd.estado=0
+						JOIN (SELECT idproducto_familia,descripcion FROM producto_familia WHERE idorg=".$g_ido." AND idsede=".$g_idsede.") AS pf ON pd.idseccion=pf.idproducto_familia
+					WHERE pd.idregistro_pago=".$_POST['i']." and (p.idorg=".$g_ido." and p.idsede=".$g_idsede.") AND pd.procede_tabla=0 AND pd.estado=0
 					ORDER BY pd.idtipo_consumo,pd.idseccion, pd.descripcion) b
 			";*/
 			$sql="
@@ -2872,7 +2876,7 @@
 			SELECT i.descripcion, group_concat(s.idseccion) AS idseccion,i.idimpresora,i.minutos_pedido
 			 FROM impresora i
 			 INNER JOIN seccion s using(idimpresora)
-			WHERE (i.idorg=".$_SESSION['ido']." AND i.idsede=".$_SESSION['idsede'].") and i.estado=0
+			WHERE (i.idorg=".$g_ido." AND i.idsede=".$g_idsede.") and i.estado=0
 			GROUP BY i.idimpresora
 			";
 			$bd->xConsulta($sql);
@@ -2902,7 +2906,7 @@
 			// 							INNER JOIN pedido_detalle AS pd using(idpedido)
 			// 							INNER JOIN seccion AS s using(idseccion)
 			// 							INNER JOIN tipo_consumo AS tp ON pd.idtipo_consumo=tp.idtipo_consumo
-			// 						WHERE (p.idorg=".$_SESSION['ido']." AND p.idsede=".$_SESSION['idsede']." and p.cierre=0) ".$condicion." AND (pd.procede_tabla!=0 AND pd.despachado=0 AND p.despachado=0) and ((pd.idtipo_consumo in (".$arr_filtro['tipo_consumo'].") and s.idimpresora in (".$arr_filtro['idseccion'].")))
+			// 						WHERE (p.idorg=".$g_ido." AND p.idsede=".$g_idsede." and p.cierre=0) ".$condicion." AND (pd.procede_tabla!=0 AND pd.despachado=0 AND p.despachado=0) and ((pd.idtipo_consumo in (".$arr_filtro['tipo_consumo'].") and s.idimpresora in (".$arr_filtro['idseccion'].")))
 			// 						ORDER BY p.idpedido,s.sec_orden,pd.descripcion
 			// 	)a
 			// 	UNION all
@@ -2915,7 +2919,7 @@
 			// 			INNER JOIN pedido_detalle AS pd using(idpedido)
 			// 			INNER JOIN tipo_consumo AS tp ON tp.idtipo_consumo=pd.idtipo_consumo
 			// 			JOIN (SELECT idproducto_familia,descripcion,idimpresora FROM producto_familia WHERE idorg=1 AND idsede=1) AS pf ON pd.idseccion=pf.idproducto_familia
-			// 		WHERE (p.idorg=".$_SESSION['ido']." AND p.idsede=".$_SESSION['idsede']." and p.cierre=0) ".$condicion." AND (pd.procede_tabla=0 AND pd.despachado=0 AND p.despachado=0) and ((pd.idtipo_consumo in (".$arr_filtro['tipo_consumo'].") and pf.idimpresora in (".$arr_filtro['idseccion'].")))
+			// 		WHERE (p.idorg=".$g_ido." AND p.idsede=".$g_idsede." and p.cierre=0) ".$condicion." AND (pd.procede_tabla=0 AND pd.despachado=0 AND p.despachado=0) and ((pd.idtipo_consumo in (".$arr_filtro['tipo_consumo'].") and pf.idimpresora in (".$arr_filtro['idseccion'].")))
 			// 		ORDER BY p.idpedido,pf.idproducto_familia ,pd.descripcion
 			// 	) b
 			// ";
@@ -2951,7 +2955,7 @@
 				SELECT p.idpedido,p.correlativo_dia,p.numpedido,p.nummesa,p.total,IF(p.referencia='','-',p.referencia) AS referencia,pd.despachado_tiempo FROM pedido AS p
 					INNER JOIN pedido_detalle AS pd using(idpedido)
 					INNER JOIN seccion AS s using(idseccion)
-				WHERE (p.idorg=".$_SESSION['ido']." AND p.idsede=".$_SESSION['idsede'].") AND p.cierre=0 AND pd.despachado=1 AND s.idimpresora IN (".$_POST['idzona'].")
+				WHERE (p.idorg=".$g_ido." AND p.idsede=".$g_idsede.") AND p.cierre=0 AND pd.despachado=1 AND s.idimpresora IN (".$_POST['idzona'].")
 				GROUP BY p.idpedido
 				ORDER BY p.fecha desc, TIME_FORMAT(pd.despachado_hora, '%H:%i:%s') desc
 			";
@@ -2968,7 +2972,7 @@
 										INNER JOIN pedido_detalle AS pd using(idpedido)
 										INNER JOIN seccion AS s using(idseccion)
 										INNER JOIN tipo_consumo AS tp ON pd.idtipo_consumo=tp.idtipo_consumo
-									WHERE (p.idorg=".$_SESSION['ido']." AND p.idsede=".$_SESSION['idsede'].") and p.idpedido=".$_POST['id']." AND pd.procede_tabla!=0 AND pd.despachado=1
+									WHERE (p.idorg=".$g_ido." AND p.idsede=".$g_idsede.") and p.idpedido=".$_POST['id']." AND pd.procede_tabla!=0 AND pd.despachado=1
 									ORDER BY p.idpedido,s.sec_orden,pd.descripcion
 				)a
 				UNION all
@@ -2981,14 +2985,14 @@
 						INNER JOIN pedido_detalle AS pd using(idpedido)
 						INNER JOIN tipo_consumo AS tp ON tp.idtipo_consumo=pd.idtipo_consumo
 						JOIN (SELECT idproducto_familia,descripcion,idimpresora FROM producto_familia WHERE idorg=1 AND idsede=1) AS pf ON pd.idseccion=pf.idproducto_familia
-					WHERE (p.idorg=".$_SESSION['ido']." AND p.idsede=".$_SESSION['idsede'].") and p.idpedido=".$_POST['id']." AND pd.procede_tabla=0 AND pd.despachado=1
+					WHERE (p.idorg=".$g_ido." AND p.idsede=".$g_idsede.") and p.idpedido=".$_POST['id']." AND pd.procede_tabla=0 AND pd.despachado=1
 					ORDER BY p.idpedido,pf.idproducto_familia ,pd.descripcion
 				) b
 			";
 			$bd->xConsulta($sql);
 			break;
 		case 2105://enviar reserva a despachaho
-			$sql="update pedido set reserva=0, hora=TIME_FORMAT(now(), '%H:%i:%s') where idpedido=".$_POST['i'];
+			$sql="update pedido set reserva=0, hora='".$hora_now."' where idpedido=".$_POST['i'];
 			$bd->xConsulta($sql);
 			break;
 		case 2106:
@@ -3004,7 +3008,7 @@
 			$bd->xConsulta($sql);
 			break;	
 		case 2109:// despachar todos los pedidos
-			$sql="update pedido set despachado=1 where (idorg=".$_SESSION['ido']." and idsede=".$_SESSION['idsede'].") and despachado=0";
+			$sql="update pedido set despachado=1 where (idorg=".$g_ido." and idsede=".$g_idsede.") and despachado=0";
 			$bd->xConsulta($sql);
 			break;
 		case 2200: //recuperar stock pedidos borrados	
@@ -3013,7 +3017,7 @@
 				inner join usuario as u using(idusuario)
 				inner join pedido as p using(idpedido)
 				left join item as i on pb.iditem = i.iditem
-			where (p.idorg=".$_SESSION['ido']." and p.idsede=".$_SESSION['idsede'].") and pb.estado=0 and pb.fecha_cierre=''
+			where (p.idorg=".$g_ido." and p.idsede=".$g_idsede.") and pb.estado=0 and pb.fecha_cierre=''
 			order by pb.idpedido_borrados desc		
 			";
 			$bd->xConsulta($sql);
@@ -3092,18 +3096,20 @@ function encode_dataUS(){
 function xDtUS($op_us){
 	$bd=new xManejoBD("restobar");
 	$sql_us='';
+	$g_ido=$_SESSION['ido'];
+	$g_idsede=$_SESSION['idsede'];
 	switch ($op_us) {
 		case 3://3: //amar array con tipo de consumo // amar estructura, para pedido ::app3_sys_dta_pe // ::app3_sys_dta_tct //::app3_sys_dta_tct_estructura
-			$sql_us="SELECT * FROM tipo_consumo WHERE (idorg=".$_SESSION['ido']." AND idsede=".$_SESSION['idsede'].") AND estado=0";
+			$sql_us="SELECT * FROM tipo_consumo WHERE (idorg=".$g_ido." AND idsede=".$g_idsede.") AND estado=0";
 			break;
 		case 301://cargar imprimir otros ::app3_woIpPrintO
-			$sql_us="SELECT * FROM conf_print_otros WHERE (idorg=".$_SESSION['ido']." AND idsede=".$_SESSION['idsede'].") and estado=0";
+			$sql_us="SELECT * FROM conf_print_otros WHERE (idorg=".$g_ido." AND idsede=".$g_idsede.") and estado=0";
 			break;
 		case 3011://cargar impresoras ::app3_woIpPrint
-			$sql_us="SELECT * FROM impresora WHERE (idorg=".$_SESSION['ido']." AND idsede=".$_SESSION['idsede'].") and estado=0";
+			$sql_us="SELECT * FROM impresora WHERE (idorg=".$g_ido." AND idsede=".$g_idsede.") and estado=0";
 			break;
 		case 302://302: //load categoria ::app3_sys_dt_mlc
-			$sql_us="SELECT * FROM categoria WHERE (idorg=".$_SESSION['ido']." AND idsede=".$_SESSION['idsede'].") AND estado=0";
+			$sql_us="SELECT * FROM categoria WHERE (idorg=".$g_ido." AND idsede=".$g_idsede.") AND estado=0";
 			break;
 		case 307://load datos print //encabezado, logo slogan agradecimiento//307://load datos print //encabezado, logo slogan agradecimiento ::app3_sys_dta_prt
 			// $sql_us="
@@ -3112,23 +3118,23 @@ function xDtUS($op_us){
 			// 	LEFT JOIN (select idconf_print,descripcion,porcentaje from conf_print_detalle where estado=0) as cp_d ON cp.idconf_print=cp_d.idconf_print
 			//         LEFT JOIN (select idconf_print,idtipo_consumo,group_concat(idseccion) as idseccion,descripcion,importe from conf_print_adicionales where estado=0 group by idconf_print,descripcion,idtipo_consumo,importe)  as cp_a ON cp.idconf_print=cp_a.idconf_print
 			// 	LEFT JOIN sede AS s ON s.idorg=cp.idorg AND s.idsede=cp.idsede
-			// WHERE (cp.idorg=".$_SESSION['ido']." AND cp.idsede=".$_SESSION['idsede'].")"; s.logo64
+			// WHERE (cp.idorg=".$g_ido." AND cp.idsede=".$g_idsede.")"; s.logo64
 			$sql_us="
 			SELECT cp.var_size_font_tall_comanda, cp.ip_print, cp.num_copias, cp.pie_pagina, cp.pie_pagina_comprobante, cp.logo, '' as logo64, s.nombre AS des_sede, s.eslogan, s.mesas, s.ciudad
 			FROM conf_print AS cp
             	INNER JOIN sede AS s ON cp.idsede = s.idsede
-			WHERE (cp.idorg=".$_SESSION['ido']." AND cp.idsede=".$_SESSION['idsede'].")";
+			WHERE (cp.idorg=".$g_ido." AND cp.idsede=".$g_idsede.")";
 
 			break;
 		case 306://306://reglas de la carta ::app3_sys_dta_rec
 			$sql_us="
 			SELECT idregla_carta, idseccion, idseccion_detalle
 			FROM regla_carta
-			WHERE (idorg=".$_SESSION['ido']." AND idsede=".$_SESSION['idsede'].") AND (estado=0)
+			WHERE (idorg=".$g_ido." AND idsede=".$g_idsede.") AND (estado=0)
 			";
 			break;
 		case 308://308://otros datos de la sede // maximo_pedidos_x_hora  tiempo maximo en servir pedido por minutos ::app3_sys_dta_other
-			$sql_us="select maximo_pedidos_x_hora from sede where idorg=".$_SESSION['ido']." and idsede=".$_SESSION['idsede'];
+			$sql_us="select maximo_pedidos_x_hora from sede where idorg=".$g_ido." and idsede=".$g_idsede;
 			break;
 		case 309:
 			$sql_us="select * from us_home_opciones where estado=0 order by idgrupo";
@@ -3139,13 +3145,13 @@ function xDtUS($op_us){
 				SELECT 'p' as tipo, cpd.idconf_print_detalle as id, cpd.es_impuesto, cpd.descripcion, cpd.porcentaje as monto, 0 as idtipo_consumo, 0 as idseccion, 0 as nivel, cpd.activo
 				FROM conf_print_detalle cpd 
 					INNER JOIN conf_print as c on cpd.idconf_print=c.idconf_print
-				where c.idorg=".$_SESSION['ido']." and c.idsede=".$_SESSION['idsede']." and cpd.estado=0) a 
+				where c.idorg=".$g_ido." and c.idsede=".$g_idsede." and cpd.estado=0) a 
 				UNION ALL
 				SELECT * FROM(
 				SELECT 'a' as tipo, cpa.idconf_print_adicionales as id, 0 as es_impuesto, cpa.descripcion, cpa.importe as monto, cpa.idtipo_consumo, cpa.idseccion, cpa.nivel, 0 as activo
 				FROM conf_print_adicionales as cpa
 					INNER JOIN conf_print as c on cpa.idconf_print=c.idconf_print
-				where  c.idorg=".$_SESSION['ido']." and c.idsede=".$_SESSION['idsede']." and cpa.estado=0 ) b
+				where  c.idorg=".$g_ido." and c.idsede=".$g_idsede." and cpa.estado=0 ) b
 			";
 			break;
 		case 3012: // load datos del org sede 
@@ -3153,10 +3159,10 @@ function xDtUS($op_us){
 							,se.sys_local, se.ip_server_local
 					from org as s 
 					inner JOIN sede as se on s.idorg = se.idorg 
-					where se.idorg = ".$_SESSION['ido']." and se.idsede = ".$_SESSION['idsede'];
+					where se.idorg = ".$g_ido." and se.idsede = ".$g_idsede;
 			break;
 		case 3013: // load datos del org sede 
-			$sql_us = "SELECT * from sede where idorg = ".$_SESSION['ido']." and estado=0";
+			$sql_us = "SELECT * from sede where idorg = ".$g_ido." and estado=0";
 			break;
 		case 3014: // load sys const
 			$sql_us = "SELECT * FROM sys_const where estado=0";

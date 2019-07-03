@@ -9,14 +9,21 @@
 
 	date_default_timezone_set('America/Lima');
 
-	$op = $_GET['op'];	
+	$op = $_GET['op'];
+	
+	$g_ido = $_SESSION['ido'];
+	$g_idsede = $_SESSION['idsede'];
+	$g_us = $_SESSION['idusuario'];
+	$fecha_now = date("d/m/Y");
+	$hora_now = date("H:i:s");
+
     switch ($op) {
 		case '1': //registrar impresion
 			$detalle_json = $_POST['datos'];
 			$idprint_server_estructura = $_POST['idprint_server_estructura'];
 			$tipo = $_POST['tipo'];
 			$sql="INSERT INTO print_server_detalle (idorg, idsede, idusuario, idprint_server_estructura, descripcion_doc, fecha, hora, detalle_json) 
-											values (".$_SESSION['ido'].",".$_SESSION['idsede'].",".$_SESSION['idusuario'].",".$idprint_server_estructura.", '".$tipo."', DATE_FORMAT(now(),'%d/%m/%Y'), DATE_FORMAT(now(),'%H:%i:%s'),'".$detalle_json."')";
+											values (".$g_ido.",".$g_idsede.",".$g_us.",".$idprint_server_estructura.", '".$tipo."','".$fecha_now."','".$hora_now."','".$detalle_json."')";
 			
 			// echo $sql;
 			$ultimoID = $bd->xConsulta_UltimoId($sql);
@@ -36,7 +43,7 @@
 						FROM print_server_detalle as psd
 							INNER JOIN print_server_estructura as pse on pse.idprint_server_estructura = psd.idprint_server_estructura
 							INNER JOIN usuario as u on u.idusuario = psd.idusuario
-					WHERE (psd.idorg=".$_SESSION['ido']." and psd.idsede=".$_SESSION['idsede']." and psd.impreso=0) ".$UltimoId." ORDER BY psd.idprint_server_detalle DESC";
+					WHERE (psd.idorg=".$g_ido." and psd.idsede=".$g_idsede." and psd.impreso=0) ".$UltimoId." ORDER BY psd.idprint_server_detalle DESC";
 			$bd->xConsulta($sql);
 			break;
 		case '201': //verificar si hay nuevos registros
@@ -44,7 +51,7 @@
 			if ( $UltimoId!='' ) { $UltimoId=' and idprint_server_detalle > '.$UltimoId.' '; }
 
 			$sql="SELECT MAX(idprint_server_detalle) FROM print_server_detalle
-						where (idorg=".$_SESSION['ido']." and idsede=".$_SESSION['idsede']." and impreso=0)".$UltimoId;
+						where (idorg=".$g_ido." and idsede=".$g_idsede." and impreso=0)".$UltimoId;
 			
 			$numero_pedidos_actual=$bd->xDevolverUnDato($sql);
 			echo "retry: 2000\n"."data:".$numero_pedidos_actual."\n\n";
@@ -60,7 +67,7 @@
 			$bd->xConsulta($sql);			
 			break;
 		case '5':// logo bits
-			$sql = "SELECT logo64 FROM sede where idsede=".$_SESSION['idsede'];
+			$sql = "SELECT logo64 FROM sede where idsede=".$g_idsede;
 			$logo = $bd->xDevolverUnDato($sql);	
 			echo $logo;
 			break;
