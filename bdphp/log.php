@@ -1111,7 +1111,7 @@
 		case 302: //load categoria
 			// $sql="SELECT * FROM categoria WHERE (idorg=".$g_ido." AND idsede=".$g_idsede.") AND estado=0";
 			$time_now = date("H:i:s");
-			$sql = "SELECT * FROM categoria WHERE (idorg=".$g_ido." AND idsede=".$g_idsede.") AND estado=0 and (time(".$time_now.") BETWEEN time(if(hora_ini='',".$time_now.",hora_ini)) and time(if(hora_fin = '',".$time_now.", hora_fin)))";
+			$sql = "SELECT * FROM categoria WHERE (idorg=".$g_ido." AND idsede=".$g_idsede.") AND estado=0 and (time('".$time_now."') BETWEEN time(if(hora_ini='','".$time_now."',hora_ini)) and time(if(hora_fin = '','".$time_now."', hora_fin)))";
 			$bd->xConsulta($sql);
 			break;
 		case 303: //load item carta, mi pedido
