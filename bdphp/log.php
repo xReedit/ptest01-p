@@ -4,8 +4,8 @@
 	// session_regenerate_id(true); 
 	session_start();	
 	//header("Cache-Control: no-cache,no-store");
-	// header('content-type: text/html; charset: utf-8');
-	// header('Content-Type: text/event-stream');
+	header('content-type: text/html; charset: utf-8');
+	header('Content-Type: text/event-stream');
 	header('Cache-Control: no-cache');
 	include "ManejoBD.php";
 	include "token.php";
@@ -241,7 +241,8 @@
 										$_SESSION['rol']=$obj["us"]->rol;
 										$_SESSION['ciudad']=$obj["us"]->ciudad;
 										$_SESSION['nuevo']=$obj["us"]->nuevo;
-										$_SESSION['dataUs']=$data_cliente;
+										$_SESSION['dataUs']=$data_cliente;										
+										
 										$rpt="1";
 									}
 									catch(Exception $e){//si no es valido manda a loguearse
@@ -294,12 +295,14 @@
 					$_u = $_POST['u'];
 					$_p = $_POST['p'];
 				} else {
-					$reconex = true;					
-					//$payload = $_POST['sys_data'];
+					$reconex = true;	
+					// from ajax				
+					$payload = $_POST['sys_data'];
 					
 					// from fecth
-					$content = trim(file_get_contents("php://input"));
-					$payload = json_decode($content, true);
+					// $content = trim(file_get_contents("php://input"));
+					// $payload = json_decode($content, true);
+					
 					// $_sys_id = base64_decode($payload);
 
 					$_sys_id = base64_decode($payload);
@@ -311,8 +314,10 @@
 					$idOrg = $_sys_id[3];
 					$idSede = $_sys_id[4];
 				}
-					if($bd->loguear_us($_u,$_p,$result) == 1)
-					{
+				
+				// print $_u." -> ".$_p;
+
+				if($bd->loguear_us($_u,$_p,$result) == 1){
 						$obj = json_decode($result);
 
 						if ( !$reconex ) { // si no es reconexion chapa los datos del result query
@@ -333,6 +338,9 @@
 						$_SESSION['nuevo']=$obj[0]->nuevo;
 						$_SESSION['_sys_PHPSESSID']=base64_encode('XZCfnb-o@:'.$_u.':'.base64_encode($_p).':'.$idOrg.':'.$idSede); // restaurar
 						$_SESSION['dataUs']="";
+
+						$g_ido = $_SESSION['ido'];
+						$g_idsede = $_SESSION['idsede'];
 
 						//session_start();
 						print 1;

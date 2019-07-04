@@ -1,0 +1,96 @@
+<link rel="import" href="../../web_components/polymer/polymer.html">
+<link rel="import" href="../../web_components/paper-dropdown-menu/paper-dropdown-menu.html">
+<link rel="import" href="../../web_components/iron-dropdown/iron-dropdown.html">
+
+
+<dom-module id="x-comp-find-almacen">
+	<template is="dom-bind">
+		<div>
+			<select id="compFindListAlmacen" class="xTextRow2 xCursor" onchange="selectOptionAlmacen()">				
+				<!-- <option value="0">NINGUNO</option> -->
+				<template is="dom-repeat" items="{{list}}" as="categoria">
+					<option value="[[index]]">[[categoria.descripcion]] </option>
+				</template>				
+			</select>
+		</div>
+
+	</template>
+	<script>
+		var xThisComAlmacen;
+
+		function getAllTipoAlmacen() {
+			$.ajax({
+					type: 'POST',
+					url: '../../bdphp/log_componentes.php?op=11'					
+				})
+				.done(function (dtValues) {
+					dtValues = $.parseJSON(dtValues);
+					
+					if ( xThisComAlmacen.opninguno ) {
+						dtValues.datos.unshift({idalmacen:"0", descripcion:"NINGUNO"})
+					}
+					
+					xThisComAlmacen.list = dtValues.datos;
+					xThisComAlmacen.list_almacen = xThisComAlmacen.list[0];
+					xThisComAlmacen.list_almacen.index = 0;
+					xThisComAlmacen.valIdInt = xThisComAlmacen.list_almacen;
+					xThisComAlmacen.getValorIncial(xThisComAlmacen.list_almacen);
+				});
+		}
+
+		function selectOptionAlmacen() {
+			const index = xThisComAlmacen.$.compFindListAlmacen.value;
+			xThisComAlmacen.list_almacen = xThisComAlmacen.list[index];
+			xThisComAlmacen.list_almacen.index = index
+		}
+
+
+		Polymer({
+			is: 'x-comp-find-almacen',
+			properties: {
+				// opNinguno: {type: Number, notify: true, reflectToAttribute: true, value: 0},
+				opninguno: {
+					type: Boolean,
+					notify: true,
+					reflectToAttribute: true,
+					value: false
+				},
+				list: [],
+				list_almacen: {
+					type: Object,
+					// value : {},
+					reflectToAttribute: true,
+					notify: true,
+					value: function () {
+						return {};
+					},
+					observer: 'almacenNameChanged'
+				},
+				valIdInt: {
+					type: Object,
+					notify: true,
+					reflectToAttribute: true
+				},
+			},
+			listeners: {
+				'onchange': 'getAlmacen'
+			},
+			almacenNameChanged: function (categoria) {
+				return categoria;
+			},
+			getAlmacen() {
+				return xThisComAlmacen.list_almacen;
+			},
+			attached: function () {
+				xThisComAlmacen = this;
+				getAllTipoAlmacen();
+			},
+			getValorIncial: function (val) {
+				this.fire('getValorIncial', {
+					values: val
+				});
+			}
+		})
+	</script>
+
+</dom-module>

@@ -3,29 +3,32 @@
     // session_set_cookie_params('4000'); // 1 hour
     // session_regenerate_id(true); 
     session_start();
-	//header("Cache-Control: no-cache,no-store");
-	header('content-type: text/html; charset: utf-8');
-	header('Content-Type: text/event-stream');
-	header('Cache-Control: no-cache');
-	include "ManejoBD.php";
-	$bd=new xManejoBD("restobar");
+    //header("Cache-Control: no-cache,no-store");
+    header('content-type: text/html; charset: utf-8');
+    header('Content-Type: text/event-stream');
+    header('Cache-Control: no-cache');
+    include "ManejoBD.php";
+    $bd=new xManejoBD("restobar");
 
     date_default_timezone_set('America/Lima');
+
+    $g_ido = $_SESSION['ido'];
+    $g_idsede = $_SESSION['idsede'];
     
     switch($_GET['op'])
-	{
+    {
         case 1:// load sedes
-            $sql = "select idorg, idsede, nombre, ciudad from sede where idorg = ".$_SESSION['ido']." and estado=0 ";
+            $sql = "select idorg, idsede, nombre, ciudad from sede where idorg = $g_ido and estado=0 ";
             $bd->xConsulta($sql);
             break;
         case 2:// load comprobantes generales
             // $sql = "SELECT * FROM tipo_comprobante where estado=0";
             $sql = "
             SELECT tpcs.idtipo_comprobante_serie, tpcs.serie, tpcs.correlativo, tpcs.facturacion_correlativo_api, tp.*
-			from tipo_comprobante_serie tpcs
-				inner join tipo_comprobante tp using(idtipo_comprobante)
-				inner join sede s on s.idsede = tpcs.idsede
-            where (tpcs.idorg=".$_SESSION['ido']." and tpcs.idsede=".$_SESSION['idsede'].") and tpcs.estado=0
+            from tipo_comprobante_serie tpcs
+                inner join tipo_comprobante tp using(idtipo_comprobante)
+                inner join sede s on s.idsede = tpcs.idsede
+            where (tpcs.idorg=$g_ido and tpcs.idsede=$g_idsede) and tpcs.estado=0
             ";            
             $bd->xConsulta($sql);
             break;
@@ -34,7 +37,7 @@
             $bd->xConsulta($sql);
             break;
         case 3:// load categoria
-            $sql="SELECT idcategoria, descripcion FROM categoria WHERE (idorg=".$_SESSION['ido']." AND idsede=".$_SESSION['idsede'].") AND estado=0";
+            $sql="SELECT idcategoria, descripcion FROM categoria WHERE (idorg=$g_ido AND idsede=$g_idsede) AND estado=0";
             $bd->xConsulta($sql);
             break;
         case 4:// load tipo de gasto
@@ -50,19 +53,23 @@
             $bd->xConsulta($sql);
             break;
         case 7://load clientes
-			$sql="SELECT * FROM cliente where (idorg=".$_SESSION['ido'].") AND estado=0 order by nombres";
-			$bd->xConsulta($sql);
+            $sql="SELECT * FROM cliente where (idorg=$g_ido) AND estado=0 order by nombres";
+            $bd->xConsulta($sql);
             break;
         case 8://load cargos
-			$sql="SELECT * FROM cargo where (idorg=".$_SESSION['ido'].") AND estado=0 order by descripcion";
-			$bd->xConsulta($sql);
+            $sql="SELECT * FROM cargo where (idorg=$g_ido) AND estado=0 order by descripcion";
+            $bd->xConsulta($sql);
             break;
         case 9://load colaboradores
-			$sql="SELECT * FROM colaborador where (idorg=".$_SESSION['ido']." and idsede=".$_SESSION['idsede'].") AND estado=0 order by nombres";
-			$bd->xConsulta($sql);
+            $sql="SELECT * FROM colaborador where (idorg=$g_ido and idsede=$g_idsede) AND estado=0 order by nombres";
+            $bd->xConsulta($sql);
             break;
         case 10://load planilla_periodo
-			$sql="SELECT * FROM planilla_periodo where estado=0";
-			$bd->xConsulta($sql);
-			break;
+            $sql="SELECT * FROM planilla_periodo where estado=0";
+            $bd->xConsulta($sql);
+            break;
+        case 11: //almacenes
+            $sql="SELECT * FROM almacen where (idorg=$g_ido and idsede=$g_idsede) and estado=0";
+            $bd->xConsulta($sql);
+            break;
     }

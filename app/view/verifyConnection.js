@@ -7,6 +7,4 @@ if(!rpt_conex){console.log('estado conexion ',rpt_conex);console.log('localstora
 console.log('estado conexion ',rpt_conex);}}}
 function activarChangeConection(){setTimeout(()=>{updateConnectionStatus();},3000);}
 async function comprobarConexion(){var rpt_conex=false;comprobantdoConexion=true;await fetch('../../bdphp/log_run.php?op=3').then(function(response){return response}).then(res=>{rpt_conex=true;}).catch(function(error){rpt_conex=false;});comprobantdoConexion=false;return rpt_conex;}
-async function restoreConexion(_data){restaurandoConexion=false;const data_send={sys_data:_data}
-await fetch('../../bdphp/log.php?op=-1',{method:'POST',headers:{"Content-Type":"application/json; charset=utf-8"},body:JSON.stringify(data_send)}).then(function(response){return response.json();}).then(res=>{console.log('restaurando',res);restaurandoConexion=true;})
-return restaurandoConexion;}
+async function restoreConexion(_data){restaurandoConexion=false;await $.ajax({type:'POST',url:'../../bdphp/log.php?op=-1',data:{sys_data:_data}}).done(function(res){console.log('restaurando');restaurandoConexion=true;});return restaurandoConexion;}

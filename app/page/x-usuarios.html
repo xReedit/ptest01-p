@@ -1,6 +1,7 @@
+<link rel="import" href="../x-componentes/x-comp-find-almacen/x-comp-find-almacen.html">
 <dom-module id="x-usuarios">
 <template>
-<paper-dialog id="dialog_add_us" class="dialog_redondo" style="max-width:350px" modal entry-animation="scale-up-animation" exit-animation="fade-out-animation" with-backdrop>
+<paper-dialog id="dialog_add_us" class="dialog_redondo" style="max-width:600px" modal entry-animation="scale-up-animation" exit-animation="fade-out-animation" with-backdrop>
 <div class="xContent">
 <paper-tabs selected="{{selected_us}}">
 <paper-tab>DATOS</paper-tab>
@@ -28,11 +29,15 @@
 <input type="text" id="idusuario" name="idusuario">
 <input type="text" id="idorg" name="idorg" value$="{{xt_org}}">
 <input type="text" id="idsede" name="idsede" value$="[[xt_idsede]]">
+<input type="text" id="idalmacen" name="idalmacen">
 <input type="text" id="acc" name="acc">
 <input type="text" id="per" name="per">
 <input type="text" id="rol" name="rol">
 </div>
 </form>
+<br>
+<a href="#" onclick="xResetearClave()"> Resetear clave</a>
+<br>
 </div>
 <div id="acc_us" class="" style="max-height:70vh">
 <div style="overflow-y:auto;overflow-x:none;max-height:60vh">
@@ -84,14 +89,15 @@
 <br><strong>Ejemplo:</strong> En una discoteca cuentan con varios bares de venta de cerveza, entonces al usuario se le asigna un bar(almacen) del que va ser responsable, entonces todas las ventas que haga el sistema descontara de este almacen(bar) asignado.
 <br><strong>Tenga en cuenta que si utiliza esta opcion, lo mejor es trabajar directamente con las cajas a la hora de hacer los pedidos. </strong>
 </span>
+<br><br>
+<label for="listAlmacen">Asigne un Almacen:</label>
+<x-comp-find-almacen id="listAlmacen" opninguno="true"></x-comp-find-almacen>
 </div>
 </iron-pages>
 <br>
-<a href="#" onclick="xResetearClave()"> Resetear clave</a>
-<br>
 <button class="xBoton2 xAzul" onclick="xGuardarUs()">Guardar</button>
 <button class="xBoton2 xPlomo" onclick="dialog_add_us.close()">Cancelar</button>
-<br><br>
+<br>
 </div>
 </paper-dialog>
 <br>
@@ -119,7 +125,7 @@ nextBox.focus();nextBox.select();}
 return false;}});}
 function xResetearClave(){const idUsReset=$("#frm_us #idusuario")[0].value;if(idUsReset==='')return;xPopupLoad.xopen();$.ajax({type:'POST',url:'../../bdphp/log.php?op=4031',data:{i:idUsReset}})
 setTimeout(()=>{xPopupLoad.xclose();},200);}
-function xModificarUs(obj){xNuevoUsuario();xPopupLoad.xopen();xPopupLoad.titulo="Cargando..";var xid=$(obj).parents('tr').attr('data-id');$.ajax({type:'POST',url:'../../bdphp/log.php?op=403',data:{i:xid}}).done(function(dtLoadUs){var xdtLoadUs=$.parseJSON(dtLoadUs);xdtLoadUs=xdtLoadUs.datos;var xacc_bd=xdtLoadUs[0].acc;var xper_bd=xdtLoadUs[0].per;$("#frm_us #idusuario").val(xid);$("#frm_us #idorg").val(xThis.xt_org);$("#frm_us #idsede").val(xThis.xt_idsede);$("#frm_us #cargo").val(xdtLoadUs[0].cargo);$("#frm_us #nombres").val(xdtLoadUs[0].nombres);$("#frm_us #usuario").val(xdtLoadUs[0].usuario.replace(xThis.xt_sufijo,''));$("#frm_us #pass").val(xdtLoadUs[0].pass);$("#frm_us #acc").val(xacc_bd);$("#frm_us #per").val(xper_bd);select_rol.value=xdtLoadUs[0].rol;var xBus='';var xCharFind='';xacc_bd=xacc_bd.split(',')
+function xModificarUs(obj){xNuevoUsuario();xPopupLoad.xopen();xPopupLoad.titulo="Cargando..";var xid=$(obj).parents('tr').attr('data-id');$.ajax({type:'POST',url:'../../bdphp/log.php?op=403',data:{i:xid}}).done(function(dtLoadUs){var xdtLoadUs=$.parseJSON(dtLoadUs);xdtLoadUs=xdtLoadUs.datos;var xacc_bd=xdtLoadUs[0].acc;var xper_bd=xdtLoadUs[0].per;const frm_us=$("#frm_us");frm_us.find("#idusuario").val(xid);frm_us.find("#idorg").val(xThis.xt_org);frm_us.find("#idsede").val(xThis.xt_idsede);frm_us.find("#cargo").val(xdtLoadUs[0].cargo);frm_us.find("#nombres").val(xdtLoadUs[0].nombres);frm_us.find("#usuario").val(xdtLoadUs[0].usuario.toUpperCase().replace(xThis.xt_sufijo.toUpperCase(),''));frm_us.find("#pass").val(xdtLoadUs[0].pass);frm_us.find("#acc").val(xacc_bd);frm_us.find("#per").val(xper_bd);frm_us.find("#idalmacen").val(listAlmacen.getAlmacen().idalmacen);select_rol.value=xdtLoadUs[0].rol;var xBus='';var xCharFind='';xacc_bd=xacc_bd.split(',')
 for(var i=0;i<xacc_bd.length;i++){xBus=xacc_bd[i]+',';$(".checkA").each(function(index,element){xCharFind=$(element).attr('data-id');if(xCharFind==xBus){element.checked=true;return false;}})}
 xper_bd=xper_bd.split(',')
 for(var i=0;i<xper_bd.length;i++){xBus=xper_bd[i]+',';$(".checkP").each(function(index,element){xCharFind=$(element).attr('data-id');if(xCharFind==xBus){element.checked=true;return false;}})}
