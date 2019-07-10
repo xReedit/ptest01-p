@@ -1,0 +1,155 @@
+<link rel="import" href="../../web_components/polymer/polymer.html">
+
+<dom-module id="x-comp-find-tipo-pago-option">
+	<template is="dom-bind">
+		<div style="display: flex">
+			<div class="content_div_op_pago" id="_content_div_op_pago" style="display: flex" disabled$="{{deshabilitado}}">
+				<template is="dom-repeat" items="{{list}}" as="categoria">
+					<div class="xMiBoton_icon_option"
+						data-id="{{categoria.idtipo_pago}}" 
+						data-index="{{index}}" 	
+						data-reqcliente="{{categoria.requiere_cliente}}"
+						data-limite="{{categoria.limite}}"
+						selected$="{{categoria.seleccionado}}"
+						hidden$ = "{{categoria.hidden}}"
+						onclick="selectOption(this)">
+						<img src="{{categoria.logo}}">
+						<p>[[categoria.descripcion]]</p>
+					</div>					
+				</template>
+			</div>
+			
+			<!-- <select id="compFindListTipoPagoOptionOption" class="xTextRow2 xCursor" onchange="selectOptionTipoPagoOption()">
+				<template is="dom-repeat" items="{{list}}" as="categoria">
+					<option value="[[index]]">[[categoria.descripcion]] </option>
+				</template>
+			</select> -->
+		</div>
+
+	</template>
+	<script>
+		var xThisComTipoPagoOption;
+
+		function getAllTipoPagoOption() {
+			$.ajax({
+					type: 'GET',
+					url: '../../bdphp/log_componentes.php?op=6'
+				})
+				.done(function (dtValues) {
+					dtValues = $.parseJSON(dtValues);
+					let yaEncontroPrimero=false, index_primero=0;
+					xThisComTipoPagoOption.list = dtValues.datos.map((x, index) => {
+						// x.clase = 'xMiBoton_icon_option';						
+						x.logo='../../images/'+x.img;
+						x.descripcion = xMayusculaPrimera(x.descripcion.toLowerCase());
+						x.hidden = xThisComTipoPagoOption.novisibles.indexOf(x.idtipo_pago) > -1 ? true : false;
+						// xThisComTipoPagoOption.hiddenIconBorrar = true;
+						if (!x.hidden && !yaEncontroPrimero) {
+							yaEncontroPrimero=true;
+							x.seleccionado = true;
+							index_primero = index;							
+							
+							// xThisComTipoPagoOption.hiddenIconBorrar = index === 0 ? true : false;
+						} else {x.seleccionado = false;}
+						return x;
+					});
+
+					xThisComTipoPagoOption.list_tipo_pago = xThisComTipoPagoOption.list[index_primero];
+					xThisComTipoPagoOption.list_tipo_pago.index = index_primero;
+					
+					xThisComTipoPagoOption.idselect = xThisComTipoPagoOption.list_tipo_pago.idtipo_pago;
+					xThisComTipoPagoOption.reqcliente = xThisComTipoPagoOption.list_tipo_pago.requiere_cliente;
+					xThisComTipoPagoOption.limite = xThisComTipoPagoOption.list_tipo_pago.limite;
+					
+					xThisComTipoPagoOption.valIdInt = xThisComTipoPagoOption.list_tipo_pago;
+					xThisComTipoPagoOption.getValorIncial(xThisComTipoPagoOption.list_tipo_pago);
+				});
+		}
+
+		// function selectOptionTipoPagoOption() {
+		// 	const index = xThisComTipoPagoOption.$.compFindListTipoPagoOption.value;
+		// 	xThisComTipoPagoOption.list_tipo_pago = xThisComTipoPagoOption.list[index];
+		// 	xThisComTipoPagoOption.list_tipo_pago.index = index
+		// }
+
+		function selectOption(obj) {
+			const index=obj.dataIndex;	
+			const idSelect = obj.dataId;
+			xThisComTipoPagoOption.idselect = idSelect;
+			xThisComTipoPagoOption.reqcliente = xThisComTipoPagoOption.list[index].requiere_cliente;
+			xThisComTipoPagoOption.limite = xThisComTipoPagoOption.list[index].limite;
+			
+
+			$(obj).parent().find('.xMiBoton_icon_option').each((i,e) => {								
+				e.dataIndex === index ? $(e).attr('selected', true) : $(e).removeAttr('selected');
+			});
+
+			xSelectViewOption(index);
+		}
+
+		function xSelectViewOption(_index) {
+			xThisComTipoPagoOption.list.map(x => {x.seleccionado=''; return x;});
+			xThisComTipoPagoOption.list[_index].seleccionado=true;
+			xThisComTipoPagoOption.list_tipo_pago = xThisComTipoPagoOption.list[_index];
+
+			// xThisComTipoPagoOption.fire('onchange', xThisComTipoPagoOption.list_tipo_pago);			
+		}
+
+		Polymer({
+			is: 'x-comp-find-tipo-pago-option',
+			properties: {
+				// idTipoIngreso: {type : Number, notify: true, reflectToAttribute: true},
+				novisibles: {type: String, value:''},
+				deshabilitado: {type: Boolean, value:false},
+				hiddenIconBorrar: {type: Boolean, value:true},
+				idselect: {type: Number, value:1},
+				reqcliente: {type: Number, value:0},
+				limite: {type: Number, value:1},
+				list: [],
+				list_tipo_pago: {
+					type: Object,
+					// value : {},
+					reflectToAttribute: true,
+					notify: true,
+					value: function () {
+						return {};
+					},
+					observer: 'tipoPagoNameChanged'
+				},
+				valIdInt: {
+					type: Object,
+					notify: true,
+					reflectToAttribute: true
+				},
+			},
+			listeners: {
+				'onchange': 'getTipoPagoOption',
+				'onclick': 'getTipoPagoOption'
+			},
+			tipoPagoNameChanged: function (categoria) {
+				return categoria;
+			},
+			getTipoPagoOption() {
+				return this.list.filter(x => x.seleccionado)[0];
+			},
+			attached: function () {
+				xThisComTipoPagoOption = this;
+				getAllTipoPagoOption();
+			},
+			getValorIncial: function (val) {
+				this.fire('getValorIncial', {
+					values: val
+				});
+			},
+			setResetFirstOption: ()=> {
+				const index=0;
+				xThisComTipoPagoOption.list.map(x => {x.seleccionado=''});
+				xThisComTipoPagoOption.list[index].seleccionado=true;
+				$('#_content_div_op_pago div.xMiBoton_icon_option').each((i,e) => {
+					e.dataIndex === index ? $(e).attr('selected', true) : $(e).removeAttr('selected');
+				});
+			}
+		})
+	</script>
+
+</dom-module>

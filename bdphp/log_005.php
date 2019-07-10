@@ -193,7 +193,8 @@
 					inner join colaborador as c on p.idcolaborador=c.idcolaborador
 					inner join cargo on p.idcargo = cargo.idcargo
 					inner join planilla_periodo as pp on p.idplanilla_periodo = pp.idplanilla_periodo
-				where idplanilla=".$_POST['id']. " and mes_activo='".$_POST['mes']."'" ;
+				where idplanilla=".$_POST['id'];
+				//. " and mes_activo='".$_POST['mes']."'" ;
 			$bd->xConsulta($sql);
 			break;
 		case 5031 ://detalle planilla | ingresos descuentos

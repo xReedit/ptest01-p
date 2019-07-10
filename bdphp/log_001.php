@@ -148,7 +148,7 @@
 			$correlativo_dia++;
 
 			// si es delivery y si trae datos adjuntos -- json-> direccion telefono forma pago
-			$json_datos_delivery=array_key_exists('arrDatosDelivery', $x_array_pedido_header) ? $x_array_pedido_header['arrDatosDelivery'] : '';
+			$json_datos_delivery=array_key_exists('arrDatosDelivery', $x_array_pedido_header) ? json_encode($x_array_pedido_header['arrDatosDelivery']) : '';
 			
 
             // guarda pedido

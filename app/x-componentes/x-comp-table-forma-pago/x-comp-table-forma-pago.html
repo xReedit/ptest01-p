@@ -1,0 +1,201 @@
+<link rel="import" href="../../web_components/polymer/polymer.html">
+<link rel="import" href="../x-comp-find-tipo-pago-option/x-comp-find-tipo-pago-option.html">
+
+<dom-module id="x-comp-table-forma-pago">
+	<template is="dom-bind">
+		<div>
+			<paper-fab icon="add" onclick="_addRow()" title="Agregar Tipo de Pago" tabindex="0" class="btnAdd2"></paper-fab>
+			<br>
+			<table class$="{{_class}}" style="width: 100%;" id="table_op_fp">
+				<thead>
+					<th width="70%" align="left">Forma de pago</th>
+					<th align="left">Monto</th>
+				</thead>
+				<tbody>
+					<template is="dom-repeat" items="{{listTabla}}" as="item">
+						<tr>
+							<td>
+								<div style="display: flex">
+									<x-comp-find-tipo-pago-option										
+										class="tpf_option"
+										novisibles$={{item.novisibles}} 
+										deshabilitado$="{{item.deshabilitado}}"
+										onclick="xCalcImporte()">
+									</x-comp-find-tipo-pago-option>
+									
+									<div class="xMiBoton_icon_option" hidden$="{{item.hiddenIconBorrar}}" data-index="{{index}}"
+										onclick="_borrarRow(this)">
+										<paper-icon-button src="../../../images/delete.png" alt="delete" title="Borrar">
+										</paper-icon-button>
+									</div>
+								</div>
+							</td>
+							<td>
+								<input type="number" min="1"									
+									id$="{{item.idText}}"
+									pattern="[0-9]+([\.,][0-9]+)?" step="any"
+									class="xMiInput xfont16 xtxtCentro xmonto" 
+									onblur="xRetornaMoneda(this)" 
+									onkeyup="xCalcImporte()"
+									disabled="{{item.deshabilitado}}"
+									onclick="this.select();"
+									onblur="xRetornaMoneda(this)"
+									value$="{{item.importe}}" anchofull autofocus>
+							</td>
+						</tr>
+					</template>
+				</tbody>
+			</table>
+		</div>
+	</template>
+	<script>
+		var xThisComTableFP, maxRow=3, _noVisibles='', 
+		listIni = [], _valImporteRestante=0;
+
+		function xIniCompTableOption() {			
+			listIni = [];	
+			_noVisibles='';
+			_valImporteRestante=0;
+			_addRow();
+			
+		}
+
+		function _addRow() {
+			const _rows = listIni? listIni.length : 0;			
+			if ( _rows >= maxRow ) return;
+
+			var _hiddenIconBorrar=true;
+			xSetNoVisibles();
+
+			if ( _rows > 0 ) { // coloca disabled la fila anteriro
+				listIni.map((x,i) => {
+					// const _nom = '#tpf_option' + i;
+					x.deshabilitado=true; 
+					// x.importe = $(_nom).val();
+					// totalRegistrado += parseFloat(x.importe);
+				});
+				xCalcImporte();
+				// _valImporteRestante = totalRegistrado === 0 ? 0 : parseFloat(xThisComTableFP.importetotal) - totalRegistrado;
+				_hiddenIconBorrar=false;
+			} else {
+				importeSave = xThisComTableFP.importetotal;
+			}
+
+			if( _valImporteRestante <= 0 && _rows > 0 ) return;
+			
+			listIni.push({
+				idText: 'tpf_option'+_rows,
+				index: _rows,
+				importe: _valImporteRestante.toFixed(2),
+				deshabilitado: false,
+				novisibles: _noVisibles,
+				hiddenIconBorrar: _hiddenIconBorrar
+			});
+
+			xThisComTableFP.listTabla = JSON.parse(JSON.stringify(listIni));
+			setTimeout(() => {
+				xCalcImporte();
+				xThisComTableFP.focus();
+				$('table input.xmonto').last().focus();
+				$('table input.xmonto').last().select();
+				// $('table input.xxmonto:last-child').focus();
+				// $('table input.xxmonto:last-child').select();
+			}, 200);
+			// xCalcImporte();
+		}
+
+		function xCalcImporte() {
+			var totalRegistrado=0, importeGrabar=0;
+			listIni.map((x,i) => {
+				const _nom = '#tpf_option' + i;
+				const _objOp = $(_nom).parents('tr').find('.tpf_option .xMiBoton_icon_option[selected]')[0];
+				// x.deshabilitado=true;				
+				x.importe_recibido = $(_nom).val();
+				importeGrabar = parseFloat(x.importe_recibido) >= parseFloat(xThisComTableFP.importetotal) ? xThisComTableFP.importetotal : x.importe_recibido;
+				importeGrabar = parseFloat(importeGrabar) === 0 ? xThisComTableFP.importetotal :importeGrabar;
+				x.importe = parseFloat(importeGrabar).toFixed(2);
+				x.id = _objOp.dataId;
+				x.reqcliente = _objOp.dataReqcliente;
+				x.limite = _objOp.dataLimite;
+				totalRegistrado += parseFloat(x.importe_recibido);
+			});
+			
+			_valImporteRestante = totalRegistrado === 0 ? 0 : parseFloat(xThisComTableFP.importetotal) - totalRegistrado;			
+			// xThisComTableFP.valImporteRestante = _valImporteRestante === 0 ? xThisComTableFP.importetotal : _valImporteRestante;
+			xThisComTableFP.valImporteRestante = _valImporteRestante;
+
+			xThisComTableFP.fire('xCompTableChange', {datos: listIni, evento: event});
+		}
+
+		function xSetNoVisibles() {
+			var itemNoVisible = ''
+			$('.tpf_option .xMiBoton_icon_option[selected]').each((i,e) => {
+				itemNoVisible += e.dataId+',';
+			});
+
+			_noVisibles = itemNoVisible;
+		}
+
+		function xResetFirstOption() {
+			$('.tpf_option').each((i,e)=>{e.setResetFirstOption();})
+			listIni[0].importe='0.00';
+			xThisComTableFP.listTabla = JSON.parse(JSON.stringify(listIni));
+		}
+
+		function _borrarRow(obj) {
+			const index = obj.dataIndex;
+			listIni = listIni.slice(0,index);
+			
+			listIni[listIni.length-1].deshabilitado=false; // deshabilita el ultimo
+			xSetNoVisibles();
+			
+			xThisComTableFP.listTabla = JSON.parse(JSON.stringify(listIni));
+			xCalcImporte();
+			// xThisComTableFP.fire('xCompTableChange', listIni);
+
+		}
+
+		Polymer({
+			is: 'x-comp-table-forma-pago',
+			properties: {
+				_class: {type: String, value: 'xtable3 xRowPading2'},
+				importetotal: {type: String, value: '0'},
+				valImporteRestante: {type: String, value: '0'},
+				listTabla: [],
+				valIdInt: {
+					type: Object,
+					notify: true,
+					reflectToAttribute: true
+				},
+			},
+			listeners: {
+				'onchange': 'getTipoTablePagoOption'
+			},
+			tipoPagoNameChanged: function (categoria) {
+				return categoria;
+			},
+			getTipoTablePagoOption() {
+				return xThisComTableFP.listTabla;
+			},
+			attached: function () {
+				xThisComTableFP = this;
+				xThisComTableFP.listTabla = [];
+				xIniCompTableOption();
+			},
+			getValorIncial: function (val) {
+				this.fire('getValorIncial', {
+					values: val
+				});
+			},
+			resetFormaPago: ()=> {
+				xThisComTableFP.listTabla = [];
+				xThisComTableFP.valImporteRestante='0';
+				// xThisComTableFP.importetotal='0';				
+				xIniCompTableOption();
+				xResetFirstOption();
+			}
+			// addRow: () => { _addRow(); }
+		})
+	</script>
+
+</dom-module>

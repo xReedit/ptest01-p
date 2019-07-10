@@ -49,10 +49,14 @@
             $bd->xConsulta($sql);
             break;
         case 6:// load tipo pago
-            $sql="SELECT idtipo_pago, descripcion FROM tipo_pago WHERE estado=0";
+            $sql="SELECT * FROM tipo_pago WHERE estado=0";
             $bd->xConsulta($sql);
             break;
         case 7://load clientes
+            $sql="SELECT * FROM cliente where (idorg=$g_ido) AND estado=0 order by nombres";
+            $bd->xConsulta($sql);
+            break;
+        case 701://load clientes - input autocomplete
             $sql="SELECT * FROM cliente where (idorg=$g_ido) AND estado=0 order by nombres";
             $bd->xConsulta($sql);
             break;
