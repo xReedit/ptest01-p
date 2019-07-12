@@ -9,6 +9,8 @@
 
 	date_default_timezone_set('America/Lima');
 
+	include('log_006.php');
+
 	$op = $_GET['op'];	
     switch ($op) {
 		case '1': //lista sede
@@ -86,14 +88,15 @@
 			$bd->xConsulta($sql);
 			break;
 		case 401: // lad establecimientos asignados
-			$sql = "
-				SELECT s_u.idorg, s_u.idsede, o.nombre as establecimiento, s.nombre as sede, s.ciudad
-				FROM us_cpc_sedes as s_u
-					inner join sede as s using(idsede)
-					inner join org as o on s.idorg = o.idorg
-				where s_u.idus_cpc = ".$_POST['id']."
-				order by o.nombre, s.idsede
-			";
+			// $sql = "
+			// 	SELECT s_u.idorg, s_u.idsede, o.nombre as establecimiento, s.nombre as sede, s.ciudad
+			// 	FROM us_cpc_sedes as s_u
+			// 		inner join sede as s using(idsede)
+			// 		inner join org as o on s.idorg = o.idorg
+			// 	where s_u.idus_cpc = ".$_POST['id']."
+			// 	order by o.nombre, s.idsede
+			// ";
+			$sql="select idus_cpc,idus_cpc_sedes,razonsocial,nomsede,serie,ciudad from us_cpc_sedes where idus_cpc = ".$_POST['id']." and estado=0 order by razonsocial,nomsede, ciudad";
 			$bd->xConsulta($sql);
 			break;
 		case 40101: // get idus_cpc from idusuario
@@ -138,6 +141,18 @@
 			$idus_cpc = $_POST['id'];
 			$sql="CALL procedure_cpc_sedes(".$idus_cpc.",".$idorg.",".$idsede.");";
 			$bd->xConsulta_NoReturn($sql);
+			break;
+		case 5:// load companies apifac
+			$get_data = callAPI('GET', 'http://apifac.papaya.com.pe:3719/api/companies', false);
+			$response = json_decode($get_data, true);
+			print json_encode($response);
+			// $errors = $response['response']['errors'];
+			// $data = $response['response']['data'][0];
+			break;
+		case 501: // guarda establecimiento asignado
+			$arrItem=json_encode($_POST['item']);
+			$sql = "CALL procedure_asignar_companies_contador('".$arrItem."')";
+			$bd->xConsulta($sql);
 			break;
 	}
 

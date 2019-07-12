@@ -41,15 +41,39 @@
 <th align="left">#</th>
 <th align="left">Establecimiento</th>
 <th align="left">Sede</th>
+<th align="left">Serie</th>
 <th align="left">Ciudad</th>
+<th></th>
 </thead>
 <tbody>
+<tr>
+<td colspan="2">
+<select id="selConpanies" class="xTextRow2 xCursor" onchange="selectOptionCompanies()">
+<template is="dom-repeat" items="{{listCompanies}}" as="item">
+<option value="[[index]]">[[item.razonsocial]] </option>
+</template>
+</select>
+</td>
+<td>
+<input type="text" class="xMiInput xPasarEnter2" onChange="conMayusculas(this)" id="txt_companies_sede" espaciar>
+</td>
+<td>
+<input type="number" class="xMiInput xPasarEnter2" onChange="conMayusculas(this)" id="txt_companies_serie" espaciar>
+</td>
+<td colspan="2">
+<input type="text" class="xMiInput xPasarEnter2" onChange="conMayusculas(this)" id="txt_companies_ciudad" onkeyup="addCompaniesContador()" espaciar>
+</td>
+</tr>
 <template is="dom-repeat" items="{{listCpc_sedes}}" as="item">
-<tr data-id="{{index}}">
+<tr data-t="us_cpc_sedes" data-id="{{item.idus_cpc_sedes}}" id="{{index}}">
 <td class="xfont11">{{displayIndex(index)}}</td>
-<td class="xfont11">{{item.establecimiento}}</td>
-<td class="xfont11">{{item.sede}}</td>
+<td class="xfont11">{{item.razonsocial}}</td>
+<td class="xfont11">{{item.nomsede}}</td>
+<td class="xfont11">{{item.serie}}</td>
 <td class="xfont11">{{item.ciudad}}</td>
+<td>
+<span class="xDeleteRow2 xCursor" title="Anular" onclick="xBorrarItem(this)"></span>
+</td>
 </tr>
 </template>
 </tbody>
@@ -146,8 +170,8 @@ Listado de restaurantes.
 </template>
 </dom-module>
 <script type="text/javascript" src="./us_cpc.js"></script>
-<script>var xThisAdmin,xPopupLoad,arrSede=[];function xIniAdmin(){xLoadCpc();xLoadSedes();$('body').addClass('loaded');}
+<script>var xThisAdmin,xPopupLoad,arrSede=[];function xIniAdmin(){xLoadCpc();xLoadSedes();getAllCompaniesFac();$('body').addClass('loaded');}
 function xLoadSedes(){$.ajax({url:'../../bdphp/log_004.php?op=1'}).done((res)=>{const _res=$.parseJSON(res);xThisAdmin.ListSedes=_res.datos;});}
 function xAdmModificarOrg(obj){const index=obj.parentElement.dataId;localStorage.setItem('::app3_woOAdm',JSON.stringify(xThisAdmin.ListSedes[index]));router.go('/adm_dashboard-new');}
 function xAdmGoNew(){localStorage.removeItem('::app3_woOAdm');router.go('/adm_dashboard-new');}
-Polymer({is:'x-admin',properties:{ListSedes:[],listCpc:[],listCpc_sedes:[],UsarioCpc_sedes:{},},attached:function(){this.selected=0,xThisAdmin=this;xIniAdmin();},displayIndex:function(index){return xCeroIzq(index+1,1);},})</script>
+Polymer({is:'x-admin',properties:{ListSedes:[],listCpc:[],listCpc_sedes:[],listCompanies:[],UsarioCpc_sedes:{},},attached:function(){this.selected=0,xThisAdmin=this;xIniAdmin();},displayIndex:function(index){return xCeroIzq(index+1,1);},})</script>

@@ -1,0 +1,293 @@
+<dom-module id="x-admin-contador">
+	<template is="dom">
+		<br>
+		<div class="xMiCard xradius" style="width:calc(100% - 10%); height: calc(100vh - 120px);">
+			<div class="xEncanezadoCard xFondoRowAmarillo4">
+				<strong>CONTADORES</strong>
+				Descargue reportes de facturacion electronica.
+			</div>
+			<div class="xContent">
+				<div class="x_div_linea">					
+					<div class="xitem1 xBordeDe" style="height: calc(100vh - 185px)">
+						<br>
+						<h4>Estableciminetos Asignados</h4>		
+						<div class="xLinea2"></div>
+						<br>
+						<table width="100%">
+							<thead>
+								<th>#</th>
+								<th>Razon social</th>
+								<th>Ciudad</th>
+							</thead>
+							<tbody>
+								<template is="dom-repeat" items="{{listAsignados}}" as="item">
+									<tr id="{{index}}" class="animated fadeIn fast xCursor" onclick="selectEsablecimiento(this);">
+										<td class="xfont11">{{displayIndex(index)}}</td>
+										<td class="xfont11">{{item.razonsocial}} | {{item.nomsede}}</td>										
+										<td class="xfont11">{{item.ciudad}}</td>										
+									</tr>
+								</template>
+							</tbody>
+						</table>
+					</div>
+					<div class="xitem2 xBordeIzqHover">
+						<br>
+						<h4>{{selEstablecimiento.nomsede}} | {{selEstablecimiento.ciudad}}</h4>
+						<div class="xLinea2"></div>
+						<br>
+						<div style="width: 120px;">
+							<label for="selYear" class="xColorRow_Plomo">Seleccione Año:</label>
+							<select id="selYear" class="xTextRow2 xCursor" onchange="selectOptionYear()">
+								<template is="dom-repeat" items="{{listYears}}" as="item">
+									<option value="[[index]]">[[item.y]] </option>
+								</template>
+							</select>
+						</div>
+						<br>
+						<table width="100%">
+							<thead>
+								<th width="15px">#</th>
+								<th>Mes</th>
+								<th>Estado</th>
+								<th>Accion</th>
+							</thead>
+							<tbody>
+								<template is="dom-repeat" items="{{listMonth}}" as="item">
+									<tr id="{{index}}" class$="{{item.clase}}">
+										<td class="xfont11">{{displayIndex(index)}}</td>
+										<td class="xfont11">{{item.mes}}</td>
+										<td class="xfont11">{{item.desestado}}</td>										
+										<td class="xfont11">
+											<div hidden$="{{!item.activo}}" onclick="downloadReporteCPE(this)">
+												<a>Descargar <img src="../../../images/x_down2.png" alt=""></a>
+											</div>
+										</td>
+									</tr>
+								</template>
+							</tbody>
+						</table>
+					</div>				
+				</div>				
+			</div>
+		</div>	
+
+		<!-- reporte comprobantes exportar -> excel -->
+		<!-- <button onclick="xGenerarReporteExcel()">Exportar</button> -->
+		<div id="reporte" class="xInvisible">
+
+			<table id="testTable" width="100%">
+				<caption>
+					<h1>{{selEstablecimiento.nomsede}} | {{selEstablecimiento.ciudad}}</h1>					
+					<h2>Reporte de comprobantes electronicos - {{selMes.mes}}</h2>
+				</caption>
+				<thead>
+					<th width="45px">#</th>
+					<th width="15%">f. Emision</th>					
+					<th>Tipo</th>
+					<th>Numero</th>
+					<th width="35%">Cliente</th>
+					<th width="15%">RUC/DNI</th>
+					<th align="right">Sub total</th>
+					<th align="right">I.G.V</th>
+					<th align="right">Total</th>
+					<th>Estado</th>
+				</thead>
+				<tbody>
+					<template is="dom-repeat" items="{{ListReporte}}" as="row">
+						<tr>
+							<td>{{displayIndex(index)}}</td>
+							<td style$="{{row.style_td}}">{{row.fecha}}</td>							
+							<td style$="{{row.style_td}}">{{row.tipo_doc}}</td>
+							<td style$="{{row.style_td}}">{{row.num_doc }}</td>
+							<td style$="{{row.style_td}}">{{row.nom_cliente}}</td>
+							<td style$="{{row.style_td}}">{{row.ruc}}</td>
+							<td style$="{{row.style_td}}">{{row.subtotal}}</td>
+							<td style$="{{row.style_td}}">{{row.igv}}</td>
+							<td style$="{{row.style_td}}">{{row.total}}</td>
+							<td style$="{{row.style_reporte}}">{{row.estado}}</td>
+						</tr>
+					</template>
+				</tbody>
+			</table>
+
+		</div>
+	</template>
+</dom-module>
+<script type="text/javascript" src="../../view/export.excel.js"></script>
+<script>
+var xThisAdmContador, xObjBorrar;
+const dateNow = new Date();
+const _m_now = dateNow.getMonth()+1;
+const _y_now = dateNow.getFullYear();
+
+function xIniAdmContador() {
+	xPopupLoad=document.getElementById('xLoad');
+
+	var _dtUs = xm_log_get('app3_us');
+	xThisAdmContador.xt_org = _dtUs.ido;
+	xThisAdmContador.xt_idsede = _dtUs.idsede;
+	xThisAdmContador.xt_idus = _dtUs.idus;
+	$('body').addClass('loaded');
+
+	$('.xPasarEnter2').on('keyup', function (e) {
+			var code = e.which;
+			if (code == 13 || code == 186) {
+				var inputs = $('input'); // storage a array of Inputs
+				var a = inputs.index(document.activeElement);
+				if (inputs[a + 1] !== null) {
+					var nextBox = inputs[a + 1];
+					if (nextBox === undefined) {
+						return
+					}
+					if (nextBox.disabled) {
+						nextBox = inputs[a + 2]
+					}
+
+					if (nextBox == undefined) {
+						return;
+					}
+					nextBox.focus();
+					nextBox.select();
+					//event.preventDefault();
+				}
+				return false;
+			}
+		});
+		
+		xLoadEstablecimientosAsignados();
+}
+
+function xLoadEstablecimientosAsignados() {
+	$.ajax({
+			type: 'GET',
+			url: '../../bdphp/log_007.php?op=1'			
+		})
+		.done((res) => {
+			const _res = JSON.parse(res);
+			xThisAdmContador.listAsignados = _res.datos;
+		});
+}
+
+function selectEsablecimiento(obj) {
+	const index = obj.id;
+	xThisAdmContador.selEstablecimiento = xThisAdmContador.listAsignados[index];
+	xDataYears();
+}
+
+function xDataYears() {	
+	const f_ini = xThisAdmContador.selEstablecimiento.mes_inicio.split('/');
+	var _m = f_ini[0], _y = f_ini[1], count_year=0;
+
+	// list years
+	var _listYear=[];
+	while(_y <=_y_now) {
+		_listYear.push({y:_y});
+		_y++;
+		count_year++;
+	}
+
+	xThisAdmContador.listYears = _listYear;
+
+	if( count_year === 1 ) {xDataYearsMonth(_y_now);}
+}
+
+function selectOptionYear() {
+	const index = xThisAdmContador.$.selYear.value;
+	const yy = xThisAdmContador.listYears[index];
+	xDataYearsMonth(yy);
+}
+
+function xDataYearsMonth(yy) {
+	// list mes
+	var _listMonth=[],count_m=1;
+	while(count_m <= 12) { 
+		const _my_ini = xThisAdmContador.selEstablecimiento.mes_inicio.split('/');
+		const _num_f_ini = parseInt(_my_ini[0])+parseInt(_my_ini[1]); // sumamos > 02+2019 = 2021
+		const _num_f_now = _m_now+_y_now;
+		const _num_f = count_m+yy;
+		const _activo = _num_f < _num_f_ini || _num_f > _num_f_now ? false : true;
+		const _clase = _activo ? 'animated fadeIn fast xCursor' : 'animated fadeIn fast xColorRow_Plomo2';
+		const _desestado = _activo ? 'DISPONIBLE' : 'SIN DATOS';
+		// const _desbtn = _activo ? 'Descargar' : '';
+		
+		_listMonth.push({			
+			mes:xDesMes(count_m-1)+' ' +yy,
+			m: count_m,
+			y: yy,
+			activo: _activo,
+			clase : _clase,
+			desestado: _desestado,
+			// desbtn: _desbtn
+			}); 
+		count_m++; 
+	}
+	// console.log(_listMonth);
+	xThisAdmContador.listMonth = _listMonth;
+}
+
+function downloadReporteCPE(obj) {
+
+	const index = obj.parentElement.parentElement.id;
+	const _selMes = xThisAdmContador.listMonth[index];
+	xThisAdmContador.selMes = _selMes;
+	const _data = {
+		establecimiento: xThisAdmContador.selEstablecimiento,
+		m: _selMes.m,
+		y: _selMes.y
+	}
+	xPopupLoad.titulo='Descargando...';
+	xPopupLoad.xopen();
+	$.ajax({
+			type: 'POST',
+			url: '../../bdphp/log_007.php?op=2',
+			data: {item: _data}
+		})
+		.done((res) => {
+			res = JSON.parse(res);
+			if ( res.error ) {console.log(res.error); return;}
+			console.log(res.data);
+			xThisAdmContador.ListReporte = res.data.map(x => {
+				x.estado = x.tipo_doc === 'FACTURA' && parseInt(x.ruc) === 0 ? 'ANULADO' : x.estado;
+				x.style_reporte = x.estado === 'ANULADO' ? 'color: red' : 'color: green';
+				x.style_td = x.estado === 'ANULADO' ? 'color: red' : '';
+				return x;
+			});
+
+			setTimeout(() => {
+				xExportarExcel();
+			}, 500);
+		});
+}
+
+function xExportarExcel() {
+	tableToExcel('testTable', 'Comprobantes');
+	setTimeout(() => {
+		xPopupLoad.xclose();
+	}, 500);
+}
+
+
+Polymer({
+	is: 'x-admin-contador',
+	properties: {
+		xt_org: Number,
+		xt_idsede: Number,	
+		xt_idus: Number,
+		listYears:[],
+		listMonth:[],
+		listAsignados: [],
+		ListReporte: [],
+		selEstablecimiento: [],
+		selMes:[],
+
+	},
+	attached: function () {
+		this.selected = 0,
+		xThisAdmContador = this;
+		xIniAdmContador();
+	},
+	displayIndex: function (index) {
+		return xCeroIzq(index + 1, 1);
+	},
+})
+</script>

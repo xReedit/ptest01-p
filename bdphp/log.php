@@ -294,7 +294,7 @@
 				if (!empty($_u = $_POST['u'])) {
 					$_u = $_POST['u'];
 					$_p = $_POST['p'];
-				} else {
+				} else { // reconectar
 					$reconex = true;	
 					// from ajax				
 					$payload = $_POST['sys_data'];
