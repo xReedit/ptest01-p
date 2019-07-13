@@ -23,11 +23,12 @@ function xDatosUs(){$("#xnomu").text(xNomUsario);$("#xcargou").text(xCargoU);}
 function xOpenPanelDe(){$("#PanelDe").css('z-index','20');}
 function xGenerarMenu(op){}
 function showCambiarClave(){$("#datosGeneralesUs").addClass('xInvisible');$("#cambioClaveUs").removeClass('xInvisible');}
-function cambiarClaveUs(){const pa=$("#txtpa")[0].value
-const pn=$("#txtpn")[0].value
-$.ajax({type:'POST',url:'../../bdphp/log.php?op=-304',data:{pa:pa,pn:pn}}).done(function(dtC){$("#msj_1").addClass("xInvisible");$("#msj_2").addClass("xInvisible");if(dtC==="0"){$("#msj_1").removeClass("xInvisible");}else{$("#msj_2").removeClass("xInvisible");}});}
+function cambiarClaveUs(){const pa=$("#txtpa")[0].value;const pn=$("#txtpn")[0].value;$("#msj_1").addClass("xInvisible");$("#msj_2").addClass("xInvisible");if(pa.length<6){$("#msj_1").text('Minimo 6 caracteres.');$("#msj_1").removeClass("xInvisible");}
+$.ajax({type:'POST',url:'../../bdphp/log.php?op=-304',data:{pa:pa,pn:pn}}).done(function(dtC){if(dtC==="0"){$("#msj_1").text('Claves incorrecta. No coiciden.');$("#msj_1").removeClass("xInvisible");}else{$("#msj_2").removeClass("xInvisible");}});}
+function keyChangePass(){if(event.keyCode===13)changePass();}
 function changePass(){const p1=pass1.value;const p2=pass2.value;if(p1===''){msj_pass_clave.textContent="Tiene que ingresar una clave";return;}
 if(p1!=p2){msj_pass_clave.textContent="Las claves no son iguales";return;}
+if(p1.length<6){msj_pass_clave.textContent="Debe tener minimo 6 caracteres.";return;}
 if(p1==="123456"){msj_pass_clave.textContent="La clave no puede ser la que pusiste.";return;}
 $.ajax({type:'POST',url:'../../bdphp/log.php?op=-3041',data:{pn:p2}}).done(function(dtC){msj_pass_clave.textContent='';dialog_requiere_cambio_pas.close();localStorage.setItem('::app3_woUSN',1);xPasarAMenuAcc();});}
 function xNewUs(){if(!localStorage.getItem('::app3_woUSN')){const xNuevo=parseInt(xm_log_get('app3_us').nuevo);if(xNuevo===0){xNuevoUs=true;$('body').addClass('loaded');dialog_requiere_cambio_pas.open();}else{xPasarAMenuAcc();}}}

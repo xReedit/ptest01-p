@@ -116,7 +116,7 @@
 			break;
 		case 403: // registrar usuario contador
 			$sql = "insert into usuario (nombres, cargo, usuario, pass, acc, rol, nuevo) 
-														values ('".$_POST['n']."', 'CONTADOR', '".$_POST['u']."','123456','A11,',2,0)";
+														values ('".$_POST['n']."', 'CONTADOR', '".$_POST['u']."','123456','D6,',2,0)";
 			$id_us = $bd->xConsulta_UltimoId($sql);
 			print $id_us;
 			break;

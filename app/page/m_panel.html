@@ -76,7 +76,7 @@
 <a href=# class="xfont12 xpadingLateralDe" onclick=xCerrarSession() inline>Cerrar Sesion</a><a href=# class=xfont12 onclick=showCambiarClave() inline>Cambiar Clave</a>
 </div>
 <div class=xInvisible id=cambioClaveUs>
-<p>Cambio de clave.</p>
+<p>Cambio de clave. <stron>Minimo 6 caracteres.</p>
 <br>
 <input type=password class=xMiInput placeholder="Clave actual" id=txtpa><br><br>
 <input type=password class=xMiInput placeholder="Nueva clave" id=txtpn>
@@ -96,7 +96,7 @@
 <p>Por seguridad se requiere el cambio de clave.</p>
 <br><div class=xLinea2></div><br>
 <paper-input label="Nueva Clave" type=password required id=pass1></paper-input>
-<paper-input label=Repitalo type=password required id=pass2></paper-input>
+<paper-input label=Repitalo type=password onkeydown=keyChangePass() required id=pass2></paper-input>
 <p id=msj_pass_clave class=xColorRow_Rojo></p>
 <br><div class=xLinea2></div><br>
 <button class="xBoton2 xAzul" id=btn_cambiar_pass onclick=changePass()>Listo, cambiar clave</button>
