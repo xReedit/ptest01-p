@@ -6,7 +6,7 @@ function xCpeValidarFormSave(){xvalidateFormInput('frm_cpc',async function(a){if
 xCpcSave_Usuario_Cpc();});}
 async function xCpcSave_Usuario_Cpc(){_id_num_us_new_cpc=idusuario.value;if(_id_num_us_new_cpc==""){_id_num_us_new_cpc=await xCpcRegistrarNuevoUsuarioCPC();idusuario.value=_id_num_us_new_cpc;}
 xPopupLoad.xopen();$.post("../../bdphp/ManejoBD_IUD.php?tb=us_cpc",$("#frm_cpc").serialize(),function(id){dialog_add_us_cpc.close();xPopupLoad.xclose();xNuevoUsuarioCPC();xLoadCpc();});}
-function xResetearClave(){const idUsReset=_id_num_us_new_cpc;if(idUsReset==='')return;xPopupLoad.xopen();$.ajax({type:'POST',url:'../../bdphp/log.php?op=4031',data:{i:idUsReset}})
+function xResetearClave(){const idUsReset=xThisAdmin.UsarioCpc_sedes.idusuario;if(idUsReset==='')return;xPopupLoad.xopen();$.ajax({type:'POST',url:'../../bdphp/log.php?op=4031',data:{i:idUsReset}})
 setTimeout(()=>{xPopupLoad.xclose();},200);}
 async function xCpcRegistrarNuevoUsuarioCPC(){var _idNewUsCpc=0;const nom_cpc=nombre_cpc.value;await $.ajax({type:'POST',url:'../../bdphp/log_004.php?op=403',data:{'n':nom_cpc,'u':_num_us_new_cpc}}).done((res)=>{_idNewUsCpc=res;});return _idNewUsCpc;}
 function xNuevoUsuarioCPC(){$('#frm_cpc').reset();xThisAdmin.UsarioCpc_sedes={};xThisAdmin.listCpc_sedes=[];}
