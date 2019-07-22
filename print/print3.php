@@ -9,6 +9,8 @@ use Mike42\Escpos\ImagickEscposImage;
 use Mike42\Escpos\PrintConnectors\NetworkPrintConnector;
 use Mike42\Escpos\PrintConnectors\WindowsPrintConnector;
 
+
+
 $ArraySubTotales=$_POST['ArraySubTotales'];
 $ArrayItem=$_POST['ArrayItem'];
 $ArrayEnca=$_POST['Array_enca'];
@@ -327,7 +329,8 @@ while($num_copias>=0){
 	$printer -> feed();
 	$printer -> text($linea_hr);
 	$printer -> setEmphasis(true);
-	$r_subt_t=0;		
+	$r_subt_t=0;	
+	$importeTotal=0;	
 	
 	foreach ($ArraySubTotales as $item_sbt) {//
 		if($item_sbt['visible']=='false'){continue;}
@@ -338,15 +341,23 @@ while($num_copias>=0){
 		$imp_sbt=$item_sbt['importe'];//
 
 		if($des_sbt=='Total'){
+			$importeTotal = $imp_sbt;
 			$printer -> selectPrintMode(Printer::MODE_DOUBLE_WIDTH);
 			$printer -> text(new item($des_sbt, $imp_sbt, true));
 			$printer -> selectPrintMode();
 			continue;			
 		}
 		
-		$printer -> text(new item($des_sbt, $imp_sbt));
+		$printer -> text(new item($des_sbt, $imp_sbt));		
 	}
 	//
+	/* CODEBAR */
+	$printer -> feed();
+	$printer -> setJustification(Printer::JUSTIFY_CENTER);
+	$printer->setBarcodeHeight(45);
+	$printer->setBarcodeWidth(2);	
+	$valCodBar = (int)$correlativo_dia."%".(float)$importeTotal;	
+	$printer->barcode($valCodBar);
 
 	/* PIE DE PAGINA */	
 	$pie_pagina = $xArray_print[0]['pie_pagina'];

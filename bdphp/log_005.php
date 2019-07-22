@@ -1,6 +1,6 @@
 <?php
-	session_set_cookie_params('14400'); // 4 hour
-	session_cache_expire(180); // minutes
+	// session_set_cookie_params('14400'); // 4 hour
+	// session_cache_expire(180); // minutes
 	// session_set_cookie_params('4000'); // 1 hour
 	// session_regenerate_id(true); 
 	session_start();	

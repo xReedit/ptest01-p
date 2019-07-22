@@ -30,6 +30,7 @@
 <input type="text" id="idorg" name="idorg" value$="{{xt_org}}">
 <input type="text" id="idsede" name="idsede" value$="[[xt_idsede]]">
 <input type="text" id="idalmacen" name="idalmacen">
+<input type="text" id="estadistica" name="estadistica">
 <input type="text" id="acc" name="acc">
 <input type="text" id="per" name="per">
 <input type="text" id="rol" name="rol">
@@ -72,9 +73,10 @@
 <paper-checkbox class="checkA" data-id='D4,'> Otros Ingresos</paper-checkbox><br>
 <paper-checkbox class="checkA" data-id='D5,'> Recursos Humanos</paper-checkbox><br>
 <br>
-<h4>CONFIGURACIONES</h4>
+<h4>ADMINISTRACION</h4>
 <paper-checkbox class="checkA" data-id='C1,'> Configuraciones del sistema</paper-checkbox><br>
 <paper-checkbox class="checkA" data-id='C2,'> Usuarios</paper-checkbox><br>
+<paper-checkbox class="checkA" data-id='C5,'> Andalitica Modulo Gerencial</paper-checkbox><br>
 <br>
 <h4>PERMISOS</h4>
 <paper-checkbox class="checkP" data-id='Pe1,'>Eliminar pedidos</paper-checkbox><br>
@@ -130,9 +132,10 @@ for(var i=0;i<xacc_bd.length;i++){xBus=xacc_bd[i]+',';$(".checkA").each(function
 xper_bd=xper_bd.split(',')
 for(var i=0;i<xper_bd.length;i++){xBus=xper_bd[i]+',';$(".checkP").each(function(index,element){xCharFind=$(element).attr('data-id');if(xCharFind==xBus){element.checked=true;return false;}})}
 dialog_add_us.open();xPopupLoad.xclose();xPopupLoad.titulo="Guardando..";});}
-function xGuardarUs(){var xCadena_a='';var xCadena_p='';$(".checkA").each(function(index,element){if(element.checked==false){return;}
-xCadena_a=xCadena_a+$(element).attr('data-id');});$(".checkP").each(function(index,element){if(element.checked==false){return;}
-xCadena_p=xCadena_p+$(element).attr('data-id');});$("#frm_us #acc").val(xCadena_a);$("#frm_us #per").val(xCadena_p);$("#frm_us #rol").val(select_rol.value);const _usuario=xThis.xt_sufijo+usuario.value;$("#frm_us #usuario").val(_usuario);xvalidateFormInput('frm_us',function(a){if(a===false){xThis.selected_us=0;return;}
+function xGuardarUs(){var xCadena_a='';var xCadena_p='',dataIdCheck='',valEstadistica=0;$(".checkA").each(function(index,element){if(element.checked==false){return;}
+dataIdCheck=element.dataset.id;if(dataIdCheck==='C5,'){$("#frm_us #estadistica").val('1');}
+xCadena_a=xCadena_a+dataIdCheck;});$(".checkP").each(function(index,element){if(element.checked==false){return;}
+dataIdCheck=element.dataset.id;xCadena_p=xCadena_p+dataIdCheck;});$("#frm_us #acc").val(xCadena_a);$("#frm_us #per").val(xCadena_p);$("#frm_us #rol").val(select_rol.value);const _usuario=xThis.xt_sufijo+usuario.value;$("#frm_us #usuario").val(_usuario);xvalidateFormInput('frm_us',function(a){if(a===false){xThis.selected_us=0;return;}
 xPopupLoad.xopen();$.post("../../bdphp/ManejoBD_IUD.php?tb=usuario",$("#frm_us").serialize(),function(id){dialog_add_us.close();xPopupLoad.xclose();xNuevoUsuario();xLoadUs();})})}
 function xNuevoUsuario(){$("#frm_us").reset();$(".checkA").each(function(index,element){element.checked=false;});$(".checkP").each(function(index,element){element.checked=false;});}
 function xLoadUs(){$("#tb_us").append('<tr class="row"><td colspan="4"><paper-spinner active></paper-spinner></td></tr>');$.ajax({type:'POST',url:'../../bdphp/log.php?op=402'}).done(function(dtUs){var xdtUs=$.parseJSON(dtUs);var xCadenaUs='';xdtUs=xdtUs.datos;for(var i=0;i<xdtUs.length;i++){xCadenaUs=String(xCadenaUs+'<tr class="row" data-id="'+xdtUs[i].idusuario+'" data-t="usuario"><td>'+xdtUs[i].nombres+'</td><td>'+xdtUs[i].cargo+'</td><td>'+xdtUs[i].usuario+'</td>'+'<td title="Modificar" onClick="xModificarUs(this)"><span class="icon xCursor"><img src="../../images/edit.png"></span></td>'+'<td><span onclick="xBorrarItem(this);" class="xDeleteRow" title="Borrar"></span></td>'+'</tr>');}

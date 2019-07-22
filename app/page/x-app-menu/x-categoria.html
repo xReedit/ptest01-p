@@ -13,7 +13,6 @@
 </div>
 </template>
 </dom-module>
-<style type="text/css"></style>
 <script>/*<![CDATA[*/var xThisCategoria;var xMenuCategoria=[];function xIniCategoria(){window.localStorage.removeItem("::app3_sys_first_load");$("#xtitulo_bar").text("");xLoadCategoria();$("body").removeClass("loaded");const xDatos_p=xm_log_get("sede_generales");xThisCategoria.xt_nombre_sede=xDatos_p[0].des_sede;xThisCategoria.xt_eslogan=xDatos_p[0].eslogan;}
 function xLoadCategoria(){window.localStorage.removeItem("::app3_sys_dt_mlm");if(window.localStorage.getItem("::app3_sys_descat")){const idcat_tmp=window.localStorage.getItem("::app3_sys_descat");xIrCategoria(idcat_tmp);return;}
 $.ajax({type:"POST",url:"../../bdphp/log.php?op=302"}).done(function(dtCat){var xdtCat=$.parseJSON(dtCat);xdtCat=xdtCat.datos;var xCadenaCartegoria="",xidcategoria_lo;xMenuCategoria=[];xThisCategoria.dt_cat=xdtCat;for(var i=0;i<xdtCat.length;i++){xidcategoria_lo=xdtCat[i].idcategoria;xMenuCategoria.push({id:xidcategoria_lo,des:xdtCat[i].descripcion});if(xdtCat.length===1){window.localStorage.setItem("::app3_sys_dt_mlc",JSON.stringify(xMenuCategoria));xIrCategoria(xidcategoria_lo);return;}

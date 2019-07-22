@@ -1978,6 +1978,18 @@
 
 		//cierre de caja
 		//cierre de caja
+		case 7000:
+			$idus = $_SESSION['idusuario'];
+			$idBitacora = $_POST['id'];
+			$sql = "call procedure_cierre_caja($idus,$idBitacora)";
+			$bd->xConsulta($sql);
+			break;
+		case 70111: // verificar cuadre
+			$idus = $_SESSION['idusuario'];
+			$arrItem = json_encode($_POST['item']);
+			$sql = "call procedure_cierre_bitacora($g_ido,$g_idsede,$idus,'".$arrItem."')";
+			$bd->xConsulta($sql);
+			break;
 		case 7://resumen ventas
 			$ido=$g_ido;
 			$idsede=$_SESSION['idsede'];
