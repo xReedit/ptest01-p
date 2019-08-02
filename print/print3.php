@@ -101,6 +101,7 @@ $papel_size = (int)$xArray_print[0]['papel_size'];
 // lineas hr - divisor
 $linea_hr = '';
 $linea_titulo = '';
+$espacioAlFinal = false; // en impresoras de 58- 57mm  no aparece el ultimo texto 
 $GLOBALS['leftCols'] = 38;
 switch ($papel_size) {
 	case '0': // 80mm
@@ -112,6 +113,7 @@ switch ($papel_size) {
 		$linea_hr = "------------------------------------------\n";
 		$linea_titulo = '***';
 		$GLOBALS['leftCols'] = 32;
+		$espacioAlFinal = true;
 		break;	
 }
 
@@ -372,6 +374,7 @@ while($num_copias>=0){
 	$printer -> text($fecha_actual.' | '.$hora_actual. "\n");
 
 	$printer -> text("www.papaya.com.pe\n");
+	if ( $espacioAlFinal ) { $printer -> text("\n\n"); }
 	$printer -> feed(2);
 	
 	$printer -> cut();
@@ -428,8 +431,8 @@ function intLowHigh($input, $length)
     // Function to encode a number as two bytes. This is straight out of Mike42\Escpos\Printer
     $outp = "";
     for ($i = 0; $i < $length; $i++) {
-        $outp .= chr($input % 256);
-        $input = (int)($input / 256);
+        $outp .= chr($input % 250);
+        $input = (int)($input / 250);
     }
     return $outp;
 }

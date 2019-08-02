@@ -53,6 +53,7 @@ $papel_size = (int)$ArrayEnca[0]['papel_size'];
 $linea_hr = '';
 $linea_titulo = '';
 $GLOBALS['leftCols'] = 38;
+$espacioAlFinal = false; // en impresoras de 58- 57mm  no aparece el ultimo texto 
 switch ($papel_size) {
 	case '0': // 80mm
 		$linea_hr = "------------------------------------------------\n";
@@ -63,6 +64,7 @@ switch ($papel_size) {
 		$linea_hr = "------------------------------------------\n";
 		$linea_titulo = '***';
 		$GLOBALS['leftCols'] = 24;
+		$espacioAlFinal = true;
 		break;	
 }
 
@@ -138,7 +140,7 @@ $hora_actual=date('H').':'.date('i').':'.date('s');
 		}
 		
 		foreach ($item as $subitem) {
-			if(is_array($subitem)==false){continue;}			
+			if(is_array($subitem)==false){continue;}
 
 
 			$printer -> setEmphasis(false);
@@ -217,6 +219,7 @@ $hora_actual=date('H').':'.date('i').':'.date('s');
 	$cuenta_copias++;*/
 	
 	$printer -> text("www.papaya.com.pe\n");
+	if ( $espacioAlFinal ) { $printer -> text("\n\n"); }
 	$printer -> feed(2);
 
 	$printer -> cut();
