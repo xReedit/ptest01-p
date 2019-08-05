@@ -82,6 +82,10 @@
 
             print $idcpe_facturador;
             break;
+        case '103': // sumar +1 correlativo otros comprobante no declarados como: tickets, entradas etc
+            $sql = "update tipo_comprobante_serie set correlativo = correlativo + 1 where idtipo_comprobante_serie = ".$_POST['i'];
+            $bd->xConsulta_NoReturn($sql);
+            break;
         case '2': // actualiza el estado de comprabantes reenviados (desde cierre caja): si fue aceptada = 1 o fue anulada = 1
             $obj = $_POST['data'];
             $ce_anulado = array_key_exists('anulado', $obj) ? $obj['anulado'] : 0; 

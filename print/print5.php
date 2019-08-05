@@ -57,7 +57,7 @@ else {
 
 // tamaño de papel
 // 0 = 80mm 1 = 58mm
-$papel_size = (int)$xArray_print[0]['papel_size'];
+$papel_size = array_key_exists('papel_size', $xArray_print[0]) ? (int)$xArray_print[0]['papel_size'] : 0;
 
 // lineas hr - divisor
 $linea_hr = '';

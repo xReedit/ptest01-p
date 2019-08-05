@@ -172,6 +172,7 @@
 			$bd->xConsulta($sql);
 			break;
 		case 502:// lista planilla
+			// and ( mes_cierre = '' or STR_TO_DATE(mes_cierre, '%d/%m/%Y') >= LAST_DAY(STR_TO_DATE(CONCAT('01/','".$_POST['mes']."'), '%d/%m/%Y')) )
 			$sql="
 				SELECT p.idplanilla, p.idcolaborador, p.idcargo, p.idplanilla_periodo, c.nombres, c.profesion, p.area, cargo.descripcion as descargo, p.mes_activo, c.f_ingreso, pp.descripcion as periodo_pago
 					, format((IFNULL(ppd.ingresos, 0) + cargo.remuneracion),2) as ingresos, format(IFNULL(ppd.descuentos,0),2) as descuentos, p.fecha_baja
@@ -181,7 +182,7 @@
 					inner join planilla_periodo as pp on p.idplanilla_periodo = pp.idplanilla_periodo
 					left join (select idplanilla, sum(if(tipo=0, importe,0)) ingresos, sum(if(tipo=1, importe,0)) descuentos from planilla_detalle where estado=0 group by idplanilla) as ppd on p.idplanilla=ppd.idplanilla
 				where (p.idorg=".$g_ido." and p.idsede=".$g_idsede.") and p.estado=0 
-					and ( mes_cierre = '' or STR_TO_DATE(mes_cierre, '%d/%m/%Y') >= LAST_DAY(STR_TO_DATE(CONCAT('01/','".$_POST['mes']."'), '%d/%m/%Y')) )
+					and ( STR_TO_DATE(CONCAT('01/',p.mes_ingreso), '%d/%m/%Y') <= LAST_DAY(STR_TO_DATE(CONCAT('01/','".$_POST['mes']."'), '%d/%m/%Y')) )					
 			";
 			$bd->xConsulta($sql);
 			break;
