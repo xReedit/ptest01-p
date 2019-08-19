@@ -138,14 +138,20 @@
 
         if($id_pedido==0){ //  nuevo pedido
 			//num pedido
-			$sql="select count(idpedido) as d1 from pedido where idorg=".$_SESSION['ido']." and idsede=".$_SESSION['idsede'];
-			$numpedido=$bd->xDevolverUnDato($sql);
-			$numpedido++;
+			$numpedido=array_key_exists('num_pedido', $x_array_pedido_header) ? $x_array_pedido_header['num_pedido'] : '';
+			if ( $numpedido == '' ) { // cuando es nuevo, si ya lo manda des control de pedidos adjunta al numpedido raiz
+				$sql="select count(idpedido) as d1 from pedido where idorg=".$_SESSION['ido']." and idsede=".$_SESSION['idsede'];
+				$numpedido=$bd->xDevolverUnDato($sql);
+				$numpedido++;
+			}
 
 			//numcorrelativo segun fecha
+			// $correlativo_dia=array_key_exists('correlativo_dia', $x_array_pedido_header) ? $x_array_pedido_header['correlativo_dia'] : '';
+						
 			$sql="SELECT count(fecha) AS d1 FROM pedido WHERE (idorg=".$_SESSION['ido']." and idsede=".$_SESSION['idsede'].") and STR_TO_DATE(fecha,'%d/%m/%Y')=curdate()";
 			$correlativo_dia=$bd->xDevolverUnDato($sql);
 			$correlativo_dia++;
+			
 
 			// si es delivery y si trae datos adjuntos -- json-> direccion telefono forma pago
 			$json_datos_delivery=array_key_exists('arrDatosDelivery', $x_array_pedido_header) ? json_encode($x_array_pedido_header['arrDatosDelivery']) : '';
