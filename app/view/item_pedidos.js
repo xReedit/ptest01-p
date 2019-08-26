@@ -26,7 +26,7 @@ if(xCantItem>=10){xClassEstado='xEstadoVerde';xClassEstadoStock='xFondoColorVerd
 if(xCantItem<=0){xClassEstado='xEstadoRojo';xClassEstadoStock='xFondoColorRojo';}}
 return xClassEstado+'|'+xClassEstadoStock}
 function xLoadArrayPedido(){xArrayPedidoObj=JSON.parse(window.localStorage.getItem("::app3_sys_dta_pe"));if(xArrayPedidoObj!==null){if(xArrayPedidoObj.length>0){return;}}
-var xtpc_t=[];xArrayDesTipoConsumo=[];xArrayPedidoObj=[];xtpc_t=xm_log_get('estructura_pedido');for(var i=0;i<xtpc_t.length;i++){xArrayPedidoObj[xtpc_t[i].idtipo_consumo]={'id':xtpc_t[i].idtipo_consumo,'des':xtpc_t[i].descripcion,'titulo':xtpc_t[i].titulo};xArrayDesTipoConsumo.push({'id':xtpc_t[i].idtipo_consumo,'des':xtpc_t[i].descripcion,'titulo':xtpc_t[i].titulo});};window.localStorage.setItem("::app3_sys_dta_pe",JSON.stringify(xArrayPedidoObj))}
+var xtpc_t=[];xArrayDesTipoConsumo=[];xArrayPedidoObj=[];xtpc_t=xm_log_get('estructura_pedido');xtpc_t.map(x=>{const indexTpc=x.idtipo_consumo;xArrayPedidoObj[indexTpc]={'id':x.idtipo_consumo,'des':x.descripcion,'titulo':x.titulo};xArrayDesTipoConsumo.push({'id':x.idtipo_consumo,'des':x.descripcion,'titulo':x.titulo});});window.localStorage.setItem("::app3_sys_dta_pe",JSON.stringify(xArrayPedidoObj))}
 function xVerificarSiSeImprimeComanda(xArray){if(xArray==null){xArray=xArrayPedidoObj}
 xVerificarImprimirComanda=false;for(var i=0;i<xArray.length;i++){if(xArray[i]==null){continue;}
 $.map(xArray[i],function(n,z){if(typeof n=="object"){if(n.cantidad!=0){if(n.imprimir_comanda==1){xVerificarImprimirComanda=true;return;}}}});}}
