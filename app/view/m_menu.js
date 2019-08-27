@@ -16,16 +16,16 @@ $("#xContenedoPaginas").stop(true,true).animate({scrollTop:xelement},600);}
 function xScrolUpObj(obj){xelement=$(obj).offset().top;$("#xContenedoPaginas").stop(true,true).animate({scrollTop:xelement},600);}
 function xOpenPanelDe(){PanelDe.openDrawer();PanelDe.classList.add('xOnZindexPanelDe');}
 function xClosePanelDe(){PanelDe.closeDrawer();PanelDe.classList.remove('xOnZindexPanelDe');}
-function xArmarMenuLateral(op){var xCadenaMenuL="";var xOpSalirPanel="";var xCadenadaCerrarSession='<li onClick="xCerrarSession();"><p>CERRAR SESSION </p></li>';switch(op){case 1:xMenuArray=$.parseJSON(window.localStorage.getItem("::app3_sys_dt_mlc"));if(xOnlyAccPedido==0){xOpSalirPanel="";}else{if(xIdUsuario!=""){xOpSalirPanel='<li onClick="xOpenPageCarta(4)"><p>SALIR AL PANEL </p></li>';}}
+function xArmarMenuLateral(op){var xCadenaMenuL="";var xOpSalirPanel="";var xCadenadaCerrarSession='<li onclick="xCerrarSession();"><p>CERRAR SESSION </p></li>';switch(op){case 1:xMenuArray=$.parseJSON(window.localStorage.getItem("::app3_sys_dt_mlc"));if(xOnlyAccPedido==0){xOpSalirPanel="";}else{if(xIdUsuario!=""){xOpSalirPanel='<li onclick="xOpenPageCarta(4)"><p>SALIR AL PANEL </p></li>';}}
 break;case 2:xMenuArray=$.parseJSON(window.localStorage.getItem("::app3_sys_dt_mlm"));break;}
 if(xMenuArray===null){return;}
 for(var i=0;i<xMenuArray.length;i++){xCadenaMenuL=String(xCadenaMenuL+'<li data-id="'+
-xMenuArray[i].id+'" onClick="xVerDetalleMenu('+
+xMenuArray[i].id+'" onclick="xVerDetalleMenu('+
 i+","+
 op+')"><p>'+
 xMenuArray[i].des+"</p></li>");}
-xCadenaMenuL='<ul class="noselect xCursor"><li onClick="btn_lateral_inicio();"><p>INICIO</p></li>'+
-xCadenaMenuL+'<li onClick="xOpenPageCarta(3);"><p>VER MI PEDIDO</p></li>'+
+xCadenaMenuL='<ul class="noselect xCursor"><li onclick="btn_lateral_inicio();"><p>INICIO</p></li>'+
+xCadenaMenuL+'<li onclick="xOpenPageCarta(3);"><p>VER MI PEDIDO</p></li>'+
 xOpSalirPanel+
 xCadenadaCerrarSession+"</ul>";$(".xBtnPanel ul").remove();$(".xBtnPanel").append(xCadenaMenuL).trigger("create");}
 function btn_lateral_inicio(){localStorage.removeItem("::app3_sys_descat");xOpenPageCarta(0);}
