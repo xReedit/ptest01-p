@@ -49,11 +49,11 @@ foreach($_POST as $nombre_campo => $valor){
 	if($IdValTabla=="")//nuevo
 	{
 		$NomCampos = $NomCampos.$coma.$nombre_campo;
-		$ValorCampo = $ValorCampo.$coma."'".$valor."'";
+		$ValorCampo = $ValorCampo.$coma.'"'.$valor."'";
 	}
 	else
 	{
-		$NomCampos=$NomCampos.$coma.$nombre_campo."='".$valor."'";
+		$NomCampos=$NomCampos.$coma.$nombre_campo.'="'.$valor.'"';
 	}
 }
 
@@ -76,16 +76,15 @@ if($Campo_comparar!="") //caparar
 		$bd->xConsulta2($xSql);
 		$UltimoId=$bd->xDevolverUnDato("SELECT LAST_INSERT_ID()");
 		$_SESSION['UltimoId']=$UltimoId;
-
-
+		
 		//mod 17/04/14
 		print $UltimoId;
 	}
 	else //Actualiza
 	{
-		$xSql="Update ".$NomTabla." set ".$NomCampos." where Id".$NomTabla."=".$IdValTabla;
+		$xSql="Update ".$NomTabla." set ".$NomCampos." where Id".$NomTabla."=".$IdValTabla;		
 		$bd->xConsulta2($xSql);
-
+		
 		//mod 17/04/14
 		print $IdValTabla;
 	}

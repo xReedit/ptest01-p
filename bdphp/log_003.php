@@ -19,13 +19,12 @@
 
     switch ($op) {
 		case '1': //registrar impresion
-			$detalle_json = $_POST['datos'];
+			$detalle_json = addslashes($_POST['datos']); //addslashes para caracteres especiales 
 			$idprint_server_estructura = $_POST['idprint_server_estructura'];
 			$tipo = $_POST['tipo'];
 			$sql="INSERT INTO print_server_detalle (idorg, idsede, idusuario, idprint_server_estructura, descripcion_doc, fecha, hora, detalle_json) 
 											values (".$g_ido.",".$g_idsede.",".$g_us.",".$idprint_server_estructura.", '".$tipo."','".$fecha_now."','".$hora_now."','".$detalle_json."')";
-			
-			// echo $sql;
+						
 			$ultimoID = $bd->xConsulta_UltimoId($sql);
 			print $ultimoID;
 			
