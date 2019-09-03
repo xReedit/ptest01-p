@@ -102,7 +102,9 @@
 				$indicaciones_p= array_key_exists('indicaciones', $subitem) ? $subitem['indicaciones'] : '';
 				if($indicaciones_p!==''){$indicaciones_p=" (".$indicaciones_p.")";$indicaciones_p=strtolower($indicaciones_p);}
 				
-				$sql_pedido_detalle=$sql_pedido_detalle.'(?,'.$tipo_consumo.','.$categoria.','.$subitem['iditem'].','.$subitem['iditem2'].',"'.$subitem['idseccion'].'","'.$subitem['cantidad'].'","'.$subitem['cantidad'].'","'.$subitem['precio'].'","'.$precio_total.'","'.$precio_total.'","'.$subitem['des'].$indicaciones_p.'",'.$viene_de_bodega.','.$tabla_procede.'),';                                        
+				//
+				$idItem2 = $subitem['iditem2'] ? $subitem['iditem2'] : $subitem['iditem'];
+				$sql_pedido_detalle=$sql_pedido_detalle.'(?,'.$tipo_consumo.','.$categoria.','.$subitem['iditem'].','.$idItem2.',"'.$subitem['idseccion'].'","'.$subitem['cantidad'].'","'.$subitem['cantidad'].'","'.$subitem['precio'].'","'.$precio_total.'","'.$precio_total.'","'.$subitem['des'].$indicaciones_p.'",'.$viene_de_bodega.','.$tabla_procede.'),';                                        
 
 			}
 
