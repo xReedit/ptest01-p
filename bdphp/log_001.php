@@ -104,7 +104,8 @@
 				
 				//
 				$idItem2 = $subitem['iditem2'] ? $subitem['iditem2'] : $subitem['iditem'];
-				$sql_pedido_detalle=$sql_pedido_detalle.'(?,'.$tipo_consumo.','.$categoria.','.$subitem['iditem'].','.$idItem2.',"'.$subitem['idseccion'].'","'.$subitem['cantidad'].'","'.$subitem['cantidad'].'","'.$subitem['precio'].'","'.$precio_total.'","'.$precio_total.'","'.$subitem['des'].$indicaciones_p.'",'.$viene_de_bodega.','.$tabla_procede.'),';                                        
+				$pwa = $subitem['pwa'] ? $subitem['pwa'] : 0;
+				$sql_pedido_detalle=$sql_pedido_detalle.'(?,'.$tipo_consumo.','.$categoria.','.$subitem['iditem'].','.$idItem2.',"'.$subitem['idseccion'].'","'.$subitem['cantidad'].'","'.$subitem['cantidad'].'","'.$subitem['precio'].'","'.$precio_total.'","'.$precio_total.'","'.$subitem['des'].$indicaciones_p.'",'.$viene_de_bodega.','.$tabla_procede.','.$pwa.'),';  
 
 			}
 
@@ -182,7 +183,7 @@
 		$sql_pedido_detalle=substr ($sql_pedido_detalle, 0, -1);
 
 		//pedido_detalle
-		$sql_pedido_detalle='insert into pedido_detalle (idpedido,idtipo_consumo,idcategoria,idcarta_lista,iditem,idseccion,cantidad,cantidad_r,punitario,ptotal,ptotal_r,descripcion,procede,procede_tabla) values '.$sql_pedido_detalle;
+		$sql_pedido_detalle='insert into pedido_detalle (idpedido,idtipo_consumo,idcategoria,idcarta_lista,iditem,idseccion,cantidad,cantidad_r,punitario,ptotal,ptotal_r,descripcion,procede,procede_tabla, pwa) values '.$sql_pedido_detalle;
 		//pedido_subtotales
 		$sql_subtotales='insert into pedido_subtotales (idpedido,idorg,idsede,descripcion,importe, tachado) values '.$sql_subtotales;
 		// echo $sql_pedido_detalle;
