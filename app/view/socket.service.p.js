@@ -32,14 +32,20 @@ if (isSocket) {
 }
 
 function _cpSocketIsConnect() {
-    // isSocket = parseInt(xm_log_get('datos_org_sede')[0].pwa) === 0 ? false : true;
+    isSocket = parseInt(xm_log_get('datos_org_sede')[0].pwa) === 0 ? false : true;
     if (!isSocket) { return; }
 
-    if (!socketCP.connected) {
+    try {
+        if (!socketCP.connected) {
+            socketCP = io.connect(URL_SOCKET, {
+                query: dataSocket
+            });
+        }   
+    } catch (error) {
         socketCP = io.connect(URL_SOCKET, {
             query: dataSocket
         });
-    }
+    }    
 }
 
 

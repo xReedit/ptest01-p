@@ -31,6 +31,7 @@ function _monitoreoSocketOpen() {
 }
 
 function _monitoreoSocketIsConnect() {
+    isSocket = parseInt(xm_log_get('datos_org_sede')[0].pwa) === 0 ? false : true;
     if (!isSocket) { return; }
     this._monitoreoSocketOpen();
     // if (!socketMonitoreo.connected) {
