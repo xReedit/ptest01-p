@@ -1,4 +1,4 @@
-var socketVR = io('http://localhost:5819');
+var socketVR = io(URL_SOCKET);
 
 socketVR.on('itemModificado', (item) => {
     _vrStockItemModificado(item);
