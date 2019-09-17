@@ -150,7 +150,7 @@
 			// $data = $response['response']['data'][0];
 			break;
 		case 501: // guarda establecimiento asignado
-			$arrItem=json_encode($_POST['item']);
+			$arrItem=addslashes(json_encode($_POST['item']));
 			$sql = "CALL procedure_asignar_companies_contador('".$arrItem."')";
 			$bd->xConsulta($sql);
 			break;

@@ -654,6 +654,55 @@
 			
 			echo $id_carta;
 			break;
+		case 204002: // guardar solo item
+			$item = $_POST['item'];			
+			$id_item=$item['id_item'];
+			if($id_item==''){
+				//comprueba nombre que coicidan en la bd si no selecciono item con id
+				$sql="select iditem as d1 from item where (idorg=".$g_ido." and idsede=".$g_idsede.") and descripcion='".$item['des_item']."'";
+				// echo json_encode($item);
+				// echo $sql;
+				$id_item=$bd->xDevolverUnDato($sql);
+				if($id_item==''){
+					//guarda nuevo item
+					$sql="insert into item (idorg, idsede,descripcion,precio,detalle,img) values (".$g_ido.",".$g_idsede.",'".$item['des_item']."','".$item['precio_item']."','".$item['det_item']."','".$item['img_item']."')";
+					//echo $sql;
+					// echo $sql;
+					$id_item=$bd->xConsulta_UltimoId($sql);
+				}
+				else{//actualizar
+					$sql_update_item="update item set descripcion='".$item['des_item']."', detalle='".$item['det_item']."', precio='".$item['precio_item']."', img='".$item['img_item']."' where iditem=".$id_item;
+					// echo $sql_update_item;
+					$bd->xConsulta_NoReturn($sql_update_item);
+				}
+				} else {//actualizar
+					$sql_update_item="update item set descripcion='".$item['des_item']."', detalle='".$item['det_item']."', precio='".$item['precio_item']."', img='".$item['img_item']."' where iditem=".$id_item.";";
+					$bd->xConsulta_NoReturn($sql_update_item);
+					// echo $sql_update_item;
+				}
+			
+				$id_carta = $item['idcarta'];				
+				$id_seccion = $item['idseccion'];	
+				$id_carta_lista = $item['id_carta_lista'];				
+				if($id_carta_lista==""){$id_carta_lista=$g_ido.$g_idsede.$id_carta.$id_seccion.$id_item;}
+
+				$sql_carta_lista=$sql_carta_lista."('".$id_carta_lista."',".$id_carta.",".$id_seccion.",".$id_item.",'".$item['precio_item']."','".$item['cant_item']."','".$item['cant_item']."',".$item['sec_orden'].")";
+
+				$sql_carta_lista_insert_update = "insert into carta_lista (idcarta_lista,idcarta,idseccion,iditem,precio,cantidad,cant_preparado,sec_orden) values ".$sql_carta_lista." ON DUPLICATE KEY UPDATE 
+												idcarta_lista=values(idcarta_lista),
+												idcarta=values(idcarta),
+												idseccion=values(idseccion),
+												iditem=values(iditem),
+												precio=values(precio),
+												cantidad=values(cantidad),
+												cant_preparado=values(cant_preparado),
+												sec_orden=values(sec_orden)";
+
+
+				// $bd->xConsulta($sql_carta_lista_insert_update);
+				$bd->xConsulta_NoReturn($sql_carta_lista_insert_update);
+				print $id_carta_lista.'|'.$id_item;
+			break;
 		//MI PEDIDO APP ANFITRION CLIENTE
 		//MI PEDIDO APP ANFITRION CLIENTE
 		case 204001: //guardar historial
@@ -3176,7 +3225,7 @@ function xDtUS($op_us){
 			break;
 		case 3012: // load datos del org sede 
 			$sql_us = "SELECT s.idorg, se.idsede, s.nombre, s.direccion,s.ruc, s.telefono , se.nombre as sedenombre , se.direccion as sededireccion, se.ciudad as sedeciudad, se.telefono as sedetelefono, se.eslogan, se.authorization_api_comprobante, se.id_api_comprobante, se.facturacion_e_activo, '' as logo64, se.ubigeo, se.codigo_del_domicilio_fiscal
-							,se.sys_local, se.ip_server_local
+							,se.sys_local, se.ip_server_local, se.pwa
 					from org as s 
 					inner JOIN sede as se on s.idorg = se.idorg 
 					where se.idorg = ".$g_ido." and se.idsede = ".$g_idsede;

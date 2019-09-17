@@ -15,6 +15,7 @@ Agregar un nuevo restaurante o sede.
 <input type="text" class="xMiInput xPasarEnter2" placeholder="RAZON SOCIAL" onChange="conMayusculas(this)" id="nombre" name="nombre" espaciar required>
 <div class="xInvisible">
 <input type="text" id="idorg" name="idorg" value$="{{xIdOrg}}">
+<input type="text" id="idsede" name="idsede" value$="{{xIdSede}}">
 </div>
 </form>
 <br>
@@ -70,8 +71,15 @@ Agregar un nuevo restaurante o sede.
 <input type="password" class="xMiInput xPasarEnter2" id="id_api_comprobante" name="id_api_comprobante" espaciar>
 <br><br>
 <p><strong>Plataforma | local o web</strong></p>
-<input type="text" class="xMiInput xPasarEnter2" placeholder="RUN LOCAL?" id="sys_local" name="sys_local" espaciar>
 <input type="text" class="xMiInput xPasarEnter2" placeholder="IP PRINT SERVER" id="ip_server_local" name="ip_server_local" espaciar>
+<paper-checkbox id="check_print_server"><span>Print server desde la web | version de internet</span></paper-checkbox>
+<br><br>
+<input type="text" class="xMiInput xPasarEnter2" placeholder="TIEMPO LIMITE EN MINUTOS PARA TOMAR PEDIDO" id="pwa_time_limit" name="pwa_time_limit" espaciar>
+<paper-checkbox id="check_pwa"><span>PWA con sockets</span></paper-checkbox>
+<div class="xInvisible">
+<input type="text" class="xMiInput xPasarEnter2" placeholder="RUN LOCAL?" id="sys_local" name="sys_local" espaciar>
+<input type="text" class="xMiInput xPasarEnter2" placeholder="CON PWA Y SOCKETS" id="pwa" name="pwa" espaciar>
+</div>
 <br><br>
 <p><strong>Escenario</strong></p>
 <select id="selTipo" class="xCursor">
@@ -95,13 +103,13 @@ Agregar un nuevo restaurante o sede.
 </template>
 </dom-module>
 <script>var xThisAdminNew,xPopupLoad;function xIniAdminNew(){xPopupLoad=document.getElementById('xLoad');xLoadAdmDatosOrg();}
-function xAdmGuardarOrg(){xPopupLoad.xopen();$.post("../../bdphp/ManejoBD_IUD.php?tb=org",$("#frm_org").serialize(),function(id){xPopupLoad.xclose();xAdmGuardarUsuario();xLoadOrg();});}
-function xAdmGuardarSede(){xPopupLoad.xopen();const selTipoVal=selTipo.value;$("#frm_sede #idorg").val(xThisAdminNew.xIdOrg);$("#frm_sede #idsede").val(xThisAdminNew.xIdSede);$("#frm_sede #tipo").val(selTipoVal);$.post("../../bdphp/ManejoBD_IUD.php?tb=sede",$("#frm_sede").serialize(),function(id){xPopupLoad.xclose();if(xThisAdminNew.xIdSede===''){xThisAdminNew.xIdSede=id;xAddNewConfigNewOrg(xThisAdminNew.xIdOrg,xThisAdminNew.xIdSede);}
+function xAdmGuardarOrg(){$("#frm_org #idorg").val(xThisAdminNew.xIdOrg);$("#frm_org #idsede").val(xThisAdminNew.xIdSede);xPopupLoad.xopen();$.post("../../bdphp/ManejoBD_IUD.php?tb=org",$("#frm_org").serialize(),function(id){xPopupLoad.xclose();xAdmGuardarUsuario();xLoadOrg();});}
+function xAdmGuardarSede(){xPopupLoad.xopen();const selTipoVal=selTipo.value;$("#frm_sede #idorg").val(xThisAdminNew.xIdOrg);$("#frm_sede #idsede").val(xThisAdminNew.xIdSede);$("#frm_sede #tipo").val(selTipoVal);const _printServerCheck=check_print_server.checked?1:0;const _pwaCheck=check_pwa.checked?1:0;$("#frm_sede #sys_local").val(_printServerCheck);$("#frm_sede #pwa").val(_pwaCheck);$.post("../../bdphp/ManejoBD_IUD.php?tb=sede",$("#frm_sede").serialize(),function(id){xPopupLoad.xclose();if(xThisAdminNew.xIdSede===''){xThisAdminNew.xIdSede=id;xAddNewConfigNewOrg(xThisAdminNew.xIdOrg,xThisAdminNew.xIdSede);}
 xLoadAdmDatosOrg();$("#frm_sede").reset();});}
-function xAdmGuardarUsuario(){const _data={idorg:xThisAdminNew.xIdOrg,idsede:0,u:txt_usuario.value,p:txt_usuario_password.value}
+function xAdmGuardarUsuario(){const _data={idorg:xThisAdminNew.xIdOrg,idsede:xThisAdminNew.xIdSede,u:txt_usuario.value,p:txt_usuario_password.value}
 $.ajax({type:'POST',url:'../../bdphp/log_004.php?op=201',data:{d:_data}}).done((res)=>{$("#txt_usuario").val('');$("#txt_usuario_password").val('');xThisAdminNew.xIdSede='';});}
 function xLoadAdmDatosOrg(){const dataOrg=localStorage.getItem('::app3_woOAdm')?JSON.parse(localStorage.getItem('::app3_woOAdm')):null;xThisAdminNew.xIdOrg='';if(dataOrg!==null){xThisAdminNew.xIdOrg=dataOrg.idorg;$("#frm_org #nombre").val(dataOrg.razonsocial);$("#frm_org #ruc").val(dataOrg.ruc);$.ajax({type:'POST',url:'../../bdphp/log_004.php?op=101',data:{idorg:dataOrg.idorg}}).done((res)=>{const _res=$.parseJSON(res);xThisAdminNew.ListSedesPorOrg=_res.datos;});$.ajax({type:'POST',url:'../../bdphp/log_004.php?op=102',data:{idorg:dataOrg.idorg}}).done((res)=>{txt_usuario.value=res;});}}
-function xAdmNewModificarSede(obj){const index=obj.parentElement.dataId;const dataSede=xThisAdminNew.ListSedesPorOrg[index];xThisAdminNew.xIdSede=xThisAdminNew.ListSedesPorOrg[index].idsede;$("#frm_sede #nombre").val(dataSede.nombre);$("#frm_sede #ciudad").val(dataSede.ciudad);$("#frm_sede #ubigeo").val(dataSede.ubigeo);$("#frm_sede #codigo_del_domicilio_fiscal").val(dataSede.codigo_del_domicilio_fiscal);$("#frm_sede #authorization_api_comprobante").val(dataSede.authorization_api_comprobante);$("#frm_sede #sufijo").val(dataSede.sufijo);$("#frm_sede #id_api_comprobante").val(dataSede.id_api_comprobante);$("#frm_sede #sys_local").val(dataSede.sys_local);$("#frm_sede #ip_server_local").val(dataSede.ip_server_local);$("#frm_sede #finicio").val(dataSede.finicio);selTipo.value=dataSede.tipo;}
+function xAdmNewModificarSede(obj){const index=obj.parentElement.dataId;const dataSede=xThisAdminNew.ListSedesPorOrg[index];xThisAdminNew.xIdSede=xThisAdminNew.ListSedesPorOrg[index].idsede;$("#frm_sede #nombre").val(dataSede.nombre);$("#frm_sede #ciudad").val(dataSede.ciudad);$("#frm_sede #ubigeo").val(dataSede.ubigeo);$("#frm_sede #codigo_del_domicilio_fiscal").val(dataSede.codigo_del_domicilio_fiscal);$("#frm_sede #authorization_api_comprobante").val(dataSede.authorization_api_comprobante);$("#frm_sede #sufijo").val(dataSede.sufijo);$("#frm_sede #id_api_comprobante").val(dataSede.id_api_comprobante);$("#frm_sede #sys_local").val(dataSede.sys_local);$("#frm_sede #ip_server_local").val(dataSede.ip_server_local);$("#frm_sede #pwa").val(dataSede.pwa);$("#frm_sede #finicio").val(dataSede.finicio);$("#frm_sede #pwa_time_limit").val(dataSede.pwa_time_limit);check_print_server.checked=dataSede.ip_server_local==="0"?false:true;check_pwa.checked=dataSede.pwa==="0"?false:true;selTipo.value=dataSede.tipo;}
 function xAdmNewNuevaSede(){$("#frm_sede").reset();$("#txt_usuario").val('');$("#txt_usuario_password").val('');xThisAdminNew.xIdSede='';$("#frm_sede #nombre").focus();}
 function xAdmNewValidarUsuario(obj){const _u=obj.value;if(_u==='')return;$.ajax({type:'POST',url:'../../bdphp/log_004.php?op=2',data:{u:_u}}).done((res)=>{xThisAdminNew.formValidUsuario=res.length===0?true:false;var msj_us_valido='Usuario Valido';var msj_us_valido_class='xRojo';$("#labelUsValido").removeClass('xInvisible');if(res.length===0){$("#labelUsValido").removeClass('xColorRow_Rojo');$("#labelUsValido").addClass('xColorRow_verde');}else{msj_us_valido='Usuario ya existe';$("#labelUsValido").addClass('xColorRow_Rojo');$("#labelUsValido").removeClass('xColorRow_verde')}
 $("#labelUsValido").text(msj_us_valido);});}
