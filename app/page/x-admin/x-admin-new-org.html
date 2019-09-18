@@ -15,7 +15,6 @@ Agregar un nuevo restaurante o sede.
 <input type="text" class="xMiInput xPasarEnter2" placeholder="RAZON SOCIAL" onChange="conMayusculas(this)" id="nombre" name="nombre" espaciar required>
 <div class="xInvisible">
 <input type="text" id="idorg" name="idorg" value$="{{xIdOrg}}">
-<input type="text" id="idsede" name="idsede" value$="{{xIdSede}}">
 </div>
 </form>
 <br>
@@ -103,7 +102,7 @@ Agregar un nuevo restaurante o sede.
 </template>
 </dom-module>
 <script>var xThisAdminNew,xPopupLoad;function xIniAdminNew(){xPopupLoad=document.getElementById('xLoad');xLoadAdmDatosOrg();}
-function xAdmGuardarOrg(){$("#frm_org #idorg").val(xThisAdminNew.xIdOrg);$("#frm_org #idsede").val(xThisAdminNew.xIdSede);xPopupLoad.xopen();$.post("../../bdphp/ManejoBD_IUD.php?tb=org",$("#frm_org").serialize(),function(id){xPopupLoad.xclose();xAdmGuardarUsuario();xLoadOrg();});}
+function xAdmGuardarOrg(){xPopupLoad.xopen();$.post("../../bdphp/ManejoBD_IUD.php?tb=org",$("#frm_org").serialize(),function(id){xPopupLoad.xclose();xAdmGuardarUsuario();});}
 function xAdmGuardarSede(){xPopupLoad.xopen();const selTipoVal=selTipo.value;$("#frm_sede #idorg").val(xThisAdminNew.xIdOrg);$("#frm_sede #idsede").val(xThisAdminNew.xIdSede);$("#frm_sede #tipo").val(selTipoVal);const _printServerCheck=check_print_server.checked?1:0;const _pwaCheck=check_pwa.checked?1:0;$("#frm_sede #sys_local").val(_printServerCheck);$("#frm_sede #pwa").val(_pwaCheck);$.post("../../bdphp/ManejoBD_IUD.php?tb=sede",$("#frm_sede").serialize(),function(id){xPopupLoad.xclose();if(xThisAdminNew.xIdSede===''){xThisAdminNew.xIdSede=id;xAddNewConfigNewOrg(xThisAdminNew.xIdOrg,xThisAdminNew.xIdSede);}
 xLoadAdmDatosOrg();$("#frm_sede").reset();});}
 function xAdmGuardarUsuario(){const _data={idorg:xThisAdminNew.xIdOrg,idsede:xThisAdminNew.xIdSede,u:txt_usuario.value,p:txt_usuario_password.value}

@@ -342,7 +342,7 @@ while($num_copias>=0){
 		$des_sbt=$item_sbt['descripcion'];//
 		$imp_sbt=$item_sbt['importe'];//
 
-		if($des_sbt=='Total'){
+		if(strtoupper($des_sbt)==strtoupper('Total')){
 			$importeTotal = $imp_sbt;
 			$printer -> selectPrintMode(Printer::MODE_DOUBLE_WIDTH);
 			$printer -> text(new item($des_sbt, $imp_sbt, true));
