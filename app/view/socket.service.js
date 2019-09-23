@@ -1,17 +1,17 @@
-const dtUs = xm_log_get('app3_us');
-var dataSocket = {
-    idorg: dtUs.idorg,
-    idsede: dtUs.idsede,
-    idusuario: dtUs.idus,
-    isFromApp: 0
-}
-
 var socketMonitoreo;
-isSocket = parseInt(xm_log_get('datos_org_sede')[0].pwa) === 0 ? false : true;
 
 /// monitoreo de stock ///
 function _monitoreoSocketOpen() {    
+    isSocket = parseInt(xm_log_get('datos_org_sede')[0].pwa) === 0 ? false : true;
     if (!isSocket) { return; }
+
+    const dtUs = xm_log_get('app3_us');
+    var dataSocket = {
+        idorg: dtUs.idorg,
+        idsede: dtUs.idsede,
+        idusuario: dtUs.idus,
+        isFromApp: 0
+    }
 
     socketMonitoreo = io.connect(URL_SOCKET, {
         query: dataSocket
@@ -48,6 +48,7 @@ function _monitoreoSocketEmitNewItemInCarta(item) {
 
 function _monitoreoSocketEmitItemModificado(item) {
     if (!isSocket) { return; }
+    item.sumar = 0; // suma completo // sino es true : false
     socketMonitoreo.emit('itemModificado', item);
 }
 

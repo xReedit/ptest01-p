@@ -1807,7 +1807,7 @@
 				SELECT p.idpedido,p.nummesa,p.numpedido,p.correlativo_dia,p.reserva, p.idtipo_consumo,
 					SUBSTRING_INDEX(u.nombres, ' ', 1) AS nom_usuario,p.referencia, p.subtotales_tachados,
 					concat('P',LPAD(p.correlativo_dia,5,'0')) AS des_pedido,TIMESTAMPDIFF(MINUTE , STR_TO_DATE(concat(p.fecha,' ',p.hora),'%d/%m/%Y %H:%i:%s'), CURRENT_TIMESTAMP() ) AS min_transcurridos
-					, p.tiempo_atencion, p.val_color_despachado, p.total
+					, p.tiempo_atencion, p.val_color_despachado, p.total, p.json_datos_delivery
 				FROM pedido AS p
 					INNER JOIN usuario AS u using(idusuario)
 				WHERE ".$condicion." and (p.idorg=".$g_ido." and p.idsede=".$g_idsede.") AND p.estado IN(0,1)

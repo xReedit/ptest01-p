@@ -1,4 +1,5 @@
 <dom-module id="x-caja">
+<script rel="preload" type="text/javascript" src="../../../js/socket.io.js"></script>
 <link rel="preload" href="../../../images/_msj_envio_sunat.gif" as="image" media="(max-width: 600px)">
 <template>
 <paper-dialog class="dialog_redondo" id="dialog_enviando_sunat" style="width:245px" modal entry-animation="scale-up-animation" exit-animation="fade-out-animation">
@@ -128,8 +129,8 @@
 <script type="text/javascript" src="../../view/item_pedido_print_comprobante.js"></script>
 <script type="text/javascript" src="../../view/cpe_interno.js"></script>
 <script type="text/javascript" src="../../view/xSOAPSunat.js"></script>
-<script>/*<![CDATA[*/var xThisCaja,xMontoTotalCaja,xSumData,xtbReport,xPermisoSupervisor=0,xArrayCierrePrint=[],xArrayEncabezadoCierre,xEfectivoCaja=0,nom_supervisor='',id_supervisor=0,xlo_idorg,xlo_idsede,xlo_us
-function xIniCaja(){xPopupLoad=document.getElementById('xLoad');xm_LogChequea(function(){xm_log_get('ini_us');$('body').addClass('loaded');xThisCaja.xt_org=xIdOrg;xThisCaja.xt_idsede=xIdSede;xThisCaja.xt_idus=xIdUsuario;$("#Titulo_page").text("Movimientos de Caja");xtbReport=$("#xTableList");});xPSupervisor=document.getElementById('xPSupervisor');xPSupervisor.addEventListener('xSend',function(e){var p=e.detail.xRpts[0].p;if(p==1){nom_supervisor=e.detail.xRpts[0].nomus;id_supervisor=e.detail.xRpts[0].us;xPermisoSupervisor=1;xVerificar()}});$('.xPasarEnter2').on('keyup',function(e){var xvalText=$(this).val();var xValDeno=$(this).attr('data-valor');if(xValDeno=='total'){return;}
+<script type="text/javascript" src="../../view/socket.service.p.js"></script>
+<script>/*<![CDATA[*/var xThisCaja,xMontoTotalCaja,xSumData,xtbReport,xPermisoSupervisor=0,xArrayCierrePrint=[],xArrayEncabezadoCierre,xEfectivoCaja=0,nom_supervisor='',id_supervisor=0,xlo_idorg,xlo_idsede,xlo_us,isSocket;function xIniCaja(){xPopupLoad=document.getElementById('xLoad');xm_LogChequea(function(){xm_log_get('ini_us');$('body').addClass('loaded');xThisCaja.xt_org=xIdOrg;xThisCaja.xt_idsede=xIdSede;xThisCaja.xt_idus=xIdUsuario;$("#Titulo_page").text("Movimientos de Caja");xtbReport=$("#xTableList");isSocket=parseInt(xm_log_get('datos_org_sede')[0].pwa)===0?false:true;});xPSupervisor=document.getElementById('xPSupervisor');xPSupervisor.addEventListener('xSend',function(e){var p=e.detail.xRpts[0].p;if(p==1){nom_supervisor=e.detail.xRpts[0].nomus;id_supervisor=e.detail.xRpts[0].us;xPermisoSupervisor=1;xVerificar()}});$('.xPasarEnter2').on('keyup',function(e){var xvalText=$(this).val();var xValDeno=$(this).attr('data-valor');if(xValDeno=='total'){return;}
 var xDeno=parseFloat(parseFloat(xvalText)/parseFloat(xValDeno));if(xDeno%1==0){$(this).removeClass('xTxtRojo');xSumarTotal();}else{$(this).addClass('xTxtRojo');}
 var code=e.which;if(code==13||code==186){var inputs=$('input');var a=inputs.index(document.activeElement);if(inputs[a+1]!==null)
 {var nextBox=inputs[a+1];if(nextBox===undefined){return}
@@ -142,7 +143,7 @@ $("#txt_fin").on('keyup',function(e){var code=e.which;if(code==13||code==186){xV
 $("#tab_caja").on('iron-select',function(){switch(xThisCaja.selected){case 0:xLoadResumenIS();break;}})}
 function xGuardarIngreso(){xvalidateFormInput('form_ingreso',function(a){if(a===false){return;}
 var xvalIE=$("#form_ingreso #selecie").val();xPopupLoad.xopen();$("#form_ingreso #fecha").val(xDevolverFecha()+' '+xDevolverHora());$("#form_ingreso #monto").val(xMoneda($("#form_ingreso #monto").val()))
-$("#form_ingreso #tipo").val(xvalIE);$.post("../../bdphp/ManejoBD_IUD.php?tb=ie_caja",$("#form_ingreso").serialize(),function(){xPopupLoad.xclose();$("#form_ingreso #motivo").val('');$("#form_ingreso #monto").val('');xLoadResumenIS();})})}
+$("#form_ingreso #tipo").val(xvalIE);$.post("../../bdphp/ManejoBD_IUD.php?tb=ie_caja",$("#form_ingreso").serialize(),function(aa){console.log(aa);xPopupLoad.xclose();$("#form_ingreso #motivo").val('');$("#form_ingreso #monto").val('');xLoadResumenIS();})})}
 function xGetDataCierre(idBitacora){$.ajax({type:'POST',url:'../../bdphp/log.php?op=7000',data:{id:idBitacora}}).done(function(res){res=JSON.parse(res);if(!res.success){console.log(res);xPopupLoad.xclose();return;}
 const arrData=JSON.parse(res.datos[0]['data']);const arrTitulo=JSON.parse(res.datos[0]['titulo']);var keyTitulo='',cIndex=0,arrX=[],arrRpt=[];arrData.map((x,i)=>{keyTitulo=Object.keys(x)[0];arrX=JSON.parse(x[keyTitulo]);if(arrX){arrRpt.push({des:arrTitulo[i].des,t1:arrTitulo[i].t1,t2:arrTitulo[i].t2,t3:arrTitulo[i].t3,visible:0,});arrX.map((z,q)=>{arrRpt[cIndex][q]=z;});cIndex++;}});xArrayCierrePrint=arrRpt;console.log('arrPrint',arrRpt);xPopupLoad.xclose();$("#btns_cierre").html('<paper-button tabindex="0" raised class="xverde" onclick="xCerrarSessionAll();"><iron-icon icon="close"></iron-icon>Cerrar terminal</paper-button>');xPermisoSupervisor=0;if(!xIniArraysPrint()){xVerificaSiFacturacionE();return;}
 xImprimirCierre(xArrayEncabezadoCierre,xArrayCierrePrint);});}
@@ -187,4 +188,4 @@ xtbReport.find('#'+seccion).html(xTitulo+xTituloEncabezadoTB+xCadenaAdd+xtotal+'
 function xImprimir(){var xCtrCierre=$("#ImprimeCierre");xCtrCierre.find('#xImpFecha').text(xDevolverFecha()+' '+xDevolverHora());xImprSelec('ImprimeCierre');}
 function xCerrarTerminal(){xCerrarSession();}
 function xReImprimirCierre(){dialog_erro_print.close();xPopupLoad.titulo="Enviando...";xPopupLoad.xopen();xImprimirCierre(xArrayEncabezadoCierre,xArrayCierrePrint);}
-Polymer({is:'x-caja',properties:{xt_org:Number,xt_idsede:Number,xt_idus:Number},attached:function(){this.selected=0;xThisCaja=this;xIniCaja();}})/*]]>*/</script>
+Polymer({is:'x-caja',properties:{xt_org:Number,xt_idsede:Number,xt_idus:Number},attached:function(){this.selected=0;xThisCaja=this;xIniCaja();_cpSocketIsConnect();},detached:function(){_cpSocketClose();}})/*]]>*/</script>

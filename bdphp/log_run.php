@@ -19,7 +19,7 @@ switch($_GET['op'])
 			ob_flush();
 			flush();
 			// ob_end_clean();
-			break;
+			break;		
 		case 2: //	verifica si existe pedido nuevo || zona de despacho
 			$tipo_consumo=$_GET["tp"];
 			$idseccion=$_GET["ids"];
@@ -39,6 +39,15 @@ switch($_GET['op'])
 			echo "retry: 4000\n"."data:".$numero_pedidos_actual_2.",".$hora."\n\n";
 			ob_flush();
 			flush();
+			break;
+		case 201: // fom socket	verifica si existe pedido nuevo || zona de despacho
+			$tipo_consumo=$_GET["tp"];
+			$idseccion=$_GET["ids"];
+
+			$sql="CALL procedure_run_zona_d_2('".$tipo_consumo."','".$idseccion."',".$g_ido.",".$g_idsede.");";
+			$numero_pedidos_actual_2=$bd->xDevolverUnDato($sql);
+			$hora=date('H:i:s');
+			echo $numero_pedidos_actual_2.",".$hora;
 			break;
 		case 3: // comprobar conexion
 			echo true; 

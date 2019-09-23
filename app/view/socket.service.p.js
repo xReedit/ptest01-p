@@ -1,34 +1,47 @@
-const dtUs = xm_log_get('app3_us');
-var dataSocket = {
-    idorg: dtUs.idorg,
-    idsede: dtUs.idsede,
-    idusuario: dtUs.idus,
-    isFromApp: 0
-}
+var socketCP;
+function _cpSocketOpen() { 
+    if (isSocket) {
+        isSocket = parseInt(xm_log_get('datos_org_sede')[0].pwa) === 0 ? false : true;
 
-isSocket = parseInt(xm_log_get('datos_org_sede')[0].pwa) === 0 ? false : true;
-if (isSocket) {
+        const dtUs = xm_log_get('app3_us');
+        var dataSocket = {
+            idorg: dtUs.idorg,
+            idsede: dtUs.idsede,
+            idusuario: dtUs.idus,
+            isFromApp: 0
+        }
 
-    var socketCP = io.connect(URL_SOCKET, {
-        query: dataSocket
-    });
+        socketCP = io.connect(URL_SOCKET, {
+            query: dataSocket
+        });
 
-    // restore si hay
+        // restore si hay
 
-    socketCP.on('nuevoPedido', (data) => {   
-        _cpSocketPintarPedido(data);    
-        console.log('nuevoPedido socket cp');
-    });
+        socketCP.on('nuevoPedido', (data) => { 
+            try {
+                _cpSocketPintarPedido(data);    
+                console.log('nuevoPedido socket cp'); 
+            } catch (error) {
+                
+            }          
+        });
 
-    socketCP.on('itemModificado', (item) => {
-        // console.log('itemModificado socket cp');
-        _cpStockItemModificado(item);
-    });
+        socketCP.on('itemModificado', (item) => {
+            // console.log('itemModificado socket cp');
+            try { // puede venir de zona de despacho             
+                _cpStockItemModificado(item);
+            } catch (error) {}
+        });
 
-    socketCP.on('printerOnly', (item) => {
-        // console.log('printerOnly socket cp');
-        _cpSocketPintarPedido(item); // no importa la data ya que se utiliza para acutalizar a la antigua
-    });
+        socketCP.on('printerOnly', (item) => {
+            try {
+            // console.log('printerOnly socket cp');
+            _cpSocketPintarPedido(item); // no importa la data ya que se utiliza para acutalizar a la antigua   
+            } catch (error) {
+                
+            }        
+        });
+    }
 }
 
 function _cpSocketIsConnect() {
@@ -37,17 +50,21 @@ function _cpSocketIsConnect() {
 
     try {
         if (!socketCP.connected) {
-            socketCP = io.connect(URL_SOCKET, {
-                query: dataSocket
-            });
+            _cpSocketOpen();
         }   
     } catch (error) {
-        socketCP = io.connect(URL_SOCKET, {
-            query: dataSocket
-        });
+        // socketCP = io.connect(URL_SOCKET, {
+        //     query: dataSocket
+        // });
+        _cpSocketOpen();
     }    
 }
 
+// notifica nuevo pedido
+function _cpSocketprinterOnly(pedido) {
+    if (!isSocket) { return; }
+    socketCP.emit('printerOnly', pedido);
+}
 
 function _cpSocketEmitItemModificado(item) {
     if (!isSocket) { return; }
