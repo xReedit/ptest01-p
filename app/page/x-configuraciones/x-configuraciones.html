@@ -406,6 +406,7 @@ Tambien puede ingresar servicios fijos que se cobran <strong>por pedido.</strong
 <thead>
 <th>Seccion</th>
 <th>Imprime o muestra en:</th>
+<th></th>
 </thead>
 </table>
 <div class="xInvisible">
@@ -651,7 +652,7 @@ xArrayPasarTest={'ip_print':$(xClasTr+" #ip").val(),'mum_copias':0,'pie_pagina':
 if(_sys_local===1){xPopupLoad.xopen();xSendDataPrintServer(_data,3,'prueba');setTimeout(()=>{xPopupLoad.xclose();},1000);return;}
 $.ajax({type:'POST',url:'../../print/x-test_print.php',data:{Array_enca:xArrayPasarTest}}).done(function(dtPrint){if(dtPrint.indexOf('Error')!=-1){alert(dtPrint)}})}
 function xLoadSecciones(){$.ajax({type:'POST',url:'../../bdphp/log.php?op=409'}).done(function(dtSec){var xdtSec=$.parseJSON(dtSec);var xCadena_sec='';xdtSec=xdtSec.datos
-for(var i=0;i<xdtSec.length;i++){$("#sel_impr_Sec  option[value="+xdtSec[i].idimpresora+"]").attr('selected','selected');xCadena_sec=String(xCadena_sec+'<tr class="row" data-t="seccion" data-id="'+xdtSec[i].idseccion+'"><td>'+xdtSec[i].plato+'</td><td><select class="xsel_sec_print" data-id="'+xdtSec[i].idseccion+'">'+$("#sel_impr_Sec")[0].innerHTML+'</select></td></tr>')
+for(var i=0;i<xdtSec.length;i++){$("#sel_impr_Sec  option[value="+xdtSec[i].idimpresora+"]").attr('selected','selected');xCadena_sec=String(xCadena_sec+'<tr class="row" data-t="seccion" data-id="'+xdtSec[i].idseccion+'"><td>'+xdtSec[i].plato+'</td><td><select class="xsel_sec_print" data-id="'+xdtSec[i].idseccion+'">'+$("#sel_impr_Sec")[0].innerHTML+'</select></td><td><span class="xDeleteRow" title="Borrar" onclick="xDialogBorrarObj(this);"></span></td></tr>')
 $("#sel_impr_Sec  option[value="+xdtSec[i].idimpresora+"]").attr('selected',false);};$("#tb_sec_impr .row").remove();$("#tb_sec_impr").append(xCadena_sec).trigger('create');xLoadSecciones_bodega();})}
 function xLoadSecciones_bodega(){$.ajax({type:'POST',url:'../../bdphp/log.php?op=40901'}).done(function(dtSec){var xdtSec=$.parseJSON(dtSec);var xCadena_sec='';xdtSec=xdtSec.datos
 for(var i=0;i<xdtSec.length;i++){$("#sel_impr_Sec_bodega  option[value="+xdtSec[i].idimpresora+"]").attr('selected','selected')

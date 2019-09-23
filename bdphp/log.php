@@ -1019,7 +1019,7 @@
 				INNER JOIN seccion AS s using(idseccion)
 				INNER JOIN item AS i using(iditem)
                 LEFT JOIN ( SELECT idorg, idsede, idcarta FROM carta where idcategoria=".$_POST['i']." ) AS uc ON uc.idorg=c.idorg AND uc.idsede=c.idsede
-			WHERE (c.idorg=".$g_ido." AND c.idsede=".$g_idsede.") and cl.estado=0 and (c.idcarta=uc.idcarta) order by s.sec_orden,s.descripcion,i.descripcion
+			WHERE (c.idorg=".$g_ido." AND c.idsede=".$g_idsede.") and cl.estado=0 and (c.idcarta=uc.idcarta) and s.estado=0 order by s.sec_orden,s.descripcion,i.descripcion
 			";
 			$bd->xConsulta($sql);
 			break;
@@ -1629,7 +1629,7 @@
 			$sql="
 				SELECT s.idseccion, s.descripcion AS plato,ifnull(i.idimpresora,0)AS idimpresora, ifnull(i.descripcion,'Ninguno') as descripcion FROM seccion AS s
 				left JOIN impresora AS i using(idimpresora)
-				WHERE (s.idorg=".$g_ido." AND s.idsede=".$g_idsede.")
+				WHERE (s.idorg=".$g_ido." AND s.idsede=".$g_idsede.") and s.estado=0
 				ORDER BY s.idseccion
 				";
 			$bd->xConsulta($sql);
