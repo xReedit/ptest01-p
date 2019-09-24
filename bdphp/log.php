@@ -415,6 +415,17 @@
 			$sql="";
 			$bd->xConsulta($sql);
 			break;
+		case 2021:
+			$sql="
+				(SELECT idporcion as value, concat('PORCION | ',descripcion) AS label, idsede, 2 as procede_tabla from porcion where idsede=1 and estado=0)
+				UNION ALL
+				(SELECT iditem as value, concat('ITEM | ',descripcion) AS label, idsede, 1 as procede_tabla from item where idsede=1 and estado=0)
+				UNION ALL
+				(SELECT idproducto as value, concat('PRODUCTO | ',descripcion) AS label, idsede, 0 as procede_tabla from producto where idsede=1 and estado=0)
+				ORDER BY label
+			";
+			$bd->xConsulta($sql);
+			break;
 		case 203://guardar seccion
 			$id=$_POST['i'];
 			//if($id=='undefined'){$id='';}

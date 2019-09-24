@@ -1,0 +1,508 @@
+<dom-module id="x-promociones">
+    
+    <template>
+		<br>
+		<div class="xMiCard xradius" style="width:85%">
+			<div class="xEncanezadoCard xFondoRowAmarillo4">
+				<p><strong>Combos y promociones.</strong><br> Seleccione un item de la carta e indique los item, productos o porciones que contiene.</p>
+				<p>Luego indique los dias la hora y el precio.</p>
+			</div>
+			<div class="xContentCard">
+				<div class="x_div_linea">
+					<div class="xitem1 xBordeDe">
+						<p><strong>Item de la Carta</strong></p>
+						<form id="frm_item">
+							<input type="text" id="item_des_carta" class="xMiInput xPasarEnter2 xDesItem" style="width:90%;" placeholder="item de carta" onChange="conMayusculas(this)" required id="des_item_porcionar" espaciar>
+							<input type="number" class="xMiInput _xcant" style="width:50%;" placeholder="Cantidad" onChange="conMayusculas(this)" required id="txt_precio_item" espaciar>
+							<!-- <input type="number" class="xMiInput xPasarEnter2" style="width:50%;" placeholder="Stock actual" id="txt_precio_item" encendido espaciar> -->
+							<br><br>
+							<!-- <paper-checkbox id="check_enlaze">Enlazar</paper-checkbox><br><br>
+							<span class="xColorRow_Plomo xfont11">Enlazar este producto con la porcion al momento de registrar la compra, esto puede realizarse si el producto no se transforma es decir cuando el producto mantiene la misma unidad de medida y el mismo peso que la compra. Ejemplo: Huevos; cuando compre huevos tambien se actualizara la porcion</span> -->
+						</form>
+					</div>
+					<div class="xitem2">
+						<p><strong>Lo que contiene</strong></p>
+						<table class="xtable4" width="100%" id="tb_contiene" data-TablaName="porcion">
+							<thead>
+								<th class="xSinBorde" width="60%"></th>								
+								<th class="xSinBorde" width="10px"></th>
+								<th class="xSinBorde" width="10px"></th>
+							</thead>
+							<tr class="xSinBorde" data-id="">
+								<td><input type="text" id="des_all_item" class="xMiInput xPasarEnter2 xDesItem" placeholder="Descripcion" onChange="conMayusculas(this)" required></td>
+								<td><input type="number" class="xMiInput _xcant" placeholder="Cantidad" onChange="conMayusculas(this)" id="cant_all_item" required></td>
+								<td><paper-fab icon="add" onclick="addItemContiene()" title="Agregar item" class="xmini"></paper-fab></td>
+                            </tr>
+                            <template is="dom-repeat" items="{{listItemContiene}}" as="item">
+                                <tr data-index="[[index]]">
+                                    <td>{{item.descripcion}}</td>
+                                    <td>{{item.cantidad}}</td>
+                                    <td><span class="xDeleteRowNeutro" title="Borrar" onclick="xBorrarItemAllLocal(this);"></span></td>
+                                </tr>
+                            </template>
+                        </table>
+                        <br><br>
+                        <div class="xLinea2"></div>
+                        <br>
+                        <p><strong>Tiempo y precio</strong></p>
+                        <br>
+                        <paper-checkbox data-index="1" data-dia="LUN" class="check-d">LUN</paper-checkbox>
+                        <paper-checkbox data-index="2" data-dia="MAR" class="check-d">MAR</paper-checkbox>
+                        <paper-checkbox data-index="3" data-dia="MIE" class="check-d">MIE</paper-checkbox>
+                        <paper-checkbox data-index="4" data-dia="JUE" class="check-d">JUE</paper-checkbox>
+                        <paper-checkbox data-index="5" data-dia="VIE" class="check-d">VIE</paper-checkbox>
+                        <paper-checkbox data-index="6" data-dia="SAB" class="check-d">SAB</paper-checkbox>
+                        <paper-checkbox data-index="7" data-dia="DOM" class="check-d">DOM</paper-checkbox>
+                        <br><br>                        
+                        <div id="div-hora">
+                                <input type="text" style="width: 100px" class="xMiInput xPasarEnter2" placeholder="Hora Inicio" id="h_ini" required>
+                                <input type="text" style="width: 100px" class="xMiInput xPasarEnter2" placeholder="Hora Fin" id="h_fin" required>
+                                <input type="text" style="width: 100px" class="xMiInput xPasarEnter2" placeholder="Precio" id="precio" required>
+                                <paper-fab icon="add" onclick="xAddTiempoPrecio()" title="Agregar item" class="xmini"></paper-fab>
+                        </div>
+                        <br><br>
+
+                        <table class="xtable4" width="100%" id="tb_precio" data-TablaName="porcion">
+							<thead>
+                                <th class="xSinBorde" width="40%">Dias</th>								
+                                <th class="xSinBorde" width="20px">H.Ini</th>
+								<th class="xSinBorde" width="20px">H.Fin</th>
+                                <th class="xSinBorde" width="20px">Precio</th>
+                                <th class="xSinBorde" width="10px">.</th>
+                            </thead>
+                            <template is="dom-repeat" items="{{listDayPrecio}}" as="item">
+                                <tr data-index="[[index]]">
+                                    <td>{{item.dias}}</td>
+                                    <td>{{item.h_ini}}</td>
+                                    <td>{{item.h_fin}}</td>
+                                    <td>{{item.precio}}</td>
+                                    <td><span class="xDeleteRowNeutro" title="Borrar" onclick="xBorrarItemAllLocal(this);"></span></td>
+                                </tr>
+                            </template>
+							<!-- <tr class="xSinBorde" data-id="">
+								<td><input type="text" class="xMiInput xPasarEnter2 xDesItem" placeholder="Descripcion" onChange="conMayusculas(this)" required id="des_porcion"></td>								
+								<td><input type="number" class="xMiInput _xcant" placeholder="Cantidad" onChange="conMayusculas(this)" id="cant_porcion" required></td>
+								<td><paper-fab icon="add" onclick="xAddItemPorcionado()" title="Agregar item" class="xmini"></paper-fab></td>
+							</tr> -->
+                        </table>
+					</div>
+				</div>
+				<br><br><br>
+				<div class="xInvisible">
+					<table id="tb_almacen_items" data-TablaName="almacen_items"></table>
+				</div>
+			</div>
+			<div class="xPieCard">
+				<br>
+				<div class="xBoton2 xAzul xDerecha">Listo, guardar</div>
+				<br><br>
+			</div>
+		</div>
+	</template>
+    	
+</dom-module>
+<script>
+var xThisProm
+, xidproducto_porcionado=0
+, xtt_ingredientes=0
+, xes_nuevo_item=0
+, xid_item="", _listItemContiene, _listDayPrecio;
+
+function xIniPromociones(){
+	xPopupLoad=document.getElementById('xLoad');
+	xm_LogChequea(function(){
+		xm_log_get('ini_us');
+		$('body').addClass('loaded');
+		//if(xIdOrg=='' || xIdOrg==undefined){xIdOrg=window.localStorage.getItem('::app3_wo');}
+		//if(xIdSede=='' || xIdSede==undefined){xIdSede=window.localStorage.getItem('::app3_woS');}
+		$("#Titulo_page").text("Ofertas y Combos");		
+
+		// xListaDeRecetas();
+        // xloadDataRecetas();
+        xLoadItemsCategoria();
+
+        _listItemContiene = [];
+        _listDayPrecio = [];
+        xThisProm.listItemContiene = [];
+        xThisProm.listDayPrecio = [];
+	})
+
+	$('.xPasarEnter2').on('keyup',function(e){
+			var code=e.which;
+			if ( code==13||code==186 ) {
+				var inputs = $('input'); // storage a array of Inputs
+			    var a = inputs.index(document.activeElement);
+			    if (inputs[a + 1] !== null)
+			    {
+			      var nextBox = inputs[a + 1];
+			      if(nextBox===undefined){return}
+			      if(nextBox.disabled){nextBox = inputs[a + 2]}
+
+			      if(nextBox==undefined){return;}
+			  	  nextBox.focus();
+			  	  nextBox.select();
+			    }
+			    event.stopPropagation();
+			    e.stopPropagation();
+			    e.stopImmediatePropagation();
+			    return false;
+			}
+	});
+	$("#costo_item").on('keyup',function(e){
+		var code=e.which;
+		if ( code==13||code==186 ) {
+			xAddItemIngrediente()
+		}
+	});
+
+	$("#txt_bus").on('keyup',function(){
+		xBuscarTbData($("#tb_platos"),$(this).val());
+	});
+	$("#txt_precio").on('keyup',function(e){
+		xRefreshImportes();
+		var code=e.which;
+		if ( code==13||code==186 ) {
+			$("#des_porcion").focus();
+		}
+	});
+
+	$("#cant_all_item").on('keyup',function(e){
+		// var xcosto_ingrediente=$("#costo_item").val();
+		// var xcan_item=$("#cant_item").val();
+		// xcosto_ingrediente=parseFloat(xcosto_ingrediente)*parseFloat(xcan_item);
+		// if(isNaN(xcosto_ingrediente)){xcosto_ingrediente=0;}
+		// xcosto_ingrediente=parseFloat(xcosto_ingrediente).toFixed(2);
+        // $("#costo_item").val(xcosto_ingrediente);
+        var code=e.which;
+        if ( code==13||code==186 ) { addItemContiene(); }        
+	});
+}
+
+function xLoadItemsCategoria(){
+	xPopupLoad.titulo="Cargando...";
+	xPopupLoad.xopen();
+	$.ajax({ type: 'POST', url: '../../bdphp/log.php?op=2'})
+	.done( function (dtI) {
+		var xdtI=$.parseJSON(dtI);
+		xThisProm.dt_item=xdtI.datos;
+		xCargarEnInputItem();
+        //var xdtItem=eval((JSON.stringify(xdtI.datos).replace(/des_item/g,'label')).replace(/iditem/g,'value'));
+
+        $.ajax({ type: 'POST', url: '../../bdphp/log.php?op=2021'})
+        .done( function (dtI) {
+            xdtI=$.parseJSON(dtI);
+            xThisProm.dt_all_item=xdtI.datos;		
+            xCargarEnInputAllItem();
+        });
+        
+        xPopupLoad.xclose();
+    });
+        
+}
+
+function xCargarEnInputItem(){
+	var xdtI=xThisProm.dt_item;
+	var xObjTxtItem=$("#item_des_carta");
+		xObjTxtItem.autocomplete({
+			autoFocus:true,
+			source:xdtI,
+			select: function( event, ui ) {
+				xObjTxtItem.val(ui.item.label);
+		        xObjTxtItem.attr('data-value',ui.item.value);
+                xObjTxtItem.parents().find('#txt_precio_item').val(ui.item.precio);
+                // xObjTxtItem.parents().find('#txt_cant_item').val(ui.item.cantidad);
+		        //xObjTxtItem.parents('tr').find('#item_precio').focus();
+		        return false;
+		    },
+		    focus:function(event, ui){return false;},
+		    change:function( event, ui ) {
+		    	if(ui.item===null){
+		    		xObjTxtItem.attr('data-value',"");                    
+                    xObjTxtItem.parents().find('#txt_precio_item').val(ui.item.precio);
+		    	}
+		    	return false;
+		    }
+		});
+}
+
+function xCargarEnInputAllItem(){
+	var xdtIAll=xThisProm.dt_all_item;
+	var xObjTxtItem=$("#des_all_item");
+		xObjTxtItem.autocomplete({
+			autoFocus:true,
+			source:xdtIAll,
+			select: function( event, ui ) {
+				xObjTxtItem.val(ui.item.label);
+                xObjTxtItem.attr('data-value',ui.item.value);
+                xObjTxtItem.attr('data-procede_tabla',ui.item.procede_tabla);
+                // xObjTxtItem.parents().find('#txt_precio_item').val(ui.item.precio);
+                // xObjTxtItem.parents().find('#txt_cant_item').val(ui.item.cantidad);
+		        //xObjTxtItem.parents('tr').find('#item_precio').focus();
+		        return false;
+		    },
+		    focus:function(event, ui){return false;},
+		    change:function( event, ui ) {
+		    	if(ui.item===null){
+		    		xObjTxtItem.attr('data-value',"");
+		    		// xObjTxtItem.parents('tr').find('#item_precio').val('');
+		    	}
+		    	return false;
+		    }
+		});
+}
+
+function addItemContiene() {
+    // const objtextItem = $('#des_all_item');    
+    if ( cant_all_item.value === '' ||  des_all_item.value === '') return;
+
+    const _cantidad = cant_all_item.value;
+    const itemAdd = {
+        id: des_all_item.dataset.value,
+        procede: des_all_item.dataset.procede_tabla,
+        descripcion: des_all_item.value,
+        cantidad: _cantidad
+    }
+    _listItemContiene.push(itemAdd);
+    xThisProm.listItemContiene = JSON.parse(JSON.stringify(_listItemContiene));
+
+    cant_all_item.value = '';
+    des_all_item.value = '';
+}
+
+function xBorrarItemAllLocal(obj) {
+    const index = obj.parentElement.parentElement.dataIndex;
+    _listItemContiene = xThisProm.listItemContiene;
+    
+    delete _listItemContiene[index];
+    // _listItemContiene.splice(index, 0);
+
+    xThisProm.listItemContiene = JSON.parse(JSON.stringify(_listItemContiene));
+    xBorrarItem(obj);
+    
+}
+
+function xAddTiempoPrecio() {
+    var listIdDia = []; 
+    var listDia = []; 
+    $('.check-d').each((e, i) => {
+        if ( i.checked ) {
+            listDia.push(i.dataset.dia)
+            listIdDia.push(i.dataset.index);
+        }
+    });
+    
+    const addInsert = {
+        idDias: listIdDia.join(','),
+        dias: listDia.join(','),
+        h_ini: h_ini.value,
+        h_fin: h_fin.value,
+        precio: xMoneda(precio.value),
+    }
+
+    _listDayPrecio.push(addInsert);
+    xThisProm.listDayPrecio = JSON.parse(JSON.stringify(_listDayPrecio));
+}
+
+// function xNuevoPlato(){
+// 	xes_nuevo_item=1;
+
+// 	//$("#frm_item").reset();
+// 	//$("#frm_item #iditem").val('');
+// 	$("#tb_item #tr_des").removeClass('xInvisible');
+// 	$("#xdes_item_titulo").addClass('xInvisible');
+// 	xNuevaIngredientes();
+// 	dialog_detalle_receta.open();
+// }
+// function xNuevaIngredientes(){
+// 	$("#tb_ingredientes .row").remove();
+// 	$("#tb_ingredientes .row_tt").remove();
+// 	$("#frm_item").reset();
+// 	$("#txt_descripcion").val('');
+// 	$("#txt_precio").val('');
+// 	$("#txt_costo_t").val('');
+// 	$("#txt_rentabilidad").val('');
+// 	xtt_ingredientes=0;
+// 	xid_item="";
+// 	dialog_detalle_receta.close();
+// }
+// function xAbrirDetalleReceta(obj){
+// 	xNuevaIngredientes();
+// 	xid_item=$(obj).attr('data-id');
+// 	xes_nuevo_item=0;
+
+// 	var xdes_tr=$(obj).find('#xtr_des').text();
+// 	xdes_tr=xdes_tr.split('|');
+// 	xdes_tr=xdes_tr[1].trim();
+// 	$("#tb_item #tr_des").addClass('xInvisible');
+// 	$("#xdes_item_titulo").removeClass('xInvisible');
+// 	$("#xdes_item_titulo").text(xdes_tr);
+
+// 	$("#txt_precio").val($(obj).find('#xtr_precio').text())
+// 	$("#txt_costo_t").val($(obj).find('#xtr_costo').text())
+// 	$("#txt_rentabilidad").val($(obj).find('#xtr_rentabilidad').text())
+
+// 	//detalle de ingredientes
+// 	$("#tb_ingredientes").append('<tr class="row"><td colspan="4"><paper-spinner active></paper-spinner></td></tr>').trigger('create');
+// 	$.ajax({ type: 'POST', url: '../../bdphp/log.php?op=1702', data:{i:xid_item}})
+// 	.done( function (dtDetalleI) {
+// 		var xdtDetalleI=$.parseJSON(dtDetalleI);
+// 		var xcadena_det_i='';
+// 		xdtDetalleI=xdtDetalleI.datos
+// 		for (var i = 0; i < xdtDetalleI.length; i++) {
+// 			xcadena_det_i=String(xcadena_det_i+'<tr class="row">'+
+// 			'<td data-ColumName="descripcion">'+xdtDetalleI[i].descripcion+'</td>'+
+// 			'<td align="right" data-ColumName="cantidad">'+xdtDetalleI[i].cantidad+'</td>'+
+// 			'<td align="right" data-ColumName="costo" class="row_costo">'+xdtDetalleI[i].costo+'</td>'+
+// 			'<td><span class="xDeleteRowNeutro" title="Borrar" onclick="xBorrarItemLocalPro(this);"></span></td>'+
+// 			'<td data-ColumName="iditem" class="xInvisible">-item</td>'+
+// 			'<td data-ColumName="idporcion" class="xInvisible">'+xdtDetalleI[i].idporcion+'</td>'+
+// 			'</tr>');
+// 		};
+
+// 		$("#tb_ingredientes .row").remove();
+// 		$("#tb_ingredientes").append(xcadena_det_i).trigger('create');
+// 		xSumaringredientes();
+// 	})
+
+// 	//xRefreshImportes();
+// 	dialog_detalle_receta.open();
+// }
+
+// function xloadDataRecetas(){
+// 	//listado de porciones para ingredientes
+// 	$.ajax({ type: 'POST', url: '../../bdphp/log.php?op=1701'})
+// 	.done( function (DtItemsPor) {	
+// 		var xDtItemsPor=$.parseJSON(DtItemsPor);
+// 		xThis.dtProItem_porcion=xDtItemsPor.datos;
+// 		xCargarDtProcionesTxt();
+// 	})
+// }
+// function xUpdateNewItem(){
+// 	xPopupLoad.xopen();
+// 	$("#frm_item #iditem").val(xid_item);
+// 	$("#frm_item #idorg").val(xIdOrg);
+// 	$("#frm_item #idsede").val(xIdSede);
+// 	$("#frm_item #precio").val($("#txt_precio").val());
+// 	$("#frm_item #costo").val($("#txt_costo_t").val());
+// 	if(xes_nuevo_item==1){
+// 		//nuevo
+// 		$("#frm_item #descripcion").val($("#txt_descripcion").val());
+// 	}else{
+// 		$("#frm_item #descripcion").val($("#xdes_item_titulo").text());
+// 	}
+// 	$.post("../../bdphp/ManejoBD_IUD.php?tb=item",$("#frm_item").serialize(),function(xultimo_id_item){
+// 		xid_item=xultimo_id_item;
+// 		xGuardarRegistroReceta();
+// 	})
+// }
+// function xGuardarRegistroReceta(){
+// 	var xsql_remove='';
+// 	var sql_ingrediente=xArmarInsertDetalle($("#tb_ingredientes"),'','');
+// 	if(xid_item!=""){//si no es nuevo
+// 		xsql_remove="delete from item_ingrediente where iditem="+xid_item+";";
+// 	}
+// 	sql_ingrediente=sql_ingrediente.replace(/-item/g,xid_item);
+// 	sql_ingrediente=xsql_remove+' '+sql_ingrediente;
+// 	$.ajax({ type: 'POST', url: '../../bdphp/log.php?op=100', data:{xsql:sql_ingrediente}})
+// 		.done( function (dtsuccess) {
+// 			xPopupLoad.xclose();
+// 			xNuevaIngredientes();
+// 			xListaDeRecetas();
+// 		})
+// }
+
+// function xAddItemIngrediente(){
+// 	var xtb_ingrediente=$("#tb_ingredientes");
+// 	var xdes_ingrediente=$("#des_porcion").val();
+// 	var xcosto_ingrediente=$("#costo_item").val();
+// 	var xcan_item=$("#cant_item").val();
+
+// 	if(xdes_ingrediente=="" || xcosto_ingrediente==""){return;}
+// 	xcosto_ingrediente=parseFloat($("#costo_item").val()).toFixed(2);
+// 	//xcosto_ingrediente=parseFloat(parseFloat(xcosto_ingrediente)*parseFloat(xcan_item)).toFixed(2);
+
+
+// 	var xrow_ingrediente='<tr class="row">'+
+// 			'<td data-ColumName="descripcion">'+xdes_ingrediente+'</td>'+
+// 			'<td align="right" data-ColumName="cantidad">'+xcan_item+'</td>'+
+// 			'<td align="right" data-ColumName="costo" class="row_costo">'+xcosto_ingrediente+'</td>'+
+// 			'<td><span class="xDeleteRowNeutro" title="Borrar" onclick="xBorrarItemLocalPro(this);"></span></td>'+
+// 			'<td data-ColumName="iditem" class="xInvisible">-item</td>'+
+// 			'<td data-ColumName="idporcion" class="xInvisible">'+xidproducto_porcionado+'</td>'+
+// 			'</tr>';
+
+// 	xtb_ingrediente.append(xrow_ingrediente).trigger('create');
+// 	xSumaringredientes();
+
+// 	$("#des_porcion").val('');
+// 	$("#costo_item").val('');
+// 	$("#cant_item").val('');
+// 	$("#des_porcion").focus();
+// }
+
+// function xSumaringredientes(){
+// 	xtt_ingredientes=parseFloat(xSumaCantRow($("#tb_ingredientes"),'.row_costo')).toFixed(2);
+// 	$("#tb_ingredientes .row_tt").remove();
+// 	$("#tb_ingredientes").append('<tr class="row_tt"><td align="right" colspan="3"><strong>'+xtt_ingredientes+'</strong></td><td></td></tr>').trigger('create');
+// 	xRefreshImportes();
+// }
+// function xRefreshImportes(){
+// 	var xtt_precio=$("#txt_precio").val();
+// 	var xdif_tt;
+// 	var xrent_por=0;
+
+// 	$("#txt_costo_t").val(xtt_ingredientes);
+// 	xdif_tt=parseFloat(parseFloat(xtt_precio)-parseFloat(xtt_ingredientes)).toFixed(2);
+// 	xrent_por=Math.round((parseFloat(xdif_tt)/parseFloat(xtt_precio))*100)+'%';
+// 	$("#txt_rentabilidad").val(xdif_tt+' | '+xrent_por);
+// }
+
+// function xBorrarItemLocalPro(obj){
+// 	var xObj=$(obj).parent().parent();
+// 	xObj.fadeTo(550, 0, function () {$(this).remove();xSumaringredientes();});
+// }
+
+// function xCargarDtProcionesTxt(){
+// 	var xObjTxtItemProPor=$("#des_porcion");
+// 		xObjTxtItemProPor.autocomplete({
+// 			autoFocus:true,
+// 			source:xThis.dtProItem_porcion,
+// 			appendTo : $('#dialog_detalle_receta'),
+// 			select: function( event, ui ) {
+// 				xObjTxtItemProPor.val(ui.item.label);
+// 		        xObjTxtItemProPor.attr('data-id',ui.item.value);
+// 		        xidproducto_porcionado=ui.item.value
+// 		        $("#costo_item").val(ui.item.precio_unitario)
+// 		        $("#cant_item").val(1);
+// 		        return false;
+// 		    },
+// 		    focus:function(event, ui){return false;},
+// 		    change:function( event, ui ) {
+// 		    	if(ui.item===null){
+// 		    		xObjTxtItemProPor.attr('data-value',"");
+// 		    		xObjTxtItemProPor.attr('data-id',"");
+// 		    		xidproducto_porcionado=0;
+// 		    		$("#costo_item").val('');
+// 		    		$("#cant_item").val(1);
+// 		    	}
+// 		    	return false;
+// 		    }
+// 		});
+// }
+
+
+Polymer({
+	is:'x-promociones',
+	properties:{
+        dt_item: Object,
+        dt_all_item: Object,
+        dtProItem_porcion:Object,
+        listItemContiene: [],
+        listDayPrecio: []
+	},
+	attached:function(){
+    	xThisProm=this;
+    	xIniPromociones();
+    }
+})
+</script>
