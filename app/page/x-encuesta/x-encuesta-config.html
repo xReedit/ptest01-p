@@ -1,0 +1,423 @@
+<dom-module id="x-encuesta-config">
+    <template is="dom">
+
+        <paper-dialog class="dialog_redondo"  id="dialog_borrar" entry-animation="scale-up-animation"
+			exit-animation="fade-out-animation"
+			with-backdrop>
+			<div class="xtxtCentro">
+				<img src="../../../images/_dlg_remove.gif" alt="" width="150px">
+			</div>
+			<p>Esta seguro de querer borrar este registro?</p>
+			<br>
+			<div class="buttons">
+				<button class="xBoton2 xPlomo" dialog-dismiss>Cancelar</button>
+				<button class="xBoton2 xRojo" onclick="xDlgBorrar();">Si, borrar</button>
+			</div>
+        </paper-dialog>
+        
+        <paper-dialog class="dialog_redondo" style="min-width: 350px"  id="dialog_new_encuesta" entry-animation="scale-up-animation"
+			exit-animation="fade-out-animation"
+			with-backdrop>			
+			<p>Nueva Encuesta</p>
+            <br>
+            <form id="frmNewEncuesta">
+                <input type="text" class="xMiInput xPasarEnter2" placeholder="Nombre" id="nombre" name="nombre" espaciar>
+                <div class="xInvisible">
+                    <input type="text" id="idorg" name="idorg">
+                    <input type="text" id="idsede" name="idsede">
+                    <input type="text" id="idusuario" name="idusuario">
+                    <input type="text" id="fecha_creacion" name="fecha_creacion">
+                </div>
+            </form>
+            <br>
+			<div class="buttons">
+				<button class="xBoton2 xPlomo" dialog-dismiss>Cancelar</button>
+				<button class="xBoton2 xVerde" onclick="xGuardarNewEncuesta();">Guardar</button>
+			</div>
+		</paper-dialog>
+
+        <paper-dialog class="dialog_redondo" style="min-width: 350px"  id="dialog_new_pregunta" entry-animation="scale-up-animation"
+			exit-animation="fade-out-animation"
+			with-backdrop>			
+			<p>Nueva pregunta</p>
+            <br>
+            <form id="frmNewPregunta">
+                <input type="text" class="xMiInput xPasarEnter2" placeholder="Pregunta" id="pregunta" name="pregunta" espaciar>
+                <div class="xInvisible">                    
+                    <input type="text" id="idsede" name="idsede">                    
+                </div>
+            </form>
+			<div class="buttons">
+				<button class="xBoton2 xPlomo" dialog-dismiss>Cancelar</button>
+				<button class="xBoton2 xVerde" onclick="xGuardarNewPregunta();">Guardar</button>
+			</div>
+		</paper-dialog>
+
+        <br>
+		<div class="xMiCard xradius" style="width:90%">
+			<div class="xEncanezadoCard xFondoRowAmarillo2">
+				<h3>Encuestas.</h3>
+				<p>Tener clientes complacidos o plenamente satisfechos es uno de los factores clave para alcanzar el éxito en los negocios. Cualquier organización que quiera entender qué piensan sus clientes sobre su producto, su servicio o su marca necesita hacer una encuesta de satisfacción.</p>
+			</div>		
+            <div class="xContentCard" style="margin: 0 auto; width: 50%;">
+                <div>
+                    <!-- nombre de la encuesta -->
+                    <div>
+                        <div class="dis-flex">
+                            <h2 style="padding-right: 10px">Encuestas</h2>
+                            <paper-fab mini icon="add" onclick="dialog_new_encuesta.open()" class="xDerecha"></paper-fab>
+                        </div>
+                        <table width="100%">
+                            <tbody>
+                                <template is="dom-repeat" items="{{ListEncuestas}}" as="item">
+                                    <tr data-index="{{index}}" data-t="encuesta_sede_conf" data-id="{{item.idencuesta_sede_conf}}" onclick="xLoadEncuestaSelect(this)" class="xCursor">
+                                        <td>{{item.fecha_creacion}}</td>
+                                        <td>{{item.nombre}}</td>
+                                        <td><span class="xDeleteRow2" title="Anular" onclick="xDialogBorrarObj(this);"></span></td>
+                                    </tr>
+                                </template>
+                            </tbody>
+                        </table>
+
+                    </div>
+                    <br>
+                    <!-- bienvenida opcional y final obligatorio -->
+                    <div>
+                        <h3>Inicio y fin</h3>
+                        <label for="txt_ini" class="xColorRow_Plomo">Inicio</label>
+                        <input type="text" class="xMiInput xPasarEnter2" id="txt_ini" value="Tu opinión es muy importante y nos ayudará a mejorar." espaciar>
+                        <!-- <hr> -->
+                        <label for="txt_fin" class="xColorRow_Plomo">Agradecimineto (Final)</label>
+                        <input type="text" class="xMiInput xPasarEnter2" id="txt_fin" value="Gracias por responder." espaciar>
+
+                    </div>
+                    <!-- <hr> -->
+
+                    <!-- preguntas -->
+                    <br>
+                    <div>
+                        <h3>Preguntas</h3>
+                        <span class="xColorRow_Plomo">Le recomendamos solo 4 preguntas como maximo, para que la encuesta no sea cansada para el cliente.</span>
+                        <hr>
+                        <h4>Preguntas Sugeridas</h4>
+                        <div id="ListPreguntasSugeridas">
+                            <ul>
+                                <template is="dom-repeat" items="{{ListPreguntasSugeridas}}" as="item">
+                                    <li class="li-p">
+                                        <paper-checkbox class="xcheck_pregunta" checked$="[[item.checked_obligatorio]]" disabled$="[[item.checked_obligatorio]]" data-isobligatorio = "[[item.checked_obligatorio]]" data-index="{{index}}" data-procede="s"><span hidden$="[[!item.checked_obligatorio]]"><strong>Obligatorio</strong> </span>  {{item.pregunta}}</paper-checkbox>
+                                    </li>
+                                </template>
+                            </ul>
+
+                            <h4>Preguntas creadas</h4>
+                            <ul>
+                                <template is="dom-repeat" items="{{ListPreguntasUsuario}}" as="item">
+                                    <li class="li-p" data-t="encuesta_preguntas" data-id$="{{item.idencuesta_preguntas}}">
+                                        <paper-checkbox class="xcheck_pregunta" data-index="{{index}}" data-procede="u">{{item.pregunta}}</paper-checkbox>
+                                        <span class="xColorRow_Rojo xCursor"><strong onclick="xBorrarItem(this)">Borrar</strong></span>
+                                    </li>
+                                </template>
+                            </ul>
+
+                        </div>
+                        <div id="ListPreguntasUsuario">
+                        </div>
+                        <button class="xBoton2 xAzul" onclick="dialog_new_pregunta.open();">Crear Pregunta</button>
+                    </div>
+                    <hr>
+                    <!-- urls -->
+                    <br>
+                    <div>
+                        <h3>Links para compartir</h3>
+                        <p id="url_encuesta">papaya.com.pe.encusesta/ioioimmM</p>
+                    </div>
+                    <hr>
+                    <br>
+                    <div class="xDerecha">
+                        <button class="xBoton2 xVerde" disabled$="{{!isValidSave}}" onclick="xGuardarEncuesta();">Listo Guardar Cambios.</button>
+                    </div>
+                    <br><br><br><br>
+                </div>
+            </div>
+        </div>    
+        <br><br>
+    </template>
+</dom-module>
+<style>
+    .li-p {
+        list-style: none;
+        padding: 2px;
+    }
+</style>
+<script>
+        var xThisEnC, xObjBorrar, xIdEncuesta;
+    
+        function xIniEncuestaConfig() {
+    
+            $('body').addClass('loaded');
+    
+            
+                var _dtUs = xm_log_get('app3_us');
+                xThisEnC.xt_org=_dtUs.ido;
+                xThisEnC.xt_idsede=_dtUs.idsede;
+                xThisEnC.xt_idus=_dtUs.idus;	
+
+                xThisEnC.isValidSave = false;
+                
+                xLoadAllEncuestas();
+                xGetLoadPreguntas();
+            
+            $('.xPasarEnter2').on('keyup',function(e){
+                var code=e.which;
+                if ( code==13||code==186 ) {
+                    var inputs = $('input'); // storage a array of Inputs
+                    var a = inputs.index(document.activeElement);
+                    if (inputs[a + 1] !== null)
+                    {
+                    var nextBox = inputs[a + 1];
+                    if(nextBox===undefined){return}
+                    if(nextBox.disabled){nextBox = inputs[a + 2]}
+    
+                    if(nextBox==undefined){return;}
+                    nextBox.focus();
+                    nextBox.select();
+                    //event.preventDefault();
+                    }
+                    return false;
+                }
+            });                        
+        }
+
+        function xGetLoadPreguntas() {
+            // preguntas //
+            xGetLoadPreguntasSugeridas();
+            xGetLoadPreguntasUsuario();
+        }
+
+        function xGetLoadPreguntasSugeridas() {
+            $.ajax({
+					type: 'GET',
+					url: '../../bdphp/log_005.php?op=7'
+				})
+				.done(function (dtValues) {
+                    dtValues = JSON.parse(dtValues);
+                    dtValues.datos.map(x => {
+                        x.checked_obligatorio = x.obligatorio === '1' ? true : false;
+                        return x;
+                    });
+
+                    console.log(dtValues.datos);
+					xThisEnC.ListPreguntasSugeridas = dtValues.datos;					
+				});
+        }
+
+        function xGetLoadPreguntasUsuario() {
+            $.ajax({
+					type: 'GET',
+					url: '../../bdphp/log_005.php?op=701'
+				})
+				.done(function (dtValues) {
+                    if (dtValues === '') return;
+
+					dtValues = JSON.parse(dtValues);
+                    xThisEnC.ListPreguntasUsuario = dtValues.datos;		
+                    console.log(dtValues.datos);			
+				});
+        }
+        
+        function xGuardarNewPregunta() {            
+            const pText = $("#frmNewPregunta #pregunta").val();
+            if (pText === '') {return; }
+
+            const frm_new_pregunta = $("#frmNewPregunta");
+            frm_new_pregunta.find("#idsede").val(xThisEnC.xt_idsede);
+            // frm_new_pregunta.find("#idorg").val(xThisEnC.xt_org);
+
+            xPopupLoad.xopen();
+            $.post("../../bdphp/ManejoBD_IUD.php?tb=encuesta_preguntas",$("#frmNewPregunta").serialize(),function(a){
+                xPopupLoad.xclose();
+                dialog_new_pregunta.close();
+                xGetLoadPreguntasUsuario()
+            });
+
+        }
+
+        function xGuardarNewEncuesta() {            
+            const pText = $("#frmNewEncuesta #nombre").val();
+            if (pText === '') {return; }
+            
+            xPopupLoad.xopen();
+            const frm_new_encuesta = $("#frmNewEncuesta");
+            frm_new_encuesta.find("#idsede").val(xThisEnC.xt_idsede);
+            frm_new_encuesta.find("#idorg").val(xThisEnC.xt_org);
+            frm_new_encuesta.find("#idusuario").val(xThisEnC.xt_idus);
+            frm_new_encuesta.find("#fecha_creacion").val(xDevolverFecha());
+
+            xPopupLoad.xopen();
+            $.post("../../bdphp/ManejoBD_IUD.php?tb=encuesta_sede_conf",$("#frmNewEncuesta").serialize(),function(idRpt){
+                xPopupLoad.xclose();
+                dialog_new_encuesta.close();
+
+                xResetControlEncuesta();
+                xLoadAllEncuestas();
+
+                xIdEncuesta = idRpt;
+                xThisEnC.isValidSave  = true;
+            });
+
+        }
+
+        function xborrarPregunta(obj) {
+            const i = obj.dataset.index;
+            const id = xThisEnC.ListPreguntasUsuario[i].idencuesta_preguntas_usuario;
+
+        }
+
+        function xGuardarEncuesta() {
+            xPopupLoad.xopen();
+            var json_pregunta = [];
+            var itemPregunta = {};
+            var json_encuesta = {};
+            var itemPreguntaObligatorio = {};
+            $('.xcheck_pregunta').each((i, e) => {
+                if ( !e.checked ) {return; }
+                const indexRow = e.dataIndex;
+                const procede = e.dataset.procede;
+
+                if (!e.dataIsobligatorio) { 
+                    itemPregunta = procede === 's' ? xThisEnC.ListPreguntasSugeridas[indexRow] :  xThisEnC.ListPreguntasUsuario[indexRow];
+                    itemPregunta.procede = procede;
+
+                    json_pregunta.push(itemPregunta);
+                } else {
+                    itemPreguntaObligatorio = procede === 's' ? xThisEnC.ListPreguntasSugeridas[indexRow] :  xThisEnC.ListPreguntasUsuario[indexRow];
+                    itemPreguntaObligatorio.procede = procede;
+                }
+                
+            });
+
+            if (itemPreguntaObligatorio) {
+                json_pregunta.push(itemPreguntaObligatorio);
+            }
+
+            json_encuesta.inicio = txt_ini.value;
+            json_encuesta.fin = txt_fin.value;
+            json_encuesta.preguntas = json_pregunta;
+            json_encuesta.idencuesta = xIdEncuesta;
+
+            const _link = xGetLinkShared();
+
+            $('#url_encuesta').text(_link);
+
+
+            $.ajax({
+					type: 'POST',
+                    url: '../../bdphp/log_005.php?op=702',
+                    data: {item: json_encuesta, link: _link}
+				})
+				.done(function (dtRpt) {                    
+                    console.log(dtRpt);
+                    xPopupLoad.xclose();
+				});
+        }
+
+        function xLoadAllEncuestas() {
+            $.ajax({
+					type: 'GET',
+                    url: '../../bdphp/log_005.php?op=703'                    
+				})
+				.done(function (dtRpt) {                    
+                    xThisEnC.ListEncuestas = JSON.parse(dtRpt).datos;                    
+				});
+        }
+
+        function xLoadEncuestaSelect(obj) {
+            xPopupLoad.xopen();
+            const i = obj.dataId;            
+            xResetControlEncuesta();
+
+            // load preguntas
+            $.ajax({
+					type: 'POST',
+                    url: '../../bdphp/log_005.php?op=704',
+                    data: {id: i}
+				})
+				.done(function (dtRpt) {   
+                    dtRpt = JSON.parse(dtRpt).datos[0];  
+                    xIdEncuesta = dtRpt.idencuesta_sede_conf;
+                    xThisEnC.isValidSave  = true;
+                    $('#url_encuesta').text(dtRpt.link);
+
+                    const listPreguntasE = JSON.parse(dtRpt.preguntas);
+
+                    if (!listPreguntasE) { xPopupLoad.xclose(); return;}
+                    txt_ini.value = listPreguntasE ? listPreguntasE.inicio : txt_ini.value;
+                    txt_fin.value = listPreguntasE ? listPreguntasE.fin : txt_fin.value;
+
+                    $('.xcheck_pregunta').each((i, e) => {
+                        if (!e.dataIsobligatorio) {
+                            const isCheck = listPreguntasE.preguntas.filter(x => e.innerText.trim().toLowerCase() === x.pregunta.toLowerCase())[0];
+                            e.checked = isCheck ? true : false;                                                            
+                        }
+                    });
+
+                    xPopupLoad.xclose();
+				});
+
+        }
+
+        function xResetControlEncuesta() {
+            $('.xcheck_pregunta').each((i, e) => { 
+                if (!e.dataIsobligatorio) {
+                    e.checked = false 
+                }
+            });
+            $('#url_encuesta').text('');
+            xThisEnC.isValidSave  = false;
+
+        }
+
+        // borrar encuesta
+        function xDlgBorrar() {
+            xBorrarItem(xObjBorrar);
+            dialog_borrar.close();
+            xThisEnC.isValidSave  = false;
+        }
+
+        function xDialogBorrarObj(obj, event) {
+            xObjBorrar = obj;
+            dialog_borrar.open();
+           
+            // event.stopPropagation();
+        }
+
+        function xGetLinkShared() {
+            const dataLink = {
+                o: xThisEnC.xt_org,
+                s: xThisEnC.xt_idsede,
+                r: false,
+                e: xIdEncuesta
+            }
+
+            const _link = 'http://appx.papaya.com.pe/encuesta/?o=' + btoa(JSON.stringify(dataLink));
+            console.log(_link);
+            return _link;
+        }
+        
+    
+        Polymer({
+            is: 'x-encuesta-config',
+            properties: {
+                xt_org:Number,
+                xt_idsede:Number,
+                isValidSave: Boolean,                
+                ListPreguntasSugeridas: [],
+                ListPreguntasUsuario: [],
+                ListEncuestas: []
+            },
+            attached: function () {                
+                xThisEnC = this;
+                xIniEncuestaConfig();
+            }
+        })
+    </script>

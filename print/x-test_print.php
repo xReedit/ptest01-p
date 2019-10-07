@@ -1,5 +1,5 @@
 <?php	
-session_start();
+// session_start();
 date_default_timezone_set('America/Lima');	
 require __DIR__ . '/autoload.php';
 use Mike42\Escpos\Printer;
@@ -20,6 +20,8 @@ $val_size_font_comanda_tall = array_key_exists('var_size_font_tall_comanda', $Ar
 $size_font_comanda_tall = (int)$val_size_font_comanda_tall===0 ? false : true;
 $val_size_font_comanda_tall++; //tamaño de letra,1+1>2 2+1>3
 
+// $printImg64=$ArrayEnca['img64']; // si imprime el logo en 64btis
+
 $fecha_actual=date('d').'/'.date('m').'/'.date('y');
 $hora_actual=date('H').':'.date('i').':'.date('s');
 try {
@@ -39,20 +41,51 @@ try {
 	return;
 }
 
+$printer -> text('MESA 01'."\n");
 
-$connector->write(Printer::GS.'L'.$var_margen_iz);
+
+// $connector->write(Printer::GS.'L'.$var_margen_iz);
+// $printer -> setFont($var_size_font);
+
+
+// tamaño de papel
+// 0 = 80mm 1 = 58mm
+$papel_size = (int)$ArrayEnca['papel_size'];
+
+// lineas hr - divisor
+$linea_hr = '';
+$espacioAlFinal = false; // en impresoras de 58- 57mm  no aparece el ultimo texto 
+$GLOBALS['leftCols'] = 38;
+switch ($papel_size) {
+	case '0': // 80mm
+		$linea_hr = "------------------------------------------------\n";
+		$GLOBALS['leftCols'] = 38;
+		$espacioAlFinal = false;
+		break;
+	case '1': // 58mm
+		$linea_hr = "------------------------------------------\n";
+		$GLOBALS['leftCols'] = 32;
+		$espacioAlFinal = true;
+		break;	
+}
+
+$connector->write(Printer::GS.'L'.$var_margen_iz);			
 $printer -> setFont($var_size_font);
 
 if($logo_post!=''){
-	$logo = EscposImage::load($logo_post, false);
+	// $logo = EscposImage::load($logo_post, false);
+	// $printer -> graphics($logo);
+	
 	$printer -> setJustification(Printer::JUSTIFY_CENTER);
-	$printer -> graphics($logo);
+	$logo = EscposImage::load($logo_post, false);
+	$printer -> bitImage($logo);	
 }	
-/* ENCABEZADO */
+/* ENCABEZADO */	
+	if ($espacioAlFinal) {$printer -> feed();}
 	$printer -> selectPrintMode(Printer::MODE_DOUBLE_WIDTH);
 	$printer -> text('MESA 01'."\n");
 	$printer -> selectPrintMode();
-	$printer -> text("------------------------------------------------\n");
+	$printer -> text($linea_hr);
 	$printer -> text('Referencia del pedido ej: Sr. Perez'."\n");
 	$printer -> feed();
 
@@ -73,7 +106,7 @@ if($logo_post!=''){
 	$printer -> setJustification(Printer::JUSTIFY_LEFT);
 	$printer -> setEmphasis(true);				
 	$printer -> text('ENTRADAS'."\n");
-	$printer -> text("------------------------------------------------\n");	
+	$printer -> text($linea_hr);	
 	$printer -> setEmphasis(false);
 
 	//destalles
@@ -88,7 +121,7 @@ if($logo_post!=''){
 	$printer -> setJustification(Printer::JUSTIFY_LEFT);
 	$printer -> setEmphasis(true);				
 	$printer -> text('PLATOS DE FONDO'."\n");
-	$printer -> text("------------------------------------------------\n");	
+	$printer -> text($linea_hr);	
 	$printer -> setEmphasis(false);
 
 	//destalles
@@ -99,12 +132,18 @@ if($logo_post!=''){
 	
 	/* TOTALES */
 	$printer -> feed();
-	$printer -> text("------------------------------------------------\n");
+	$printer -> text($linea_hr);
 	$printer -> setEmphasis(true);
 	
 	$printer -> selectPrintMode(Printer::MODE_DOUBLE_WIDTH);	
 	$printer -> text(new item('TOTAL', '39.00', true));
 	$printer -> selectPrintMode();
+
+	/* CODIGO QR */
+	$testStr = 'CodigoQREjemplo';
+	$printer -> setJustification(Printer::JUSTIFY_CENTER);
+	$printer -> qrCode($testStr, Printer::QR_ECLEVEL_H, 5);	
+	$printer -> feed();
 
 	/* PIE DE PAGINA */	
 	$printer -> feed(2);
@@ -112,9 +151,10 @@ if($logo_post!=''){
 	$printer -> text($ArrayEnca['pie_pagina']."\n");
 	$printer -> feed(2);
 	$printer -> text("Atendido por: PEDRO \n");
-	$printer -> text($fecha_actual.' | '.$hora_actual. "\n");
-
+	$printer -> text($fecha_actual.' | '.$hora_actual. "\n");		
 	$printer -> text("www.papaya.com.pe\n");
+	if ( $espacioAlFinal ) { $printer -> text("\n\n"); }
+	$printer -> feed(2);
 
 	$printer -> cut();
 	$printer -> close();
@@ -137,7 +177,7 @@ class item
     public function __toString()
     {
         $rightCols = 10;
-        $leftCols = 38;
+        $leftCols = $GLOBALS['leftCols'];
         if ($this -> dollarSign) {
             $leftCols = $leftCols / 2 - $rightCols / 2;
         }

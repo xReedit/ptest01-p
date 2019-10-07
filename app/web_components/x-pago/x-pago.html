@@ -24,6 +24,8 @@
 </paper-icon-button>
 <paper-input label="[[placeholder_clie]]" onkeyup="xValidarDNIRUC(this.value,event)" autofocus char-counter maxlength="11" pattern="[0-9]*" error-message={{mensajeErrorDocumento}} class="xPasarEnter2" id="sel_cliente">
 </paper-input>
+<paper-icon-button icon="icons:search" title="Buscar DNI" onclick="xValidarDNIRUC(null,event,false)" style="position:absolute;right:70px;margin-top:-48px">
+</paper-icon-button>
 <div class="xInvisible" id="progress_cliente">
 <paper-progress indeterminate style="width:100%;float:left;margin-top:-19px">
 </paper-progress>
@@ -80,12 +82,12 @@ e.stopPropagation();e.stopImmediatePropagation();});xtipoP=[];var xdif_text='',x
 xThisPago.diferencia=xdif_text;xThisPago.tipoPagoRequiereCliente=xtipoP.filter(x=>x.reqcliente==="1").length>0?true:false;if(xThisPago.clienteModel&&xThisPago.tipoPagoRequiereCliente){xThisPago.tipoPagoRequiereCliente=xThisPago.clienteModel.nombres===''?true:false;}
 xFireSend(xPase)
 if(evento&&evento.keyCode===13){xListoRegistraPago();}});}
-async function xValidarDNIRUC(valor,e){var servicio='ruc';xThisPago.mensajeErrorDocumento='';if(!xThisPago.$.sel_cliente.validate()){xThisPago.$.sel_cliente.invalid=true;xThisPago.mensajeErrorDocumento='Solo numeros';return;}
+async function xValidarDNIRUC(valor,e,tecla=true){var servicio='ruc';valor=valor?valor:sel_cliente.value;xThisPago.mensajeErrorDocumento='';if(!xThisPago.$.sel_cliente.validate()){xThisPago.$.sel_cliente.invalid=true;xThisPago.mensajeErrorDocumento='Solo numeros';return;}
 if(xThisPago.ComprobanteRequiereCliente&&e.keyCode!==13){if(xThisPago.tipoComprovanteSelecionado.codsunat==='01'){xThisPago.placeholder_clie='Cliente RUC';if(valor.length<11){xThisPago.$.sel_cliente.invalid=true;xThisPago.mensajeErrorDocumento='Nro de RUC no valido';}}else{xThisPago.placeholder_clie='Cliente DNI o RUC';}
 _inputAutocompleteObj.inputValue='';$("#clie_direccion").val('');xIdCliente_pago='';EmitirValidacionFormCliente();return;}
 if(valor.length<=8){xThisPago.placeholder_clie="DNI";servicio='dni';}else{xThisPago.placeholder_clie="RUC";if(valor.length<11){xThisPago.$.sel_cliente.invalid=true;xThisPago.mensajeErrorDocumento='Nro de RUC no valido';return;}}
 if(valor.length===0){xThisPago.placeholder_clie='Cliente DNI o RUC';_inputAutocompleteObj.inputValue='';$("#clie_direccion").val('');xIdCliente_pago='';return;}
-EmitirValidacionFormCliente();if(e.keyCode===13){xThisPago.$.sel_cliente.invalid=false;if(xThisPago.tipoComprovanteSelecionado.codsunat==='01'&&valor.length<11){xThisPago.$.sel_cliente.invalid=true;xThisPago.mensajeErrorDocumento='Nro de RUC no valido';e.stopPropagation();e.stopImmediatePropagation();return;}
+EmitirValidacionFormCliente();if(e.keyCode===13||!tecla){xThisPago.$.sel_cliente.invalid=false;if(xThisPago.tipoComprovanteSelecionado.codsunat==='01'&&valor.length<11){xThisPago.$.sel_cliente.invalid=true;xThisPago.mensajeErrorDocumento='Nro de RUC no valido';e.stopPropagation();e.stopImmediatePropagation();return;}
 if(valor.length<8){xThisPago.$.sel_cliente.invalid=true;xThisPago.mensajeErrorDocumento='N de documento no valido.';_inputAutocompleteObj.inputValue='';$("#clie_direccion").val('');xThisPago.hidden_container_cliente=true;e.stopPropagation();e.stopImmediatePropagation();return;}
 $("#progress_cliente").removeClass("xInvisible");xGetFindCliente(valor,servicio,(rpt)=>{if(rpt.success){xThisPago.valid_form_cliente_pago=true;xThisPago.hidden_container_cliente=false;setTimeout(()=>{xThisPago.mensajeErrorDocumento='';},100);}else{xThisPago.$.sel_cliente.invalid=true;xThisPago.mensajeErrorDocumento=rpt.msg;xThisPago.hidden_container_cliente=true;xThisPago.valid_form_cliente_pago=false;}
 xIdCliente_pago=rpt.idcliente;_inputAutocompleteObj.inputValue=rpt.nombres;$("#clie_direccion").val(rpt.direccion);$("#progress_cliente").addClass("xInvisible");EmitirValidacionFormCliente();});}}

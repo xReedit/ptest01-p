@@ -47,6 +47,7 @@
 <link rel=import href=../web_components/paper-toggle-button/paper-toggle-button.html>
 <link rel=import href=../web_components/paper-badge/paper-badge.html>
 <link rel=import href=../web_components/paper-progress/paper-progress.html>
+<link rel=import href=../web_components/paper-toggle-button/paper-toggle-button.html>
 <link rel=import href=../web_components/iron-icons/maps-icons.html>
 <link rel=import href=../web_components/x-pass/x-pass.html>
 <link rel=import href=../web_components/x-pago/x-pago.html>
@@ -103,13 +104,6 @@
 <br>
 </div>
 </paper-dialog>
-<div class=wrapper>
-<div id=loader-wrapper>
-<div id=loader></div>
-<div class="loader-section section-left"></div>
-<div class="loader-section section-right"></div>
-</div>
-</div>
 <paper-header-panel main>
 <paper-toolbar id=panel_toolbar>
 <paper-icon-button paper-drawer-toggle icon=menu onclick=xOpenPanelDe()></paper-icon-button>
@@ -124,8 +118,7 @@
 </div>
 </div>
 </paper-toolbar>
-<div fit layout vertical class="content xContent">
-<div class=xInvisible></div>
+<div fit layout vertical class="content xContent" id=x-main>
 <x-router></x-router>
 <paper-toast id=toast duration=0 text="Hello world!">
 <paper-progress id=loading indeterminate style=width:100%;float:left></paper-progress>

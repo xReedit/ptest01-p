@@ -16,6 +16,7 @@
 
 	$g_ido = $_SESSION['ido'];
 	$g_idsede = $_SESSION['idsede'];
+	$g_idusuario = $_SESSION['idusuario'];
 	$fecha_now = date("d/m/Y");
 	$hora_now = date("H:i:s");
 	
@@ -223,6 +224,37 @@
 				GROUP BY ch.iditem
 				ORDER by ch.sec_orden, s.descripcion, i.descripcion
 			";
+			$bd->xConsulta($sql);
+			break;
+		case 7:// encuesta -- load preguntas sugeridas
+			$sql = "Select * from encuesta_pregunta where idsede=0 and estado=0";
+			$bd->xConsulta($sql);
+			break;
+		case 701:// encuesta -- load preguntas usuario
+			$sql = "Select * from encuesta_pregunta where estado=0 and idsede=$g_idsede";
+			$bd->xConsulta($sql);
+			break;
+		case 702: // guardar encuensta
+			//$sqlIdEncuensta = "select idencuesta_sede_conf from encuesta_sede_conf where idsede=$g_idsede";
+			//$idEncuenta = $bd->xDevolverUnDato($sqlIdEncuensta);
+			// $arrItem=addslashes(json_encode($_POST['item']));
+			$link = $_POST['link'];
+			$arrItem=$_POST['item'];
+
+			$idEncuenta = $arrItem['idencuesta'];			
+			$arrItem=addslashes(json_encode($_POST['item']));			
+			
+			$sql = "update encuesta_sede_conf set link = '".$link."', preguntas = '".$arrItem."' where idencuesta_sede_conf=$idEncuenta";
+
+			$bd->xConsulta($sql);
+			break;
+		case 703: // load all encuestas
+			$sql = "select * from encuesta_sede_conf where idsede=$g_idsede and estado=0";
+			$bd->xConsulta($sql);
+			break;
+		case 704: // load enceusta select
+			$id = $_POST['id'];
+			$sql = "select * from encuesta_sede_conf where idencuesta_sede_conf=$id";
 			$bd->xConsulta($sql);
 			break;
 	}
