@@ -27,4 +27,4 @@ function xSoapSunat_cambiarFormatoFecha(input){const pattern=/(\d{4})\-(\d{2})\-
 return input.replace(pattern,"$3/$2/$1");}
 function xSoapSunat_cambiarFormatoFechaString(sfecha){return sfecha.split("/").reverse().join("-");}
 function xSoapSunat_cambiarFormatoFechaString2(sfecha){return sfecha.split("-").reverse().join("/");}
-function xSoapSunat_DownloadFile(tipo,id){const URL_COMPROBANTE_DOWNLOAD_FILE=xm_log_get('app3_sys_const')[1].value;const _url=`${URL_COMPROBANTE_DOWNLOAD_FILE}/${tipo}/${id}`;window.open(_url,"_blank");}
+function xSoapSunat_DownloadFile(tipo,id){const dtSede=xm_log_get("datos_org_sede")[0];const url_api_fac_sede=dtSede.url_api_fac||'';const URL_COMPROBANTE_DOWNLOAD_FILE=url_api_fac_sede===''?xm_log_get('app3_sys_const')[1].value:url_api_fac_sede.replace('api','downloads/document');const _url=`${URL_COMPROBANTE_DOWNLOAD_FILE}/${tipo}/${id}`;window.open(_url,"_blank");}
