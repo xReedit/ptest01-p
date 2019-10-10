@@ -27,7 +27,7 @@
             $obj['idregistro_pago'] = array_key_exists('idregistro_pago', $obj) ? $obj['idregistro_pago'] : '';
             $obj['error_api'] = array_key_exists('error_api', $obj) ? $obj['error_api'] : '0'; // si el api no responde igual tiene que emitir comprobante offline
 
-            $arrItem=json_encode($obj);
+            $arrItem=addslashes(json_encode($obj));
             // echo $arrItem;            
             $sql = "CALL procedure_cpe_registro(".$_SESSION['ido'].",".$_SESSION['idsede'].",".$_SESSION['idusuario'].",'".$arrItem."')";
             $bd->xConsulta($sql);

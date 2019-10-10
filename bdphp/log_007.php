@@ -29,6 +29,7 @@
 			$arrItem_establecimiento = $arrItem['establecimiento'];
 			$data_array = array(
 				"id" => $arrItem_establecimiento['userid'],
+				"ruc" => $arrItem_establecimiento['ruc'],
 				"s" => $arrItem_establecimiento['serie'],
 				"m" => $arrItem['m'],
 				"y" => $arrItem['y']
@@ -41,6 +42,24 @@
 			print json_encode($response);
 			
 			break;
+		case '3': // api 2
+			$arrItem=$_POST['item'];
+			$arrItem_establecimiento = $arrItem['establecimiento'];
+			$data_array = array(
+				"id" => $arrItem_establecimiento['userid'],
+				"ruc" => $arrItem_establecimiento['ruc'],
+				"s" => $arrItem_establecimiento['serie'],
+				"m" => $arrItem['m'],
+				"y" => $arrItem['y']
+			);
+
+			// echo json_encode($data_array);
+
+			$get_data = callAPI('GET-BODY-JSON', 'http://apifac2.papaya.com.pe:3719/api2/documents', json_encode($data_array));
+			$response = json_decode($get_data);
+			print json_encode($response);
+			
+			break;			
 	}
 
 ?>
