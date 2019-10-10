@@ -1,4 +1,4 @@
-var URL_COMPROBANTE=xm_log_get('app3_sys_const')[0].value;async function xSoapSunat_getArrNoRegistrado(){var rpt=[];await $.ajax({type:'POST',url:'../../bdphp/log_002.php',data:{'op':'301'}}).done(function(rptDate){data_response=$.parseJSON(rptDate);if(!data_response.success){alert(data_response.error);return;}
+var dtSede=xm_log_get("datos_org_sede")[0];var url_api_fac_sede=dtSede.url_api_fac||'';var URL_COMPROBANTE=url_api_fac_sede===''?xm_log_get('app3_sys_const')[0].value:url_api_fac_sede;var URL_COMPROBANTE_DOWNLOAD_FILE=url_api_fac_sede===''?xm_log_get('app3_sys_const')[1].value:url_api_fac_sede.replace('.pe/api','.pe/downloads/document');async function xSoapSunat_getArrNoRegistrado(){var rpt=[];await $.ajax({type:'POST',url:'../../bdphp/log_002.php',data:{'op':'301'}}).done(function(rptDate){data_response=$.parseJSON(rptDate);if(!data_response.success){alert(data_response.error);return;}
 rpt=data_response.datos;});return rpt;}
 async function xSoapSunat_getArrNoRegistradoSunat(){var rpt=[];await $.ajax({type:'POST',url:'../../bdphp/log_002.php',data:{'op':'3011'}}).done(function(rptDate){data_response=$.parseJSON(rptDate);if(!data_response.success){alert(data_response.error);return;}
 rpt=data_response.datos;});return rpt;}
@@ -27,4 +27,4 @@ function xSoapSunat_cambiarFormatoFecha(input){const pattern=/(\d{4})\-(\d{2})\-
 return input.replace(pattern,"$3/$2/$1");}
 function xSoapSunat_cambiarFormatoFechaString(sfecha){return sfecha.split("/").reverse().join("-");}
 function xSoapSunat_cambiarFormatoFechaString2(sfecha){return sfecha.split("-").reverse().join("/");}
-function xSoapSunat_DownloadFile(tipo,id){const dtSede=xm_log_get("datos_org_sede")[0];const url_api_fac_sede=dtSede.url_api_fac||'';const URL_COMPROBANTE_DOWNLOAD_FILE=url_api_fac_sede===''?xm_log_get('app3_sys_const')[1].value:url_api_fac_sede.replace('.pe/api', '.pe/downloads/document');const _url=`${URL_COMPROBANTE_DOWNLOAD_FILE}/${tipo}/${id}`;window.open(_url,"_blank");}
+function xSoapSunat_DownloadFile(tipo,id){const _url=`${URL_COMPROBANTE_DOWNLOAD_FILE}/${tipo}/${id}`;window.open(_url,"_blank");}
