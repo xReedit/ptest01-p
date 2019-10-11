@@ -1,5 +1,6 @@
 <link rel="import" href="../../x-componentes/x-comp-find-comprobante/x-comp-find-comprobante.html">
 <dom-module id="x-facturador">
+<script src="../../view/xm_all.js"></script>
 <template is="dom-bind">
 <paper-dialog id="dialog_erro_print" modal style="min-width:330px" modal entry-animation="scale-up-animation" exit-animation="fade-out-animation">
 <h4>Error en impresora</h4>
@@ -103,7 +104,7 @@
 <style type="text/css">:root{--font-size:12px;--paper-input-container-input:{font-size:var(--font-size)}--paper-input-container-label:{font-size:13px}}.tt_row td{font-weight:600;font-size:15px}</style>
 </dom-module>
 <script>/*<![CDATA[*/var xThisFacturador,xPopupLoad,_arrCliente=[],_arrTotal=[],_arrItems=[],cnf_ComprobanteSel,xIdCliente_pago,_listValid=false,_formValid=false,_modificarCliente=false;var impresoraSelect={},IdTpConsumo=0,rptDoc,itemsConEstructuraPrint,arr_comprobante=[],_idregistro,txt_fecha_cpe_manual='';function xIniFacturador(){xPopupLoad=document.getElementById('xLoad');xThisFacturador.formValid=false;_listValid=false;_formValid=false;xThisFacturador.modificarCliente=false;xThisFacturador.arrItems=[];xThisFacturador.arrTotales=[];xThisFacturador.listImpresoras=[];xThisFacturador.cpe_show=false;xThisFacturador.fecha_manual=false
-const arrEstructura=xm_log_get('estructura_pedido');IdTpConsumo=arrEstructura[0].idtipo_consumo;fact_getAllImpresoras();$('body').addClass('loaded');$('.xPasarEnter2').on('keyup',function(e){var code=e.which;if(code==13||code==186){var inputs=$('input');var a=inputs.index(document.activeElement);if(inputs[a+1]!==null){var nextBox=inputs[a+1];if(nextBox===undefined){return}
+const arrEstructura=xm_log_get('estructura_pedido');IdTpConsumo=arrEstructura[0].idtipo_consumo;fact_getAllImpresoras();$('body').addClass('loaded');$("#Titulo_page").text("Facturador");$('.xPasarEnter2').on('keyup',function(e){var code=e.which;if(code==13||code==186){var inputs=$('input');var a=inputs.index(document.activeElement);if(inputs[a+1]!==null){var nextBox=inputs[a+1];if(nextBox===undefined){return}
 if(nextBox.disabled){nextBox=inputs[a+2]}
 if(nextBox==undefined){return;}
 nextBox.focus();nextBox.select();}
@@ -130,7 +131,7 @@ async function xProcesarComprobante(){if(xThisFacturador.cpe_show){xMandarCocina
 xPopupLoad.xopen();arr_comprobante=cnf_ComprobanteSel;if(_arrCliente.length===0){const nombres_cliente=$("#txt_nombres").val();const direccion_cliente=$("#txt_direccion").val();_arrCliente={};_arrCliente.idcliente=0;_arrCliente.num_doc='00000000';_arrCliente.nombres=nombres_cliente===''?'PUBLICO EN GENERAL':nombres_cliente;_arrCliente.direccion=direccion_cliente;}else{_arrCliente.direccion=$("#txt_direccion").val();_arrCliente.idcliente=_arrCliente.idcliente===""?await ClienteService_Guardar(_arrCliente):_arrCliente.idcliente;}
 arr_comprobante.correlativo=xReturnCorrelativoComprobante(arr_comprobante);const arrCpeFac={idcliente:_arrCliente.idcliente,idcomprobante:arr_comprobante.idtipo_comprobante,num_comprobante:arr_comprobante.correlativo,subtotal:_arrTotal[0].importe,igv:_arrTotal[1].importe,total:_arrTotal[2].importe,}
 $.ajax({type:'POST',url:'../../bdphp/log_002.php',data:{op:'102',data:arrCpeFac,arrItems:_arrItems}}).done(function(ultimoIdCpeFac){_idregistro=[0,ultimoIdCpeFac];xMandarCocinarImpresionComprobante(arr_comprobante.correlativo,_idregistro);});}
-async function xMandarCocinarImpresionComprobante(correlativo,_idregistro){if(!xThisFacturador.cpe_show){arr_comprobante.fecha_manual=txt_fecha_cpe_manual;arr_comprobante=cnf_ComprobanteSel;arr_comprobante.correlativo=xReturnCorrelativoComprobante(arr_comprobante);itemsConEstructuraPrint=xCargarDatosAEstructuraImpresion(xThisFacturador.arrItems);rptDoc=await xCocinarImprimirComprobante(itemsConEstructuraPrint,_arrTotal,arr_comprobante,_arrCliente,_idregistro,-2,false)}
+async function xMandarCocinarImpresionComprobante(correlativo,_idregistro){if(!xThisFacturador.cpe_show){arr_comprobante.fecha_manual=txt_fecha_cpe_manual;arr_comprobante=cnf_ComprobanteSel;arr_comprobante.correlativo=correlativo;itemsConEstructuraPrint=xCargarDatosAEstructuraImpresion(xThisFacturador.arrItems);rptDoc=await xCocinarImprimirComprobante(itemsConEstructuraPrint,_arrTotal,arr_comprobante,_arrCliente,_idregistro,-2,false)}
 if(rptDoc.ok=false){alert(rptDoc.msj);return;}
 if(impresoraSelect.idimpresora===-1){const hash=rptDoc[0]?rptDoc[0].hash:rptDoc.hash;if(hash==='www.papaya.com.pe'){xPopupLoad.xclose();alert('Error con la conexion al servicio de Sunat. No puede descargar el pdf. Pero si puede imprimirlo. Este comprobante sera enviado a sunat al cerrar caja.');return;}
 xThisFacturador.cpe_show=true;xSoapSunat_DownloadFile('pdf',rptDoc[0].external_id);xPopupLoad.xclose();return;}else{xThisFacturador.cpe_show=true;xLLamarPrintFac();}}

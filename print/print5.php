@@ -84,7 +84,7 @@ switch ($papel_size) {
 $nom_empresa = $ArrayEnca[0]['nombre'];
 $ruc_empresa = $ArrayEnca[0]['ruc']; 
 $hash = $ArrayEnca[0]['hash'];
-$direccion_empresa = $ArrayEnca[0]['sededireccion'];
+$direccion_empresa = $ArrayEnca[0]['direccion'];
 $ciudad_empresa = $ArrayEnca[0]['sedeciudad'];
 $telefono_empresa = $ArrayEnca[0]['sedetelefono'];
 
