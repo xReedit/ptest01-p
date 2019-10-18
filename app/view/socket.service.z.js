@@ -1,6 +1,6 @@
 const dtUs = xm_log_get('app3_us');
 var dataSocket = {
-    idorg: dtUs.idorg,
+    idorg: dtUs.ido,
     idsede: dtUs.idsede,
     idusuario: dtUs.idus,
     isFromApp: 0
