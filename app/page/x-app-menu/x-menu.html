@@ -14,7 +14,7 @@
 </div>
 </template>
 </dom-module>
-<script>/*<![CDATA[*/var xThisMenu;function xIniMenu(){xm_log_get("ini_us");$("#xtitulo_bar").text("");var xDatos_p=xm_log_get("sede_generales");xCount_cant_ico=window.localStorage.getItem("::app3_sys_dta_count_ico");if(xCount_cant_ico==null){xCount_cant_ico=0;}
+<script>/*<![CDATA[*/var xThisMenu,isSocket=false;function xIniMenu(){xm_log_get("ini_us");$("#xtitulo_bar").text("");var xDatos_p=xm_log_get("sede_generales");xCount_cant_ico=window.localStorage.getItem("::app3_sys_dta_count_ico");if(xCount_cant_ico==null){xCount_cant_ico=0;}
 if(xCount_cant_ico>0){$(".xIco_MiPedido .xCantPedio_ico").text(xCeroIzq(xCount_cant_ico,2));$(".xIco_MiPedido .xCantPedio_ico").removeClass("xInvisible");}else{$(".xIco_MiPedido .xCantPedio_ico").addClass("xInvisible");}
 xThisMenu.xt_nombre_sede=xDatos_p[0].des_sede;xThisMenu.xt_eslogan=xDatos_p[0].eslogan;xLoadCarta();xArmarMenuLateral(1);setTimeout(()=>{$("body").addClass("loaded");},700);}
 function xPasarDetalle(obj){const xdt=obj.childNodes[0].textContent;xidCategoriaSeccion=obj.getAttribute('data-id');xidCatProcedencia=obj.getAttribute('data-procede');window.localStorage.setItem("::app3_sys_dt_c",xdt);const _DataLoadBack={i:xidCategoria,s:xidCategoriaSeccion,p:xidCatProcedencia}

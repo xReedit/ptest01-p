@@ -257,5 +257,31 @@
 			$sql = "select * from encuesta_sede_conf where idencuesta_sede_conf=$id";
 			$bd->xConsulta($sql);
 			break;
+		case 8:// subitems // guardar
+			$arrItem=$_POST['item'];
+			$sql = "insert into item_subitem (iditem, descripcion, cantidad, precio) values (".$arrItem['iditem'].", '".$arrItem['descripcion']."', '".$arrItem['cantidad']."', '".$arrItem['precio']."')";			
+			$bd->xConsulta($sql);			
+			break;
+		case 800:// subitems // guardar
+			$arrItem=$_POST['item'];			
+			$sql = "update item set subitem_required_select = ".$arrItem['required_select'].", subitem_cant_select=".$arrItem['cant_select']." where iditem=".$arrItem['iditem'];
+			$bd->xConsulta_NoReturn($sql);	
+			
+			// cantidad cambia si es fija si no es nd
+			$cantidad = $arrItem['cantidad'];
+			if ( $cantidad != null ) {
+				$sqlCartaLista = "update carta_lista set cantidad = '".$cantidad."' where iditem = ".$arrItem['iditem'];
+				$bd->xConsulta_NoReturn($sqlCartaLista);	
+			}
+			break;
+		case 801: // subitems // load			
+			$sql = "select * from item_subitem where iditem = ".$_POST['i']." and estado=0";
+			$bd->xConsulta($sql);
+			break;
+		case 802: // subitems // item
+			$sql = "select subitem_required_select, subitem_cant_select from item where iditem = ".$_POST['i'];
+			$bd->xConsulta($sql);
+			break;
+
 	}
 ?>
