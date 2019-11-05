@@ -126,7 +126,7 @@ function xDataYearsMonth(yy){var _listMonth=[],count_m=1;while(count_m<=12){cons
 xThisAdmContador.listMonth=_listMonth;}
 function downloadReporteCPE(obj){const index=obj.parentElement.parentElement.id;const _selMes=xThisAdmContador.listMonth[index];xThisAdmContador.selMes=_selMes;const _data={establecimiento:xThisAdmContador.selEstablecimiento,m:_selMes.m,y:_selMes.y}
 xPopupLoad.titulo='Descargando...';xPopupLoad.xopen();var dataListReporte=[];xThisAdmContador.ListReporte=[];$.ajax({type:'POST',url:'../../bdphp/log_007.php?op=2',data:{item:_data}}).done((res)=>{res=JSON.parse(res);if(res.error){console.log(res.error);return;}
-console.log(res.data);res.data.map(x=>{x.estado=x.tipo_doc==='FACTURA'&&parseInt(x.ruc)===0?'ANULADO':x.estado;x.style_reporte=x.estado==='ANULADO'?'color: red':'color: green';x.style_td=x.estado==='ANULADO'?'color: red':'';dataListReporte.push(x);});});}
+console.log(res.data);res.data.map(x=>{x.estado=x.tipo_doc==='FACTURA'&&parseInt(x.ruc)===0?'ANULADO':x.estado;x.style_reporte=x.estado==='ANULADO'?'color: red':'color: green';x.style_td=x.estado==='ANULADO'?'color: red':'';dataListReporte.push(x);});setDataListReporte(dataListReporte);});}
 function setDataListReporte(list){xThisAdmContador.ListReporte=list;setTimeout(()=>{xExportarExcel();},500);}
 function xExportarExcel(){tableToExcel('testTable','Comprobantes');setTimeout(()=>{xPopupLoad.xclose();},500);}
 Polymer({is:'x-admin-contador',properties:{xt_org:Number,xt_idsede:Number,xt_idus:Number,listYears:[],listMonth:[],listAsignados:[],ListReporte:[],selEstablecimiento:[],selMes:[],},attached:function(){this.selected=0,xThisAdmContador=this;xIniAdmContador();},displayIndex:function(index){return xCeroIzq(index+1,1);},})/*]]>*/</script>
