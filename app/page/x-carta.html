@@ -1,3 +1,4 @@
+<link rel="import" href="../x-componentes/x-comp-item-subitems-edit/x-comp-item-subitems-edit.html">;
 <dom-module id="x-carta">
 <template>
 <paper-dialog id="dialog_subitem" class="dialog_redondo" style="max-width:500px;height:auto!important;overflow:auto" modal entry-animation="scale-up-animation" exit-animation="fade-out-animation">
@@ -14,41 +15,10 @@
 </div>
 </div>
 <hr>
-<paper-fab mini icon="add" onclick="addSubItem()" class="xDerecha"></paper-fab>
-<table>
-<thead width="100%">
-<th width="50%"><input type="text" class="xMiInput xPasarEnter2 w-100" id="txt_sub_des" placeholder="DESCRIPCION" onChange="conMayusculas(this)"></th>
-<th width="25%"><input type="text" class="xMiInput xPasarEnter2" id="txt_sub_cant" placeholder="CANT" onChange="conMayusculas(this)"></th>
-<th width="25%"><input type="number" class="xMiInput" id="txt_sub_precio" placeholder="PRECIO" onChange="conMayusculas(this)" onblur="xRetornaMoneda(this)"></th>
-<th></th>
-</thead>
-<tbody>
-<template is="dom-repeat" items="{{ListSubItems}}" as="item">
-<tr data-index="{{index}}" data-t="item_subitem" data-id="{{item.iditem_subitem}}" class="xCursor">
-<td>{{item.descripcion}}</td>
-<td>{{item.cantidad}}</td>
-<td>{{item.precio}}</td>
-<td><span class="xDeleteRow" title="Anular" onclick="xBorrarItem(this)"></span></td>
-</tr>
-</template>
-<tr>
-<td class="xBold">Cantidad Total </td>
-<td class="xBold">{{cantidadSubItems}}</td>
-<td>.</td>
-<td>.</td>
-</tr>
-</tbody>
-</table>
+<x-comp-item-subitems-edit id="comp-subitems-content"></x-comp-item-subitems-edit>
+<br>
+<div class="xBoton2 xPlomo xDerecha" dialog-dismiss>Cerrar</div>
 <br><br>
-<h4>Condiciones</h4>
-<hr>
-<label for="txt_sub_condicion_cant">Cuantos subitem o alternativas se pueden seleccionar?</label>
-<input type="number" style="width:100px" class="xMiInput" id="txt_sub_condicion_cant" placeholder="Cant" onChange="conMayusculas(this)">
-<br><br>
-<paper-checkbox id="xcheck_subitem_required" data-index="{{index}}" data-procede="u">Es requerido que se seleccione?</paper-checkbox>
-<br><br><br>
-<div class="xBoton2 xAzul" dialog-confirm onclick="addSubItemItem()">Listo, guardar</div>
-<div class="xBoton2 xPlomo" dialog-dismiss>Cancelar</div>
 </div>
 </paper-dialog>
 <paper-dialog id="dialog_detalle" modal entry-animation="scale-up-animation" exit-animation="fade-out-animation">
@@ -191,7 +161,7 @@
 </template>
 </dom-module>
 <style>paper-button[raised].colorful{background:#4285f4;color:#fff}paper-button[raised].xverde{background:#43a047;color:#fff}paper-button[raised].xnegro{background:#424242;color:#fff}#xCardCarta,.xMiCard{width:80%}.div_foto{width:250px;height:260px;background:#e0e0e0;cursor:pointer;display:inline-block}.div_foto #dlg_label_foto{opacity:.8;text-align:center;z-index:0}.div_foto img{width:250px;height:260px;z-index:10;clear:both}</style>
-<script>/*<![CDATA[*/var xThisCarta,xdes_item,xdes_categoria,xprecio,xcant,xTbSeccion='',xSeccActual,xTopHeaderPersiste,xIdCarta='',xObjImgDet,xIdCartaAnterior,xIdObjImgDet='',xidCategoria,xFechaUltimaCarta,xdebounce,xe_debounce=false,xdtCAct,itemSelectSubItem;function xInicarta(){xPopupLoad=document.getElementById('xLoad');xm_LogChequea(function(){xm_log_get('ini_us');$('body').addClass('loaded');$("#Titulo_page").text("Elaborar Carta");xIdCarta='';xLoadItemsCategoria();xLoadCarta();$("#accordion").accordion({heightStyle:"content",collapsible:false});});xThisCarta.ListSubItems=[];xPasaEnterClass();$(document).scroll(function(){try{if($(this).scrollTop()>($("#Lista_Carta").offset().top+100)){$("#opPersiste").addClass("xHeaderPersiste");}
+<script>/*<![CDATA[*/var xThisCarta,xdes_item,xdes_categoria,xprecio,xcant,xTbSeccion='',xSeccActual,xTopHeaderPersiste,xIdCarta='',xObjImgDet,xIdCartaAnterior,xIdObjImgDet='',xidCategoria,xFechaUltimaCarta,xdebounce,xe_debounce=false,xdtCAct,itemSelectSubItem;function xInicarta(){xPopupLoad=document.getElementById('xLoad');xm_LogChequea(function(){xm_log_get('ini_us');$('body').addClass('loaded');$("#Titulo_page").text("Elaborar Carta");xIdCarta='';xLoadItemsCategoria();xLoadCarta();$("#accordion").accordion({heightStyle:"content",collapsible:false});});xPasaEnterClass();xCompSubItemContet=document.getElementById('comp-subitems-content');$(document).scroll(function(){try{if($(this).scrollTop()>($("#Lista_Carta").offset().top+100)){$("#opPersiste").addClass("xHeaderPersiste");}
 else{$('#opPersiste').removeClass("xHeaderPersiste");}}catch(error){}});$("#ctrl_open_file").change(function(e){for(var i=0;i<e.originalEvent.srcElement.files.length;i++){var file=e.originalEvent.srcElement.files[i];var img=document.createElement("img");var reader=new FileReader();reader.onloadend=function(){img.src=reader.result;}
 reader.readAsDataURL(file);$("#dlg_foto_vista_previa img").remove();$("#dlg_foto_vista_previa").append(img).trigger('create');}});$('.SelCarta').on('change',(e)=>{xidCategoria=e.target.value;xLoadListadoCartaActual();});$(document).change('.txt_modifica_bd',function(e){$(e.target.parentElement.parentElement).attr('data-modificado','1');});$(document).change('.txt_modifica_bd_sec',function(e){$(e.target.parentElement).attr('data-modificado','1');});$("#tab_carta").on('iron-select',function(){switch(xThisCarta.selected){case 1:xloadCartaHistorial();break;}});}
 function xPasaEnterClass(){$('.xPasarEnter2').on('keyup',function(e){var code=e.which;if(code==13||code==186){var inputs=$('input');var a=inputs.index(document.activeElement);if(inputs[a+1]!==null)
@@ -279,10 +249,5 @@ else{$(obj).removeClass('xImgNoCheck');$(obj).addClass('xImgCheck');$(obj).attr(
 $(obj).parent().parent().find("#seccion_des").attr('data-stockcero',xval);$.ajax({type:'POST',url:'../../bdphp/log.php?op=2033',data:{i:xid,p:xval}})}
 function xloadCartaHistorial(){const _filtro=txt_buscar.value;$.ajax({type:'POST',url:'../../bdphp/log_005.php?op=6',data:{filtro:_filtro}}).done(res=>{res=JSON.parse(res);xThisCarta.ListHistorial=res.datos;});}
 function xfiltrarCartaHistorial(){if(xe_debounce)return;xe_debounce=true;clearTimeout(xdebounce);xdebounce=setTimeout(()=>{xe_debounce=false;xloadCartaHistorial();},900);}
-function xOpenDialogSubItem(index,e){itemSelectSubItem=xdtCAct[index];xloadSubItems(itemSelectSubItem.iditem);dialog_subitem.open();e.stopPropagation();e.stopImmediatePropagation()}
-function addSubItem(){const dataSubItem={iditem:itemSelectSubItem.iditem,descripcion:txt_sub_des.value,cantidad:txt_sub_cant.value,precio:txt_sub_precio.value,cant_select:txt_sub_condicion_cant.value,required_select:xcheck_subitem_required.checked?1:0}
-xPopupLoad.xopen();$.ajax({type:'POST',url:'../../bdphp/log_005.php?op=8',data:{item:dataSubItem}}).done(function(a){xloadSubItems(itemSelectSubItem.iditem);txt_sub_des.value='';txt_sub_cant.value='';xPopupLoad.xclose();});}
-function addSubItemItem(){const dataSubItem={iditem:itemSelectSubItem.iditem,cant_select:txt_sub_condicion_cant.value,required_select:xcheck_subitem_required.checked?1:0,cantidad:parseInt(xThisCarta.cantidadSubItems)?parseInt(xThisCarta.cantidadSubItems):null}
-$.ajax({type:'POST',url:'../../bdphp/log_005.php?op=800',data:{item:dataSubItem}}).done(function(a){dialog_subitem.close();});}
-function xloadSubItems(iditem){$.ajax({type:'POST',url:'../../bdphp/log_005.php?op=801',data:{i:iditem}}).done(function(dtSubItem){dtSubItem=JSON.parse(dtSubItem);xThisCarta.ListSubItems=dtSubItem.datos;xThisCarta.cantidadSubItems=xThisCarta.ListSubItems.map(x=>parseInt(x.cantidad)).reduce((a,b)=>a+b,0);xThisCarta.cantidadSubItems=isNaN(xThisCarta.cantidadSubItems)?'-':xThisCarta.cantidadSubItems;console.log('ListSubItems',dtSubItem.datos);$.ajax({type:'POST',url:'../../bdphp/log_005.php?op=802',data:{i:iditem}}).done(function(dtItem){dtItem=JSON.parse(dtItem);dtItem=dtItem.datos[0];xcheck_subitem_required.checked=parseInt(dtItem.subitem_required_select)===1?true:false;txt_sub_condicion_cant.value=dtItem.subitem_cant_select;});})}
-Polymer({is:'x-carta',properties:{dt_item:Object,dt_seccion:Object,ListHistorial:[],ListSubItems:[],cantidadSubItems:0},attached:function(){this.selected=0;xThisCarta=this;xInicarta();},displayIndex:function(index){return xCeroIzq(index+1,1);},})/*]]>*/</script>
+function xOpenDialogSubItem(index,e){itemSelectSubItem=xdtCAct[index];xCompSubItemContet.iditem=itemSelectSubItem.iditem;xCompSubItemContet.loadSubItemIni();dialog_subitem.open();e.stopPropagation();e.stopImmediatePropagation()}
+Polymer({is:'x-carta',properties:{dt_item:Object,dt_seccion:Object,ListHistorial:[],},attached:function(){this.selected=0;xThisCarta=this;xInicarta();},displayIndex:function(index){return xCeroIzq(index+1,1);},})/*]]>*/</script>

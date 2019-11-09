@@ -56,15 +56,18 @@ $papel_size = (int)$ArrayEnca['papel_size'];
 $linea_hr = '';
 $espacioAlFinal = false; // en impresoras de 58- 57mm  no aparece el ultimo texto 
 $GLOBALS['leftCols'] = 38;
+$GLOBALS['leftColsSubItem'] = 54; // la letra es mas pequeña
 switch ($papel_size) {
 	case '0': // 80mm
 		$linea_hr = "------------------------------------------------\n";
 		$GLOBALS['leftCols'] = 38;
+		$GLOBALS['leftColsSubItem'] = 54;
 		$espacioAlFinal = false;
 		break;
 	case '1': // 58mm
 		$linea_hr = "------------------------------------------\n";
 		$GLOBALS['leftCols'] = 32;
+		$GLOBALS['leftColsSubItem'] = 48;
 		$espacioAlFinal = true;
 		break;	
 }
@@ -103,18 +106,18 @@ if($logo_post!=''){
 		$printer -> setTextSize($val_size_font_comanda_tall, 1);	
 	}
 
-	$printer -> setJustification(Printer::JUSTIFY_LEFT);
-	$printer -> setEmphasis(true);				
-	$printer -> text('ENTRADAS'."\n");
-	$printer -> text($linea_hr);	
-	$printer -> setEmphasis(false);
+	// $printer -> setJustification(Printer::JUSTIFY_LEFT);
+	// $printer -> setEmphasis(true);				
+	// $printer -> text('ENTRADAS'."\n");
+	// $printer -> text($linea_hr);	
+	// $printer -> setEmphasis(false);
 
-	//destalles
-	$printer -> setEmphasis(false);
-	$printer -> text(new item('01 ARROZ CON LECHE', '2.00'));
-	$printer -> text(new item('01 ENSALADA FRESCA', '2.00'));
-	$printer -> text(new item('01 CAUSA RELLENA', '5.00'));
-	$printer -> feed();
+	// //destalles
+	// $printer -> setEmphasis(false);
+	// $printer -> text(new item('01 ARROZ CON LECHE', '2.00'));
+	// $printer -> text(new item('01 ENSALADA FRESCA', '2.00'));
+	// $printer -> text(new item('01 CAUSA RELLENA', '5.00'));
+	// $printer -> feed();
 
 
 	//SECCION 2
@@ -126,7 +129,41 @@ if($logo_post!=''){
 
 	//destalles
 	$printer -> setEmphasis(false);
-	$printer -> text(new item('01 AJI DE GALLINA', '10.00'));
+	$printer -> text(new item('01 AJI DE GALLINA BIEN GUISADA', '10.00'));
+
+		// item-subitems
+		$printer -> setFont(Printer::FONT_B);		
+		
+		$printer -> setEmphasis(false);
+		// sub item len > 50
+		$des_sub_item = '1 Entre pierna, Papas fritas, Bien cocido, Aji, Aji especial de casa, Mayonesa, Mostaza';
+		$des_sub_item_p2 = '';
+		$des_sub_item_p3 = '';
+		
+		if(strlen($des_sub_item) > 48){
+			$des_sub_item_p2=substr($des_sub_item,48,strlen($des_sub_item));
+			$des_sub_item=substr($des_sub_item,0,48)."-";
+		}
+
+		if(strlen($des_sub_item_p2) > 48){
+			$des_sub_item_p3=substr($des_sub_item_p2,48,strlen($des_sub_item_p2));
+			$des_sub_item_p2=substr($des_sub_item_p2,0,48)."-";
+		}
+
+		$printer -> text(new item_subitem($des_sub_item, '+2.00'));			
+		if($des_sub_item_p2!=''){$printer -> text(new item_subitem($des_sub_item_p2, ''));}
+		if($des_sub_item_p3!=''){$printer -> text(new item_subitem($des_sub_item_p3, ''));}
+
+		///
+		
+		$printer -> text(new item_subitem('02 entrepierna solo cremas mas', '.'));		
+		$printer -> text(new item_subitem('02 pecho especial', '+5.00'));
+		// $printer -> text("\n");
+		// $printer -> text(new item_subitem('..', ''));
+		$printer -> feed();
+		$printer -> setFont(Printer::FONT_A);
+		
+
 	$printer -> text(new item('01 ARROZ CON MARISCOS', '10.00'));
 	$printer -> text(new item('01 LOMITO SALTADO', '10.00'));
 	
@@ -182,6 +219,42 @@ class item
             $leftCols = $leftCols / 2 - $rightCols / 2;
         }
         $left = str_pad($this -> name, $leftCols) ;
+
+        $sign = ($this -> dollarSign ? 'S/. ' : '');
+        $right = str_pad($sign . $this -> price, $rightCols, ' ', STR_PAD_LEFT);
+        return "$left$right\n";
+    }
+}
+
+class item_subitem
+{
+    private $name;
+    private $price;
+    private $dollarSign;
+
+    public function __construct($name = '', $price = '', $dollarSign = false)
+    {
+        $this -> name = $name;
+        $this -> price = $price;
+        $this -> dollarSign = $dollarSign;
+    }
+
+    public function __toString()
+    {				
+		$rightCols =  10;
+				
+		if ( strlen($this -> price) === 0 ) {		
+			$rightCols =  0;
+		}
+
+
+
+        $leftCols = $GLOBALS['leftColsSubItem'];
+        if ($this -> dollarSign) {
+            $leftCols = $leftCols / 2 - $rightCols / 2;
+		}
+
+        $left = str_pad('    '.$this -> name, $leftCols) ;
 
         $sign = ($this -> dollarSign ? 'S/. ' : '');
         $right = str_pad($sign . $this -> price, $rightCols, ' ', STR_PAD_LEFT);

@@ -101,18 +101,22 @@ function _cpSocketSavePedidoStorage(pedido) {
 function _cpSocketRestoreFromPedidoStorage() {
     if (!isSocket) { return; }
     var pedido = localStorage.getItem('::app3_sys_dta_pe_sk') ? JSON.parse(localStorage.getItem('::app3_sys_dta_pe_sk')) : null;
-    var pedidoSend = [];
+    var pedidoSend = [], _subItemView = [];
     if ( pedido ) {
         pedido.filter(x => x !== null).map(x => {
+            _subItemView = [];
             Object.values(x).filter(a => typeof a === 'object')
                 .map(item => {
                     item.idcarta_lista = item.iditem;
                     item.cantidad_seleccionada = item.cantidad;
-                    item.isalmacen = item.procede === '1' ? 0 : 1;                    
+                    item.isalmacen = item.procede === '1' ? 0 : 1;
+                    item.isporcion = item.cantidad;                     
+                    item.subitems_view = JSON.parse(JSON.stringify(item.subitems_view));                     
+                    console.log('resetPedido item', JSON.stringify(item));
                     pedidoSend.push(item);
                 })
         });
-    }
+    }    
 
     socketCP.emit('resetPedido', pedidoSend);
     localStorage.removeItem('::app3_sys_dta_pe_sk');

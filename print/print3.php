@@ -103,16 +103,19 @@ $linea_hr = '';
 $linea_titulo = '';
 $espacioAlFinal = false; // en impresoras de 58- 57mm  no aparece el ultimo texto 
 $GLOBALS['leftCols'] = 38;
+$GLOBALS['leftColsSubItem'] = 54; // la letra es mas pequeña
 switch ($papel_size) {
 	case '0': // 80mm
 		$linea_hr = "------------------------------------------------\n";
 		$linea_titulo = '******';
 		$GLOBALS['leftCols'] = 38;
+		$GLOBALS['leftColsSubItem'] = 54;
 		break;
 	case '1': // 58mm
 		$linea_hr = "------------------------------------------\n";
 		$linea_titulo = '***';
 		$GLOBALS['leftCols'] = 32;
+		$GLOBALS['leftColsSubItem'] = 48;
 		$espacioAlFinal = true;
 		break;	
 }
@@ -299,7 +302,7 @@ while($num_copias>=0){
 			$indicaciones_item=$subitem["indicaciones"];
 			if($indicaciones_item!=''){$indicaciones_item='('.$indicaciones_item.')';}
 			if($precio==''){$precio=$subitem["precio_total"];}
-			$r_subitem=$subitem["cantidad"].' '.$subitem["des"].$indicaciones_item;
+			$r_subitem=$numeroConCeros = str_pad($subitem["cantidad"], 2, "0", STR_PAD_LEFT).' '.$subitem["des"].$indicaciones_item;
 			$des_part2='';
 			$des_part3='';
 			if(strlen($r_subitem) > 35){
@@ -308,11 +311,11 @@ while($num_copias>=0){
 				// $pos_last_space =  $strrpos
 
 
-				$des_part2='  '.substr($r_subitem,35,strlen($r_subitem));
+				$des_part2='   '.substr($r_subitem,35,strlen($r_subitem));
 				$r_subitem=substr($r_subitem,0,35)."-";			
 			}
 			if(strlen($des_part2) > 35){
-				$des_part3='  '.substr($des_part2,35,strlen($des_part2));
+				$des_part3='   '.substr($des_part2,35,strlen($des_part2));
 				$des_part2=substr($des_part2,0,35)."-";			
 			}
 			//$r_subitem = strlen($r_subitem) > 35 ? substr($r_subitem,0,35)."..." : $r_subitem;
@@ -322,6 +325,44 @@ while($num_copias>=0){
 			$printer -> text(new item($r_subitem, $precio));			
 			if($des_part2!=''){$printer -> text(new item($des_part2, ''));}
 			if($des_part3!=''){$printer -> text(new item($des_part3, ''));}
+
+			// ITEM-SUBITEMS ----------->
+			$ListSubItem = array_key_exists('subitems_view', $subitem) ? $subitem['subitems_view'] : null;
+
+			if ( $ListSubItem && count($ListSubItem) > 0) {
+				$printer -> setFont(Printer::FONT_B);
+				foreach ($ListSubItem as $sub) {
+					$indicaciones_item_sub=$sub["indicaciones"];
+					if($indicaciones_item_sub!=''){$indicaciones_item_sub='('.$indicaciones_item_sub.')';}
+
+					$des_sub_item = str_pad($sub['cantidad_seleccionada'], 2, "0", STR_PAD_LEFT).' '.$sub['des'].$indicaciones_item_sub;
+					$precio_sub_item = $sub['precio'] === '0' ? '.' : '+'. number_format((float)$sub['precio'], 2, '.', '');
+
+					$des_sub_item_p2 = '';
+					$des_sub_item_p3 = '';
+					
+					if(strlen($des_sub_item) > 48){
+						$des_sub_item_p2='   '.substr($des_sub_item,48,strlen($des_sub_item));
+						$des_sub_item=substr($des_sub_item,0,48)."-";
+					}
+
+					if(strlen($des_sub_item_p2) > 48){
+						$des_sub_item_p3='   '.substr($des_sub_item_p2,48,strlen($des_sub_item_p2));
+						$des_sub_item_p2=substr($des_sub_item_p2,0,48)."-";
+					}
+
+					$printer -> text(new item_subitem($des_sub_item, $precio_sub_item));			
+					if($des_sub_item_p2!=''){$printer -> text(new item_subitem($des_sub_item_p2, ''));}
+					if($des_sub_item_p3!=''){$printer -> text(new item_subitem($des_sub_item_p3, ''));}
+					// $printer -> text(new item_subitem(strtolower($des_sub_item), $precio_sub_item));
+				}
+				$printer -> text(new item_subitem('....', ''));
+				// $printer -> feed();
+				$printer -> setFont(Printer::FONT_A);
+			}
+
+			// ITEM-SUBITEMS -----------<
+
 			$printer -> selectPrintMode();
 			// $printer -> setTextSize(1, 1);
 		}	
@@ -409,6 +450,41 @@ class item
         $left = str_pad($this -> name, $leftCols) ;
 
         $sign = ($this -> dollarSign ? 'S/.' : '');
+        $right = str_pad($sign . $this -> price, $rightCols, ' ', STR_PAD_LEFT);
+        return "$left$right\n";
+    }
+}
+
+class item_subitem
+{
+    private $name;
+    private $price;
+    private $dollarSign;
+
+    public function __construct($name = '', $price = '', $dollarSign = false)
+    {
+        $this -> name = $name;
+        $this -> price = $price;
+        $this -> dollarSign = $dollarSign;
+    }
+
+    public function __toString()
+    {				
+		$rightCols =  10;
+				
+		if ( strlen($this -> price) === 0 ) {		
+			$rightCols =  0;
+		}
+
+
+        $leftCols = $GLOBALS['leftColsSubItem'];
+        if ($this -> dollarSign) {
+            $leftCols = $leftCols / 2 - $rightCols / 2;
+		}
+
+        $left = str_pad('    '.$this -> name, $leftCols) ;
+
+        $sign = ($this -> dollarSign ? 'S/. ' : '');
         $right = str_pad($sign . $this -> price, $rightCols, ' ', STR_PAD_LEFT);
         return "$left$right\n";
     }
