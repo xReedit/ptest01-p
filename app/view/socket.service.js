@@ -52,6 +52,12 @@ function _monitoreoSocketEmitItemModificado(item) {
     socketMonitoreo.emit('itemModificado', item);
 }
 
+function _monitoreoSocketEmitItemModificadoFromSubItems(item) {
+    if (!isSocket) { return; }
+    // item.sumar = 0; // suma completo // sino es true : false
+    socketMonitoreo.emit('itemModificadoFromMonitorSubItems', item);
+}
+
 function _monitoreoSocketClose() {
     if (!isSocket) { return; }
     try {        

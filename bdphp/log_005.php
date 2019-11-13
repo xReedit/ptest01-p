@@ -259,7 +259,7 @@
 			break;
 		case 8:// subitems // guardar
 			$arrItem=$_POST['item'];
-			$sql = "insert into item_subitem (iditem_subitem_content, descripcion, cantidad, precio) values (".$arrItem['iditem_subitem_content'].", '".$arrItem['descripcion']."', '".$arrItem['cantidad']."', '".$arrItem['precio']."')";			
+			$sql = "insert into item_subitem (iditem_subitem_content, iditem, descripcion, cantidad, precio) values (".$arrItem['iditem_subitem_content'].",".$arrItem['iditem'].", '".$arrItem['descripcion']."', '".$arrItem['cantidad']."', '".$arrItem['precio']."')";			
 			$bd->xConsulta($sql);			
 			break;
 		case 800:// subitems // guardar
@@ -267,7 +267,7 @@
 			// $sql = "update item set subitem_required_select = ".$arrItem['required_select'].", subitem_cant_select=".$arrItem['cant_select']." where iditem=".$arrItem['iditem'];
 			// $bd->xConsulta_NoReturn($sql);
 			
-			$sql = "update item_subitem_content set subitem_required_select = ".$arrItem['required_select'].", subitem_cant_select=".$arrItem['cant_select']." where iditem_subitem_content=".$arrItem['iditem_subitem_content'];
+			$sql = "update item_subitem_content set subitem_required_select = ".$arrItem['required_select'].", subitem_cant_select=".$arrItem['cant_select'].", is_sum_cant_subitems = ".$arrItem['is_sum_cant_subitems']."  where iditem_subitem_content=".$arrItem['iditem_subitem_content'];
 			$bd->xConsulta_NoReturn($sql);
 			
 			// cantidad cambia si es fija si no es nd
