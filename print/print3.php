@@ -102,6 +102,7 @@ $papel_size = (int)$xArray_print[0]['papel_size'];
 $linea_hr = '';
 $linea_titulo = '';
 $espacioAlFinal = false; // en impresoras de 58- 57mm  no aparece el ultimo texto 
+$espacioLeftCols = 32;
 $GLOBALS['leftCols'] = 38;
 $GLOBALS['leftColsSubItem'] = 54; // la letra es mas pequeña
 switch ($papel_size) {
@@ -302,7 +303,7 @@ while($num_copias>=0){
 			$indicaciones_item=$subitem["indicaciones"];
 			if($indicaciones_item!=''){$indicaciones_item='('.$indicaciones_item.')';}
 			if($precio==''){$precio=$subitem["precio_total"];}
-			$r_subitem=$numeroConCeros = str_pad($subitem["cantidad"], 2, "0", STR_PAD_LEFT).' '.$subitem["des"].$indicaciones_item;
+			$r_subitem=$numeroConCeros = $subitem["cantidad"].' '.$subitem["des"].$indicaciones_item;
 			$des_part2='';
 			$des_part3='';
 			if(strlen($r_subitem) > 35){
@@ -330,25 +331,25 @@ while($num_copias>=0){
 			$ListSubItem = array_key_exists('subitems_view', $subitem) ? $subitem['subitems_view'] : null;
 
 			if ( $ListSubItem && count($ListSubItem) > 0) {
-				$printer -> setFont(Printer::FONT_B);
+				// $printer -> setFont(Printer::FONT_B);
 				foreach ($ListSubItem as $sub) {
 					$indicaciones_item_sub=$sub["indicaciones"];
 					if($indicaciones_item_sub!=''){$indicaciones_item_sub='('.$indicaciones_item_sub.')';}
 
-					$des_sub_item = str_pad($sub['cantidad_seleccionada'], 2, "0", STR_PAD_LEFT).' '.$sub['des'].$indicaciones_item_sub;
+					$des_sub_item = '-> '.$sub['cantidad_seleccionada'].' '.$sub['des'].$indicaciones_item_sub;
 					$precio_sub_item = $sub['precio'] === '0' ? '.' : '+'. number_format((float)$sub['precio'], 2, '.', '');
 
 					$des_sub_item_p2 = '';
 					$des_sub_item_p3 = '';
 					
-					if(strlen($des_sub_item) > 48){
-						$des_sub_item_p2='   '.substr($des_sub_item,48,strlen($des_sub_item));
-						$des_sub_item=substr($des_sub_item,0,48)."-";
+					if(strlen($des_sub_item) > $espacioLeftCols){
+						$des_sub_item_p2='   '.substr($des_sub_item,$espacioLeftCols,strlen($des_sub_item));
+						$des_sub_item=substr($des_sub_item,0,$espacioLeftCols)."-";
 					}
 
-					if(strlen($des_sub_item_p2) > 48){
-						$des_sub_item_p3='   '.substr($des_sub_item_p2,48,strlen($des_sub_item_p2));
-						$des_sub_item_p2=substr($des_sub_item_p2,0,48)."-";
+					if(strlen($des_sub_item_p2) > $espacioLeftCols){
+						$des_sub_item_p3='   '.substr($des_sub_item_p2,$espacioLeftCols,strlen($des_sub_item_p2));
+						$des_sub_item_p2=substr($des_sub_item_p2,0,$espacioLeftCols)."-";
 					}
 
 					$printer -> text(new item_subitem($des_sub_item, $precio_sub_item));			
@@ -358,7 +359,7 @@ while($num_copias>=0){
 				}
 				$printer -> text(new item_subitem('....', ''));
 				// $printer -> feed();
-				$printer -> setFont(Printer::FONT_A);
+				// $printer -> setFont(Printer::FONT_A);
 			}
 
 			// ITEM-SUBITEMS -----------<
@@ -470,19 +471,21 @@ class item_subitem
 
     public function __toString()
     {				
-		$rightCols =  10;
+		$rightCols = 10;
+        $leftCols = $GLOBALS['leftCols'];
 				
 		if ( strlen($this -> price) === 0 ) {		
 			$rightCols =  0;
 		}
 
 
-        $leftCols = $GLOBALS['leftColsSubItem'];
+
+        // $leftCols = $GLOBALS['leftColsSubItem'];
         if ($this -> dollarSign) {
             $leftCols = $leftCols / 2 - $rightCols / 2;
 		}
 
-        $left = str_pad('    '.$this -> name, $leftCols) ;
+        $left = str_pad('  '.$this -> name, $leftCols) ;
 
         $sign = ($this -> dollarSign ? 'S/. ' : '');
         $right = str_pad($sign . $this -> price, $rightCols, ' ', STR_PAD_LEFT);

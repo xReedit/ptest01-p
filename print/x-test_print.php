@@ -55,6 +55,7 @@ $papel_size = (int)$ArrayEnca['papel_size'];
 // lineas hr - divisor
 $linea_hr = '';
 $espacioAlFinal = false; // en impresoras de 58- 57mm  no aparece el ultimo texto 
+$espacioLeftCols = 32;
 $GLOBALS['leftCols'] = 38;
 $GLOBALS['leftColsSubItem'] = 54; // la letra es mas pequeña
 switch ($papel_size) {
@@ -132,22 +133,22 @@ if($logo_post!=''){
 	$printer -> text(new item('01 AJI DE GALLINA BIEN GUISADA', '10.00'));
 
 		// item-subitems
-		$printer -> setFont(Printer::FONT_B);		
+		// $printer -> setFont(Printer::FONT_B);		
 		
 		$printer -> setEmphasis(false);
 		// sub item len > 50
-		$des_sub_item = '1 Entre pierna, Papas fritas, Bien cocido, Aji, Aji especial de casa, Mayonesa, Mostaza';
+		$des_sub_item = '-> 1 Entre pierna, Papas fritas, Bien cocido, Aji, Aji especial de casa, Mayonesa, Mostaza';
 		$des_sub_item_p2 = '';
 		$des_sub_item_p3 = '';
 		
-		if(strlen($des_sub_item) > 48){
-			$des_sub_item_p2=substr($des_sub_item,48,strlen($des_sub_item));
-			$des_sub_item=substr($des_sub_item,0,48)."-";
+		if(strlen($des_sub_item) > $espacioLeftCols){
+			$des_sub_item_p2=substr($des_sub_item,$espacioLeftCols,strlen($des_sub_item));
+			$des_sub_item=substr($des_sub_item,0,$espacioLeftCols)."-";
 		}
 
-		if(strlen($des_sub_item_p2) > 48){
-			$des_sub_item_p3=substr($des_sub_item_p2,48,strlen($des_sub_item_p2));
-			$des_sub_item_p2=substr($des_sub_item_p2,0,48)."-";
+		if(strlen($des_sub_item_p2) > $espacioLeftCols){
+			$des_sub_item_p3=substr($des_sub_item_p2,$espacioLeftCols,strlen($des_sub_item_p2));
+			$des_sub_item_p2=substr($des_sub_item_p2,0,$espacioLeftCols)."-";
 		}
 
 		$printer -> text(new item_subitem($des_sub_item, '+2.00'));			
@@ -156,12 +157,12 @@ if($logo_post!=''){
 
 		///
 		
-		$printer -> text(new item_subitem('02 entrepierna solo cremas mas', '.'));		
-		$printer -> text(new item_subitem('02 pecho especial', '+5.00'));
+		$printer -> text(new item_subitem('-> 02 entrepierna solo cremas mas', ''));		
+		$printer -> text(new item_subitem('-> 02 pecho especial', '+5.00'));
 		// $printer -> text("\n");
 		// $printer -> text(new item_subitem('..', ''));
 		$printer -> feed();
-		$printer -> setFont(Printer::FONT_A);
+		// $printer -> setFont(Printer::FONT_A);
 		
 
 	$printer -> text(new item('01 ARROZ CON MARISCOS', '10.00'));
@@ -241,7 +242,8 @@ class item_subitem
 
     public function __toString()
     {				
-		$rightCols =  10;
+		$rightCols = 10;
+        $leftCols = $GLOBALS['leftCols'];
 				
 		if ( strlen($this -> price) === 0 ) {		
 			$rightCols =  0;
@@ -249,12 +251,12 @@ class item_subitem
 
 
 
-        $leftCols = $GLOBALS['leftColsSubItem'];
+        // $leftCols = $GLOBALS['leftColsSubItem'];
         if ($this -> dollarSign) {
             $leftCols = $leftCols / 2 - $rightCols / 2;
 		}
 
-        $left = str_pad('    '.$this -> name, $leftCols) ;
+        $left = str_pad('  '.$this -> name, $leftCols) ;
 
         $sign = ($this -> dollarSign ? 'S/. ' : '');
         $right = str_pad($sign . $this -> price, $rightCols, ' ', STR_PAD_LEFT);
