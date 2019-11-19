@@ -275,11 +275,13 @@
         //registro tipo de pago // efectivo / tarjeta / etc
         $cadena_tp='';
         foreach($x_array_tipo_pago as $item){
-            $cadena_tp=$cadena_tp."(".$idregistro_pago.",".$item['id'].",'".$item['importe']."'),";
+			$importe_detalle_pago = $item['importe'] == 'NaN' ? $importe_total : $item['importe'];
+            $cadena_tp=$cadena_tp."(".$idregistro_pago.",".$item['id'].",'".$importe_detalle_pago."'),";
         }
 
         $cadena_tp=substr($cadena_tp,0,-1);
 		$cadena_tp="insert into registro_pago_detalle (idregistro_pago,idtipo_pago,importe) values ".$cadena_tp."; ";
+		// echo $cadena_tp;
 		
         // registro pago pedido - detalle
 		$sql_idpd="select idpedido,idpedido_detalle, cantidad,ptotal from pedido_detalle where idpedido in (".$id_pedido.") and (estado=0 and pagado=0)";
@@ -383,7 +385,8 @@
         //registro tipo de pago // efectivo / tarjeta / etc
         $cadena_tp='';
         foreach($x_array_tipo_pago as $item){
-            $cadena_tp=$cadena_tp."(".$idregistro_pago.",".$item['id'].",'".$item['importe']."'),";
+			$importe_detalle_pago = $item['importe'] == 'NaN' ? $importe_total : $item['importe'];
+            $cadena_tp=$cadena_tp."(".$idregistro_pago.",".$item['id'].",'".$importe_detalle_pago."'),";
         }
 
         $cadena_tp=substr($cadena_tp,0,-1);

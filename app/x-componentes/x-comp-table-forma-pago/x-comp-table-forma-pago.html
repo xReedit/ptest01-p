@@ -105,19 +105,26 @@
 		}
 
 		function xCalcImporte() {
-			var totalRegistrado=0, importeGrabar=0;
+			var totalRegistrado=0, importeGrabar=0, _importeRecibido=0, _importeRestante=0;
 			listIni.map((x,i) => {
 				const _nom = '#tpf_option' + i;
 				const _objOp = $(_nom).parents('tr').find('.tpf_option .xMiBoton_icon_option[selected]')[0];
 				// x.deshabilitado=true;				
-				x.importe_recibido = $(_nom).val();
+
+				_importeRestante = parseFloat(xThisComTableFP.importetotal) - totalRegistrado;
+
+				_importeRecibido = parseFloat($(_nom).val());
+				_importeRecibido = isNaN(_importeRecibido) ? 0 : _importeRecibido;
+				x.importe_recibido = _importeRecibido;
 				importeGrabar = parseFloat(x.importe_recibido) >= parseFloat(xThisComTableFP.importetotal) ? xThisComTableFP.importetotal : x.importe_recibido;
-				importeGrabar = parseFloat(importeGrabar) === 0 ? xThisComTableFP.importetotal :importeGrabar;
+				importeGrabar = isNaN(parseFloat(importeGrabar)) ? 0 : parseFloat(importeGrabar);
+				importeGrabar = importeGrabar === 0 ? i > 0 ? _importeRestante : xThisComTableFP.importetotal :importeGrabar;
+				importeGrabar = i> 0 ? importeGrabar > _importeRestante ? _importeRestante : importeGrabar : importeGrabar;
 				x.importe = parseFloat(importeGrabar).toFixed(2);
 				x.id = _objOp.dataId;
 				x.reqcliente = _objOp.dataReqcliente;
 				x.limite = _objOp.dataLimite;
-				totalRegistrado += parseFloat(x.importe_recibido);
+				totalRegistrado += parseFloat(x.importe_recibido);				
 			});
 			
 			_valImporteRestante = totalRegistrado === 0 ? 0 : parseFloat(xThisComTableFP.importetotal) - totalRegistrado;			
