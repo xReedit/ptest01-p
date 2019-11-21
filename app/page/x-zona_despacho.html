@@ -2,9 +2,11 @@
 <link href="../../js/c3.min.css" rel="stylesheet">
 <script src="../../js/d3.min.js"></script>
 <script src="../../js/c3.min.js"></script>
+<script rel="preload" type="text/javascript" src="../../js/rxjs.umd.js"></script>
 <script rel="preload" type="text/javascript" src="../../js/socket.io.js"></script>
 <script rel="preload" type="text/javascript" src="../view/xm_all.js"></script>
 <script rel="preload" type="text/javascript" src="../view/config.const.js"></script>
+<script rel="preload" type="text/javascript" src="../view/socket.master.service.js"></script>
 <script rel="preload" type="text/javascript" src="../view/socket.service.z.js"></script>
 <template>
 <paper-dialog id="dialog_despachar" style="max-width:350px;z-index:500" entry-animation="scale-up-animation" exit-animation="fade-out-animation" with-backdrop>
@@ -202,8 +204,7 @@ arr_resumen_item[a][xre_id_item]={'iditem':xre_id_item,'des_item':xtxt_item[1],'
 xre_cadena='';var keys=Object.keys(arr_resumen_item).sort();for(x in keys){x=keys[x];xre_des_seccion='<tr><td colspan="2" class="xBold">'+arr_resumen_item[x].des_seccion+'</td></tr>';xre_sum_secc=0;xre_cadena_item='';$.map(arr_resumen_item[x],function(item,z){if(typeof item==="object"){xre_sum_secc=parseInt(xre_sum_secc)+parseInt(item.cantidad_r);xre_cadena_item=String(xre_cadena_item+'<tr><td>'+item.des_item.toUpperCase()+'</td><td align="right">'+xCeroIzq(item.cantidad_r,2)+'</td></tr>')}})
 xre_cadena=String(xre_cadena+xre_des_seccion+xre_cadena_item+'<tr class="xSinBorde_tr"><td colspan="2" class="xBold" align="right">'+xCeroIzq(xre_sum_secc,2)+'</td></tr>')}
 $("#tb_resumen_pedido").html(xre_cadena).trigger('create');}
-function xRefrecarTiempoMinutos(){var xtiempo_transcurrido,tiempo_encabezado,xen_cola=0;$(".xmarco_zd_pedido .encabezado").each(function(i,e){if(e.dataset.reserva!=='1'){tiempo_encabezado=e.dataset.tiempo;xTiempoTranscurridos(tiempo_encabezado,xhora_actual_serv,function(h,m,s,dif){xen_cola++;xtiempo_transcurrido=xTiempoDe_MS_minutos(dif)
-$(e).find('#val_minutos').text(xtiempo_transcurrido);$(e).find('#val_num_cola').text(xCeroIzq(xen_cola,2));xCalcularEstadoSegunTiempo($(e),xtiempo_transcurrido);})}});xelem_tt_p_cola.text(xCeroIzq(xen_cola,2));}
+function xRefrecarTiempoMinutos(){var xtiempo_transcurrido,tiempo_encabezado,xen_cola=0;$(".xmarco_zd_pedido .encabezado").each(function(i,e){if(e.dataset.reserva!=='1'){tiempo_encabezado=e.dataset.tiempo;xTiempoTranscurridos_2(tiempo_encabezado,function(h,m,s){xen_cola++;xtiempo_transcurrido=m+':'+s;$(e).find('#val_minutos').text(xtiempo_transcurrido);$(e).find('#val_num_cola').text(xCeroIzq(xen_cola,2));xCalcularEstadoSegunTiempo($(e),xtiempo_transcurrido);})}});xelem_tt_p_cola.text(xCeroIzq(xen_cola,2));}
 function xCalcularEstadoSegunTiempo(elemento,x_tiempo_transcurrido){var xmin_tt=x_tiempo_transcurrido.split(':');xmin_tt=xmin_tt[0];if(xmin_tt>=xtiempo_maximo){elemento.removeClass('xFondoRowverde_estado_pedido');elemento.removeClass('xFondoRowAmarillo_estado_pedido');elemento.addClass('xFondoRowRojo_estado_pedido');}else if(xmin_tt>=tiempo_medio){elemento.removeClass('xFondoRowverde_estado_pedido');elemento.addClass('xFondoRowAmarillo_estado_pedido');}}
 function xLoadZonaDespacho(){$.ajax({type:'POST',url:'../../bdphp/log.php?op=21'}).done(function(dtImp){var xdtImp=$.parseJSON(dtImp),xcadena_imp='',xmin_pedido=0;xdtImp=xdtImp.datos;xcadena_imp='<br><h4>Zonas de despacho</h4><div class="xLinea"></div><br>';for(var i=0;i<xdtImp.length;i++){xcadena_imp=String(xcadena_imp+'<paper-checkbox class="check_zona" data-ids="'+xdtImp[i].idimpresora+'" data-tiempo="'+xdtImp[i].minutos_pedido+'">'+xdtImp[i].descripcion+'</paper-checkbox><br>');};$.ajax({type:'POST',url:'../../bdphp/log.php?op=3'}).done(function(dttp){var xdttp=$.parseJSON(dttp);xdttp=xdttp.datos;xcadena_imp=xcadena_imp+'<br><br><h4>Tipos de consumo</h4><div class="xLinea"></div><br>';for(var i=0;i<xdttp.length;i++){xcadena_imp=String(xcadena_imp+'<paper-checkbox class="check_tp" data-tp="'+xdttp[i].idtipo_consumo+'">'+xdttp[i].descripcion+'</paper-checkbox><br>')};$("#div_zona_despacho").html(xcadena_imp);});});}
 function xCalcularMinutosDespacho(mm){xtiempo_maximo=mm;tiempo_medio=parseInt(xtiempo_maximo*0.6);$("#min_max_pedido").html(xCeroIzq(xtiempo_maximo,2)+'<span class="xfont9">min x pedido</span>').trigger('create');}
@@ -234,4 +235,4 @@ function closeDrawer_izq(){document.getElementById("xdrawerIzq").style.width="0"
 function closeDrawer_de(){document.getElementById("xdrawerDe").style.width="0";}
 function xRefreshMarcador(obj){xColorMarcado=$(obj).attr('data-color');dialog_marcar.close();}
 function xDespacharTodos(){$.ajax({type:'POST',url:'../../bdphp/log.php?op=2109'}).done(function(x){dialog_despachar.close();});}
-Polymer({is:'x-zona_despacho',properties:{},attached:function(){this.select_div=0;xThisZonaDespacho=this;_zonaSocketIsConnect();xIniZonaDespacho();},detached:function(){_zonaSocketClose();clearInterval(xRefresh_tiempo);}})/*]]>*/</script>
+Polymer({is:'x-zona_despacho',properties:{},attached:function(){this.select_div=0;xThisZonaDespacho=this;xIniZonaDespacho();},detached:function(){_zonaSocketClose();clearInterval(xRefresh_tiempo);}})/*]]>*/</script>
