@@ -4,7 +4,6 @@
 <script src="../../js/isotope.pkgd.min.js"></script>
 <script type="text/javascript" src="../../js/raphael.2.1.0.min.js"></script>
 <script type="text/javascript" src="../../js/justgage.js"></script>
-<script type="text/javascript" src="../../js/rxjs.umd.js"></script>
 <template>
 <paper-dialog id="dialog_cambiar_pedidos_x_hora" class="dialog_redondo" style="min-width:320px" entry-animation="scale-up-animation" exit-animation="fade-out-animation" with-backdrop>
 <div class="xContent">
@@ -81,7 +80,6 @@
 </div>
 </template>
 <style type="text/css">paper-spinner{width:20px;height:20px}.paper-spinner-a{width:15px;height:15px}</style>
-<script rel="prefetch" type="text/javascript" src="../view/socket.master.service.js"></script>
 <script rel="prefetch" type="text/javascript" src="../view/socket.service.js"></script>
 <script>/*<![CDATA[*/var $table;var xThisMonPe,xActualizar=0,xValCantAnterior,graf_ped_x_hora=null,xdtPxH,xDt_sede_other,source,xValCountPedidos=0,idCategoriaSel,cnf_CategoriaSel,xArrayEncaUlLi,_seccionNewItem,dtAllItems,isSocket=false,xCompSubItemContet,objSeccionAdd;function xIniMonPe(){xPopupLoad=document.getElementById('xLoad');xm_LogChequea(function(){xm_log_get('ini_us');$('body').addClass('loaded');xDt_sede_other=xm_log_get('sede_otros_datos');xThisMonPe.xval_pedidos_x_hora=xDt_sede_other[0].maximo_pedidos_x_hora;$("#Titulo_page").text("Monitoreo del stock");xCargarEnInputItem();graf_ped_x_hora=null;xRefrecarGrafico(0);config_valoresInicialesComponenteCategoria();isSocket=parseInt(xm_log_get('datos_org_sede')[0].pwa)===0?false:true;console.log('isSocket',isSocket);});$('.xPasarEnter2').on('keyup',function(e){var code=e.which;if(code==13||code==186){var inputs=$('input');var a=inputs.index(document.activeElement);if(inputs[a+1]!==null)
 {var nextBox=inputs[a+1];if(nextBox===undefined){return}

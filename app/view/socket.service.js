@@ -92,7 +92,7 @@ function _monitoreoSocketEmitItemModificadoFromSubItems(item) {
 function _monitoreoSocketClose() {
     if (!isSocket) { return; }
     try {        
-        socketMonitoreo.disconnect(true);
+        this.socketMonitoreo.disconnectSocket(true);
     } catch (error) {        
     }
 }
