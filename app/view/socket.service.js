@@ -19,6 +19,11 @@ function _monitoreoSocketOpen() {
 
     this.socketMonitoreo.connectSocket();
 
+    this.socketMonitoreo.listen('finishLoadDataInitial').subscribe(res => {
+        console.log('finishLoadDataInitial');
+        _monitoreoStockUpdateCarta(res);
+    });
+
     this.socketMonitoreo.listen('itemModificado').subscribe(res => {
         console.log('itemModificado');
         _monitoreoStockItemModificado(res);

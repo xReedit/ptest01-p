@@ -297,7 +297,22 @@
 		case 805:// subitems content
 			$arrItem=$_POST['item'];
 			$sql = "insert into item_subitem_content (iditem, titulo) values (".$arrItem['iditem'].", '".$arrItem['des']."')";
-			$bd->xConsulta($sql);			
+			$bd->xConsulta($sql);
+			break;
+		
+		case 9: // carta virual configuracion
+			// load
+			$sql = "select * from pwa_reglas_app where estado=0";
+			$bd->xConsulta($sql);
+			break;
+		case 901: // parametros			
+			$sql = "select * from sede where idsede=".$g_idsede." and estado=0";
+			$bd->xConsulta($sql);
+			break;
+		case 902: // save parametros			
+			$arrItem=$_POST['item'];
+			$sql = "update sede set pwa_time_limit=".$arrItem['pwa_time_limit']." , pwa_msj_ini='".$arrItem['pwa_msj_ini']."'  where idsede=".$g_idsede." and estado=0";
+			$bd->xConsulta($sql);
 			break;
 	}
 ?>
