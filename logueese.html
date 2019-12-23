@@ -8,9 +8,23 @@
 <meta name="mobile-web-app-capable" content="yes"/>
 <link rel="shortcut icon" type="image/x-icon" href="images/logo_app.png">
 <link rel="stylesheet" href="css/micss.css">
+<link rel="stylesheet" href="animation-init/animation-init.css">
 </head>
-<style type="text/css">body{background:#00bcd4!important}</style>
+<style type="text/css">.xQuitar{display:none}</style>
 <body>
+<div data-role="page" class="ini-body">
+<div class="ini-content sky">
+<div class="color ini-part ini-content-msj">
+<div class="ini-div-msj">
+<h3 class="msj">En el final de este año, con agradecimiento hacemos una pausa para desearle unas felices y cálidas fiestas.<br> <strong>Feliz navidad! y prospero año nuevo.</strong></h3>
+<img class="ini-img" src="./animation-init/animation-init.gif" alt="a">
+<p>Son los sinceros deseos del <strong>Equipo Papaya.</strong></p>
+</div>
+</div>
+<div class="color ini-part">
+</div>
+</div>
+<div class="ini-content-login">
 <div class="wrapper">
 <div id="loader-wrapper">
 <div id="loader"></div>
@@ -18,12 +32,11 @@
 <div class="loader-section section-right"></div>
 </div>
 </div>
-<div data-role="page">
-<div class="xContent ui-content">
 <x-dialog titulo="Cargando..."></x-dialog>
 <x-user-login xtitulo="RESTO BAR"></x-user-login>
 </div>
 </div>
+<script type="text/javascript" src="./animation-init/animation-init.js"></script>
 <script src="js/jquery.js"></script>
 <script src="app/view/xm_all.js"></script>
 <script src="logueese.js"></script>
@@ -38,4 +51,7 @@
 <link rel="stylesheet" href="css/load_normalize.css">
 <link rel="stylesheet" href="css/load_style.css">
 </body>
+<footer class="ini-footer">
+<h4 class="msj">Feliz Navidad y Prospero Año Nuevo.</h4>
+</footer>
 </html>
