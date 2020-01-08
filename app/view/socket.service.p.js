@@ -119,10 +119,20 @@ function _cpSocketClose() {
     // this.socketCP.disconnectSocket();
 }
 
+// cuando se paga la cuenta en caja
+// requiere idcliente
+function _cpSocketEmitPedidoPagoCliente(listIdCliente) {
+    if (!isSocket) { return; }
+    console.log('listIdCliente', listIdCliente);
+    this.socketCP.emit('pedido-pagado-cliente', listIdCliente);
+}
+
 function _cpSocketSavePedidoStorage(pedido) {
     if (!isSocket) { return; }
     localStorage.setItem('::app3_sys_dta_pe_sk', JSON.stringify(pedido));
 }
+
+
 
 
 // solo para el caso de nuevo pedido en venta rapida o al cerrar panel lateral
