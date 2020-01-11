@@ -311,7 +311,18 @@
 			break;
 		case 902: // save parametros			
 			$arrItem=$_POST['item'];
-			$sql = "update sede set pwa_time_limit=".$arrItem['pwa_time_limit']." , pwa_msj_ini='".$arrItem['pwa_msj_ini']."'  where idsede=".$g_idsede." and estado=0";
+			$sql = "update sede set 
+						pwa_time_limit=".$arrItem['pwa_time_limit'].", 
+						pwa_msj_ini='".$arrItem['pwa_msj_ini']."',
+						pwa_time_min_despacho=".$arrItem['pwa_time_min_despacho'].", 
+						pwa_time_max_despacho=".$arrItem['pwa_time_max_despacho'].", 
+						latitude='".$arrItem['latitude']."', 
+						longitude='".$arrItem['longitude']."'
+					where idsede=".$g_idsede." and estado=0";
+			$bd->xConsulta($sql);
+			break;
+		case 903:// get mesas qr			
+			$sql = "CALL procedure_generator_qr_mesa('".$g_idsede."')";			
 			$bd->xConsulta($sql);
 			break;
 	}

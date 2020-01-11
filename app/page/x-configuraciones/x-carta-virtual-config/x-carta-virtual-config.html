@@ -1,0 +1,149 @@
+<dom-module id="x-carta-virtual-config">
+    <template is="dom">        
+        <div>
+            <h3>Carta App</h3>
+            <p>Configuracion de paramatros de la carta virtual, en la cual el cliente tendra acceso.</p>
+            <div class="xLinea2"></div>
+
+
+            <br>            
+            <label for="txt_bienvenida">Mensaje de bienvenida:</label>
+            <div style="max-width:350px">
+                    <textarea class="xMiInput xPasarEnter2" cols="4" rows="4" placeholder="Minutos" id="txt_bienvenida" name="txt_bienvenida" maxlength="200" espaciar> </textarea>
+            </div>
+
+            <br>            
+            <label for="txt_minutos">Minutos para finalizar el pedido:</label>
+            <div style="width:200px">
+                    <input type="text" class="xMiInput xPasarEnter2" placeholder="Mensaje" id="txt_minutos" name="txt_minutos" value="3" espaciar>
+            </div>
+
+
+            <br>
+            <div class="xLinea2"></div>
+            <br>
+            <h4>Para calcular el tiempo de espera.</h4> 
+            <br>
+
+            <label for="txt_minutos_min_despacho">Tiempo Minimo de despacho en minutos. Ej. Un plato a la carta "Lomo Saltado" toma en promedio 5 minutos en ser despapchado:</label>
+            <div style="width:200px">
+                    <input type="text" class="xMiInput xPasarEnter2" placeholder="minutos" id="txt_minutos_min_despacho" name="txt_minutos" value="5" espaciar>
+            </div>
+            <br>
+            <label for="txt_minutos_max_despacho">Tiempo Maximo de despacho en minutos. Si el establecimiemto esta en hora punta tomara este tiempo para mostrar al cliente:</label>
+            <div style="width:200px">
+                    <input type="text" class="xMiInput xPasarEnter2" placeholder="minutos" id="txt_minutos_max_despacho" name="txt_minutos" value="15" espaciar>
+            </div>
+
+            
+            
+
+            <br>
+            <div class="xLinea2"></div>
+            <br>
+            <h4>Ubicación del establecimiento.</h4> 
+            <br>
+            <label for="txt_latitude">Latitud:</label>
+            <div style="max-width:350px">
+                <input type="number" class="xMiInput xPasarEnter2" placeholder="Latitud" id="txt_latitude" name="txt_minutos" espaciar>
+            </div>
+            <br>
+            <label for="txt_longitude">Longitud:</label>
+            <div style="max-width:350px">
+                <input type="number" class="xMiInput xPasarEnter2" placeholder="Longitud" id="txt_longitude" name="txt_minutos" espaciar>
+            </div>
+
+
+            <br>
+            <div class="xLinea2"></div>
+            <br>
+            <h4>Reglas.</h4>            
+            <table>
+                <template is="dom-repeat" items="{{listReglas}}" as="item">
+                    <tr>
+                        <td>{{item.idpwa_reglas_app}}</td>
+                        <td>{{item.descripcion}}</td>
+                    </tr>
+                </template>                
+            </table>
+
+            <br>
+            <div class="xLinea2"></div>
+            <br>
+            <button class="xBoton2 xAzul" onclick="saveParamentros()">Listo, guardar.</button>
+            <br><br><br>
+        </div>
+    </template>
+</dom-module>
+
+<script>
+    var xThisCartaV;
+
+    function xIniCartaVirtual() {
+        loadDatosCarta();
+        loadReglasPwa();
+    }
+
+    function  loadDatosCarta() {
+        $.ajax({ type: 'POST', url: '../../bdphp/log_005.php?op=901'})
+	    .done( function (res) {
+            res = JSON.parse(res);
+            xThisCartaV.objSede = res.datos[0];
+
+            txt_minutos.value = xThisCartaV.objSede.pwa_time_limit;
+            txt_bienvenida.value = xThisCartaV.objSede.pwa_msj_ini;
+
+            txt_minutos_min_despacho.value = xThisCartaV.objSede.pwa_time_min_despacho;
+            txt_minutos_max_despacho.value = xThisCartaV.objSede.pwa_time_max_despacho;
+
+            txt_latitude.value = xThisCartaV.objSede.latitude;
+            txt_longitude.value = xThisCartaV.objSede.longitude;
+        });
+    }
+
+    function loadReglasPwa() {
+
+        $.ajax({ type: 'POST', url: '../../bdphp/log_005.php?op=9'})
+	    .done( function (res) {
+            res = JSON.parse(res);
+            xThisCartaV.listReglas = res.datos;
+        });
+
+    }
+
+    function saveParamentros() {
+        xPopupLoad.xopen();
+        var _data = {
+            'pwa_time_limit': txt_minutos.value,
+            'pwa_msj_ini': txt_bienvenida.value,
+            'pwa_time_min_despacho': txt_minutos_min_despacho.value,
+            'pwa_time_max_despacho': txt_minutos_max_despacho.value,
+            'latitude': txt_latitude.value,
+            'longitude': txt_longitude.value
+        }
+
+        $.ajax({ 
+            type: 'POST', 
+            url: '../../bdphp/log_005.php?op=902', 
+            data: {item: _data}
+        })
+	    .done( function (res) {
+            console.log(res);
+            xPopupLoad.xclose();
+        })
+    }
+
+    Polymer({
+            is: 'x-carta-virtual-config',
+            properties: {
+                xt_org:Number,
+                xt_idsede:Number,
+                listReglas: Object,
+                objSede: Object
+            },
+            attached: function () {                
+                xThisCartaV = this;
+                xIniCartaVirtual();
+            }
+        })
+</script>

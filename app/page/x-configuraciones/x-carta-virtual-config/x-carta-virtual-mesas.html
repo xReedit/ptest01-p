@@ -1,0 +1,117 @@
+<dom-module id="x-carta-virtual-mesas">
+    <template is="dom"> 
+        <div>
+            <h3>Codigos QR para las mesas</h3>
+            <p>Toca para descargar.</p>
+            <div class="xLinea2"></div>
+            <br>
+            <div class="content-qr">
+                <template is="dom-repeat" items="{{objListMesasQr}}" as="item">
+                    <div class="codigo-qr xCursor" onclick="descarGarQR(this)" data-index = [[index]]>
+                        <!-- <a href="#" download="{{item.codigoDownload}}"> -->
+                            <img src="{{item.codigo}}" alt="">
+                            <span>{{item.nummesa}}</span>
+                        <!-- </a> -->
+                    </div>
+                </template>
+            </div>
+            
+            <br><br><br><br><br><br>
+        </div>
+    </template>
+</dom-module>
+
+<style>
+    .content-qr {
+        display: inline-block;        
+    }
+
+    .codigo-qr {
+        display: inline-grid;
+        text-align: center;
+    }
+
+</style>
+
+<script>
+    var xThisCartaVMesas;
+
+    function xIniCartaVirtualMesas() {
+        console.log('ini mesa carta');
+        loadDatosCartaMesas();
+        // loadReglasPwa();
+    }
+
+    function  loadDatosCartaMesas() {
+        $.ajax({ type: 'POST', url: '../../bdphp/log_005.php?op=903'})
+	    .done( function (res) {
+            res = JSON.parse(res);
+            // console.log('mesas', res.datos[0].mesas);
+            xThisCartaVMesas.objListMesasQr = JSON.parse(res.datos[0].mesas);
+            xThisCartaVMesas.objListMesasQr.map(x => {
+                x.codigoDownload = `https://chart.apis.google.com/chart?cht=qr&chs=400x400&chl=${x.codigo}`;
+                x.codigo = `https://chart.apis.google.com/chart?cht=qr&chs=50x50&chl=${x.codigo}`;
+                return x;
+            })
+            console.log(xThisCartaVMesas.objListMesasQr);
+        });
+    }
+
+    function descarGarQR(obj) {
+        const index = obj.dataIndex;
+        const fileDown = xThisCartaVMesas.objListMesasQr[index];
+
+        const url = fileDown.codigoDownload;
+        window.open(url, "CodigoQR", "width=500,height=500");
+        // var a = document.createElement("a");
+
+        // a.href = url;
+        // fileName = url.split("/").pop();
+        // a.download = 'aaaa.png';
+        // document.body.appendChild(a);
+        // a.click();
+        // window.URL.revokeObjectURL(url);
+        // a.remove();
+        // var downloading = browser.downloads.download({
+        //     url : fileDown.codigoDownload,
+        //     filename : fileDown.nummesa + '.png',
+        //     conflictAction : 'uniquify'
+        //     });
+
+        // downloading.then(null, null);
+    }
+    // function saveParamentros() {
+    //     xPopupLoad.xopen();
+    //     var _data = {
+    //         'pwa_time_limit': txt_minutos.value,
+    //         'pwa_msj_ini': txt_bienvenida.value,
+    //         'pwa_time_min_despacho': txt_minutos_min_despacho.value,
+    //         'pwa_time_max_despacho': txt_minutos_max_despacho.value,
+    //         'latitude': txt_latitude.value,
+    //         'longitude': txt_longitude.value
+    //     }
+
+    //     $.ajax({ 
+    //         type: 'POST', 
+    //         url: '../../bdphp/log_005.php?op=902', 
+    //         data: {item: _data}
+    //     })
+	//     .done( function (res) {
+    //         console.log(res);
+    //         xPopupLoad.xclose();
+    //     })
+    // }
+
+    Polymer({
+            is: 'x-carta-virtual-mesas',
+            properties: {
+                xt_org:Number,
+                xt_idsede:Number,
+                objListMesasQr: Object
+            },
+            attached: function () {                
+                xThisCartaVMesas = this;
+                xIniCartaVirtualMesas();
+            }
+        })
+</script>

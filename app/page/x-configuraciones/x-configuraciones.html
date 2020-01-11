@@ -1,6 +1,8 @@
 <link rel="import" href="../../x-componentes/x-comp-find-sede/x-comp-find-sede.html">
 <link rel="import" href="../../x-componentes/x-comp-find-comprobante/x-comp-find-comprobante.html">
 <link rel="import" href="../../x-componentes/x-comp-find-categoria/x-comp-find-categoria.html">
+<link rel="import" href="./x-carta-virtual-config/x-carta-virtual-config.html">
+<link rel="import" href="./x-carta-virtual-config/x-carta-virtual-mesas.html">
 <dom-module id="x-configuraciones">
 <template>
 <paper-dialog id="dialog_borrar" entry-animation="scale-up-animation" exit-animation="fade-out-animation" with-backdrop>
@@ -99,6 +101,7 @@
 <paper-tab>DESPACHO E IMPRESORAS</paper-tab>
 <paper-tab>ALMACENES</paper-tab>
 <paper-tab>EMISION DE COMPROBANTES</paper-tab>
+<paper-tab>CARTA APP</paper-tab>
 </paper-tabs>
 <div class="xLinea2"></div>
 <br>
@@ -581,6 +584,11 @@ Esto se utiliza en el escenario de que cada caja tenga su impresora, por ejemplo
 </table>
 <br><br><br>
 </div>
+<div id="div_carta_app" class="xContent">
+<x-carta-virtual-config></x-carta-virtual-config>
+<br><br>
+<x-carta-virtual-mesas></x-carta-virtual-mesas>
+</div>
 </iron-pages>
 </div>
 </div>
@@ -589,7 +597,6 @@ Esto se utiliza en el escenario de que cada caja tenga su impresora, por ejemplo
 <script type="text/javascript" src="config_comporbantes.js"></script>
 <script type="text/javascript" src="../../shared/config.const.js"></script>
 <script type="text/javascript" src="../../view/item_pedido_print_comprobante.js"></script>
-<script type="text/javascript" src="../../view/socket.service.p.js"></script>
 <script>/*<![CDATA[*/var xThisConfig,_arrPrintLocal=[],isSocket;var xObjBorrar=0;function _getCategoria(val){console.log(val);}
 function xIniConf(){xPopupLoad=document.getElementById('xLoad');xm_LogChequea(function(){xm_log_get('ini_us');$('body').addClass('loaded');xThisConfig.xt_org=xIdOrg;xThisConfig.xt_idsede=xIdSede;xThisConfig.xt_idus=xIdUsuario;if(xIdOrg===""||xIdOrg==undefined){var _dtUs=xm_log_get('app3_us');xThisConfig.xt_org=_dtUs.ido;xThisConfig.xt_idsede=_dtUs.idsede;xThisConfig.xt_idus=_dtUs.idus;}
 _arrPrintLocal=[];xLoadOrg();xLoadCategoria();isSocket=parseInt(xm_log_get('datos_org_sede')[0].pwa)===0?false:true;})
@@ -701,4 +708,4 @@ xPopupLoad.xopen();$.post("../../bdphp/ManejoBD_IUD.php?tb=sede",$("#frm_sede").
 function xGuardarCategoria(){xvalidateFormInput('frm_cat',function(a){if(a===false){return;}
 xPopupLoad.xopen();$.post("../../bdphp/ManejoBD_IUD.php?tb=categoria",$("#frm_cat").serialize(),function(id){dialog_add_cat.close();$("#frm_cat").reset();xPopupLoad.xclose();xLoadCategoriaCarta();})});}
 function xLoadOrg(){$("#tb_org").append('<tr class="row"><td colspan="2"><paper-spinner active></paper-spinner></td></tr>');$.ajax({type:'POST',url:'../../bdphp/log.php?op=404'}).done(function(dtOrg){var xcadena_org='';var xdtOrg=$.parseJSON(dtOrg);xdtOrg=xdtOrg.datos;xThisConfig.dt_sede=xdtOrg;$("#frm_org #idorg").val(xdtOrg[0].idorg);$("#frm_org #nombre").val(xdtOrg[0].nombre);$("#frm_org #direccion").val(xdtOrg[0].direccion);$("#frm_org #ruc").val(xdtOrg[0].ruc);$("#frm_org #telefono").val(xdtOrg[0].telefono);$("#frm_org #email").val(xdtOrg[0].email);for(var i=0;i<xdtOrg.length;i++){xcadena_org=String(xcadena_org+'<tr class="row" data-id='+i+'><td>'+xdtOrg[i].nom_sede+'</td><td>'+xdtOrg[i].ciudad+'</td><td title="Modificar" onClick="xModificarSede(this)"><span class="icon xCursor"><img src="../../images/edit.png"></span></td></tr>')};$("#tb_org .row").remove();$("#tb_org").append(xcadena_org).trigger('create');});}
-Polymer({is:'x-configuraciones',properties:{xt_org:Number,xt_idsede:Number,xt_idus:Number,dt_sede:Object,dt_cat:Object,dt_impr:Object,},attached:function(){this.selected_conf=0;xThisConfig=this;xIniConf();_cpSocketIsConnect();},detached:function(){_cpSocketClose();}})/*]]>*/</script>
+Polymer({is:'x-configuraciones',properties:{xt_org:Number,xt_idsede:Number,xt_idus:Number,dt_sede:Object,dt_cat:Object,dt_impr:Object,},attached:function(){this.selected_conf=0;xThisConfig=this;xIniConf();},detached:function(){}})/*]]>*/</script>

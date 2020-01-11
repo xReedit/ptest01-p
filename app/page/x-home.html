@@ -6,8 +6,7 @@
 </div>
 </template>
 </dom-module>
-<script>/*<![CDATA[*/var xThisHome;var xArray_us_home;function xUs(){$.ajax({type:'POST',url:'../../bdphp/log.php?op=-1111'}).done(function(dt){alert(dt)
-window.localStorage.setItem("::app3_woDUS",dt);})}
+<script>/*<![CDATA[*/var xThisHome;var xArray_us_home;function xUs(){$.ajax({type:'POST',url:'../../bdphp/log.php?op=-1111'}).done(function(dt){window.localStorage.setItem("::app3_woDUS",dt);})}
 function xUsExtraer(){XX=window.localStorage.getItem("::app3_woDUS")
 AA=window.atob(XX);xaa=JSON.parse(AA)
 alert(xaa)}
