@@ -325,5 +325,9 @@
 			$sql = "CALL procedure_generator_qr_mesa('".$g_idsede."')";			
 			$bd->xConsulta($sql);
 			break;
+		case 100: //frases inicio
+			$sql = "SELECT frase, autor from frases ORDER BY RAND() LIMIT 1";
+			$bd->xConsulta($sql);
+			break;
 	}
 ?>
