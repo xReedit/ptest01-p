@@ -7,7 +7,7 @@ if (array_key_exists('HTTP_X_FILE_NAME', $_SERVER) && array_key_exists('CONTENT_
 $op=$_GET['op'];
 switch ($op) {
 	case '1':
-		$path = '../img/';
+		$path = '../../file/';
 		break;	
 	case '2':
 		$path = '../../print/logo/';
