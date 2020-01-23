@@ -2842,7 +2842,7 @@
 						FROM registro_pago_pedido AS rpp
 						INNER JOIN registro_pago AS rp ON rpp.idregistro_pago=rp.idregistro_pago										
 						INNER JOIN pedido AS p ON rpp.idpedido=p.idpedido
-						inner JOIN usuario as u on u.idusuario = rp.idusuario
+						LEFT JOIN usuario as u on u.idusuario = rp.idusuario
 						LEFT join cliente as c on c.idcliente = rp.idcliente
 						LEFT join ce as ce on rp.idce = ce.idce			
 						LEFT join tipo_comprobante_serie as tpcs on tpcs.idtipo_comprobante_serie = ce.idtipo_comprobante_serie

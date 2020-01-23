@@ -26,6 +26,14 @@ function _cpSocketOpen() {
             } catch (error) {}            
         });
 
+
+        // cliente ha pagado desde el aplicativo
+        this.socketCP.listen('notificar-pago-pwa').subscribe(res => {
+            try {                
+                _cpSocketPintarPedido(res);
+            } catch (error) {}            
+        });
+
         // socketCP.on('nuevoPedido', (data) => { 
         //     try {
         //         _cpSocketPintarPedido(data);    
