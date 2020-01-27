@@ -12,7 +12,7 @@ function pNotificaPago(res) {
     brand: res.objTransaction.brand,
   };
 
-	if (typeof window.stackBottomRight === 'undefined') {
+  if (typeof window.stackBottomRight === 'undefined') {
     window.stackBottomRight = {
       'dir1': 'up',
       'dir2': 'left',
@@ -57,7 +57,7 @@ PlaySound('../../sound/notifica-pago.mp3');
 function pNotificaPersonal(mesa) {
   var hora = pTimeNow();
 
-	if (typeof window.stackBottomRight === 'undefined') {
+  if (typeof window.stackBottomRight === 'undefined') {
     window.stackBottomRight = {
       'dir1': 'up',
       'dir2': 'left',
@@ -67,7 +67,7 @@ function pNotificaPersonal(mesa) {
   }
 
   var notice = PNotify.notice({  
-    text: ''+ hora + ' Mesa <span><strong>05</strong> solicita atención.',
+    text: ''+ hora + ' Mesa <span><strong>'+ mesa +'</strong> solicita atención.',
     textTrusted: true,  
     hide: false,
     stack: window.stackBottomRight,
@@ -79,8 +79,8 @@ function pNotificaPersonal(mesa) {
   });  
 
   notice.on('click', function() {
-  	notice.close();
-	});
+    notice.close();
+  });
 
 
   PlaySound('../../sound/notifica-llamado.mp3');
