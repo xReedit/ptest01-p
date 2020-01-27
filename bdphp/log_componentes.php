@@ -49,7 +49,7 @@
             $bd->xConsulta($sql);
             break;
         case 6:// load tipo pago
-            $sql="SELECT * FROM tipo_pago WHERE estado=0";
+            $sql="SELECT * FROM tipo_pago WHERE estado=0 and idtipo_pago != 4";
             $bd->xConsulta($sql);
             break;
         case 7://load clientes

@@ -4,18 +4,6 @@ function _cpSocketOpen() {
     if (isSocket) {
         isSocket = parseInt(xm_log_get('datos_org_sede')[0].pwa) === 0 ? false : true;
 
-        // const dtUs = xm_log_get('app3_us');
-        // var dataSocket = {
-        //     idorg: dtUs.ido,
-        //     idsede: dtUs.idsede,
-        //     idusuario: dtUs.idus,
-        //     isFromApp: 0
-        // }
-
-        // socketCP = io.connect(URL_SOCKET, {
-        //     query: dataSocket
-        // });
-
         this.socketCP.connectSocket();
 
         // restore si hay
@@ -28,19 +16,10 @@ function _cpSocketOpen() {
 
 
         // cliente ha pagado desde el aplicativo
-        this.socketCP.listen('notificar-pago-pwa').subscribe(res => {
-            try {                
-                _cpSocketPintarPedido(res);
-            } catch (error) {}            
-        });
-
-        // socketCP.on('nuevoPedido', (data) => { 
-        //     try {
-        //         _cpSocketPintarPedido(data);    
-        //         console.log('nuevoPedido socket cp'); 
-        //     } catch (error) {
-                
-        //     }          
+        // this.socketCP.listen('notificar-pago-pwa').subscribe(res => {
+        //     try {                
+        //         _cpSocketPintarPedido(res);
+        //     } catch (error) {}            
         // });
 
         this.socketCP.listen('itemModificado').subscribe(res => {
@@ -49,40 +28,34 @@ function _cpSocketOpen() {
             } catch (error) {}
         });
 
-        // socketCP.on('itemModificado', (item) => {
-        //     // console.log('itemModificado socket cp');
-        //     try { // puede venir de zona de despacho             
-        //         _cpStockItemModificado(item);
-        //     } catch (error) {}
-        // });
-
         this.socketCP.listen('itemResetCant').subscribe(res => {
             try { // puede venir de zona de despacho             
                 _cpStockItemModificado(res);
             } catch (error) {}
         });
 
-        // socketCP.on('itemResetCant', (item) => {
-        //     // console.log('itemModificado socket cp');
-        //     try { // puede venir de zona de despacho             
-        //         _cpStockItemModificado(item);
-        //     } catch (error) {}
-        // });
-
-        // socketCP.on('printerOnly', (item) => {
-        //     try {
-        //     // console.log('printerOnly socket cp');
-        //     _cpSocketPintarPedido(item); // no importa la data ya que se utiliza para acutalizar a la antigua   
-        //     } catch (error) {
-                
-        //     }        
-        // });
-
         this.socketCP.listen('printerOnly').subscribe(res => {
             try { // puede venir de zona de despacho             
                 _cpSocketPintarPedido(res);
             } catch (error) {}
         });
+
+        // NOTIFICAR PAGO CLIENTE FROM APP
+        this.socketCP.listen('notificar-pago-pwa-success').subscribe(res => {
+            try { // puede venir de zona de despacho                             
+                _cpSocketPintarPedido(null);
+                pNotificaPago(res);
+            } catch (error) {}
+        });
+
+
+        // NOTIFICAR LLAMADO DEL CLIENTE SOLICITANDO ATENCION
+        this.socketCP.listen('notificar-cliente-llamado').subscribe(res => {
+            try {
+                pNotificaPersonal(res);
+            } catch (error) {}
+        });
+
     }
 }
 

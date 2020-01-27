@@ -59,6 +59,10 @@ try {
 
 $imLogo="./logo/".$xArray_print[0]['logo'];
 
+$isCliente = array_key_exists('isCliente', $ArrayEnca) ? $ArrayEnca['isCliente'] : '0'; 
+
+
+
 $num_mesa=$ArrayEnca['m'];
 $num_pedido=$ArrayEnca['num_pedido'];
 $correlativo_dia=$ArrayEnca['correlativo_dia'];
@@ -70,6 +74,8 @@ $nom_us=$ArrayEnca['nom_us'];
 $pre_cuenta=!empty($ArrayEnca['precuenta']) ? $ArrayEnca['precuenta'] : '';
 $logo_solo_llevar="_ico_solo_llevar2.png";
 $logo_delivery = "_ico_delivery.png";
+$logo_cliente = "_ico_cliente.png";
+// $logo_delivery = "_ico_delivery.png";
 
 $nom_us=explode(' ',$_SESSION['nomUs']);
 
@@ -102,7 +108,7 @@ $papel_size = (int)$xArray_print[0]['papel_size'];
 $linea_hr = '';
 $linea_titulo = '';
 $espacioAlFinal = false; // en impresoras de 58- 57mm  no aparece el ultimo texto 
-$espacioLeftCols = 32;
+$espacioLeftCols = 30;
 $GLOBALS['leftCols'] = 38;
 $GLOBALS['leftColsSubItem'] = 54; // la letra es mas pequeña
 switch ($papel_size) {
@@ -130,6 +136,19 @@ if($num_mesa=='' || $num_mesa=='00'){$num_mesa='Pedido: '.$correlativo_dia;}else
 $precio='';
 
 while($num_copias>=0){
+
+	// si es desde el cliente
+	if ($isCliente == 1) {
+		try {
+		$_logo_cliente = EscposImage::load($logo_cliente, false);
+		$printer -> setJustification(Printer::JUSTIFY_CENTER);
+		$printer -> bitImage($_logo_cliente);
+		$printer -> feed();
+		} catch (Exception $e) {
+			
+		}
+	}
+
 	// icono delivery
 	if ($EsDelivery==1) {
 		$_logo_delivery = EscposImage::load($logo_delivery, false);
@@ -151,7 +170,7 @@ while($num_copias>=0){
 		$printer -> selectPrintMode(Printer::MODE_DOUBLE_HEIGHT | Printer::MODE_EMPHASIZED | Printer::MODE_DOUBLE_WIDTH);
 		$printer -> text("RESERVAR\n");
 		$printer -> selectPrintMode();
-	}
+	}	
 
 	// si es impresora local y es pedido
 	if ($local>0 && $pre_cuenta!=true) {
@@ -412,7 +431,11 @@ while($num_copias>=0){
 	}
 	$printer -> feed();
 
-	$printer -> text("Atendido por:".$nom_us[0]."\n");
+	// si no viene del cliente
+	if ($isCliente == 1) { 
+		$printer -> text("Atendido por:".$nom_us[0]."\n");
+	}
+
 	$printer -> text($fecha_actual.' | '.$hora_actual. "\n");
 
 	$printer -> text("www.papaya.com.pe\n");
