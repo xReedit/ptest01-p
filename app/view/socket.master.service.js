@@ -13,7 +13,7 @@ class socketService {
         this.getDataClient();
         
         if ( this._socket && this._socket.connected)  {
-            this.whenSocketIsConnect();
+            // this.whenSocketIsConnect();
             return this._socket;
         }
 
@@ -22,11 +22,11 @@ class socketService {
         });
 
         this.whenSocketIsConnect();
+        this.isSocketConnectSource.next(true);
     }
 
     whenSocketIsConnect() { // cuando esta conectado
         this.listenStatus();
-        this.isSocketConnectSource.next(true);
 
         console.log('socket master connect'); 
     }

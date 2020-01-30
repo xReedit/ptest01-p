@@ -188,4 +188,4 @@ xtbReport.find('#'+seccion).html(xTitulo+xTituloEncabezadoTB+xCadenaAdd+xtotal+'
 function xImprimir(){var xCtrCierre=$("#ImprimeCierre");xCtrCierre.find('#xImpFecha').text(xDevolverFecha()+' '+xDevolverHora());xImprSelec('ImprimeCierre');}
 function xCerrarTerminal(){xCerrarSession();}
 function xReImprimirCierre(){dialog_erro_print.close();xPopupLoad.titulo="Enviando...";xPopupLoad.xopen();xImprimirCierre(xArrayEncabezadoCierre,xArrayCierrePrint);}
-Polymer({is:'x-caja',properties:{xt_org:Number,xt_idsede:Number,xt_idus:Number},attached:function(){this.selected=0;xThisCaja=this;xIniCaja();_cpSocketIsConnect();},detached:function(){_cpSocketClose();}})/*]]>*/</script>
+Polymer({is:'x-caja',properties:{xt_org:Number,xt_idsede:Number,xt_idus:Number},attached:function(){this.selected=0;xThisCaja=this;xIniCaja();},detached:function(){}})/*]]>*/</script>

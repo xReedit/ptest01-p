@@ -4,59 +4,71 @@ function _cpSocketOpen() {
     if (isSocket) {
         isSocket = parseInt(xm_log_get('datos_org_sede')[0].pwa) === 0 ? false : true;
 
-        this.socketCP.connectSocket();
-
-        // restore si hay
-
-        this.socketCP.listen('nuevoPedido').subscribe(res => {
-            try {                
-                _cpSocketPintarPedido(res);
-            } catch (error) {}            
-        });
-
-
-        // cliente ha pagado desde el aplicativo
-        // this.socketCP.listen('notificar-pago-pwa').subscribe(res => {
-        //     try {                
-        //         _cpSocketPintarPedido(res);
-        //     } catch (error) {}            
-        // });
-
-        this.socketCP.listen('itemModificado').subscribe(res => {
-            try { // puede venir de zona de despacho             
-                _cpStockItemModificado(res);
-            } catch (error) {}
-        });
-
-        this.socketCP.listen('itemResetCant').subscribe(res => {
-            try { // puede venir de zona de despacho             
-                _cpStockItemModificado(res);
-            } catch (error) {}
-        });
-
-        this.socketCP.listen('printerOnly').subscribe(res => {
-            try { // puede venir de zona de despacho             
-                _cpSocketPintarPedido(res);
-            } catch (error) {}
-        });
-
-        // NOTIFICAR PAGO CLIENTE FROM APP
-        this.socketCP.listen('notificar-pago-pwa-success').subscribe(res => {
-            try { // puede venir de zona de despacho                             
-                _cpSocketPintarPedido(null);
-                pNotificaPago(res);
-            } catch (error) {}
-        });
-
-
-        // NOTIFICAR LLAMADO DEL CLIENTE SOLICITANDO ATENCION
-        this.socketCP.listen('notificar-cliente-llamado').subscribe(res => {
-            try {
-                pNotificaPersonal(res);
-            } catch (error) {}
-        });
+        if ( !this.socketCP._socket) {            
+            this.socketCP.connectSocket();
+            this.listenSocketP();            
+        } else {
+            if ( !this.socketCP._socket.connected ) {
+                this.socketCP.connectSocket();
+                this.listenSocketP();
+            }
+        }
 
     }
+}
+
+
+function listenSocketP() {
+
+    // restore si hay
+    this.socketCP.listen('nuevoPedido').subscribe(res => {
+        try {                
+            _cpSocketPintarPedido(res);
+        } catch (error) {}            
+    });
+
+
+    // cliente ha pagado desde el aplicativo
+    // this.socketCP.listen('notificar-pago-pwa').subscribe(res => {
+    //     try {                
+    //         _cpSocketPintarPedido(res);
+    //     } catch (error) {}            
+    // });
+
+    this.socketCP.listen('itemModificado').subscribe(res => {
+        try { // puede venir de zona de despacho             
+            _cpStockItemModificado(res);
+        } catch (error) {}
+    });
+
+    this.socketCP.listen('itemResetCant').subscribe(res => {
+        try { // puede venir de zona de despacho             
+            _cpStockItemModificado(res);
+        } catch (error) {}
+    });
+
+    this.socketCP.listen('printerOnly').subscribe(res => {
+        try { // puede venir de zona de despacho             
+            _cpSocketPintarPedido(res);
+        } catch (error) {}
+    });
+
+    // NOTIFICAR PAGO CLIENTE FROM APP
+    this.socketCP.listen('notificar-pago-pwa-success').subscribe(res => {
+        try { // puede venir de zona de despacho                             
+            _cpSocketPintarPedido(null);
+            pNotificaPago(res);
+        } catch (error) {}
+    });
+
+
+    // NOTIFICAR LLAMADO DEL CLIENTE SOLICITANDO ATENCION
+    this.socketCP.listen('notificar-cliente-llamado').subscribe(res => {
+        try {
+            pNotificaPersonal(res);
+        } catch (error) {}
+    });
+
 }
 
 // function _cpSocketIsConnect() {

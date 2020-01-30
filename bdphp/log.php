@@ -3244,7 +3244,7 @@ function xDtUS($op_us){
 					where se.idorg = ".$g_ido." and se.idsede = ".$g_idsede;
 			break;
 		case 3013: // load datos del org sede 
-			$sql_us = "SELECT * from sede where idorg = ".$g_ido." and estado=0";
+			$sql_us = "SELECT * from sede where idsede=".$g_idsede." and estado=0";
 			break;
 		case 3014: // load sys const
 			$sql_us = "SELECT * FROM sys_const where estado=0";

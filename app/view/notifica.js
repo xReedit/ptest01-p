@@ -1,5 +1,7 @@
 // notifica acciones del cliete desde pwa
 // pago de cuenta y Solicitar atencion
+var pAudioNotifica;
+
 
 function pNotificaPago(res) {
 
@@ -83,7 +85,8 @@ function pNotificaPersonal(mesa) {
   });
 
 
-  PlaySound('../../sound/notifica-llamado.mp3');
+  // PlaySound('../../sound/notifica-llamado.mp3');
+  PlaySound('notificaLlamadoCliente');
 
 }
 
@@ -98,18 +101,26 @@ function pTimeNow() {
 
 
 function PlaySound(Path){
-  var audioElement = document.createElement('audio');
-  if (navigator.userAgent.match('Firefox/'))
-      audioElement.setAttribute('src', Path);
-  else
-      audioElement.setAttribute('src', Path);
+
+  pAudioNotifica=document.getElementById(Path);
+  pAudioNotifica.autobuffer = true;
+  pAudioNotifica.muted = false;
+  pAudioNotifica.load();
+  pAudioNotifica.play();
   
 
-  $.get();
-  audioElement.addEventListener("load", function() {
-      audioElement.play();
-  }, true);
+  // var audioElement = document.createElement('audio');
+  // if (navigator.userAgent.match('Firefox/'))
+  //     audioElement.setAttribute('src', Path);
+  // else
+  //     audioElement.setAttribute('src', Path);
+  
 
-  audioElement.pause();
-  audioElement.play();
+  // $.get();
+  // audioElement.addEventListener("load", function() {
+  //     audioElement.play();
+  // }, true);
+
+  // audioElement.pause();
+  // audioElement.play();
 }
