@@ -58,6 +58,7 @@ function listenSocketP() {
         try { // puede venir de zona de despacho                             
             _cpSocketPintarPedido(null);
             pNotificaPago(res);
+            _cpSocketPintarNumerosPagosNotificados();
         } catch (error) {}
     });
 
@@ -65,7 +66,7 @@ function listenSocketP() {
     // NOTIFICAR LLAMADO DEL CLIENTE SOLICITANDO ATENCION
     this.socketCP.listen('notificar-cliente-llamado').subscribe(res => {
         try {
-            pNotificaPersonal(res);
+            pNotificaPersonal(res);            
         } catch (error) {}
     });
 
