@@ -51,7 +51,8 @@ PNotify.success({
   }
 });
 
-PlaySound('../../sound/notifica-pago.mp3');
+// PlaySound('../../sound/notifica-pago.mp3');
+PlaySound('notificaPagoCliente');
 
 }
 
