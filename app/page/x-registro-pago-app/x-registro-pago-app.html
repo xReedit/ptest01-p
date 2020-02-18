@@ -1,94 +1,58 @@
 <dom-module id="x-registro-pago-app">
-	<template is="dom">
-        <br><br>
-        <div class="xMiCard xradius">
-			<div class="xEncanezadoCard xFondoRowAmarillo2">
-                <h3>Registro de pagos desde la aplicación</h3>
-                <div class="xLinea2"></div><br>
-                <p class="xfont18"><strong>Total:</strong> S/. {{sumList}}</p>
-			</div>		
-            <div class="xContentCard" style="padding: 20px;">            
-                <div class="w-100">
-                    <div style="max-width: 650px; margin: 0 auto;">                                
-                        <table width="100%" class="xtable2">
-                            <thead>
-                                <th align="left" width="10px">#</th>
-                                <th align="left" width="60px">Hora</th>
-                                <th align="left" width="60px">Canal</th>
-                                <th align="left" width="50%">Detalle</th>
-                                <th align="right">Importe</th>
-                            </thead>
-                            <tbody>
-                                <template is="dom-repeat" items="{{listPagosApp}}" as="item">
-                                    <tr>
-                                        <td data-id="{{index}}"><span>{{displayIndex(index)}}</span></td>
-                                        <td>{{item.fecha}}</td>
-                                        <td>
-                                            <div>
-                                                <p>{{item.canal}}</p>
-                                                <p>Mesa: {{item.nummesa}}</p>
-                                            </div>
-                                        </td>
-                                        <td>
-                                            <div>
-                                                <p>{{item.nomcliente}}</p>
-                                                <p>Tarjeta: {{item.datos.brand}}</p>
-                                            </div>
-                                        </td>
-                                        <td align="right">{{item.importe}}</td>
-                                    </tr>
-                                </template>
-                            </tbody>
-                        </table>
-                    </div>
-                </div>
-            </div>
-        </div>
-        <br>
-        <br>
-    </template>
+<template is="dom">
+<br><br>
+<div class="xMiCard xradius">
+<div class="xEncanezadoCard xFondoRowAmarillo2">
+<h3>Registro de pagos desde la aplicación</h3>
+<div class="xLinea2"></div><br>
+<p class="xfont18"><strong>Total:</strong> S/. {{sumList}}</p>
+</div>
+<div class="xContentCard" style="padding:20px">
+<div class="w-100">
+<div style="max-width:650px;margin:0 auto">
+<table width="100%" class="xtable2">
+<thead>
+<th align="left" width="10px">#</th>
+<th align="left" width="60px">Hora</th>
+<th align="left" width="60px">Canal</th>
+<th align="left" width="50%">Detalle</th>
+<th align="right">Estado</th>
+<th align="right">Importe</th>
+</thead>
+<tbody>
+<template is="dom-repeat" items="{{listPagosApp}}" as="item">
+<tr class$="{{item.classTr}}">
+<td data-id="{{index}}"><span>{{displayIndex(index)}}</span></td>
+<td>{{item.fecha}}</td>
+<td>
+<div>
+<p>{{item.canal}}</p>
+<p>Mesa: {{item.nummesa}}</p>
+</div>
+</td>
+<td>
+<div>
+<p>{{item.nomcliente}}</p>
+<p>Tarjeta: {{item.data_transaction.brand}}</p>
+</div>
+</td>
+<td>
+<div>{{item.data_transaction.descripcion}}</div>
+</td>
+<td align="right">{{item.importe}}</td>
+</tr>
+</template>
+</tbody>
+</table>
+</div>
+</div>
+</div>
+</div>
+<br>
+<br>
+</template>
 </dom-module>
-
-<script>
-var xThisPagosApp;
-
-function xIniPagosApp() {
-    xLoadRegistroPagoApp();
-}
-
-function xLoadRegistroPagoApp() {
-    $.ajax({ type: 'POST', url: '../../bdphp/log_005.php?op=110'})
-		.done((res) => {
-			const _res = JSON.parse(res);
-			console.log(_res.datos);
-			var sumTotal=0, canal = '';
-			xThisPagosApp.listPagosApp = _res.datos.map( x => {
-                sumTotal += parseFloat(x.importe);				
-                x.datos = JSON.parse(x.datos);
-                canal = x.canal.split(' ');
-                x.canal = canal.length > 0 ? canal[canal.length - 1] : x.canal;
-				return x;
-			});
-			xThisPagosApp.sumList = numeroConComas(sumTotal.toFixed(2));
-			// xPopupLoad.xclose();
-		});
-}
-
-
-Polymer({
-        is: 'x-registro-pago-app',
-        properties: {
-			xt_org:Number,
-			xt_idsede:Number,
-			sumList:String,			
-			listPagosApp: Object,
-        },
-        attached: function () {            
-            xThisPagosApp = this;
-            xIniPagosApp();
-        },
-        displayIndex: function (index) {
-            return xCeroIzq(index + 1, 1);
-        },            
-    })
-</script>
+<script>var xThisPagosApp;function xIniPagosApp(){xLoadRegistroPagoApp();}
+function xLoadRegistroPagoApp(){const fecha=new Date().toISOString().slice(0,10);$.ajax({type:'POST',url:'../../bdphp/log_005.php?op=110',data:{f:fecha}}).done((res)=>{const _res=JSON.parse(res);console.log(_res.datos);var sumTotal=0,canal='';xThisPagosApp.listPagosApp=_res.datos.map(x=>{x.data_transaction=JSON.parse(x.data_transaction);x.data_cliente=JSON.parse(x.data_cliente);x.data_operacion=JSON.parse(x.data_operacion);if(!x.data_transaction.error){sumTotal+=parseFloat(x.importe);}
+x.importe=parseFloat(x.importe).toFixed(2);x.nomcliente=x.data_cliente.nombres;x.canal=x.data_operacion.mesa?'LOCAL':'';x.nummesa=x.data_operacion.mesa;x.classTr=x.data_transaction.error?'xColorRow_Rojo':'';return x;});xThisPagosApp.sumList=numeroConComas(sumTotal.toFixed(2));});}
+Polymer({is:'x-registro-pago-app',properties:{xt_org:Number,xt_idsede:Number,sumList:String,listPagosApp:Object,},attached:function(){xThisPagosApp=this;xIniPagosApp();},displayIndex:function(index){return xCeroIzq(index+1,1);},})</script>

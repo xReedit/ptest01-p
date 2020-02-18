@@ -23,33 +23,57 @@ function pNotificaPago(res) {
     };
   }
 
-PNotify.success({
-  title: 'Confirmar Pago',
-  text: '<strong>'+ hora + '</strong> En la mesa <strong>' + _datos.nummesa + '</strong> '+ _datos.nom_cliente +' canceló <strong>S/. '+ _datos.importe  +'</strong> con tarjeta '+ _datos.brand +'.',
-  textTrusted: true,
-  // icon: 'fas fa-info-circle',
-  hide: false,
-  stack: window.stackBottomRight,
-  modules: {
-    Confirm: {
-      confirm: true,
-      buttons: [{
-        text: 'Confirmar',
-        primary: true,
-        click: function(notice) {
-          notice.close();
-        }
-      }]
-    },
-    // Buttons: {
-    //   closer: false,
-    //   sticker: false
-    // },
-    // History: {
-    //   history: false
-    // }
-  }
-});
+if ( !res.objTransaction.error ) {
+  PNotify.success({
+    title: 'Confirmar Pago',
+    text: '<strong>'+ hora + '</strong> En la mesa <strong>' + _datos.nummesa + '</strong> '+ _datos.nom_cliente +' canceló <strong>S/. '+ _datos.importe  +'</strong> con tarjeta '+ _datos.brand +'.',
+    textTrusted: true,
+    // icon: 'fas fa-info-circle',
+    hide: false,
+    stack: window.stackBottomRight,
+    modules: {
+      Confirm: {
+        confirm: true,
+        buttons: [{
+          text: 'Confirmar',
+          primary: true,
+          click: function(notice) {
+            notice.close();
+          }
+        }]
+      },
+      // Buttons: {
+      //   closer: false,
+      //   sticker: false
+      // },
+      // History: {
+      //   history: false
+      // }
+    }
+  });
+} else {
+
+  // error de pago
+
+  var pagoError = PNotify.error({  
+    // text: ''+ hora + ' Mesa <span><strong>'+ _datos.nummesa +'</strong> solicita atención.',
+    text: '<strong>Pago Denegado.</strong><br><strong>' + res.objTransaction.descripcion + '</strong> mesa <strong>' + _datos.nummesa + '</strong> '+ _datos.nom_cliente +' Esta intentanto pagar <strong> S/. '+ _datos.importe  +'</strong>',
+    textTrusted: true,  
+    hide: false,
+    stack: window.stackBottomRight,
+    modules: {
+      History: {
+        maxInStack: 5
+      }
+    } 
+  });  
+
+  pagoError.on('click', function() {
+    pagoError.close();
+  });
+
+}
+
 
 // PlaySound('../../sound/notifica-pago.mp3');
 PlaySound('notificaPagoCliente');

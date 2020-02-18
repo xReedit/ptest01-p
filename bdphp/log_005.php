@@ -330,15 +330,20 @@
 			$bd->xConsulta($sql);
 			break;
 		case 110: // registro pago app
-			$sql = "SELECT rp.idregistro_pago, c.nombres as nomcliente, rp.fecha, 
-					(select nummesa from pedido where idregistro_pago = rp.idregistro_pago limit 1) as nummesa,
-					format(rp.total, 2) as importe, tpc.descripcion as canal, cast(rp.data_pago_pwa as json)  as datos
-				from registro_pago rp
-					inner join cliente c on rp.idcliente = c.idcliente
-					inner join tipo_consumo tpc on rp.idtipo_consumo = tpc.idtipo_consumo
-				where (rp.idsede=$g_idsede and rp.from_pwa = 1) and rp.cierre=0
-				order by rp.idregistro_pago desc";
+			$fecha = $_POST['f'];			
+			// $sql = "SELECT rp.idregistro_pago, c.nombres as nomcliente, rp.fecha, 
+			// 		(select nummesa from pedido where idregistro_pago = rp.idregistro_pago limit 1) as nummesa,
+			// 		format(rp.total, 2) as importe, tpc.descripcion as canal, cast(rp.data_pago_pwa as json)  as datos
+			// 	from registro_pago rp
+			// 		inner join cliente c on rp.idcliente = c.idcliente
+			// 		inner join tipo_consumo tpc on rp.idtipo_consumo = tpc.idtipo_consumo
+			// 	where (rp.idsede=$g_idsede and rp.from_pwa = 1) and rp.cierre=0
+			// 	order by rp.idregistro_pago desc";
+			// $bd->xConsulta($sql);
+
+			$sql = "SELECT * from pwa_pago_transaction where idsede=$g_idsede and cast(fecha as date) = cast('".$fecha."' as date) order by idpwa_pago_transaction desc";
 			$bd->xConsulta($sql);
+
 			break;
 	}
 ?>
