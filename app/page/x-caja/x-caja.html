@@ -28,7 +28,7 @@
 <paper-button tabindex="0" raised class="xnegro" onclick=""><iron-icon icon="save"></iron-icon>Cerrar sistema</paper-button>
 </div>
 </paper-dialog>
-<x-pass id="xPSupervisor" titulo="Permiso del administrador" val="Pe1"></x-pass>
+<x-pass id="xPSupervisor" titulo="Permiso del administrador" val="Rol1"></x-pass>
 <br>
 <div class="xContent">
 <paper-tabs selected="{{selected}}" id="tab_caja">
@@ -130,7 +130,7 @@
 <script type="text/javascript" src="../../view/cpe_interno.js"></script>
 <script type="text/javascript" src="../../view/xSOAPSunat.js"></script>
 <script type="text/javascript" src="../../view/socket.service.p.js"></script>
-<script>/*<![CDATA[*/var xThisCaja,xMontoTotalCaja,xSumData,xtbReport,xPermisoSupervisor=0,xArrayCierrePrint=[],xArrayEncabezadoCierre,xEfectivoCaja=0,nom_supervisor='',id_supervisor=0,xlo_idorg,xlo_idsede,xlo_us,isSocket;function xIniCaja(){xPopupLoad=document.getElementById('xLoad');xm_LogChequea(function(){xm_log_get('ini_us');$('body').addClass('loaded');xThisCaja.xt_org=xIdOrg;xThisCaja.xt_idsede=xIdSede;xThisCaja.xt_idus=xIdUsuario;$("#Titulo_page").text("Movimientos de Caja");xtbReport=$("#xTableList");isSocket=parseInt(xm_log_get('datos_org_sede')[0].pwa)===0?false:true;});xPSupervisor=document.getElementById('xPSupervisor');xPSupervisor.addEventListener('xSend',function(e){var p=e.detail.xRpts[0].p;if(p==1){nom_supervisor=e.detail.xRpts[0].nomus;id_supervisor=e.detail.xRpts[0].us;xPermisoSupervisor=1;xVerificar()}});$('.xPasarEnter2').on('keyup',function(e){var xvalText=$(this).val();var xValDeno=$(this).attr('data-valor');if(xValDeno=='total'){return;}
+<script>/*<![CDATA[*/var xThisCaja,xMontoTotalCaja,xSumData,xtbReport,xPermisoSupervisor=0,xArrayCierrePrint=[],xArrayEncabezadoCierre,xEfectivoCaja=0,nom_supervisor='',id_supervisor=0,xlo_idorg,xlo_idsede,xlo_us,isSocket;function xIniCaja(){xPopupLoad=document.getElementById('xLoad');xm_LogChequea(function(){xm_log_get('ini_us');$('body').addClass('loaded');xThisCaja.xt_org=xIdOrg;xThisCaja.xt_idsede=xIdSede;xThisCaja.xt_idus=xIdUsuario;$("#Titulo_page").text("Movimientos de Caja");xtbReport=$("#xTableList");isSocket=parseInt(xm_log_get('datos_org_sede')[0].pwa)===0?false:true;});xPSupervisor=document.getElementById('xPSupervisor');xPSupervisor.valor='Rol1';xPSupervisor.addEventListener('xSend',function(e){var p=e.detail.xRpts[0].p;if(p==1){nom_supervisor=e.detail.xRpts[0].nomus;id_supervisor=e.detail.xRpts[0].us;xPermisoSupervisor=1;xVerificar()}});$('.xPasarEnter2').on('keyup',function(e){var xvalText=$(this).val();var xValDeno=$(this).attr('data-valor');if(xValDeno=='total'){return;}
 var xDeno=parseFloat(parseFloat(xvalText)/parseFloat(xValDeno));if(xDeno%1==0){$(this).removeClass('xTxtRojo');xSumarTotal();}else{$(this).addClass('xTxtRojo');}
 var code=e.which;if(code==13||code==186){var inputs=$('input');var a=inputs.index(document.activeElement);if(inputs[a+1]!==null)
 {var nextBox=inputs[a+1];if(nextBox===undefined){return}
