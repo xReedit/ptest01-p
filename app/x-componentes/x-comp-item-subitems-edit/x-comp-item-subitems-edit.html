@@ -1,309 +1,139 @@
- <!-- from  la carta -->
 <dom-module id="x-comp-item-subitems-edit">
-        <template>
-            <div>
-                <paper-tabs selected="{{selected}}" id="tab_subitem">
-                    <paper-tab>Titulos</paper-tab>
-                    <paper-tab>Opciones</paper-tab>
-                </paper-tabs>
-                <div class="xLinea2"></div>
-
-                <iron-pages selected="{{selected}}">
-                    <!-- titulos -->
-                    <div>                        
-                        <table width="100%">
-                            <thead>
-                                <th width="80%">
-                                    <input type="text" class="xMiInput xPasarEnter2 w-100" id="txt_content_titulo" placeholder="Titulo">
-                                </th>
-                                <th><paper-fab mini icon="add" onclick="xSaveNewContentSubItem()" class="xDerecha"></paper-fab></th>
-                            </thead>
-                            <tbody>
-                                <template is="dom-repeat" items="[[listContent]]" as="item">
-                                    <tr data-index="[[index]]" data-t="item_subitem_content" data-id="{{item.iditem_subitem_content}}" class="xCursor">                                        
-                                        <td onclick="selectOptionContentItem(this)">{{item.titulo}}</td>
-                                        <td><span class="xDeleteRow" title="Anular" onclick="xBorrarItem(this);"></span></td>
-                                    </tr>
-                                </template>
-                            </tbody>
-                        </table>
-                    </div>
-                    <!-- titulos -->
-
-                    <!-- sub items - opciones -->
-                    <div>
-                        <br>
-                        <paper-fab mini icon="add" onclick="addSubItem()" class="xDerecha"></paper-fab>
-                        <p class="xBold">{{contentSelect.titulo}}</p>
-                        <table>
-                            <thead width="100%">
-                                <th width="50%"><input type="text" class="xMiInput xPasarEnter2 w-100" id="txt_sub_des" placeholder="DESCRIPCION" onChange="conMayusculas(this)"></th>
-                                <th width="25%"><input type="text" class="xMiInput xPasarEnter2" id="txt_sub_cant" placeholder="CANT" onChange="conMayusculas(this)"></th>
-                                <th width="25%"><input type="number" class="xMiInput" id="txt_sub_precio" placeholder="PRECIO" onChange="conMayusculas(this)" onblur="xRetornaMoneda(this)"></th>
-                                <th></th>
-                            </thead>
-                            <tbody>
-                                <template is="dom-repeat" items="{{listCompSubitems}}" as="item">
-                                    <tr data-index="{{index}}" data-t="item_subitem" data-id="{{item.iditem_subitem}}" class="xCursor">
-                                        <td>{{item.descripcion}}</td>
-                                        <td onclick="xModRow_subitem(this,2);" id="subICant">{{item.cantidad}}</td>
-                                        <td onclick="xModRow_subitem(this,2);" id="subIPrecio">{{item.precio}}</td>
-                                        <td><span class="xDeleteRow" title="Anular" onclick="xBorrarItem(this);"></span></td>
-                                    </tr>
-                                </template>
-                                <tr>
-                                    <td class="xBold">Cantidad Total </td>
-                                    <td class="xBold">{{cantidadSubItems}}</td>
-                                    <td>.</td>
-                                    <td>.</td>
-                                </tr>
-                            </tbody>
-                        </table>
-                        <br><br>
-                        <h4>Condiciones</h4>
-                        <hr>
-                        <label for="txt_sub_condicion_cant">Cuantos subitem u opciones se pueden seleccionar?</label>
-                        <input type="number" style="width: 100px;" onkeyup="addSubItemItem();" class="xMiInput" id="txt_sub_condicion_cant" placeholder="Cant" onChange="conMayusculas(this)">
-                        <br><br>
-                        <paper-checkbox id="xcheck_subitem_required" onchange="addSubItemItem();">Es obligatorio que se seleccione?</paper-checkbox>
-                        <br><br>
-                        <!-- <div class="xBoton2 xAzul" onclick="addSubItemItem();">Listo, guardar</div> -->
-                    </div>
-                    <!-- sub items - opciones -->
-
-                </iron-pages>                
-
-                <!-- <br><br> -->
-                <!-- <div class="xBoton2 xPlomo" dialog-dismiss>Cancelar</div> -->
-            </div>
-        </template>
-    </dom-module>
-    <style>
-        
-    </style>
-    <script>
-        var xThisComSubItemEdit, iditemSelect, iditemContentSelect;
-
-        function xInitSubItemsEdit() {
-            iditemSelect = xThisComSubItemEdit.iditem;
-            xloadSubItemsContent(iditemSelect);
-        }
-
-        function xloadSubItemsContent(iditem) {
-            // item-content
-            $.ajax({ type: 'POST', url: '../../bdphp/log_005.php?op=803', data:{i:iditem}})
-            .done( function (dtItem) {
-                dtItem = JSON.parse(dtItem);
-                dtItem = dtItem.datos;
-                xThisComSubItemEdit.listContent = dtItem;                            
-                   
-                if (dtItem.length > 0) {
-                    xThisComSubItemEdit.contentSelect = dtItem[0];
-                    iditemContentSelect = dtItem[0].iditem_subitem_content;
-                    xloadSubitems(iditemContentSelect);
-                }
-            });
-
-        }
-
-        function xloadSubitems(iditemContent) {
-            // subitems
-            $.ajax({ type: 'POST', url: '../../bdphp/log_005.php?op=801', data:{i:iditemContent}})
-                .done( function (dtSubItem) {
-                    dtSubItem = JSON.parse(dtSubItem);
-                    xThisComSubItemEdit.listCompSubitems = dtSubItem.datos;
-                        
-                    sumCantSubitem();
-                    // console.log('listCompSubitems', dtSubItem.datos);              
-                });
-
-                xcheck_subitem_required.checked = parseInt(xThisComSubItemEdit.contentSelect.subitem_required_select) === 1 ? true : false;
-                txt_sub_condicion_cant.value = xThisComSubItemEdit.contentSelect.subitem_cant_select;
-        }
-
-        function sumCantSubitem() {
-            xThisComSubItemEdit.cantidadSubItems = xThisComSubItemEdit.listCompSubitems.map(x => parseInt(x.cantidad)).reduce((a, b) => a + b , 0);
-            xThisComSubItemEdit.cantidadSubItems = isNaN(xThisComSubItemEdit.cantidadSubItems) ? '-' : xThisComSubItemEdit.cantidadSubItems;
-            
-            addSubItemItem();
-        }
-
-        function  selectOptionContentItem(obj) {
-            const index = obj.parentElement.dataIndex;
-            xThisComSubItemEdit.contentSelect = xThisComSubItemEdit.listContent[index];
-            iditemContentSelect = xThisComSubItemEdit.contentSelect.iditem_subitem_content;
-
-            xloadSubitems(iditemContentSelect);
-            xThisComSubItemEdit.selected = 1;
-        }
-
-        function addSubItem() {
-            const dataSubItem = {
-                iditem_subitem_content: iditemContentSelect,
-                iditem: iditemSelect, 
-                descripcion: txt_sub_des.value,
-                cantidad: txt_sub_cant.value,
-                precio: txt_sub_precio.value,
-                cant_select: txt_sub_condicion_cant.value,
-                required_select: xcheck_subitem_required.checked ? 1 : 0
-            } 
-            
-            // xPopupLoad.xopen();
-
-            $.ajax({ type: 'POST', url: '../../bdphp/log_005.php?op=8', data:{item:dataSubItem}})
-            .done( function (a) {                
-                xloadSubitems(iditemContentSelect);
-
-                txt_sub_des.value = '';
-                txt_sub_cant.value = '';
-                // xPopupLoad.xclose();
-            });
-
-            // console.log(dataSubItem);
-        }
-
-        function addSubItemItem() {
-            const sumCantSubiTems = parseInt(xThisComSubItemEdit.cantidadSubItems) ? parseInt(xThisComSubItemEdit.cantidadSubItems) : null   // esto reemplaza a la cantidad especificada en carta, siempre y cuando sean cantidades fijas, si es nd no reemplaza
-            const isSumCantSubItems = sumCantSubiTems ? true : false
-            const dataSubItem = {
-                iditem: iditemSelect,
-                iditem_subitem_content: iditemContentSelect,
-                cant_select: txt_sub_condicion_cant.value,
-                required_select: xcheck_subitem_required.checked ? 1 : 0,
-                is_sum_cant_subitems:  isSumCantSubItems ? 1 : 0,
-                cantidad: sumCantSubiTems
-            }   
-
-            // xPopupLoad.xopen();
-            
-            // xm_all_xToastOpen('Guardando ...', 2000);
-            $.ajax({ type: 'POST', url: '../../bdphp/log_005.php?op=800', data:{item:dataSubItem}})
-            .done( function (a) {
-                // console.log(a);        
-                // xPopupLoad.xclose();
-            });
-        }
-
-        function xModRow_subitem(obj,tipo){
-            var xvalObj=$(obj).text();
-            const txt_aling = tipo != 3 ? 'xAlinearDerecha' : '';
-            if($(obj).find('input').length>0){$(obj).find('input').select();return;}
-            $(obj).html('<input type="text" class="xMiInput xPasarEnter2 '+ txt_aling +'" onblur="xModBlur_subitem(this,'+tipo+')" value="'+xvalObj+'" select>').trigger('create');
-            $(obj).find('input').select();
-        }
-        function xModBlur_subitem(obj,tipo){
-            var xvalObj=$(obj).val();
-            var xtb=$(obj).parents('table');
-            if(tipo==1){xvalObj=xMoneda(xvalObj)}
-            else{
-                xvalObj=xCeroIzq(xvalObj,2);
-            }
-
-            const _tr = obj.parentElement.parentElement;            
-            
-            $(obj).parent().text(xvalObj);
-            $(obj).remove();
-
-            setTimeout(() => {
-                xSaveSubItemMod(_tr);
-            }, 200);
-
-
-        }
-
-        function xSaveSubItemMod(_tr) {
-            
-            const index = _tr.dataIndex;
-            const tr_cant = $(_tr).find('#subICant').text();
-            const tr_precio = $(_tr).find('#subIPrecio').text();
-            
-            var _subItemMod = xThisComSubItemEdit.listCompSubitems[index];
-            _subItemMod.cantidad = tr_cant;
-            _subItemMod.precio = tr_precio;
-
-            sumCantSubitem();
-
-            $.ajax({ type: 'POST', url: '../../bdphp/log_005.php?op=804', data:{item:_subItemMod}})
-            .done( function (a) {
-                // console.log(a);
-                sumCantSubitem();
-            });
-
-            if (!xThisComSubItemEdit.frommonitor) { return; }
-
-            var _subItemsSend = xThisComSubItemEdit.contentSelect
-            _subItemsSend.opciones = [];
-            _subItemsSend.opciones.push(_subItemMod);
-
-            xThisComSubItemEdit.itemselected.subitems = [];
-            xThisComSubItemEdit.itemselected.cantidad = xThisComSubItemEdit.cantidadSubItems;
-            xThisComSubItemEdit.itemselected.subitems.push(_subItemsSend);
-
-            _monitoreoSocketEmitItemModificadoFromSubItems(xThisComSubItemEdit.itemselected);
-
-        }
-
-        function xSaveNewContentSubItem() {
-
-            const txt_titlo_content = txt_content_titulo.value;
-            if (txt_titlo_content == '') {return; }
-
-            const _data = {
-                des: txt_titlo_content,
-                iditem: iditemSelect
-            }
-
-            $.ajax({ type: 'POST', url: '../../bdphp/log_005.php?op=805', data:{item:_data}})
-            .done( function (a) {
-                xloadSubItemsContent(iditemSelect);         
-            });
-        }
-
-        // function xRefreshSubItemContent() {
-        //     const _dataListContet = xThisComSubItemEdit.listContent;
-        //     xThisComSubItemEdit.listContent = []
-        //     xThisComSubItemEdit.listContent = JSON.parse(JSON.stringify(_dataListContet));
-        // }
-    
-        Polymer({
-            is: 'x-comp-item-subitems-edit',
-            properties: {
-                frommonitor: { // para identifcar si viene del monitor de pedidos y actualizar por socket
-                    type: Object,
-                    value: false 
-                },
-                itemselected: Object,
-                iditem: Number,
-                listContent: {
-                    type: Object,
-                    notify: true,
-                    reflectToAttribute: true            
-                },
-                listCompSubitems: {
-                    type: Object,
-                    notify: true,
-                    reflectToAttribute: true            
-                },
-                contentSelect: Object,
-                cantidadSubItems: 0
-            },
-            attached: function () {
-                this.selected=0;                
-                xThisComSubItemEdit = this;                
-                // xInitSubItemsEdit();                             
-            },
-            loadSubItemIni: function () {
-                xThisComSubItemEdit.listCompSubitems = [];
-                xThisComSubItemEdit.listContent = [];
-                xThisComSubItemEdit.contentSelect = [];
-                xThisComSubItemEdit.cantidadSubItems = 0;
-
-                xcheck_subitem_required.checked = false;
-                txt_sub_condicion_cant.value = '';
-
-                this.selected=0; 
-                xInitSubItemsEdit();
-            } 
-        })
-    </script>
-    
+<template>
+<div>
+<paper-tabs selected="{{selected}}" id="tab_subitem">
+<paper-tab>Titulos</paper-tab>
+<paper-tab>Opciones</paper-tab>
+</paper-tabs>
+<div class="xLinea2"></div>
+<iron-pages selected="{{selected}}">
+<div>
+<table width="100%">
+<thead>
+<th width="80%">
+<div id="div-list-compartido">
+<input type="text" class="xMiInput xPasarEnter2 w-100" id="txt_content_titulo" placeholder="Titulo">
+</div>
+</th>
+<th><paper-fab mini icon="add" onclick="xSaveNewContentSubItem()" class="xDerecha"></paper-fab></th>
+</thead>
+<tbody>
+<template is="dom-repeat" items="[[listContent]]" as="item">
+<tr data-index="[[index]]" data-t="item_subitem_content_detalle" data-id="{{item.iditem_subitem_content_detalle}}" class="xCursor">
+<td onclick="selectOptionContentItem(this)">{{item.titulo}}</td>
+<td><span class="xDeleteRow" title="Anular" onclick="xBorrarItem(this)"></span></td>
+</tr>
+</template>
+</tbody>
+</table>
+</div>
+<div>
+<br>
+<paper-fab mini icon="add" onclick="addSubItem()" class="xDerecha"></paper-fab>
+<p class="xBold">{{contentSelect.titulo}}</p>
+<div>
+<table class="table-max-alto">
+<thead width="100%" class="fs-11">
+<th width="50px">
+<select name="" id="listTipo" style="width:50px" onchange="onListTipo(this)">
+<option value="0">Libre</option>
+<option value="1">Porcion</option>
+<option value="2">Producto</option>
+</select>
+</th>
+<th width="40%">
+<input type="text" hidden$="{{inputLibreHidden}}" class="xMiInput xPasarEnter2 w-100" id="txt_sub_des" placeholder="DESCRIPCION" onChange="conMayusculas(this)">
+<div id="div-input-producto" hidden$="{{inputProductoHidden}}">
+<input type="text" class="xMiInput xPasarEnter2 w-100" placeholder="PRODUCTO" onChange="conMayusculas(this)" id="des_item_producto">
+</div>
+<div id="div-input-porcion" hidden$="{{inputProcionHidden}}">
+<input type="text" class="xMiInput xPasarEnter2 w-100" placeholder="PORCION" onChange="conMayusculas(this)" id="des_item_porcion">
+</div>
+</th>
+<th width="25%"><input type="text" class="xMiInput xPasarEnter2" id="txt_sub_cant" placeholder="CANT" onChange="conMayusculas(this)"></th>
+<th width="25%"><input type="number" class="xMiInput" id="txt_sub_precio" placeholder="PRECIO" onChange="conMayusculas(this)" onkeyup="enterAddSubItem(event)" onblur="xRetornaMoneda(this)"></th>
+<th></th>
+</thead>
+<tbody>
+<template is="dom-repeat" items="{{listCompSubitems}}" as="item">
+<tr data-index="{{index}}" data-t="item_subitem" data-id="{{item.iditem_subitem}}" class="xCursor fs-11">
+<td>{{item.tipo}}</td>
+<td onclick="xModRow_subitem(this,3)" id="subIDes">
+{{item.descripcion}}
+</td>
+<td onclick="xModRow_subitem(this,2)" id="subICant">{{item.cantidad}}</td>
+<td onclick="xModRow_subitem(this,2)" id="subIPrecio">{{item.precio}}</td>
+<td><span class="xDeleteRow" title="Anular" onclick="xBorrarItem(this)"></span></td>
+</tr>
+</template>
+<tr>
+<td>.</td>
+<td class="xBold">Cantidad Total </td>
+<td class="xBold">{{cantidadSubItems}}</td>
+<td>.</td>
+<td>.</td>
+</tr>
+</tbody>
+</table>
+</div>
+<br><br>
+<h4>Condiciones</h4>
+<hr>
+<label for="txt_sub_condicion_cant">Cuantos subitem u opciones se pueden seleccionar?</label>
+<input type="number" style="width:100px" onkeyup="addSubItemItem()" class="xMiInput" id="txt_sub_condicion_cant" placeholder="Cant" onChange="conMayusculas(this)">
+<br><br>
+<paper-checkbox id="xcheck_subitem_required" onchange="addSubItemItem()">Es obligatorio que se seleccione?</paper-checkbox>
+<br>
+<div class="xDerecha" hidden$="{{isCompartido}}">
+<div class="xBoton2 xVerde" onclick="compartirContenItem()">Compartir</div>
+</div>
+<br><br>
+</div>
+</iron-pages>
+</div>
+</template>
+</dom-module>
+<style></style>
+<script>/*<![CDATA[*/var xThisComSubItemEdit,iditemSelect,iditemContentSelect,xIdProducto_sel,xIdItemCompartido,xidproducto_porcionado,xNewItemPro,xNewItemPorcion,xNewItemCompartido;function xInitSubItemsEdit(){iditemSelect=xThisComSubItemEdit.iditem;xloadSubItemsContent(iditemSelect);xThisComSubItemEdit.inputLibreHidden=false;xThisComSubItemEdit.inputProductoHidden=true;xThisComSubItemEdit.inputProcionHidden=true;xThisComSubItemEdit.isCompartido=false;xloadProductoItemSub();xLoadListItemSubContentCompartidos();}
+function onListTipo($event){switch($event.value){case"0":xThisComSubItemEdit.inputLibreHidden=false;xThisComSubItemEdit.inputProductoHidden=true;xThisComSubItemEdit.inputProcionHidden=true;break;case"1":xThisComSubItemEdit.inputLibreHidden=true;xThisComSubItemEdit.inputProductoHidden=true;xThisComSubItemEdit.inputProcionHidden=false;break;case"2":xThisComSubItemEdit.inputLibreHidden=true;xThisComSubItemEdit.inputProductoHidden=false;xThisComSubItemEdit.inputProcionHidden=true;break;}
+console.log('evento ',$event);}
+function xloadSubItemsContent(iditem){$.ajax({type:'POST',url:'../../bdphp/log_005.php?op=803',data:{i:iditem}}).done(function(dtItem){dtItem=JSON.parse(dtItem);dtItem=dtItem.datos;xThisComSubItemEdit.listContent=dtItem;if(dtItem.length>0){xThisComSubItemEdit.contentSelect=dtItem[0];iditemContentSelect=dtItem[0].iditem_subitem_content;xloadSubitems(iditemContentSelect);}});}
+function compartirContenItem(){$.ajax({type:'POST',url:'../../bdphp/log_005.php?op=806',data:{i:iditemContentSelect}}).done(x=>{console.log(x);})
+xThisComSubItemEdit.isCompartido=true;}
+function xloadSubitems(iditemContent){$.ajax({type:'POST',url:'../../bdphp/log_005.php?op=801',data:{i:iditemContent}}).done(function(dtSubItem){dtSubItem=JSON.parse(dtSubItem);xThisComSubItemEdit.listCompSubitems=dtSubItem.datos;sumCantSubitem();});xcheck_subitem_required.checked=parseInt(xThisComSubItemEdit.contentSelect.subitem_required_select)===1?true:false;txt_sub_condicion_cant.value=xThisComSubItemEdit.contentSelect.subitem_cant_select;}
+function sumCantSubitem(){const hayPorcion=xThisComSubItemEdit.listCompSubitems.filter(x=>x.tipo==='Porcion').length>0?true:false;const hayProducto=xThisComSubItemEdit.listCompSubitems.filter(x=>x.tipo==='Producto').length>0?true:false;if(hayPorcion||hayProducto){return;}
+xThisComSubItemEdit.cantidadSubItems=xThisComSubItemEdit.listCompSubitems.map(x=>parseInt(x.cantidad)).reduce((a,b)=>a+b,0);xThisComSubItemEdit.cantidadSubItems=isNaN(xThisComSubItemEdit.cantidadSubItems)?'-':xThisComSubItemEdit.cantidadSubItems;addSubItemItem();}
+function selectOptionContentItem(obj){const index=obj.parentElement.dataIndex;xThisComSubItemEdit.contentSelect=xThisComSubItemEdit.listContent[index];iditemContentSelect=xThisComSubItemEdit.contentSelect.iditem_subitem_content;xThisComSubItemEdit.isCompartido=xThisComSubItemEdit.contentSelect.compartido==='0'?false:true;xloadSubitems(iditemContentSelect);xThisComSubItemEdit.selected=1;}
+function enterAddSubItem(e){if(e.keyCode===13){addSubItem();}}
+function addSubItem(){const isPorcion=!xThisComSubItemEdit.inputProcionHidden;const isProducto=!xThisComSubItemEdit.inputProductoHidden;const isLibre=!xThisComSubItemEdit.inputLibreHidden;var descripcion_item=txt_sub_des.value;if(isProducto){if(xNewItemPro){alert('Debe seleccionar un producto de lista');return;}
+descripcion_item=des_item_producto.value;}
+if(isPorcion){if(xNewItemPorcion){alert('Debe seleccionar una procion de lista');return;}
+descripcion_item=des_item_porcion.value;}
+const dataSubItem={isPorcion:isPorcion,isProducto:isProducto,isLibre:isLibre,idproducto:xIdProducto_sel,idporcion:xidproducto_porcionado,iditem_subitem_content:iditemContentSelect,iditem:iditemSelect,descripcion:descripcion_item,cantidad:txt_sub_cant.value,precio:txt_sub_precio.value,cant_select:txt_sub_condicion_cant.value,required_select:xcheck_subitem_required.checked?1:0}
+console.log(JSON.stringify(dataSubItem));$.ajax({type:'POST',url:'../../bdphp/log_005.php?op=8',data:{item:dataSubItem}}).done(function(a){xloadSubitems(iditemContentSelect);txt_sub_des.value='';txt_sub_cant.value='';});}
+function addSubItemItem(){const sumCantSubiTems=parseInt(xThisComSubItemEdit.cantidadSubItems)?parseInt(xThisComSubItemEdit.cantidadSubItems):null
+const isSumCantSubItems=sumCantSubiTems?true:false
+const dataSubItem={iditem:iditemSelect,iditem_subitem_content:iditemContentSelect,cant_select:txt_sub_condicion_cant.value,required_select:xcheck_subitem_required.checked?1:0,is_sum_cant_subitems:isSumCantSubItems?1:0,cantidad:sumCantSubiTems}
+$.ajax({type:'POST',url:'../../bdphp/log_005.php?op=800',data:{item:dataSubItem}}).done(function(a){console.log(a);});}
+function xModRow_subitem(obj,tipo){var xvalObj=$(obj).text().trim();const txt_aling=tipo!=3?'xAlinearDerecha':'';if($(obj).find('input').length>0){$(obj).find('input').select();return;}
+$(obj).html('<input type="text" class="xMiInput xPasarEnter2 '+txt_aling+'" onblur="xModBlur_subitem(this,'+tipo+')" value="'+xvalObj+'" select>').trigger('create');$(obj).find('input').select();}
+function xModBlur_subitem(obj,tipo){var xvalObj=$(obj).val();var xtb=$(obj).parents('table');if(tipo==1){xvalObj=xMoneda(xvalObj)}
+else{xvalObj=xCeroIzq(xvalObj,2);}
+const _tr=obj.parentElement.parentElement;$(obj).parent().text(xvalObj);$(obj).remove();setTimeout(()=>{xSaveSubItemMod(_tr);},200);}
+function xSaveSubItemMod(_tr){const index=_tr.dataIndex;const tr_cant=$(_tr).find('#subICant').text();const tr_precio=$(_tr).find('#subIPrecio').text();const tr_des=$(_tr).find('#subIDes').text();var _subItemMod=xThisComSubItemEdit.listCompSubitems[index];_subItemMod.cantidad=tr_cant;_subItemMod.precio=tr_precio;_subItemMod.descripcion=tr_des;sumCantSubitem();$.ajax({type:'POST',url:'../../bdphp/log_005.php?op=804',data:{item:_subItemMod}}).done(function(a){sumCantSubitem();});if(!xThisComSubItemEdit.frommonitor){return;}
+var _subItemsSend=xThisComSubItemEdit.contentSelect
+_subItemsSend.opciones=[];_subItemsSend.opciones.push(_subItemMod);xThisComSubItemEdit.itemselected.subitems=[];xThisComSubItemEdit.itemselected.cantidad=xThisComSubItemEdit.cantidadSubItems;xThisComSubItemEdit.itemselected.subitems.push(_subItemsSend);_monitoreoSocketEmitItemModificadoFromSubItems(xThisComSubItemEdit.itemselected);}
+function xSaveNewContentSubItem(){const txt_titlo_content=txt_content_titulo.value;if(txt_titlo_content==''){return;}
+const _data={des:txt_titlo_content,iditem:iditemSelect,iditem_subitem_content:xIdItemCompartido,isContentCompartido:xNewItemCompartido?'0':'1'}
+$.ajax({type:'POST',url:'../../bdphp/log_005.php?op=805',data:{item:_data}}).done(function(a){xloadSubItemsContent(iditemSelect);});}
+function xloadProductoItemSub(){$.ajax({type:'POST',url:'../../bdphp/log.php?op=16'}).done(function(DtItems){var xDtItems=$.parseJSON(DtItems);xThisComSubItemEdit.dtProItem=xDtItems.datos;xCargarProductoItemSub();});$.ajax({type:'POST',url:'../../bdphp/log.php?op=16003'}).done(function(DtItemsPor){var xDtItemsPor=$.parseJSON(DtItemsPor);xThisComSubItemEdit.dtProItem_porcion=xDtItemsPor.datos;xCargarPorcionItemSub();});}
+function xLoadListItemSubContentCompartidos(){$.ajax({type:'POST',url:'../../bdphp/log_005.php?op=807'}).done(function(DtItemsPor){var xDtItemsPor=$.parseJSON(DtItemsPor);xThisComSubItemEdit.dtListContentCompartido=xDtItemsPor.datos;xCargarCompartidoItemSub();});}
+function xCargarCompartidoItemSub(){var xObjTxtItemComp=$("#txt_content_titulo");xObjTxtItemComp.autocomplete({autoFocus:true,source:xThisComSubItemEdit.dtListContentCompartido,appendTo:$('#div-list-compartido'),select:function(event,ui){xObjTxtItemComp.val(ui.item.label);xNewItemCompartido=false;xIdItemCompartido=ui.item.value;return false;},focus:function(event,ui){return false;},change:function(event,ui){if(ui.item===null){xNewItemCompartido=true;}else{xNewItemCompartido=false;}
+return false;}});}
+function xCargarProductoItemSub(){var xObjTxtItemPro=$("#des_item_producto");xObjTxtItemPro.autocomplete({autoFocus:true,source:xThisComSubItemEdit.dtProItem,appendTo:$('#div-input-producto'),select:function(event,ui){xObjTxtItemPro.val(ui.item.label);xObjTxtItemPro.attr('data-id',ui.item.value);xNewItemPro=false;xIdProducto_sel=ui.item.value;$("#txt_sub_precio").val(ui.item.precio_venta);return false;},focus:function(event,ui){return false;},change:function(event,ui){if(ui.item===null){xObjTxtItemPro.attr('data-value',"");xObjTxtItemPro.attr('data-id',"");$("#txt_sub_precio").val("");xNewItemPro=true;}else{xNewItemPro=false;}
+return false;}});}
+function xCargarPorcionItemSub(){var xObjTxtItemProPor=$("#des_item_porcion");xObjTxtItemProPor.autocomplete({autoFocus:true,source:xThisComSubItemEdit.dtProItem_porcion,appendTo:$('#div-input-porcion'),select:function(event,ui){xObjTxtItemProPor.val(ui.item.label);xidproducto_porcionado=ui.item.value
+xNewItemPorcion=false;return false;},focus:function(event,ui){return false;},change:function(event,ui){if(ui.item===null){xidproducto_porcionado="";xNewItemPorcion=true;}else{xNewItemPorcion=false;}
+return false;}});}
+function xBorrarItemSubItem(obj){xRowObj=obj.parentNode.parentNode;xIdROw=$(xRowObj).attr('data-id')||xRowObj.dataId;iditem=$(xRowObj).attr('data-iditem')||xRowObj.iditem;}
+Polymer({is:'x-comp-item-subitems-edit',properties:{frommonitor:{type:Object,value:false},itemselected:Object,iditem:Number,listContent:{type:Object,notify:true,reflectToAttribute:true},listCompSubitems:{type:Object,notify:true,reflectToAttribute:true},isCompartido:false,inputLibreHidden:false,inputProductoHidden:true,inputProcionHidden:true,dtProItem:Object,dtProItem_porcion:Object,dtListContentCompartido:Object,contentSelect:Object,cantidadSubItems:0},attached:function(){this.selected=0;xThisComSubItemEdit=this;inputLibreHidden=false;inputProductoHidden=true;inputProcionHidden=true;},loadSubItemIni:function(){xThisComSubItemEdit.listCompSubitems=[];xThisComSubItemEdit.listContent=[];xThisComSubItemEdit.contentSelect=[];xThisComSubItemEdit.cantidadSubItems=0;xcheck_subitem_required.checked=false;txt_sub_condicion_cant.value='';this.selected=0;xInitSubItemsEdit();}})/*]]>*/</script>

@@ -197,7 +197,6 @@
 			return true;
 			break;
 		case -102://verificar usuario
-			// $sql="select idusuario, acc,per from usuario where (idorg=".$g_ido.") and usuario='".$_POST['u']."' and pass='".$_POST['p']."' and estado=0";
 			$sql="select idusuario, acc, CONCAT(per,'Rol',rol) as per from usuario where (idorg=".$g_ido.") and usuario='".$_POST['u']."' and pass='".$_POST['p']."' and estado=0";
 			$bd->xConsulta($sql);
 			break;

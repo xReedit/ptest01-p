@@ -257,9 +257,9 @@
 			$sql = "select * from encuesta_sede_conf where idencuesta_sede_conf=$id";
 			$bd->xConsulta($sql);
 			break;
-		case 8:// subitems // guardar
-			$arrItem=$_POST['item'];
-			$sql = "insert into item_subitem (iditem_subitem_content, iditem, descripcion, cantidad, precio) values (".$arrItem['iditem_subitem_content'].",".$arrItem['iditem'].", '".$arrItem['descripcion']."', '".$arrItem['cantidad']."', '".$arrItem['precio']."')";			
+		case 8:// subitems // guardar			
+			$arrItem=json_encode($_POST['item']);
+			$sql = "CALL procedure_guardar_subitem('".$arrItem."')";
 			$bd->xConsulta($sql);			
 			break;
 		case 800:// subitems // guardar
@@ -267,7 +267,11 @@
 			// $sql = "update item set subitem_required_select = ".$arrItem['required_select'].", subitem_cant_select=".$arrItem['cant_select']." where iditem=".$arrItem['iditem'];
 			// $bd->xConsulta_NoReturn($sql);
 			
-			$sql = "update item_subitem_content set subitem_required_select = ".$arrItem['required_select'].", subitem_cant_select=".$arrItem['cant_select'].", is_sum_cant_subitems = ".$arrItem['is_sum_cant_subitems']."  where iditem_subitem_content=".$arrItem['iditem_subitem_content'];
+			// $sql = "update item_subitem_content set subitem_required_select = ".$arrItem['required_select'].", subitem_cant_select=".$arrItem['cant_select'].", is_sum_cant_subitems = ".$arrItem['is_sum_cant_subitems']."  where iditem_subitem_content=".$arrItem['iditem_subitem_content'];
+			$sql = "update item_subitem_content set is_sum_cant_subitems = ".$arrItem['is_sum_cant_subitems']."  where iditem_subitem_content=".$arrItem['iditem_subitem_content'];
+			$bd->xConsulta_NoReturn($sql);
+
+			$sql = "update item_subitem_content_detalle set subitem_required_select = ".$arrItem['required_select'].", subitem_cant_select=".$arrItem['cant_select']." where iditem_subitem_content=".$arrItem['iditem_subitem_content']." and iditem=".$arrItem['iditem'];
 			$bd->xConsulta_NoReturn($sql);
 			
 			// cantidad cambia si es fija si no es nd
@@ -276,9 +280,11 @@
 				$sqlCartaLista = "update carta_lista set cantidad = '".$cantidad."' where iditem = ".$arrItem['iditem'];
 				$bd->xConsulta_NoReturn($sqlCartaLista);	
 			}
+
+			echo $sql;
 			break;
-		case 801: // subitems // load			
-			$sql = "select * from item_subitem where iditem_subitem_content = ".$_POST['i']." and estado=0";
+		case 801: // subitems // load						
+			$sql = "select i.*, if(i.idporcion > 0 ,'Porcion', if(i.idproducto > 0, 'Producto', 'Libre')) as tipo from item_subitem i where i.iditem_subitem_content = ".$_POST['i']." and i.estado=0";
 			$bd->xConsulta($sql);
 			break;
 		case 802: // subitems // item
@@ -286,19 +292,42 @@
 			$bd->xConsulta($sql);
 			break;
 		case 803: // subitems // content
-			$sql = "select * from item_subitem_content where iditem = ".$_POST['i']. " and estado=0";
+			// $sql = "select * from item_subitem_content where iditem = ".$_POST['i']. " and estado=0";
+			$sql = "select isubd.iditem_subitem_content_detalle, isub.iditem_subitem_content, isub.iditem, isub.titulo, isub.compartido, isub.is_sum_cant_subitems, isubd.subitem_required_select, isubd.subitem_cant_select from item_subitem_content_detalle isubd
+				inner join item_subitem_content isub on isubd.iditem_subitem_content = isub.iditem_subitem_content
+				where isubd.iditem =".$_POST['i']." and isubd.estado=0";
 			$bd->xConsulta($sql);
 			break;
 		case 804: // subitems // save modificado
 			$arrItem=$_POST['item'];
-			$sql = "update item_subitem set cantidad = '".$arrItem['cantidad']."', precio = '".$arrItem['precio']."' where iditem_subitem = ".$arrItem['iditem_subitem'];
+			$sql = "update item_subitem set descripcion = '".$arrItem['descripcion']."', cantidad = '".$arrItem['cantidad']."', precio = '".$arrItem['precio']."' where iditem_subitem = ".$arrItem['iditem_subitem'];
 			$bd->xConsulta($sql);
 			break;
 		case 805:// subitems content
 			$arrItem=$_POST['item'];
-			$sql = "insert into item_subitem_content (iditem, titulo) values (".$arrItem['iditem'].", '".$arrItem['des']."')";
+			
+			if ( $arrItem['isContentCompartido'] == '0') {
+				$sql = "insert into item_subitem_content (iditem, titulo, idsede) values (".$arrItem['iditem'].", '".$arrItem['des']."', ".$g_idsede.")";
+				$idSubItemContent=$bd->xConsulta_UltimoId($sql);
+			} else {
+				$idSubItemContent=$arrItem['iditem_subitem_content'];
+			}
+
+
+			$sql = "insert into item_subitem_content_detalle (iditem_subitem_content, iditem) values (".$idSubItemContent.", ".$arrItem['iditem'].")";
 			$bd->xConsulta($sql);
 			break;
+		case 806: // compartir
+			$sql = "update item_subitem_content set compartido = '1' where iditem_subitem_content =".$_POST['i'];
+			$bd->xConsulta($sql);
+			break;
+		case 807: // list item_subitem_content compartidos
+			$sql = "SELECT iditem_subitem_content as value, titulo as label from item_subitem_content where idsede = ".$g_idsede." and compartido='1' and estado = 0 ORDER by titulo";
+			$bd->xConsulta($sql);
+			break;
+		// case 806: // borrar subitem_content y de subitem_content_detalle
+		// 	$sql="delete from item_subitem_content where iditem_subitem_content = ".$_POST['idcontent'];
+		// 	break;
 		
 		case 9: // carta virual configuracion
 			// load

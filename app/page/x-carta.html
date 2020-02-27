@@ -1,7 +1,7 @@
 <link rel="import" href="../x-componentes/x-comp-item-subitems-edit/x-comp-item-subitems-edit.html">;
 <dom-module id="x-carta">
 <template>
-<paper-dialog id="dialog_detalle" class="dialog_redondo" style="width:90%;max-width:500px;height:auto!important;overflow:auto" entry-animation="scale-up-animation" exit-animation="fade-out-animation">
+<paper-dialog id="dialog_detalle" class="dialog_redondo" style="width:90%;max-width:550px;height:auto!important;overflow:auto" modal entry-animation="scale-up-animation" exit-animation="fade-out-animation" with-backdrop>
 <div class="xContent">
 <h4 id="dlg_des_item_detalle">Item</h4>
 <div class="xLinea2"></div>
@@ -14,7 +14,7 @@
 <br>
 <iron-pages selected="{{selectedDetalle}}">
 <div>
-<textarea id="dlg_det_item" rows="4" cols="50"></textarea>
+<textarea id="dlg_det_item" rows="4" cols="60"></textarea>
 <br><br>
 <button class="xBoton2 xAzul" onclick="xItemGuardarDetalle()">Listo, guardar</button>
 <div class="xBoton2 xPlomo" dialog-dismiss>Cerrar</div>
@@ -58,6 +58,7 @@
 <div class="xContent" id="content_carta">
 <paper-tabs selected="{{selected}}" id="tab_carta">
 <paper-tab>CARTA ACTUAL</paper-tab>
+<paper-tab>SUBITEMS COMPARTIDOS</paper-tab>
 <paper-tab>HISTORIAL</paper-tab>
 </paper-tabs>
 <div class="xLinea2"></div>
@@ -119,6 +120,11 @@
 </div>
 </div>
 </div>
+</div>
+<div id="subitems-compartidos">
+<h3>Subitems compartidos</h3>
+<p>Relaciones los subitems u opciones con porciones y productos. Para ser compartido o relacionados con distintos items de la carta.</p>
+<br>
 </div>
 <div id="historial carta">
 <h3>Historial carta</h3>
