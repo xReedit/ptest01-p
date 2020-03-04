@@ -139,18 +139,23 @@ function _cpSocketRestoreFromPedidoStorage() {
             _subItemView = [];
             Object.values(x).filter(a => typeof a === 'object')
                 .map(item => {
-                    item.idcarta_lista = item.iditem;
-                    item.cantidad_seleccionada = item.cantidad;
-                    item.isalmacen = item.procede === '1' ? 0 : 1;
-                    item.isporcion = item.cantidad;                     
-                    item.subitems_view = JSON.parse(JSON.stringify(item.subitems_view));                     
-                    console.log('resetPedido item', JSON.stringify(item));
-                    pedidoSend.push(item);
+                    if ( item.isporcion != 'ND' ) {
+                        item.idcarta_lista = item.iditem;
+                        item.cantidad_seleccionada = item.cantidad;
+                        item.isalmacen = item.procede.toString() === '0' ? 1 : 0;
+                        item.isporcion = item.isporcion != 'SP' ? item.cantidad : item.isporcion;                     
+                        item.subitems_view = JSON.parse(JSON.stringify(item.subitems_view));                     
+                        console.log('resetPedido item', JSON.stringify(item));
+                        pedidoSend.push(item);
+                    }
                 })
         });
     }    
 
-    this.socketCP.emit('resetPedido', pedidoSend);
+    if ( pedidoSend.length > 0 ) {
+        this.socketCP.emit('resetPedido', pedidoSend);
+    }
+    
     localStorage.removeItem('::app3_sys_dta_pe_sk');
     pedidoSend = [];
 }
