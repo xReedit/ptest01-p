@@ -20,6 +20,8 @@
 	$x_idcliente = '';
 	
 
+	// echo 'p_from | antes = '.$x_from.' | ----';
+
 	
 	// lo vamos a hacer con sockets
 	// if ( strrpos($x_from, "re-resta") !== false ) { $x_from = str_replace('re-resta','',$x_from); reservarStockItemsPedido(); return;} // reserva stock desde mipedio
@@ -47,8 +49,15 @@
 		global $x_idcliente;
 		
 		$x_array_pedido_header = $_POST['p_header'];
-    	$x_array_pedido_body = $_POST['p_body'];
+		$x_array_pedido_body = $_POST['p_body'];
 		$x_array_subtotales = $_POST['p_subtotales'];
+		
+		$x_array_pedido_header = is_object($x_array_pedido_header) || is_array($x_array_pedido_header) ? $x_array_pedido_header : json_decode($x_array_pedido_header, true);
+		$x_array_pedido_body = is_object($x_array_pedido_body) || is_array($x_array_pedido_body) ? $x_array_pedido_body : json_decode($x_array_pedido_body, true);
+		$x_array_subtotales = is_object($x_array_subtotales) || is_array($x_array_subtotales) ? $x_array_subtotales : json_decode($x_array_subtotales, true);
+
+		// echo 'cocinar_pedido | idcategoria = '. $x_array_subtotales.' | ----';
+		// print_r($x_array_pedido_header);
 		
 		$idc=$x_array_pedido_header['idclie'] == '' ? ($x_idcliente == '' ? 0 : $x_idcliente) : $x_array_pedido_header['idclie'];
 		// $idc = cocinar_registro_cliente();
@@ -138,7 +147,7 @@
         //guarda primero pedido para obtener el idpedio
 		if(!isset($_POST['estado_p'])){$estado_p=0;}else{$estado_p=$_POST['estado_p'];}//para el caso de venta rapida si ya pago no figura en control de pedidos
 		if(!isset($_POST['idpedido'])){$id_pedido=0;}else{$id_pedido=$_POST['idpedido'];}//si se agrea en un pedido / para control de pedidos al agregar		
-
+		
         if($id_pedido==0){ //  nuevo pedido
 			//num pedido
 			$numpedido=array_key_exists('num_pedido', $x_array_pedido_header) ? $x_array_pedido_header['num_pedido'] : '';
@@ -226,6 +235,11 @@
 		$x_array_tipo_pago = $_POST['p_tipo_pago'];
 		$x_array_subtotales=$_POST['p_subtotales'];
 		$x_array_comprobante=$_POST['p_comprobante'];
+
+		$x_array_pedido_header = is_object($x_array_pedido_header) || is_array($x_array_pedido_header) ? $x_array_pedido_header : json_decode($x_array_pedido_header, true);
+		$x_array_tipo_pago = is_object($x_array_tipo_pago) || is_array($x_array_tipo_pago) ? $x_array_tipo_pago : json_decode($x_array_tipo_pago, true);
+		$x_array_subtotales = is_object($x_array_subtotales) || is_array($x_array_subtotales) ? $x_array_subtotales : json_decode($x_array_subtotales, true);
+		$x_array_comprobante = is_object($x_array_comprobante) || is_array($x_array_comprobante) ? $x_array_comprobante : json_decode($x_array_comprobante, true);
 		
 		$id_pedido = $x_idpedido ? $x_idpedido : $x_array_pedido_header['idPedidoSeleccionados'];
 
@@ -330,6 +344,12 @@
 		$array_items=$_POST['p_items_seleccionados'];
 		$x_array_subtotales=$_POST['p_subtotales'];
 		$x_array_comprobante=$_POST['p_comprobante'];
+
+		$x_array_pedido_header = is_object($x_array_pedido_header) || is_array($x_array_pedido_header) ? $x_array_pedido_header : json_decode($x_array_pedido_header, true);
+		$x_array_tipo_pago = is_object($x_array_tipo_pago) || is_array($x_array_tipo_pago) ? $x_array_tipo_pago : json_decode($x_array_tipo_pago, true);
+		$array_items = is_object($array_items) || is_array($array_items) ? $array_items : json_decode($array_items, true);
+		$x_array_subtotales = is_object($x_array_subtotales) || is_array($x_array_subtotales) ? $x_array_subtotales : json_decode($x_array_subtotales, true);
+		$x_array_comprobante = is_object($x_array_comprobante) || is_array($x_array_comprobante) ? $x_array_comprobante : json_decode($x_array_comprobante, true);
 
 		// $id_pedido = $x_idpedido;
 		$id_pedido = $x_idpedido ? $x_idpedido : $x_array_pedido_header['idPedidoSeleccionados']; // de venta rapida el idpedido lo manda elcliente
@@ -461,6 +481,7 @@
 		// $x_arr_cliente = $_POST['p_cliente'];
 		// $datos_cliente = $x_arr_cliente['cliente'];
 		$datos_cliente = $_POST['p_cliente'];
+		$datos_cliente = is_object($datos_cliente) || is_array($datos_cliente) ? $datos_cliente : json_decode($datos_cliente, true);
 
 		$nomclie=$datos_cliente['nombres'];
 		$idclie=$datos_cliente['idcliente'];
@@ -508,6 +529,8 @@
 		global $x_correlativo_comprobante;
 		/// buscamos el ultimo correlativo
 		$x_array_comprobante = $_POST['p_comprobante'];
+		$x_array_comprobante = is_object($x_array_comprobante) || is_array($x_array_comprobante) ? $x_array_comprobante : json_decode($x_array_comprobante, true);
+
 		$correlativo_comprobante = 0; 
 		$idtipo_comprobante_serie = $x_array_comprobante['idtipo_comprobante_serie'];
 		if ($x_array_comprobante['idtipo_comprobante'] != "0"){ // 0 = ninguno | no imprimir comprobante
@@ -541,6 +564,8 @@
 		global $x_correlativo_comprobante;
 		$correlatico_comprobante = $x_correlativo_comprobante;
 		$x_array_comprobante = $_POST['p_comprobante'];
+		$x_array_comprobante = is_object($x_array_comprobante) || is_array($x_array_comprobante) ? $x_array_comprobante : json_decode($x_array_comprobante, true);
+
 		$id_registro_pago = $_POST['idregistro_pago'];
 
 		$idtipo_comprobante_serie = $x_array_comprobante['idtipo_comprobante_serie'];
