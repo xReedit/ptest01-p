@@ -3046,7 +3046,7 @@
 		case 2104://ver detalle del pedido despachado
 			$sql="
 				SELECT * FROM(
-					SELECT p.idpedido,pd.idtipo_consumo,s.idimpresora,p.fecha_hora,p.hora,p.nummesa,p.referencia,p.reserva,p.correlativo_dia,p.numpedido
+					SELECT p.idpedido,pd.idtipo_consumo,s.idimpresora,p.fecha_hora,p.hora,p.nummesa,p.referencia,p.reserva,p.correlativo_dia,p.numpedido, p.pwa_delivery_status, p.idcliente
 										,tp.descripcion AS des_tipo_consumo
 										,s.idseccion,concat(1,s.sec_orden,'.',s.idseccion) AS idseccion_index,s.descripcion AS des_seccion
 										,pd.idpedido_detalle, pd.despachado_tiempo,concat(1,pd.iditem) AS iditem,pd.cantidad,LPAD(pd.cantidad_r,2,'0') as cantidad_r,pd.descripcion
@@ -3059,7 +3059,7 @@
 				)a
 				UNION all
 				SELECT * FROM(
-					SELECT p.idpedido,pd.idtipo_consumo,pf.idimpresora,p.fecha_hora,p.hora,p.nummesa,p.referencia,p.reserva,p.correlativo_dia,p.numpedido
+					SELECT p.idpedido,pd.idtipo_consumo,pf.idimpresora,p.fecha_hora,p.hora,p.nummesa,p.referencia,p.reserva,p.correlativo_dia,p.numpedido, p.pwa_delivery_status, p.idcliente
 							,tp.descripcion AS des_tipo_consumo
 							,pd.idseccion,concat(2,pd.idseccion,'.0')AS idseccion_index, pf.descripcion AS des_seccion
 							,pd.idpedido_detalle, pd.despachado_tiempo,concat(2,pd.iditem) AS iditem,pd.cantidad,LPAD(pd.cantidad_r,2,'0') as cantidad_r,pd.descripcion
@@ -3115,6 +3115,10 @@
 			$sql_recuperar = 'update pedido_borrados set estado=2 where idpedido_borrados in ('.$sql_recuperar.')';
 
 			$bd->xConsulta($sql_recuperar);
+			break;
+		case 2202: // engregar pedido // cambia de estado al pedido
+			$sql = "update pedido set pwa_delivery_status=1 where idpedido = ".$_POST['i'];
+			$bd->xConsulta($sql);
 			break;
 	}
 

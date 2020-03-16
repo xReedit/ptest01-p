@@ -58,6 +58,12 @@ function _zonaSocketprinterOnly(pedido) {
     this.socketZona.emit('printerOnly', pedido);
 }
 
+// notifica pedido entregado en delivery cliente
+function _zonaSocketPedidoEntregado(idcliente) {
+    if (!isSocket) { return; }
+    this.socketZona.emit('delivery-pedido-estado', idcliente);
+}
+
 // function _zonaSocketIsConnect() {
 //     isSocket = parseInt(xm_log_get('datos_org_sede')[0].pwa) === 0 ? false : true;
 //     if (!isSocket) { return; }
