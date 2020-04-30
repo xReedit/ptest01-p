@@ -50,9 +50,15 @@ Agregar un nuevo restaurante o sede.
 <br><br>
 <div class="xBoton2 xVerde" onclick="xAdmNewNuevaSede()">Nueva Sede</div>
 </div>
-<div class="xitem2 xBordeIzqHover">
-<p><strong>Sede datos generales</strong></p>
-<hr>
+<div class="xitem2">
+<paper-tabs selected="{{selected_conf}}" id="tab_cnf" scrollable>
+<paper-tab>DATOS DEL ESTABLECIMINETO</paper-tab>
+<paper-tab>CONFIGURACION APP</paper-tab>
+</paper-tabs>
+<div class="xLinea2"></div>
+<br>
+<iron-pages selected="{{selected_conf}}">
+<div class="xBordeIzqHover">
 <form id="frm_sede">
 <input type="text" class="xMiInput xPasarEnter2" placeholder="NOMBRE" onChange="conMayusculas(this)" id="nombre" name="nombre" espaciar required>
 <input type="text" class="xMiInput xPasarEnter2" placeholder="CIUDAD" onChange="conMayusculas(this)" id="ciudad" name="ciudad" espaciar required>
@@ -65,9 +71,10 @@ Agregar un nuevo restaurante o sede.
 <br><br>
 <p><strong>Habilitar facturacion electronica</strong></p>
 <label for="authorization_api_comprobante">Token</label>
-<input type="password" class="xMiInput xPasarEnter2" id="authorization_api_comprobante" name="authorization_api_comprobante" espaciar>
-<label for="id_api_comprobante">ID</label>
-<input type="password" class="xMiInput xPasarEnter2" id="id_api_comprobante" name="id_api_comprobante" espaciar>
+<input type="password" class="xMiInput xPasarEnter2" id="authorization_api_comprobante" name="authorization_api_comprobante"><br>
+<label for="id_api_comprobante">ID</label><br>
+<input type="password" class="xMiInput xPasarEnter2" id="id_api_comprobante" name="id_api_comprobante"><br><br>
+<paper-checkbox id="check_habilita_facturacion"><span>Habilitar Facturacion Electronica</span></paper-checkbox>
 <br><br>
 <p><strong>Plataforma | local o web</strong></p>
 <input type="text" class="xMiInput xPasarEnter2" placeholder="IP PRINT SERVER" id="ip_server_local" name="ip_server_local" espaciar>
@@ -76,8 +83,9 @@ Agregar un nuevo restaurante o sede.
 <input type="text" class="xMiInput xPasarEnter2" placeholder="TIEMPO LIMITE EN MINUTOS PARA TOMAR PEDIDO" id="pwa_time_limit" name="pwa_time_limit" espaciar>
 <paper-checkbox id="check_pwa"><span>PWA con sockets</span></paper-checkbox>
 <div class="xInvisible">
-<input type="text" class="xMiInput xPasarEnter2" placeholder="RUN LOCAL?" id="sys_local" name="sys_local" espaciar>
-<input type="text" class="xMiInput xPasarEnter2" placeholder="CON PWA Y SOCKETS" id="pwa" name="pwa" espaciar>
+<input type="text" class="xMiInput xPasarEnter2" placeholder="RUN LOCAL?" id="sys_local" name="sys_local">
+<input type="text" class="xMiInput xPasarEnter2" placeholder="CON PWA Y SOCKETS" id="pwa" name="pwa">
+<input type="text" class="xMiInput xPasarEnter2" placeholder="CON PWA Y SOCKETS" id="facturacion_e_activo" name="facturacion_e_activo">
 </div>
 <br><br>
 <p><strong>Temporal (url_api_fac)</strong></p>
@@ -98,24 +106,138 @@ Agregar un nuevo restaurante o sede.
 <br><br><br>
 <div class="xBoton2 xAzul" onclick="xAdmGuardarSede()" disabled$="{{!formValid}}">Guardar</div>
 </div>
+<div class="xBordeIzqHover">
+<form method="post" id="formDatosAPP">
+<p>Coordenadas: </p>
+<input type="text" class="xMiInput xPasarEnter2" placeholder="LATITUDE" onChange="conMayusculas(this)" id="latitude" name="latitude" espaciar required>
+<input type="text" class="xMiInput xPasarEnter2" placeholder="LONGITUDE" onChange="conMayusculas(this)" id="longitude" name="longitude" espaciar required>
+<br><br><br>
+<p>Datos para delivery:</p><br>
+<paper-checkbox id="check_habilita_delivery"><span>Habilitar delivery, para que la sede figure en la app</span></paper-checkbox>
+<hr><br><br>
+<p>Comercio Afiliado: Al no ser afiliado cobra comision en productos</p><br>
+<paper-checkbox id="check_afiliado_delivery"><span>Afiliado</span></paper-checkbox>
+<hr><br>
+<p>Tiene servicio delivery propio?: comercio tiene sus propios repartidores (el sistema no busca repartidor)</p><br>
+<paper-checkbox id="check_afiliado_repartidor"><span>Comercio con repartidores propios</span></paper-checkbox>
+<hr><br>
+<p>Comercio requiere calcular la costo delivery segun distancia (se cobrara la comsion segun zona)</p><br>
+<paper-checkbox id="check_afiliado_calc_distancia"><span>Habilitar calcular costo entrega segun zona</span></paper-checkbox>
+<hr><br>
+<p>Comercio acepta pagos con yape</p><br>
+<paper-checkbox id="check_afiliado_yape"><span>Habilitar pagos con yape</span></paper-checkbox>
+<hr><br>
+<p>Comercio tiene la opcion de recojo en su propio local</p><br>
+<paper-checkbox id="check_afiliado_recojo_local"><span>Habilitar recojo en el local</span></paper-checkbox>
+<hr><br>
+<p>Comercio es partde del grupo de solidaridad</p><br>
+<paper-checkbox id="check_habilitar_solidaridad"><span>Habilitar solidaridad</span></paper-checkbox>
+<hr><br>
+<p>Importe minimo de delivery</p>
+<input type="text" class="xMiInput xPasarEnter2" placeholder="IMPORTE MINIMO DE CONSUMO" id="pwa_delivery_importe_min" name="pwa_delivery_importe_min" espaciar required>
+<br><br>
+<p>Datos para delivery:</p>
+<input type="text" class="xMiInput xPasarEnter2" placeholder="CIUDAD" id="ciudad" name="ciudad" espaciar required>
+<input type="text" class="xMiInput xPasarEnter2" placeholder="PROVINCIA" id="provincia" name="provincia" espaciar required>
+<input type="text" class="xMiInput xPasarEnter2" placeholder="DEPARTAMENTO" id="departamento" name="departamento" espaciar required>
+<input type="text" class="xMiInput xPasarEnter2" placeholder="CODIGO POSTAL" id="codigo_postal" name="codigo_postal" espaciar required>
+<br><br><br>
+<p>Atencion al publico:</p><br>
+<label><input type="checkbox" name="" class="dia_atencion" value="2">Lunes</label>
+<label><input type="checkbox" name="" class="dia_atencion" value="3">Martes</label>
+<label><input type="checkbox" name="" class="dia_atencion" value="4">Miercoles</label>
+<label><input type="checkbox" name="" class="dia_atencion" value="5">Jueves</label>
+<label><input type="checkbox" name="" class="dia_atencion" value="6">Viernes</label>
+<label><input type="checkbox" name="" class="dia_atencion" value="7">Sabado</label>
+<label><input type="checkbox" name="" class="dia_atencion" value="1">Domingo</label>
+<br><br>
+<hr>
+<p>Horario de trabajo: Ingrese en formato 24hrs</p><br>
+<div>
+<input type="text" placeholder="desde" id="txt_horario_de">
+<input type="text" placeholder="hasta" id="txt_horario_a">
+<div class="xBoton2 xVerde" onclick="xAddHorarioTrabajo()"> Agregar</div>
+<table width="100%">
+<tbody>
+<template is="dom-repeat" items="{{ListSedesHorario}}" as="item">
+<tr data-id="{{item.idsede_horario_trabajo}}" data-t="sede_horario_trabajo">
+<td>{{item.de}}</td>
+<td>{{item.a}}</td>
+<td><span onclick="xBorrarItem(this)" class="xDeleteRow" title="Borrar"></span></td>
+</tr>
+</template>
+</tbody>
+</table>
+</div>
+<br><br>
+<input type="text" class="xMiInput xPasarEnter2" placeholder="TIEMPO DE ENTREGA EJ: 10 A 15 MIN" onChange="conMayusculas(this)" id="tiempo_aprox_entrega" name="tiempo_aprox_entrega" espaciar required>
+<br>
+<br><br>
+<p>Imagen para app delivery: se recomienda un maximo de ancho 310px y alto de 125px</p>
+<input type="text" class="xMiInput" placeholder="Logo" maxlength="200" onclick="xSeleccionarFoto()" id="pwa_delivery_img" readonly>
+<input type="file" class="xInvisible xobj_subir_foto" id="ctrl_open_file" accept="image/*"/>
+<img id="imgLogo" src="" alt="" style="max-width:310px">
+<div class="xInvisible">
+<input type="text" id="idorg" name="idorg" value$="{{xIdOrg}}">
+<input type="text" id="idsede" name="idsede" value$="{{xIdSede}}">
+<input type="text" id="dias_atienden" name="dias_atienden">
+<input type="text" id="pwa_habilitar_delivery_app" name="pwa_habilitar_delivery_app">
+<input type="text" id="pwa_comercio_afiliado" name="pwa_comercio_afiliado">
+<input type="text" id="pwa_delivery_servicio_propio" name="pwa_delivery_servicio_propio">
+<input type="text" id="pwa_delivery_hablitar_calc_costo_servicio" name="pwa_delivery_hablitar_calc_costo_servicio">
+<input type="text" id="pwa_delivery_acepta_yape" name="pwa_delivery_acepta_yape">
+<input type="text" id="pwa_delivery_habilitar_recojo_local" name="pwa_delivery_habilitar_recojo_local">
+<input type="text" id="pwa_delivery_comercio_solidaridad" name="pwa_delivery_comercio_solidaridad">
+</div>
+</form>
+<br><br><br>
+<p>Categoria</p>
+<hr>
+<template is="dom-repeat" items="{{ListCategoria}}" as="item">
+<input type="radio" class="option_categoria" id="{{item.descripcion}}" name="categioria" value="{{item.idsede_categoria}}">
+<label for="{{item.descripcion}}">{{item.descripcion}}</label>
+</template>
+<br><br>
+<p>Sub Categoria</p>
+<hr>
+<template is="dom-repeat" items="{{ListSubCategoria}}" as="item">
+<label><input type="checkbox" class="option_subcategoria" name="" id="" value="{{item.idsede_subcategoria}}">{{item.descripcion}}</label>
+</template>
+<br><br>
+<hr><br><br>
+<div class="xBoton2 xAzul" onclick="xAdmGuardarDatosAPP()">Guardar</div>
+</div>
+</iron-pages>
+</div>
 </div>
 </div>
 </div>
 <br><br><br><br>
 </template>
 </dom-module>
-<script>var xThisAdminNew,xPopupLoad;function xIniAdminNew(){xPopupLoad=document.getElementById('xLoad');xLoadAdmDatosOrg();}
+<script>/*<![CDATA[*/var xThisAdminNew,xPopupLoad;function xIniAdminNew(){xPopupLoad=document.getElementById('xLoad');xThisAdminNew.selected_conf=0;xLoadAdmDatosOrg();$("#ctrl_open_file").change(function(e){for(var i=0;i<e.originalEvent.srcElement.files.length;i++){var file=e.originalEvent.srcElement.files[i];$("#pwa_delivery_img").val(file.name);if(file){var reader=new FileReader();reader.onload=function(e){$('#imgLogo').attr('src',e.target.result);}
+reader.readAsDataURL(file);xConvertBase64Img();}}});}
+function xSeleccionarFoto(){$("#ctrl_open_file").click();}
+function xItemGuardarFoto(){$(".xobj_subir_foto").each(function(index,element){if($(this).val()==''){return}
+file=this.files[0];name=file.name;size=file.size;type=file.type;nomfile=xThisAdminNew.xIdOrg+xThisAdminNew.xIdSede+name;xhr=new XMLHttpRequest();xhr.upload.addEventListener('load',transferenciaCompleta(nomfile),false);xhr.open('POST','upload.php?op=3',true);xhr.setRequestHeader("Cache-Control","no-cache");xhr.setRequestHeader("X-Requested-With","XMLHttpRequest");xhr.setRequestHeader("X-File-Name",nomfile);xhr.send(file);});};function transferenciaCompleta(xfile){$.ajax({type:'POST',url:'../../bdphp/log_004.php?op=604',data:{idsede:xThisAdminNew.xIdSede,d:xfile}}).done(function(a){$("#pwa_delivery_img").val(xfile);xPopupLoad.xclose();})}
 function xAdmGuardarOrg(){xPopupLoad.xopen();$.post("../../bdphp/ManejoBD_IUD.php?tb=org",$("#frm_org").serialize(),function(id){xPopupLoad.xclose();xAdmGuardarUsuario();});}
-function xAdmGuardarSede(){xPopupLoad.xopen();const selTipoVal=selTipo.value;$("#frm_sede #idorg").val(xThisAdminNew.xIdOrg);$("#frm_sede #idsede").val(xThisAdminNew.xIdSede);$("#frm_sede #tipo").val(selTipoVal);const _printServerCheck=check_print_server.checked?1:0;const _pwaCheck=check_pwa.checked?1:0;$("#frm_sede #sys_local").val(_printServerCheck);$("#frm_sede #pwa").val(_pwaCheck);$.post("../../bdphp/ManejoBD_IUD.php?tb=sede",$("#frm_sede").serialize(),function(id){xPopupLoad.xclose();if(xThisAdminNew.xIdSede===''){xThisAdminNew.xIdSede=id;xAddNewConfigNewOrg(xThisAdminNew.xIdOrg,xThisAdminNew.xIdSede);}
+function xAdmGuardarSede(){xPopupLoad.xopen();const selTipoVal=selTipo.value;$("#frm_sede #idorg").val(xThisAdminNew.xIdOrg);$("#frm_sede #idsede").val(xThisAdminNew.xIdSede);$("#frm_sede #tipo").val(selTipoVal);const _printServerCheck=check_print_server.checked?1:0;const _pwaCheck=check_pwa.checked?1:0;const _check_habilita_facturacion=check_habilita_facturacion.checked?1:0;$("#frm_sede #sys_local").val(_printServerCheck);$("#frm_sede #pwa").val(_pwaCheck);$("#frm_sede #facturacion_e_activo").val(_check_habilita_facturacion);$.post("../../bdphp/ManejoBD_IUD.php?tb=sede",$("#frm_sede").serialize(),function(id){xPopupLoad.xclose();if(xThisAdminNew.xIdSede===''){xThisAdminNew.xIdSede=id;xAddNewConfigNewOrg(xThisAdminNew.xIdOrg,xThisAdminNew.xIdSede);}
 xLoadAdmDatosOrg();$("#frm_sede").reset();});}
 function xAdmGuardarUsuario(){const _data={idorg:xThisAdminNew.xIdOrg,idsede:xThisAdminNew.xIdSede,u:txt_usuario.value,p:txt_usuario_password.value}
 $.ajax({type:'POST',url:'../../bdphp/log_004.php?op=201',data:{d:_data}}).done((res)=>{$("#txt_usuario").val('');$("#txt_usuario_password").val('');xThisAdminNew.xIdSede='';});}
 function xLoadAdmDatosOrg(){const dataOrg=localStorage.getItem('::app3_woOAdm')?JSON.parse(localStorage.getItem('::app3_woOAdm')):null;xThisAdminNew.xIdOrg='';if(dataOrg!==null){xThisAdminNew.xIdOrg=dataOrg.idorg;$("#frm_org #nombre").val(dataOrg.razonsocial);$("#frm_org #ruc").val(dataOrg.ruc);$.ajax({type:'POST',url:'../../bdphp/log_004.php?op=101',data:{idorg:dataOrg.idorg}}).done((res)=>{const _res=$.parseJSON(res);xThisAdminNew.ListSedesPorOrg=_res.datos;});$.ajax({type:'POST',url:'../../bdphp/log_004.php?op=102',data:{idorg:dataOrg.idorg}}).done((res)=>{txt_usuario.value=res;});}}
-function xAdmNewModificarSede(obj){const index=obj.parentElement.dataId;const dataSede=xThisAdminNew.ListSedesPorOrg[index];xThisAdminNew.xIdSede=xThisAdminNew.ListSedesPorOrg[index].idsede;$("#frm_sede #nombre").val(dataSede.nombre);$("#frm_sede #ciudad").val(dataSede.ciudad);$("#frm_sede #ubigeo").val(dataSede.ubigeo);$("#frm_sede #codigo_del_domicilio_fiscal").val(dataSede.codigo_del_domicilio_fiscal);$("#frm_sede #authorization_api_comprobante").val(dataSede.authorization_api_comprobante);$("#frm_sede #sufijo").val(dataSede.sufijo);$("#frm_sede #id_api_comprobante").val(dataSede.id_api_comprobante);$("#frm_sede #sys_local").val(dataSede.sys_local);$("#frm_sede #ip_server_local").val(dataSede.ip_server_local);$("#frm_sede #pwa").val(dataSede.pwa);$("#frm_sede #finicio").val(dataSede.finicio);$("#frm_sede #pwa_time_limit").val(dataSede.pwa_time_limit);$("#frm_sede #url_api_fac").val(dataSede.url_api_fac);check_print_server.checked=dataSede.ip_server_local==="0"?false:true;check_pwa.checked=dataSede.pwa==="0"?false:true;selTipo.value=dataSede.tipo;}
+function xAdmNewModificarSede(obj){const index=obj.parentElement.dataId;const dataSede=xThisAdminNew.ListSedesPorOrg[index];xThisAdminNew.xIdSede=xThisAdminNew.ListSedesPorOrg[index].idsede;$("#frm_sede #nombre").val(dataSede.nombre);$("#frm_sede #ciudad").val(dataSede.ciudad);$("#frm_sede #ubigeo").val(dataSede.ubigeo);$("#frm_sede #codigo_del_domicilio_fiscal").val(dataSede.codigo_del_domicilio_fiscal);$("#frm_sede #authorization_api_comprobante").val(dataSede.authorization_api_comprobante);$("#frm_sede #sufijo").val(dataSede.sufijo);$("#frm_sede #id_api_comprobante").val(dataSede.id_api_comprobante);$("#frm_sede #sys_local").val(dataSede.sys_local);$("#frm_sede #ip_server_local").val(dataSede.ip_server_local);$("#frm_sede #pwa").val(dataSede.pwa);$("#frm_sede #finicio").val(dataSede.finicio);$("#frm_sede #pwa_time_limit").val(dataSede.pwa_time_limit);$("#frm_sede #url_api_fac").val(dataSede.url_api_fac);check_print_server.checked=dataSede.ip_server_local==="0"?false:true;check_pwa.checked=dataSede.pwa==="0"?false:true;check_habilita_facturacion.checked=dataSede.facturacion_e_activo==="0"?false:true;check_habilita_delivery.checked=dataSede.pwa_habilitar_delivery_app==="0"?false:true;check_afiliado_delivery.checked=dataSede.pwa_comercio_afiliado==="0"?false:true;check_afiliado_repartidor.checked=dataSede.pwa_delivery_servicio_propio==="0"?false:true;check_afiliado_calc_distancia.checked=dataSede.pwa_delivery_hablitar_calc_costo_servicio==="0"?false:true;check_afiliado_yape.checked=dataSede.pwa_delivery_acepta_yape==="0"?false:true;check_afiliado_recojo_local.checked=dataSede.pwa_delivery_habilitar_recojo_local==="0"?false:true;check_habilitar_solidaridad.checked=dataSede.pwa_delivery_comercio_solidaridad==="0"?false:true;selTipo.value=dataSede.tipo;$("#formDatosAPP #latitude").val(dataSede.latitude);$("#formDatosAPP #longitude").val(dataSede.longitude);$("#formDatosAPP #ciudad").val(dataSede.ciudad);$("#formDatosAPP #provincia").val(dataSede.provincia);$("#formDatosAPP #departamento").val(dataSede.departamento);$("#formDatosAPP #codigo_postal").val(dataSede.codigo_postal);$("#formDatosAPP #tiempo_aprox_entrega").val(dataSede.tiempo_aprox_entrega);$("#formDatosAPP #pwa_delivery_img").val(dataSede.pwa_delivery_img);$("#formDatosAPP #dias_atienden").val(dataSede.dias_atienden);$("#formDatosAPP #dias_atienden").val(dataSede.dias_atienden);$("#formDatosAPP #pwa_delivery_importe_min").val(dataSede.pwa_delivery_importe_min);$("#formDatosAPP #pwa_habilitar_delivery_app").val(dataSede.pwa_habilitar_delivery_app);$("#formDatosAPP #pwa_delivery_servicio_propio").val(dataSede.pwa_delivery_servicio_propio);$("#formDatosAPP #pwa_delivery_hablitar_calc_costo_servicio").val(dataSede.pwa_delivery_hablitar_calc_costo_servicio);$("#formDatosAPP #pwa_delivery_acepta_yape").val(dataSede.pwa_delivery_acepta_yape);$("#formDatosAPP #pwa_delivery_habilitar_recojo_local").val(dataSede.pwa_delivery_habilitar_recojo_local);$("#formDatosAPP #pwa_delivery_comercio_solidaridad").val(dataSede.pwa_delivery_comercio_solidaridad);$('.dia_atencion').each((i,e)=>{e.checked=false});const listDiasAtienden=dataSede.dias_atienden;if(listDiasAtienden){$('.dia_atencion').each((i,e)=>{e.checked=listDiasAtienden.indexOf(e.value)>-1;});}
+xLoadCategorias();xLoadHorarioTrabajo();}
 function xAdmNewNuevaSede(){$("#frm_sede").reset();$("#txt_usuario").val('');$("#txt_usuario_password").val('');xThisAdminNew.xIdSede='';$("#frm_sede #nombre").focus();}
 function xAdmNewValidarUsuario(obj){const _u=obj.value;if(_u==='')return;$.ajax({type:'POST',url:'../../bdphp/log_004.php?op=2',data:{u:_u}}).done((res)=>{xThisAdminNew.formValidUsuario=res.length===0?true:false;var msj_us_valido='Usuario Valido';var msj_us_valido_class='xRojo';$("#labelUsValido").removeClass('xInvisible');if(res.length===0){$("#labelUsValido").removeClass('xColorRow_Rojo');$("#labelUsValido").addClass('xColorRow_verde');}else{msj_us_valido='Usuario ya existe';$("#labelUsValido").addClass('xColorRow_Rojo');$("#labelUsValido").removeClass('xColorRow_verde')}
 $("#labelUsValido").text(msj_us_valido);});}
 function xAdmNewValidarSufijo(obj){const _u=obj.value.toUpperCase();if(_u==='')return;$.ajax({type:'POST',url:'../../bdphp/log_004.php?op=202',data:{u:_u}}).done((res)=>{xThisAdminNew.formValidSufijo=res.length===0?true:false;var msj_us_valido='Sufijo Valido';var msj_us_valido_class='xRojo';$("#labelSufijoValido").removeClass('xInvisible');if(res.length===0){$("#labelSufijoValido").removeClass('xColorRow_Rojo');$("#labelSufijoValido").addClass('xColorRow_verde');}else{msj_us_valido='Sufijo ya existe';$("#labelSufijoValido").addClass('xColorRow_Rojo');$("#labelSufijoValido").removeClass('xColorRow_verde')}
 $("#labelSufijoValido").text(msj_us_valido);});}
-function xAddNewConfigNewOrg(_idorg,_idsede){$.ajax({type:'POST',url:'../../bdphp/log_004.php?op=3',data:{idorg:_idorg,idsede:_idsede}}).done((res)=>{console.log(res);});}
-Polymer({is:'x-admin-new-org',properties:{formValid:boolean=false,formValidUsuario:boolean=false,formValidSufijo:boolean=false,xIdOrg:{type:String,value:''},xIdSede:{type:String,value:''},ListSedesPorOrg:[]},attached:function(){xThisAdminNew=this;xIniAdminNew();$('body').addClass('loaded');},displayIndex:function(index){return xCeroIzq(index+1,1);},})</script>
+function xAddNewConfigNewOrg(_idorg,_idsede){$.ajax({type:'POST',url:'../../bdphp/log_004.php?op=3',data:{idorg:_idorg,idsede:_idsede}}).done((res)=>{});}
+function xLoadCategorias(){$('.option_categoria').each((i,e)=>{e.checked=false});$('.option_subcategoria').each((i,e)=>{e.checked=false});$.ajax({type:'POST',url:'../../bdphp/log_004.php?op=6'}).done((res)=>{xThisAdminNew.ListCategoria=JSON.parse(res).datos;$.ajax({type:'POST',url:'../../bdphp/log_004.php?op=601'}).done((res)=>{xThisAdminNew.ListSubCategoria=JSON.parse(res).datos;$.ajax({type:'POST',url:'../../bdphp/log_004.php?op=602',data:{idsede:xThisAdminNew.xIdSede}}).done((res)=>{xThisAdminNew.ListSubCategoriaSuscritas=JSON.parse(res).datos[0];if(!xThisAdminNew.ListSubCategoriaSuscritas.idsede_categoria){return;}
+$('.option_categoria').each((i,e)=>{e.checked=xThisAdminNew.ListSubCategoriaSuscritas.idsede_categoria.indexOf(e.value)>-1;});$('.option_subcategoria').each((i,e)=>{e.checked=xThisAdminNew.ListSubCategoriaSuscritas.idsede_subcategoria.indexOf(e.value)>-1;});});});});}
+function xAdmGuardarDatosAPP(){xPopupLoad.xopen();const _check_habilita_delivery=check_habilita_delivery.checked?1:0;const _check_afiliado_delivery=check_afiliado_delivery.checked?1:0;const _check_afiliado_repartidor=check_afiliado_repartidor.checked?1:0;const _check_afiliado_calc_distancia=check_afiliado_calc_distancia.checked?1:0;const _check_afiliado_yape=check_afiliado_yape.checked?1:0;const _check_afiliado_recojo_local=check_afiliado_recojo_local.checked?1:0;const _check_habilitar_solidaridad=check_habilitar_solidaridad.checked?1:0;var dias_atienden='';$('.dia_atencion').each((i,e)=>{if(e.checked){dias_atienden+=e.value+','}});var arrCategoria=[],idsede_categoria,row_categoria={};$('.option_categoria').each((i,e)=>{if(e.checked){idsede_categoria=e.value;}});$('.option_subcategoria').each((i,e)=>{if(e.checked){row_categoria={'idsede_categoria':idsede_categoria,'idsede_subcategoria':e.value};arrCategoria.push(row_categoria);}});if(arrCategoria.length===0){row_categoria={'idsede_categoria':idsede_categoria,'idsede_subcategoria':0};arrCategoria.push(row_categoria);}
+$("#formDatosAPP #dias_atienden").val(dias_atienden);$("#formDatosAPP #pwa_habilitar_delivery_app").val(_check_habilita_delivery);$("#formDatosAPP #pwa_comercio_afiliado").val(_check_afiliado_delivery);$("#formDatosAPP #pwa_delivery_servicio_propio").val(_check_afiliado_repartidor);$("#formDatosAPP #pwa_delivery_hablitar_calc_costo_servicio").val(_check_afiliado_calc_distancia);$("#formDatosAPP #pwa_delivery_acepta_yape").val(_check_afiliado_yape);$("#formDatosAPP #pwa_delivery_habilitar_recojo_local").val(_check_afiliado_recojo_local);$("#formDatosAPP #pwa_delivery_comercio_solidaridad").val(_check_habilita_delivery);$.post("../../bdphp/ManejoBD_IUD.php?tb=sede",$("#formDatosAPP").serialize(),function(xUltimoId){$.ajax({type:'POST',url:'../../bdphp/log_004.php?op=603',data:{idsede:xThisAdminNew.xIdSede,arrItems:arrCategoria}}).done((res)=>{xItemGuardarFoto();xPopupLoad.xclose();})});}
+function xAddHorarioTrabajo(){$.ajax({type:'POST',url:'../../bdphp/log_004.php?op=700',data:{idsede:xThisAdminNew.xIdSede,de:txt_horario_de.value,a:txt_horario_a.value,}}).done((res)=>{console.log(res);xLoadHorarioTrabajo();});}
+function xLoadHorarioTrabajo(){$.ajax({type:'POST',url:'../../bdphp/log_004.php?op=701',data:{idsede:xThisAdminNew.xIdSede}}).done((res)=>{xThisAdminNew.ListSedesHorario=JSON.parse(res).datos;console.log('xThisAdminNew.ListSedesHorario',xThisAdminNew.ListSedesHorario);});}
+Polymer({is:'x-admin-new-org',properties:{formValid:boolean=false,formValidUsuario:boolean=false,formValidSufijo:boolean=false,xIdOrg:{type:String,value:''},xIdSede:{type:String,value:''},ListSedesPorOrg:[],ListCategoria:[],ListSubCategoria:[],ListSubCategoriaSuscritas:[],ListSedesHorario:[]},attached:function(){xThisAdminNew=this;xThisAdminNew.selected_conf=0;xIniAdminNew();$('body').addClass('loaded');},displayIndex:function(index){return xCeroIzq(index+1,1);},})/*]]>*/</script>

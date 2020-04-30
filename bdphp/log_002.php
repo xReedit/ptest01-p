@@ -4,6 +4,10 @@
     // session_regenerate_id(true); 
     session_start();    
     //header("Cache-Control: no-cache,no-store");
+
+    // header('Access-Control-Allow-Origin: *');
+    // header("Content-type: application/json; charset=utf-8");
+    // header("Content-type: application/json; charset=utf-8");
     header('content-type: text/html; charset: utf-8');
     header('Content-Type: text/event-stream');
     header('Cache-Control: no-cache');
@@ -13,6 +17,10 @@
     date_default_timezone_set('America/Lima');
     
     $op = $_POST['op'];
+
+    $g_idorg = $_SESSION['ido'];
+    $g_idsede = $_SESSION['idsede'];
+    $g_idusuario = $_SESSION['idusuario'];
 
     switch ($op) {
         case '1': //registrar envio cpe 
@@ -29,7 +37,7 @@
 
             $arrItem=addslashes(json_encode($obj));
             // echo $arrItem;            
-            $sql = "CALL procedure_cpe_registro(".$_SESSION['ido'].",".$_SESSION['idsede'].",".$_SESSION['idusuario'].",'".$arrItem."')";
+            $sql = "CALL procedure_cpe_registro(".$g_idorg.",".$g_idsede.",".$g_idusuario.",'".$arrItem."')";
             $bd->xConsulta($sql);
             // //
 

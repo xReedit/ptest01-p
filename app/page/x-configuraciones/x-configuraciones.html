@@ -88,6 +88,16 @@
 <div class="xBoton2 xPlomo" onclick="dialog_add_tpc.close()">Cancelar</div>
 </div>
 </paper-dialog>
+<paper-dialog id="dialog_img_ico_carta" class="dialog_redondo overflow-auto" entry-animation="scale-up-animation" exit-animation="fade-out-animation" with-backdrop>
+<div class="xContent">
+<span class="xColorRow_Plomo">Este icono se mostrara en la aplicacion de pedidos</span>
+<div class="content-icon-seccion">
+<template is="dom-repeat" items="{{listIconSeccion}}" as="item">
+<img data-index="[[index]]" onclick="updateIconSeccion(this)" class="img-ico-seccion-size-2" src="{{item.img}}" alt="a2">
+</template>
+</div>
+</div>
+</paper-dialog>
 <br>
 <h3>CONFIGURACIONES</h3>
 <div class="xLinea2"></div>
@@ -588,9 +598,9 @@ Esto se utiliza en el escenario de que cada caja tenga su impresora, por ejemplo
 <script type="text/javascript" src="config_comporbantes.js"></script>
 <script type="text/javascript" src="../../shared/config.const.js"></script>
 <script type="text/javascript" src="../../view/item_pedido_print_comprobante.js"></script>
-<script>/*<![CDATA[*/var xThisConfig,_arrPrintLocal=[],isSocket;var xObjBorrar=0;function _getCategoria(val){console.log(val);}
+<script>/*<![CDATA[*/var xThisConfig,_arrPrintLocal=[],isSocket,numIconSeccion=101,xRutaIconSeccion='../../images/img-icon-carta/',xidSeccionIcon,opIcon;var xObjBorrar=0;function _getCategoria(val){console.log(val);}
 function xIniConf(){xPopupLoad=document.getElementById('xLoad');xm_LogChequea(function(){xm_log_get('ini_us');$('body').addClass('loaded');xThisConfig.xt_org=xIdOrg;xThisConfig.xt_idsede=xIdSede;xThisConfig.xt_idus=xIdUsuario;if(xIdOrg===""||xIdOrg==undefined){var _dtUs=xm_log_get('app3_us');xThisConfig.xt_org=_dtUs.ido;xThisConfig.xt_idsede=_dtUs.idsede;xThisConfig.xt_idus=_dtUs.idus;}
-_arrPrintLocal=[];xLoadOrg();xLoadCategoria();isSocket=parseInt(xm_log_get('datos_org_sede')[0].pwa)===0?false:true;})
+_arrPrintLocal=[];xLoadOrg();xLoadCategoria();isSocket=parseInt(xm_log_get('datos_org_sede')[0].pwa)===0?false:true;loadIconSeccion();})
 $("#Titulo_page").text("Configuraciones");xThisConfig.selected_conf=0;$('.xPasarEnter2').on('keyup',function(e){var code=e.which;if(code==13||code==186){var inputs=$('input');var a=inputs.index(document.activeElement);if(inputs[a+1]!==null)
 {var nextBox=inputs[a+1];if(nextBox===undefined){return}
 if(nextBox.disabled){nextBox=inputs[a+2]}
@@ -615,6 +625,8 @@ return false;});$(document).on('change',".xsel_sec_print_bodega",function(e){var
 return false;})
 $(document).on('change',".xsel_otros_print",function(e){var xid_secc_row=$(this).attr('data-id');var xid_secc_print=this.value;var xid_doc_print=$(this).parents('tr').attr('data-id');xGuardarCambiosConfOtrosDoc(xid_doc_print,xid_secc_row,xid_secc_print);event.stopPropagation();e.stopPropagation();e.stopImmediatePropagation()
 return false;})}
+function loadIconSeccion(){var nomIcon='',contador=0,lisIcon=[];xThisConfig.listIconSeccion=[];while(contador<=numIconSeccion){nomIcon=xRutaIconSeccion+contador+'.png';lisIcon.push({img:nomIcon});contador++;}
+xThisConfig.listIconSeccion=lisIcon;console.log('xThisConfig.listIconSeccion',xThisConfig.listIconSeccion);}
 function xDialogBorrarObj(obj){xThisConfig.xObjBorrar=obj;dialog_borrar.open();}
 function xDlgBorrar(){xBorrarItem(xThisConfig.xObjBorrar);dialog_borrar.close();}
 function xSubirFileAlmacen(){$('#fileAlamcen').click();}
@@ -649,12 +661,12 @@ function xTestPrint(xOpC){var xArrayPasarTest=new Array();var xClasTr='',sel_pap
 xArrayPasarTest={'ip_print':$(xClasTr+" #ip").val(),'mum_copias':0,'pie_pagina':xThisConfig.dt_impr[0].pie_pagina,'logo':xThisConfig.dt_impr[0].logo,'size_font':$(xClasTr+" #var_size_font").val(),'margen_iz':$(xClasTr+" #var_margen_iz").val(),'papel_size':$(xClasTr+sel_papel).val()};console.log('print params',xArrayPasarTest);const _sys_local=parseInt(xm_log_get('datos_org_sede')[0].sys_local);const _data={Array_enca:xArrayPasarTest}
 if(_sys_local===1){xPopupLoad.xopen();xSendDataPrintServer(_data,3,'prueba');setTimeout(()=>{xPopupLoad.xclose();},1000);return;}
 $.ajax({type:'POST',url:'../../print/x-test_print.php',data:{Array_enca:xArrayPasarTest}}).done(function(dtPrint){if(dtPrint.indexOf('Error')!=-1){alert(dtPrint)}})}
-function xLoadSecciones(){$.ajax({type:'POST',url:'../../bdphp/log.php?op=409'}).done(function(dtSec){var xdtSec=$.parseJSON(dtSec);var xCadena_sec='';xdtSec=xdtSec.datos
-for(var i=0;i<xdtSec.length;i++){$("#sel_impr_Sec  option[value="+xdtSec[i].idimpresora+"]").attr('selected','selected');xCadena_sec=String(xCadena_sec+'<tr class="row" data-t="seccion" data-id="'+xdtSec[i].idseccion+'"><td>'+xdtSec[i].plato+'</td><td><select class="xsel_sec_print" data-id="'+xdtSec[i].idseccion+'">'+$("#sel_impr_Sec")[0].innerHTML+'</select></td><td><span class="xDeleteRow" title="Borrar" onclick="xDialogBorrarObj(this);"></span></td></tr>')
+function xLoadSecciones(){$.ajax({type:'POST',url:'../../bdphp/log.php?op=409'}).done(function(dtSec){var xdtSec=$.parseJSON(dtSec);var xCadena_sec='',imgIcon='';xdtSec=xdtSec.datos
+for(var i=0;i<xdtSec.length;i++){imgIcono=xdtSec[i].img!=''?xdtSec[i].img:i+'.png';$("#sel_impr_Sec  option[value="+xdtSec[i].idimpresora+"]").attr('selected','selected');xCadena_sec=String(xCadena_sec+'<tr class="row" data-t="seccion" data-id="'+xdtSec[i].idseccion+'">'+'<td onclick="openImgIconDialog(this, 0)"> <img class="img-ico-seccion xCursor" src="'+xRutaIconSeccion+imgIcono+'" alt="img-ico">'+xdtSec[i].plato+'</td>'+'<td><select class="xsel_sec_print" data-id="'+xdtSec[i].idseccion+'">'+$("#sel_impr_Sec")[0].innerHTML+'</select></td>'+'<td><span class="xDeleteRow" title="Borrar" onclick="xDialogBorrarObj(this);"></span></td>'+'</tr>')
 $("#sel_impr_Sec  option[value="+xdtSec[i].idimpresora+"]").attr('selected',false);};$("#tb_sec_impr .row").remove();$("#tb_sec_impr").append(xCadena_sec).trigger('create');xLoadSecciones_bodega();})}
-function xLoadSecciones_bodega(){$.ajax({type:'POST',url:'../../bdphp/log.php?op=40901'}).done(function(dtSec){var xdtSec=$.parseJSON(dtSec);var xCadena_sec='';xdtSec=xdtSec.datos
-for(var i=0;i<xdtSec.length;i++){$("#sel_impr_Sec_bodega  option[value="+xdtSec[i].idimpresora+"]").attr('selected','selected')
-xCadena_sec=String(xCadena_sec+'<tr class="row" data-t="seccion" data-id="'+xdtSec[i].idseccion+'"><td>'+xdtSec[i].plato+'</td><td><select class="xsel_sec_print_bodega" data-id="'+xdtSec[i].idseccion+'" option="'+xdtSec[i].idimpresora+'">'+$("#sel_impr_Sec_bodega")[0].innerHTML+'</select></td></tr>')};if(xdtSec.length>0){$("#tb_sec_impr_bodega .row").remove();$("#tb_sec_impr_bodega").append(xCadena_sec).trigger('create');$("#div_secciones_bodega").removeClass('xInvisible');}
+function xLoadSecciones_bodega(){$.ajax({type:'POST',url:'../../bdphp/log.php?op=40901'}).done(function(dtSec){var xdtSec=$.parseJSON(dtSec);var xCadena_sec='',imgIcono='';xdtSec=xdtSec.datos
+for(var i=0;i<xdtSec.length;i++){imgIcono=xdtSec[i].img!=''?xdtSec[i].img:i+'.png';$("#sel_impr_Sec_bodega  option[value="+xdtSec[i].idimpresora+"]").attr('selected','selected')
+xCadena_sec=String(xCadena_sec+'<tr class="row" data-t="seccion" data-id="'+xdtSec[i].idseccion+'">'+'<td onclick="openImgIconDialog(this, 1)"><img class="img-ico-seccion xCursor" src="'+xRutaIconSeccion+imgIcono+'" alt="img-ico">'+xdtSec[i].plato+'</td>'+'<td><select class="xsel_sec_print_bodega" data-id="'+xdtSec[i].idseccion+'" option="'+xdtSec[i].idimpresora+'">'+$("#sel_impr_Sec_bodega")[0].innerHTML+'</select></td>'+'</tr>')};if(xdtSec.length>0){$("#tb_sec_impr_bodega .row").remove();$("#tb_sec_impr_bodega").append(xCadena_sec).trigger('create');$("#div_secciones_bodega").removeClass('xInvisible');}
 xLoadConfOtrosDoc();})}
 function xGuardarCambiosSeccionPrint(id_row,id_print,xes_bodega){var xnum_op;if(xes_bodega===1){xnum_op='40101';}else{xnum_op='4010';}
 $.ajax({type:'POST',url:'../../bdphp/log.php?op='+xnum_op,data:{ids:id_row,idp:id_print}})}
@@ -699,4 +711,8 @@ xPopupLoad.xopen();$.post("../../bdphp/ManejoBD_IUD.php?tb=sede",$("#frm_sede").
 function xGuardarCategoria(){xvalidateFormInput('frm_cat',function(a){if(a===false){return;}
 xPopupLoad.xopen();$.post("../../bdphp/ManejoBD_IUD.php?tb=categoria",$("#frm_cat").serialize(),function(id){dialog_add_cat.close();$("#frm_cat").reset();xPopupLoad.xclose();xLoadCategoriaCarta();})});}
 function xLoadOrg(){$("#tb_org").append('<tr class="row"><td colspan="2"><paper-spinner active></paper-spinner></td></tr>');$.ajax({type:'POST',url:'../../bdphp/log.php?op=404'}).done(function(dtOrg){var xcadena_org='';var xdtOrg=$.parseJSON(dtOrg);xdtOrg=xdtOrg.datos;xThisConfig.dt_sede=xdtOrg;$("#frm_org #idorg").val(xdtOrg[0].idorg);$("#frm_org #nombre").val(xdtOrg[0].nombre);$("#frm_org #direccion").val(xdtOrg[0].direccion);$("#frm_org #ruc").val(xdtOrg[0].ruc);$("#frm_org #telefono").val(xdtOrg[0].telefono);$("#frm_org #email").val(xdtOrg[0].email);for(var i=0;i<xdtOrg.length;i++){xcadena_org=String(xcadena_org+'<tr class="row" data-id='+i+'><td>'+xdtOrg[i].nom_sede+'</td><td>'+xdtOrg[i].ciudad+'</td><td title="Modificar" onClick="xModificarSede(this)"><span class="icon xCursor"><img src="../../images/edit.png"></span></td></tr>')};$("#tb_org .row").remove();$("#tb_org").append(xcadena_org).trigger('create');});}
-Polymer({is:'x-configuraciones',properties:{xt_org:Number,xt_idsede:Number,xt_idus:Number,dt_sede:Object,dt_cat:Object,dt_impr:Object,},attached:function(){this.selected_conf=0;xThisConfig=this;xIniConf();},detached:function(){}})/*]]>*/</script>
+function openImgIconDialog(obj,_opIcon){opIcon=_opIcon;xidSeccionIcon=obj.parentElement.dataset.id
+dialog_img_ico_carta.open();}
+function updateIconSeccion(obj){const _img=obj.dataIndex+'.png';xPopupLoad.xopen();$.ajax({type:'POST',url:'../../bdphp/log_004.php?op=8',data:{i:xidSeccionIcon,img:_img,opIcon:opIcon}}).done(function(a){if(opIcon===0){xLoadSecciones();}else{xLoadSecciones_bodega();}
+dialog_img_ico_carta.close();xPopupLoad.xclose();})}
+Polymer({is:'x-configuraciones',properties:{xt_org:Number,xt_idsede:Number,xt_idus:Number,dt_sede:Object,dt_cat:Object,dt_impr:Object,listIconSeccion:[]},attached:function(){this.selected_conf=0;xThisConfig=this;xIniConf();},detached:function(){}})/*]]>*/</script>

@@ -1088,6 +1088,10 @@
 			$sql="update item set img='".$_POST['d']."' where iditem=".$_POST['i'];
 			$bd->xConsulta($sql);
 			break;
+		case 20701://guardar foto // producto
+			$sql="update producto set img='".$_POST['d']."' where idproducto=".$_POST['i'];
+			$bd->xConsulta($sql);
+			break;
 		case 208://guardar logo print
 			$sql="update conf_print set logo='".$_POST['d']."' where idconf_print=".$_POST['i'];
 			$sqlLogo64 = "; update sede set logo64 = '".$_POST['logo']."' where idsede=".$g_idsede;
@@ -1586,6 +1590,10 @@
 			$sql="SELECT * FROM usuario WHERE idorg=".$g_ido." AND idsede=".$g_idsede." AND estado=0 and super=0";
 			$bd->xConsulta($sql);
 			break;
+		case 4021://load usuarios repartidores
+			$sql="SELECT * FROM repartidor WHERE idsede_suscrito=".$g_idsede." AND estado=0";
+			$bd->xConsulta($sql);
+			break;
 		case 403://load usuarios modificar
 			$sql="SELECT * FROM usuario WHERE idusuario=".$_POST['i'];
 			$bd->xConsulta($sql);
@@ -1638,7 +1646,7 @@
 			break;
 		case 409:// load secciones con impresoras
 			$sql="
-				SELECT s.idseccion, s.descripcion AS plato,ifnull(i.idimpresora,0)AS idimpresora, ifnull(i.descripcion,'Ninguno') as descripcion FROM seccion AS s
+				SELECT s.idseccion, s.img, s.descripcion AS plato,ifnull(i.idimpresora,0)AS idimpresora, ifnull(i.descripcion,'Ninguno') as descripcion FROM seccion AS s
 				left JOIN impresora AS i using(idimpresora)
 				WHERE (s.idorg=".$g_ido." AND s.idsede=".$g_idsede.") and s.estado=0
 				ORDER BY s.idseccion
@@ -1648,6 +1656,7 @@
 		case 40901:// load secciones con impresoras BODEGA
 			$sql="
 				SELECT pf.idproducto_familia as idseccion,pf.descripcion AS plato,pf.idimpresora,ifnull(i.descripcion,'Ninguno') as descripcion
+						,pf.img
 				FROM producto_stock AS ps
 					INNER JOIN producto AS p using(idproducto)
 					INNER JOIN producto_familia AS pf using(idproducto_familia)
@@ -2582,6 +2591,7 @@
 			";*/
 			$sql="
 				SELECT ps.idproducto_stock,p.idproducto, ps.idalmacen,pf.descripcion AS familia, a.descripcion AS almacen, p.descripcion AS producto, ps.stock, IF(p.precio_venta='','0.00',format(p.precio_venta,2)) AS precio_venta, IF(p.stock_minimo='',0,p.stock_minimo) AS stock_minimo
+						,p.img
 				FROM producto AS p
 					INNER JOIN producto_stock AS ps using(idproducto)
 					INNER JOIN almacen AS a using(idalmacen)

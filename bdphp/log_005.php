@@ -374,5 +374,11 @@
 			$bd->xConsulta($sql);
 
 			break;
+		// guardar repartidor
+		case 11:
+			$arrItem=json_encode($_POST['item']);
+			$sql = "CALL procedure_registrar_repartidor_sede('".$arrItem."')";
+			$bd->xConsulta($sql);	
+			break;
 	}
 ?>

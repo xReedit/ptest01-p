@@ -12,12 +12,13 @@
 <br>
 <iron-pages selected="{{selected_us}}">
 <div id="datos_us">
-<form id="frm_us">
-<select class="xTextRow2" id="select_rol">
+<select class="xTextRow2" id="select_rol" onchange="tipoUsuario(this)">
 <option value="0">COLABORADOR</option>
 <option value="1">ADMINISTRADOR</option>
+<option value="3">REPARTIDOR / DELIVERISTA</option>
 </select>
 <br><br>
+<form id="frm_us" hidden$="[[showFormRepartidor]]">
 <input type="text" class="xMiInput xPasarEnter2" placeholder="NOMBRES" onChange="conMayusculas(this)" id="nombres" name="nombres" espaciar required>
 <input type="text" class="xMiInput xPasarEnter2" placeholder="CARGO" onChange="conMayusculas(this)" id="cargo" name="cargo" espaciar required>
 <div style="display:flex;margin-left:5px">
@@ -36,6 +37,17 @@
 <input type="text" id="rol" name="rol">
 </div>
 </form>
+<div id="formRepartidor" hidden$="[[!showFormRepartidor]]">
+<input type="text" class="xMiInput xPasarEnter2" placeholder="NOMBRES" onChange="conMayusculas(this)" id="nombres_r" name="nombres" espaciar required>
+<input type="text" class="xMiInput xPasarEnter2" placeholder="APELLIDOS" onChange="conMayusculas(this)" id="apellidos_r" name="apellidos" espaciar required>
+<input type="text" class="xMiInput xPasarEnter2" placeholder="DNI" onChange="conMayusculas(this)" id="dni_r" name="dni_r" espaciar required>
+<input type="text" class="xMiInput xPasarEnter2" placeholder="TELEFONO" onChange="conMayusculas(this)" id="telefono_r" name="telefono" espaciar required>
+<div style="display:flex;margin-left:5px">
+<input type="text" class="xMiInput xPasarEnter2" placeholder="USUARIO" id="txt_sufijo_r" value$="[[xt_sufijo]]" style="width:50px" enLinea readonly>
+<input type="text" class="xMiInput xPasarEnter2" placeholder="USUARIO" id="usuario_r" name="usuario" enLinea required>
+</div>
+<input type="password" class="xMiInput xPasarEnter2" placeholder="clave" id="pass_r" name="pass" espaciar required>
+</div>
 <br>
 <a href="#" onclick="xResetearClave()"> Resetear clave</a>
 <br>
@@ -118,9 +130,21 @@
 <th width="5px"></th>
 </thead>
 </table>
+<br>
+<br><br>
+<h3>REPARTIDORES / DELIVERISTA</h3>
+<div class="xLinea2"></div>
+<table id="tb_us_re" width="100%" class="xtable2">
+<thead>
+<th align="left">Nombres</th>
+<th align="left">Cargo</th>
+<th align="left">usuario</th>
+<th width="5px"></th>
+</thead>
+</table>
 </template>
 </dom-module>
-<script>/*<![CDATA[*/var xThis;function xIniUsuarios(){$("#Titulo_page").text("Usuarios");xm_log_get('ini_us');$('body').addClass('loaded');const sufijoSede=xm_log_get('datos_org_all_sede')[0].sufijo;xThis.xt_org=xIdOrg;xThis.xt_idsede=xIdSede;xThis.xt_idus=xIdUsuario;xThis.xt_sufijo=sufijoSede;if(xIdOrg===""||xIdOrg==undefined){var _dtUs=xm_log_get('app3_us');xThisConfig.xt_org=_dtUs.ido;xThisConfig.xt_idsede=_dtUs.idsede;xThisConfig.xt_idus=_dtUs.idus;}
+<script>/*<![CDATA[*/var xThis;function xIniUsuarios(){$("#Titulo_page").text("Usuarios");xm_log_get('ini_us');$('body').addClass('loaded');const sufijoSede=xm_log_get('datos_org_all_sede')[0].sufijo;xThis.xt_org=xIdOrg;xThis.xt_idsede=xIdSede;xThis.xt_idus=xIdUsuario;xThis.xt_sufijo=sufijoSede;xThis.showFormRepartidor=false;if(xIdOrg===""||xIdOrg==undefined){var _dtUs=xm_log_get('app3_us');xThisConfig.xt_org=_dtUs.ido;xThisConfig.xt_idsede=_dtUs.idsede;xThisConfig.xt_idus=_dtUs.idus;}
 xLoadUs();$('.xPasarEnter2').on('keyup',function(e){var code=e.which;if(code==13||code==186){var inputs=$('input');var a=inputs.index(document.activeElement);if(inputs[a+1]!==null)
 {var nextBox=inputs[a+1];if(nextBox===undefined){return}
 if(nextBox.disabled){nextBox=inputs[a+2]}
@@ -137,9 +161,13 @@ dialog_add_us.open();xPopupLoad.xclose();xPopupLoad.titulo="Guardando..";});}
 function xGuardarUs(){var xCadena_a='';var xCadena_p='',dataIdCheck='',valEstadistica=0;$(".checkA").each(function(index,element){if(element.checked==false){return;}
 dataIdCheck=element.dataset.id;if(dataIdCheck==='C5,'){$("#frm_us #estadistica").val('1');}
 xCadena_a=xCadena_a+dataIdCheck;});$(".checkP").each(function(index,element){if(element.checked==false){return;}
-dataIdCheck=element.dataset.id;xCadena_p=xCadena_p+dataIdCheck;});$("#frm_us #acc").val(xCadena_a);$("#frm_us #per").val(xCadena_p);$("#frm_us #rol").val(select_rol.value);const _usuario=xThis.xt_sufijo+usuario.value;$("#frm_us #usuario").val(_usuario);xvalidateFormInput('frm_us',function(a){if(a===false){xThis.selected_us=0;return;}
-xPopupLoad.xopen();$.post("../../bdphp/ManejoBD_IUD.php?tb=usuario",$("#frm_us").serialize(),function(id){dialog_add_us.close();xPopupLoad.xclose();xNuevoUsuario();xLoadUs();})})}
+dataIdCheck=element.dataset.id;xCadena_p=xCadena_p+dataIdCheck;});$("#frm_us #acc").val(xCadena_a);$("#frm_us #per").val(xCadena_p);$("#frm_us #rol").val(select_rol.value);const _usuario=xThis.xt_sufijo+usuario.value;$("#frm_us #usuario").val(_usuario);if(xThis.showFormRepartidor){const _dataSend={nombre:nombres_r.value,apellido:apellidos_r.value,dni:dni_r.value,telefono:telefono_r.value,usuario:txt_sufijo_r.value+usuario_r.value,pass:pass_r.value,idsede:xThis.xt_idsede}
+console.log(JSON.stringify(_dataSend));xPopupLoad.xopen();$.ajax({type:'POST',url:'../../bdphp/log_005.php?op=11',data:{item:_dataSend}}).done(function(DtProv){console.log(DtProv);xLoadUs();xPopupLoad.xclose();dialog_add_us.close();});return;}
+xvalidateFormInput('frm_us',function(a){if(a===false){xThis.selected_us=0;return;}
+xPopupLoad.xopen();$.post("../../bdphp/ManejoBD_IUD.php?tb=usuario",$("#frm_us").serialize(),function(id){dialog_add_us.close();xPopupLoad.xclose();xNuevoUsuario();xLoadUs();})});}
 function xNuevoUsuario(){$("#frm_us").reset();$(".checkA").each(function(index,element){element.checked=false;});$(".checkP").each(function(index,element){element.checked=false;});}
 function xLoadUs(){$("#tb_us").append('<tr class="row"><td colspan="4"><paper-spinner active></paper-spinner></td></tr>');$.ajax({type:'POST',url:'../../bdphp/log.php?op=402'}).done(function(dtUs){var xdtUs=$.parseJSON(dtUs);var xCadenaUs='';xdtUs=xdtUs.datos;for(var i=0;i<xdtUs.length;i++){xCadenaUs=String(xCadenaUs+'<tr class="row" data-id="'+xdtUs[i].idusuario+'" data-t="usuario"><td>'+xdtUs[i].nombres+'</td><td>'+xdtUs[i].cargo+'</td><td>'+xdtUs[i].usuario+'</td>'+'<td title="Modificar" onClick="xModificarUs(this)"><span class="icon xCursor"><img src="../../images/edit.png"></span></td>'+'<td><span onclick="xBorrarItem(this);" class="xDeleteRow" title="Borrar"></span></td>'+'</tr>');}
-$("#tb_us .row").remove();$("#tb_us").append(xCadenaUs).trigger('create');});}
-Polymer({is:'x-usuarios',properties:{xt_org:Number,xt_idsede:Number,xt_idus:Number,xt_sufijo:String,},attached:function(){this.selected_us=0;xThis=this;xIniUsuarios();}})/*]]>*/</script>
+$("#tb_us .row").remove();$("#tb_us").append(xCadenaUs).trigger('create');});$("#tb_us_re").append('<tr class="row"><td colspan="4"><paper-spinner active></paper-spinner></td></tr>');$.ajax({type:'POST',url:'../../bdphp/log.php?op=4021'}).done(function(dtUs){var xdtUs=$.parseJSON(dtUs);var xCadenaUs='';xdtUs=xdtUs.datos;for(var i=0;i<xdtUs.length;i++){xCadenaUs=String(xCadenaUs+'<tr class="row" data-id="'+xdtUs[i].idrepartidor+'" data-t="repartidor"><td>'+xdtUs[i].nombre+' '+xdtUs[i].apellido+'</td><td>Repartidor</td><td>'+xdtUs[i].usuario+'</td>'+'<td><span onclick="xBorrarItem(this);" class="xDeleteRow" title="Borrar"></span></td>'+'</tr>');}
+$("#tb_us_re .row").remove();$("#tb_us_re").append(xCadenaUs).trigger('create');});}
+function tipoUsuario($event){xThis.showFormRepartidor=$event.selectedIndex===2;}
+Polymer({is:'x-usuarios',properties:{xt_org:Number,xt_idsede:Number,xt_idus:Number,xt_sufijo:String,showFormRepartidor:boolean=false},attached:function(){this.selected_us=0;this.showFormRepartidor=false;xThis=this;xIniUsuarios();}})/*]]>*/</script>

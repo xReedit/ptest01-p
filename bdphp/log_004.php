@@ -1,6 +1,7 @@
 <?php
 	//log - adm
-	session_start();	
+	session_start();		
+	// header('content-type application/json');
 	header('content-type: text/html; charset: utf-8');
 	header('Content-Type: text/event-stream');
 	header('Cache-Control: no-cache');
@@ -12,6 +13,7 @@
 	include('log_006.php');
 
 	$op = $_GET['op'];	
+	
     switch ($op) {
 		case '1': //lista sede
 			$sql="
@@ -154,6 +156,69 @@
 			$sql = "CALL procedure_asignar_companies_contador('".$arrItem."')";
 			$bd->xConsulta($sql);
 			break;
+		
+		// configuracion app
+		case 6: // cargar categorias
+			$sql = "select * from sede_categoria where estado = 0";
+			$bd->xConsulta($sql);
+			break;
+		case 601: // cargar SUBCategorias
+			$sql = "select * from sede_subcategoria where estado = 0";
+			$bd->xConsulta($sql);
+			break;
+		case 602: // cargar SUBCategorias suscritas por la sede
+			$idsede = $_POST['idsede'];
+			$sql = "
+				SELECT GROUP_CONCAT(sc.idsede_categoria) idsede_categoria, GROUP_CONCAT(ssc.idsede_subcategoria) idsede_subcategoria from sede_subcategoria_suscrito ssc
+				inner JOIN sede_subcategoria sc on ssc.idsede_subcategoria = sc.idsede_subcategoria
+	   			where ssc.idsede = ".$idsede." and ssc.estado=0
+			";
+			$bd->xConsulta($sql);
+			break;
+		case 603: // guardar subcategorias suscritas
+			$idsede = $_POST['idsede'];
+			$items = $_POST['arrItems'];
+
+			$sql = "update sede_subcategoria_suscrito set estado = 1 where idsede=".$idsede;
+			$bd->xConsulta_NoReturn($sql);
+
+			$sql_d = '';
+			foreach ( $items as $item ) {
+				$sql_d = $sql_d."(".$idsede.", ".$item['idsede_subcategoria']."),";
+			}
+
+			$sql_d=substr($sql_d, 0, -1);
+
+			$sql_d = 'insert into sede_subcategoria_suscrito (idsede, idsede_subcategoria) values '.$sql_d;
+			$bd->xConsulta($sql_d);
+			break;
+		case 604: // img
+			$idsede = $_POST['idsede'];
+			$img = $_POST['d'];
+			$sql = "update sede set pwa_delivery_img = '".$img. "' where idsede = ".$idsede;
+			$bd->xConsulta($sql);
+			break;
+		
+		case 700: //horario de trabajo
+			$sql = "insert into sede_horario_trabajo (idsede, de, a) values (".$_POST['idsede'].", '".$_POST['de']."', '".$_POST['a']."')";
+			$bd->xConsulta($sql);
+			break;
+		case 701: // load //horario de trabajo
+			$sql = "select * from sede_horario_trabajo where idsede = ".$_POST['idsede']." and estado=0";
+			$bd->xConsulta($sql);
+			break;
+		
+
+		// seccion icon
+		case 8: // update icon seccion
+			if ( $_POST['opIcon'] === '0' ) { // seccion
+				$sql = "update seccion set img = '".$_POST['img']."' where idseccion=".$_POST['i'];
+			} else {
+				// producto familia
+				$sql = "update producto_familia set img = '".$_POST['img']."' where idproducto_familia='".$_POST['i']."'";
+			}
+			$bd->xConsulta($sql);
+			break;		
 	}
 
 ?>
