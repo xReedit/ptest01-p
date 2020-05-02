@@ -219,6 +219,11 @@
 			}
 			$bd->xConsulta($sql);
 			break;		
+		
+		case 9: //load repartidores
+			$sql = "SELECT r.*, s.nombre as nom_sede from repartidor r left join sede s on s.idsede = r.idsede_suscrito";
+			$bd->xConsulta($sql);
+			break;
 	}
 
 ?>

@@ -1,0 +1,86 @@
+<dom-module id="x-repartidores">
+	<template>
+		<!-- <br>
+		<div class="xMiCard xradius" style="width:calc(100% - 10%)">
+			<div class="xEncanezadoCard xFondoRowAmarillo4">
+				Datos del Repartidor
+            </div>
+        </div> -->        
+		<div>
+			<form method="POST" id="frm_repartidor">
+                <input type="text" class="xMiInput xPasarEnter2" value$="{{usuarioReparidor.nombre}}" placeholder="NOMBRE" onChange="conMayusculas(this)" id="nombre" name="nombre" espaciar required>
+                <input type="text" class="xMiInput xPasarEnter2" value$="{{usuarioReparidor.apellido}}" placeholder="APELLIDO" onChange="conMayusculas(this)" id="apellido" name="apellido" espaciar required>
+				<input type="number" class="xMiInput xPasarEnter2" value$="{{usuarioReparidor.dni}}" placeholder="DNI" onChange="conMayusculas(this)" id="dni" name="dni" espaciar>
+				<input type="text" class="xMiInput xPasarEnter2" value$="{{usuarioReparidor.telefono}}" placeholder="TELEFONO" onChange="conMayusculas(this)" id="telefono" name="telefono" espaciar>								
+				<input type="text" class="xMiInput xPasarEnter2" value$="{{usuarioReparidor.ciudad}}" placeholder="CIUDAD" onChange="conMayusculas(this)" id="ciudad" name="ciudad" espaciar required>
+                <input type="text" class="xMiInput xPasarEnter2" value$="{{usuarioReparidor.codigo_postal}}" placeholder="CODIGO POSTAL DE LA CIUDAD" onChange="conMayusculas(this)" id="codigo_postal" name="codigo_postal" espaciar required>
+                <input type="text" class="xMiInput xPasarEnter2" value$="{{usuarioReparidor.usuario}}" placeholder="USUARIO" onChange="conMayusculas(this)" id="usuario" name="usuario" espaciar required>
+                <input type="password" class="xMiInput xPasarEnter2" value$="{{usuarioReparidor.pass}}" placeholder="PASSWORD" onChange="conMayusculas(this)" id="pass" name="pass" espaciar required>															
+                                                
+				<br>
+				<br>	
+				<div class="xInvisible">
+					<input type="text" id="idrepartidor" name="idrepartidor" value$="{{usuarioReparidor.idrepartidor}}">									
+				</div>													
+			</form>
+		</div>
+		<br>
+		<button class="xBoton2 xAzul" onclick="xRepartidorValidarFormSave();">Guardar</button>						
+    </template>
+<script>
+    var xThisRepartidor, xPopupLoad;
+    
+        function xIniAdminR() {
+            // xThisRepartidor.usuarioReparidor = {};                    
+            $('body').addClass('loaded');
+        }
+    
+        // function xLoadRepartidor(){
+        //     $.ajax({ url: '../../bdphp/log_004.php?op=1' })
+        //     .done((res) => {
+        //         const _res = $.parseJSON(res);
+        //         xThisAdmin.ListSedes = _res.datos;			
+        //     });
+        // }
+
+
+        function xRepartidorValidarFormSave() {
+            xvalidateFormInput('frm_repartidor', async function (a) {
+                if (a === false) {			
+                    alert('Complete los campos requeridos');
+                    return;			
+                }
+                xCpcSave_Usuario_Repartidor();
+            });
+        }
+
+        async function xCpcSave_Usuario_Repartidor() {		
+            xPopupLoad.xopen();
+                $.post("../../bdphp/ManejoBD_IUD.php?tb=repartidor", $("#frm_repartidor").serialize(), function (id) {			
+                    xPopupLoad.xclose();			
+                    xLoadRepartidores();
+                });
+
+        }
+    
+    
+    
+        Polymer({
+                is: 'x-repartidores',
+                properties: {
+                    usuarioReparidor: {
+					type: Object,
+					notify: true,
+                    reflectToAttribute: true,
+                    value: {}			
+				    }
+                    
+                },                
+                attached: function () {		
+                    // this.usuarioReparidor = {};                    
+                    xThisRepartidor = this;
+                    xIniAdminR();
+                }                
+            })
+    </script>
+</dom-module>

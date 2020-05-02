@@ -1493,8 +1493,8 @@
 		case 3051:	//load pedido control de pedidos /load pedido desde mi pedido
 			$nummesa=$_POST['m'];
 			$numpedido=$_POST['p'];
-			
-			$sql="CALL procedure_bus_pedido_bd_3051(".$nummesa.",'".$numpedido."',".$g_ido.",".$g_idsede.");";
+			// 0 idpedido
+			$sql="CALL procedure_bus_pedido_bd_3051(".$nummesa.",'".$numpedido."', 0,".$g_ido.",".$g_idsede.");";
 			
 			// $condicion='p.nummesa='.$nummesa;
 			// if($nummesa==0){

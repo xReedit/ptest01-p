@@ -216,7 +216,7 @@ Agregar un nuevo restaurante o sede.
 </template>
 </dom-module>
 <script>/*<![CDATA[*/var xThisAdminNew,xPopupLoad;function xIniAdminNew(){xPopupLoad=document.getElementById('xLoad');xThisAdminNew.selected_conf=0;xLoadAdmDatosOrg();$("#ctrl_open_file").change(function(e){for(var i=0;i<e.originalEvent.srcElement.files.length;i++){var file=e.originalEvent.srcElement.files[i];$("#pwa_delivery_img").val(file.name);if(file){var reader=new FileReader();reader.onload=function(e){$('#imgLogo').attr('src',e.target.result);}
-reader.readAsDataURL(file);xConvertBase64Img();}}});}
+reader.readAsDataURL(file);}}});}
 function xSeleccionarFoto(){$("#ctrl_open_file").click();}
 function xItemGuardarFoto(){$(".xobj_subir_foto").each(function(index,element){if($(this).val()==''){return}
 file=this.files[0];name=file.name;size=file.size;type=file.type;nomfile=xThisAdminNew.xIdOrg+xThisAdminNew.xIdSede+name;xhr=new XMLHttpRequest();xhr.upload.addEventListener('load',transferenciaCompleta(nomfile),false);xhr.open('POST','upload.php?op=3',true);xhr.setRequestHeader("Cache-Control","no-cache");xhr.setRequestHeader("X-Requested-With","XMLHttpRequest");xhr.setRequestHeader("X-File-Name",nomfile);xhr.send(file);});};function transferenciaCompleta(xfile){$.ajax({type:'POST',url:'../../bdphp/log_004.php?op=604',data:{idsede:xThisAdminNew.xIdSede,d:xfile}}).done(function(a){$("#pwa_delivery_img").val(xfile);xPopupLoad.xclose();})}
