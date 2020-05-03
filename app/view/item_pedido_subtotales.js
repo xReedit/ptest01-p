@@ -16,4 +16,5 @@ arrSuma.push({'descripcion':'Total','importe':xMoneda(sumTotal),'visible':true,'
 function checkSubTotalQuitado(countPedidos,id,val){var rpt=false;if(!xLocal_SubTotal_Quitados){return;}
 const CountIdTacahdos=xLocal_SubTotal_Quitados.toLowerCase().split(",").sort().filter(x=>x===id).length;const hbilitarTachado=parseInt(CountIdTacahdos)>=parseFloat(countPedidos);rpt=xLocal_SubTotal_Quitados.indexOf(id)>=0?true:false;if(!rpt){xSumCantImporte+=parseFloat(val);}
 return hbilitarTachado?rpt:false;}
-var groupBy=function(xs,key){return xs.reduce(function(rv,x){(rv[x[key]]=rv[x[key]]||[]).push(x);return rv;},{});};
+var groupBy=function(xs,key){return xs.reduce(function(rv,x){(rv[x[key]]=rv[x[key]]||[]).push(x);return rv;},{});};function darFormatoSubTotalesDelivery(arrTotales=null){var rowTotal=arrTotales[arrTotales.length-1];rowTotal.importe=arrTotales.filter(x=>x.id!==-2&&x.id!==-3&&x.descripcion!=='TOTAL').map(x=>parseFloat(x.importe)).reduce((a,b)=>a+b,0);xLocal_xDtSubTotales=arrTotales.filter(x=>x.id!==-2&&x.id!==-3);return xLocal_xDtSubTotales;}
+function getImporteTotalSubTotalesDelivery(arrTotales=null){var rowTotal=arrTotales[arrTotales.length-1];return rowTotal.importe;}

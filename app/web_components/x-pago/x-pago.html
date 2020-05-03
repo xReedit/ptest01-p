@@ -8,7 +8,7 @@
 <link rel="import" href="../../x-componentes/x-comp-table-forma-pago/x-comp-table-forma-pago.html">
 <dom-module id="x-pago">
 <template>
-<div style="max-width:400px">
+<div style="max-width:480px">
 <div class="xEnca_pago">
 <h2 class="ptotal">{{total}}</h2>
 <p class="pdif" id="pdif">{{diferencia}}</p>
@@ -69,7 +69,7 @@ favor regrese y registre o seleccione un cliente.</p><br>
 </div>
 </div>
 </template>
-<style type="text/css">.xEnca_pago{background:#1a237e;text-align:center;padding:10px}.xEnca_pago .ptotal{color:#FFF}.xEnca_pago .pdif{font-size:18px}.xsel_tp{float:left;margin-top:3px}.pdif_rojo{color:#ffea00}.pdif_verde{color:#76ff03}.container-cliente-comprobante{padding:5px;margin-top:-10px;background-color:#fdfcdc}.ancho_ini{width:380px}:root{--font-size:12px;--paper-input-container-input:{font-size:var(--font-size)}--paper-input-container-label:{font-size:13px}}@media screen and (max-width:720px){.ancho_ini{width:100%}}</style>
+<style type="text/css">.xEnca_pago{background:#1a237e;text-align:center;padding:10px}.xEnca_pago .ptotal{color:#FFF}.xEnca_pago .pdif{font-size:18px}.xsel_tp{float:left;margin-top:3px}.pdif_rojo{color:#ffea00}.pdif_verde{color:#76ff03}.container-cliente-comprobante{padding:5px;margin-top:-10px;background-color:#fdfcdc}.ancho_ini{width:100%}:root{--font-size:12px;--paper-input-container-input:{font-size:var(--font-size)}--paper-input-container-label:{font-size:13px}}@media screen and (max-width:720px){.ancho_ini{width:100%}}</style>
 </dom-module>
 <script>/*<![CDATA[*/var xThisPago,xdialoag_pago,xDiferencia=0,xtotal_recibido=0,xtb_tp,xSel_tp=[],xSel_tp_comprobante=[],xdif_limite=0,xsuma_total=0,xsuma_diferencia=0,xIdCliente_pago='',xObjContent,xEnterTxtImporte=0,xDatosValidos=false,tipoComprovanteSelecionado={},modoSoloComprobante=false,modoSoloProveedor=false,btnDisabledInitModoComprobante=true,registrando=false,_inputAutocomplete,_inputAutocompleteObj,objSelComprobante,xtipoP=[],xCompTableFP;function xIiniPago(){xtb_tp=$("#tb_tp");xLoadTipoPago();xEnterTxtImporte=0;_inputAutocomplete=document.getElementById('clie_nombres');_inputAutocompleteObj=_inputAutocomplete.$.input_clie_nombres_auto;_inputAutocomplete.addEventListener('input-autocomplete-selected',(event)=>{const cliente=event.detail;xThisPago.clienteModel=cliente;xThisPago.tipoPagoRequiereCliente=false;xIdCliente_pago=cliente.idcliente;$("#sel_cliente").val(cliente.ruc);$("#clie_direccion").val(cliente.direccion);EmitirValidacionFormCliente();});objSelComprobante=document.getElementById('comp_sel_comprobante');$('#form_pago_cliente #clie_nombres').on('keyup',function(e){var code=e.which;if(code==13||code==186){xThisPago.$.clie_direccion.$.input.$.textarea.select();xThisPago.$.clie_direccion.$.input.$.textarea.focus();}})
 $('.xPasarEnter2').on('keyup',function(e){var code=e.which;if(code==13||code==186){var inputs=$('input');var a=inputs.index(document.activeElement);if(inputs[a+1]!==null){var nextBox=inputs[a+1];if(nextBox.disabled){nextBox=inputs[a+2]}
