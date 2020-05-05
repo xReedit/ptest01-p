@@ -3263,7 +3263,7 @@ function xDtUS($op_us){
 			$sql_us = "SELECT * from sede where idsede=".$g_idsede." and estado=0";
 			break;
 		case 3014: // load sys const
-			$sql_us = "SELECT * FROM sys_const where estado=0";
+			$sql_us = "SELECT * FROM sys_const where estado=0 and llave in ('URL_COMPROBANTE', 'URL_COMPROBANTE_DOWNLOAD_FILE')";
 			break;
 	}
 	$rows = [];
