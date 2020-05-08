@@ -380,5 +380,11 @@
 			$sql = "CALL procedure_registrar_repartidor_sede('".$arrItem."')";
 			$bd->xConsulta($sql);	
 			break;
+		
+		case 12: // comercio online delivery app
+			$val = $_POST['val'];
+			$sql = "update sede set pwa_delivery_comercio_online=".$val." where idsede =".$g_idsede;
+			$bd->xConsulta($sql);	
+			break;
 	}
 ?>

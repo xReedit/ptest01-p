@@ -3,716 +3,1770 @@
 <link rel="import" href="../../x-componentes/x-comp-find-categoria/x-comp-find-categoria.html">
 <link rel="import" href="./x-carta-virtual-config/x-carta-virtual-config.html">
 <link rel="import" href="./x-carta-virtual-config/x-carta-virtual-mesas.html">
+
 <dom-module id="x-configuraciones">
-<template>
-<paper-dialog id="dialog_borrar" entry-animation="scale-up-animation" exit-animation="fade-out-animation" with-backdrop>
-<div class="xtxtCentro">
-<img src="../../../images/_dlg_remove.gif" alt="" width="150px">
-</div>
-<p>Esta seguro de querer borrar este registro?</p>
-<br>
-<div class="buttons">
-<button class="xBoton2 xPlomo" dialog-dismiss>Cancelar</button>
-<button class="xBoton2 xRojo" onclick="xDlgBorrar()">Si, borrar</button>
-</div>
-</paper-dialog>
-<paper-dialog id="dialog_subir_file_alamcen" class="dialog_redondo" entry-animation="scale-up-animation" exit-animation="fade-out-animation" with-backdrop>
-<div class="xContent">
-<h4>Selecciona el almacen donde ingresan los productos:</h4>
-<select class="xTextRow2" id="sel_almacen_file"></select>
-<br><br><br>
-<div class="xBoton2 xVerde" onclick="xSubirFileAlmacen()">Listo, subir archivo e ingresar</div>
-</div>
-</paper-dialog>
-<paper-dialog id="dialog_add_sede" style="max-width:300px" entry-animation="scale-up-animation" exit-animation="fade-out-animation" with-backdrop>
-<div class="xContent">
-<h4>DATOS DE SEDE</h4>
-<form id="frm_sede">
-<input type="text" class="xMiInput xPasarEnter2" placeholder="DESCRIPCION" onChange="conMayusculas(this)" id="nombre" name="nombre" espaciar required>
-<input type="text" class="xMiInput xPasarEnter2" placeholder="CIUDAD" onChange="conMayusculas(this)" id="ciudad" name="ciudad" espaciar required>
-<input type="text" class="xMiInput xPasarEnter2" placeholder="ESLOGAN" id="eslogan" name="eslogan" maxlength="100" espaciar>
-<input type="number" class="xMiInput xPasarEnter2" placeholder="NUMERO DE MESAS" id="mesas" min="1" name="mesas" espaciar>
-<input type="text" class="xMiInput xPasarEnter2" placeholder="UBIGEO" id="ubigeo" name="ubigeo" espaciar>
-<input type="text" class="xMiInput xPasarEnter2" placeholder="CODIGO DEL DOMICILIO FISCAL" id="codigo_del_domicilio_fiscal" name="codigo_del_domicilio_fiscal" espaciar>
-<br><br>
-<label for="ubigeo" class="xColorRow_Plomo">Telefono</label>
-<input type="text" class="xMiInput xPasarEnter2" placeholder="TELEFONO" id="telefono" name="telefono" espaciar>
-<div class="xInvisible">
-<input type="text" id="idsede" name="idsede">
-<input type="text" id="idorg" name="idorg" value$="[[xt_org]]">
-</div>
-</form>
-<br><br>
-<div class="xLinea2"></div>
-<br><br>
-<div class="xBoton2 xAzul" onclick="xGuardarSede()">Guardar</div>
-<div class="xBoton2 xPlomo" onclick="dialog_add_sede.close()">Cancelar</div>
-</div>
-</paper-dialog>
-<paper-dialog id="dialog_add_cat" style="max-width:300px" entry-animation="scale-up-animation" exit-animation="fade-out-animation" with-backdrop>
-<div class="xContent">
-<h4>CATEGORIA</h4>
-<p>Hora en formato 24hrs ejemplo: 18:00</p>
-<form id="frm_cat">
-<input type="text" class="xMiInput xPasarEnter2" placeholder="DESCRIPCION" onChange="conMayusculas(this)" id="descripcion" name="descripcion" espaciar required>
-<input type="text" class="xMiInput xPasarEnter2" placeholder="HORA INICIO" onChange="conMayusculas(this)" id="hora_ini" name="hora_ini" espaciar>
-<input type="text" class="xMiInput xPasarEnter2" placeholder="HORA FINAL" onChange="conMayusculas(this)" id="hora_fin" name="hora_fin" espaciar>
-<input type="text" class="xMiInput xPasarEnter2" placeholder="DETALLE" onChange="conMayusculas(this)" id="detalle" name="detalle" espaciar required>
-<div class="xInvisible">
-<input type="text" id="idsede" name="idsede" value$="[[xt_idsede]]">
-<input type="text" id="idorg" name="idorg" value$="[[xt_org]]">
-<input type="text" id="idcategoria" name="idcategoria">
-</div>
-</form>
-<br><br>
-<div class="xLinea2"></div>
-<br><br>
-<div class="xBoton2 xAzul" onclick="xGuardarCategoria()">Guardar</div>
-<div class="xBoton2 xPlomo" onclick="dialog_add_cat.close()">Cancelar</div>
-</div>
-</paper-dialog>
-<paper-dialog id="dialog_add_tpc" style="width:300px" entry-animation="scale-up-animation" exit-animation="fade-out-animation" with-backdrop>
-<div class="xContent">
-<h4>TIPO DE CONSUMO</h4>
-<form id="frm_tpc">
-<input type="text" class="xMiInput xPasarEnter2" placeholder="DESCRIPCION" onChange="conMayusculas(this)" id="descripcion" name="descripcion" espaciar required>
-<div class="xInvisible">
-<input type="text" id="idsede" name="idsede" value$="[[xt_idsede]]">
-<input type="text" id="idorg" name="idorg" value$="[[xt_org]]">
-</div>
-</form>
-<br><br>
-<div class="xLinea2"></div>
-<br><br>
-<div class="xBoton2 xAzul" onclick="xGuardarTPC()">Guardar</div>
-<div class="xBoton2 xPlomo" onclick="dialog_add_tpc.close()">Cancelar</div>
-</div>
-</paper-dialog>
-<paper-dialog id="dialog_img_ico_carta" class="dialog_redondo overflow-auto" entry-animation="scale-up-animation" exit-animation="fade-out-animation" with-backdrop>
-<div class="xContent">
-<span class="xColorRow_Plomo">Este icono se mostrara en la aplicacion de pedidos</span>
-<div class="content-icon-seccion">
-<template is="dom-repeat" items="{{listIconSeccion}}" as="item">
-<img data-index="[[index]]" onclick="updateIconSeccion(this)" class="img-ico-seccion-size-2" src="{{item.img}}" alt="a2">
-</template>
-</div>
-</div>
-</paper-dialog>
-<br>
-<h3>CONFIGURACIONES</h3>
-<div class="xLinea2"></div>
-<br>
-<div>
-<paper-tabs selected="{{selected_conf}}" id="tab_cnf" scrollable>
-<paper-tab>DATOS DEL ESTABLECIMINETO</paper-tab>
-<paper-tab>CATEGORIAS (CARTA)</paper-tab>
-<paper-tab>TIPOS DE CONSUMO</paper-tab>
-<paper-tab>REGLAS DE LA CARTA</paper-tab>
-<paper-tab>DATOS DE IMPRESION</paper-tab>
-<paper-tab>DESPACHO E IMPRESORAS</paper-tab>
-<paper-tab>ALMACENES</paper-tab>
-<paper-tab>EMISION DE COMPROBANTES</paper-tab>
-<paper-tab>CARTA APP</paper-tab>
-</paper-tabs>
-<div class="xLinea2"></div>
-<br>
-<iron-pages selected="{{selected_conf}}">
-<div id="div_datos_establecimiento" class="xAlinearce" style="width:100%">
-<div class="xm_at_cont xAlinearce xBordeDe">
-<form id="frm_org">
-<input type="text" class="xMiInput xPasarEnter2" placeholder="ESTABLECIMIENTO / ORGANIZACION" onChange="conMayusculas(this)" id="nombre" name="nombre" espaciar required>
-<input type="text" class="xMiInput xPasarEnter2" placeholder="DIRECCION" onChange="conMayusculas(this)" id="direccion" name="direccion" espaciar required>
-<input type="text" class="xMiInput xPasarEnter2" placeholder="RUC" onChange="conMayusculas(this)" id="ruc" name="ruc" espaciar required>
-<input type="text" class="xMiInput xPasarEnter2" placeholder="TELEFONO" onChange="conMayusculas(this)" id="telefono" name="telefono" espaciar required>
-<input type="email" class="xMiInput xPasarEnter2" placeholder="EMAIL CONTACTO" id="email" name="email" espaciar required>
-<div class="xInvisible">
-<input type="text" id="idorg" name="idorg">
-</div>
-<br><br><br>
-<div class="xBoton2 xAzul" onclick="xGuardarOrg()">Guardar Cambios</div>
-</form>
-</div>
-<div class="xm_at_cont xAlinearce">
-<table width="100%" class="xtable2" id="tb_org">
-<thead>
-<th>SEDE</th>
-<th>CIUDAD</th>
-<th width="5px"></th>
-</thead>
-</table>
-</div>
-<br><br>
-</div>
-<div id="div_categoria">
-<p class="xBold">Agregue las comidas o categorias que el establecimiento ofrece. Por ejemplo: Desayunos, Almuerzos, Cenas, etc. O si es una categoria General.<br>Establesca la hora de inicio y final el sistema lo mostrara u ocultara automaticamente segun la hora.</p>
-<br>
-<paper-fab icon="add" onclick="dialog_add_cat.open()" title="" tabindex="0" class="verde btnAdd"></paper-fab>
-<table width="100%" class="xtable2" id="tb_cat">
-<thead>
-<th align="left">DESCRIPCION</th>
-<th align="left">H. INICIO</th>
-<th align="left">H. FINAL</th>
-<th width="5px"></th>
-<th width="5px"></th>
-</thead>
-</table>
-</div>
-<div id="div_tpc">
-<p class="xBold">Establecer los tipo de consumo que seran visibles en la carta, por ejemplo: Consumir en el Local, Para LLevar.</p>
-<br>
-<paper-fab icon="add" onclick="dialog_add_tpc.open()" title="" tabindex="0" class="verde btnAdd"></paper-fab>
-<table width="100%" class="xtable2" id="tb_tpc">
-<thead>
-<th align="left">DESCRIPCION</th>
-<th width="5px"></th>
-</thead>
-</table>
-</div>
-<div id="div_regla">
-<p class="xBold">Especifique las reglas que obedece la carta, como por ejemplo: Cada plato de fondo sale con una entrada.</p>
-<br>
-<label for="selCategoria">Categoria: </label>
-<select class="xTextRow2" id="selCategoria" inline></select>
-<br><br>
-<label for="selSeccion">Seccion : </label>
-<select class="xTextRow2" id="selSeccion" inline></select>
-<label for="selCon">Sale con: </label>
-<select class="xTextRow2" id="selCon" inline></select>
-<div class="xBoton2 xAzul" onclick="xAddRegla()">Agregar Regla</div>
-<div class="xInvisible">
-<form id="frm_regla">
-<input type="text" name="idorg" id="idorg" value$="[[xt_org]]">
-<input type="text" name="idsede" id="idsede" value$="[[xt_idsede]]">
-<input type="text" name="idcategoria" id="idcategoria">
-<input type="text" name="idseccion" id="idseccion">
-<input type="text" name="idseccion_detalle" id="idseccion_detalle">
-</form>
-</div>
-<br><br><br>
-<table class="xtable2" style="max-width:600px;width:600px" id="tb_regla">
-<thead>
-<th align="left">Categoria:</th>
-<th align="left">Seccion:</th>
-<th align="left">Sale con:</th>
-<th></th>
-</thead>
-</table>
-</div>
-<div id="div_datos_print">
-<div>
-<table id="tb_print">
-<tr>
-<td>
-<h3>IP Impresora</h3>
-<span>Impresora ticketera donde se imprimiran los pedidos</span>
-</td>
-<td>
-<input type="text" class="xMiInput" placeholder="IP xx.xx.xx.x" id="td_ip">
-</td>
-</tr>
-<tr>
-<td>
-<h3>Numero de Copias</h3>
-<span>Numero de Copias a imprimir por pedido</span>
-</td>
-<td>
-<input class="xMiInput" placeholder="00" type="number" min="0" pattern="[0-9]+([\.,][0-9]+)?" step="any" id="td_copia">
-</td>
-</tr>
-<tr>
-<td>
-<h3>Pie de pagina</h3>
-<span>Mensaje en el pie de pagina para el pedido o comanda</span>
-</td>
-<td>
-<textarea class="xMiInput" class="xMiInput" placeholder="Pie de pagina" maxlength="200" id="td_pie" cols="30" rows="6"></textarea>
-</td>
-</tr>
-<tr>
-<td>
-<h3>Pie de pagina para el comprobante</h3>
-<span>Pie de pagina que se mostrara en el <strong>comprobante</strong></span>
-</td>
-<td>
-<textarea class="xMiInput" placeholder="Pie de pagina comprobante" maxlength="255" id="td_pie_comprobante" cols="30" rows="8"></textarea>
-</td>
-</tr>
-<tr>
-<td>
-<h3>Logo</h3>
-<span>Logo a imprimir en el ticket, ancho remcomendado 450px</span>
-</td>
-<td>
-<input type="text" class="xMiInput" placeholder="Logo" maxlength="200" onclick="xSeleccionarFoto()" id="td_logo" readonly>
-<input type="file" class="xInvisible xobj_subir_foto" id="ctrl_open_file" accept="image/*"/>
-<img id="imgLogo" src="" alt="" width="450">
-</td>
-</tr>
-<tr>
-<td>
-<h3>Tamaño de letra</h3>
-<span>Las impresoras ticketeras pueden tener hasta 3 tipos de fuente (0,1,2)</span>
-</td>
-<td>
-<input class="xMiInput" placeholder="0" type="number" min="0" max="3" pattern="[0-9]+([\.,][0-9]+)?" step="any" id="td_size_font">
-</td>
-</tr>
-<tr>
-<td>
-<h3>Margen Izquierda</h3>
-<span>Por defecto es 0, aumentar cantidad para centrar</span>
-</td>
-<td>
-<input class="xMiInput" placeholder="0" type="number" min="0" max="80" pattern="[0-9]+([\.,][0-9]+)?" step="any" id="td_margen_iz">
-</td>
-</tr>
-<tr>
-<td>
-<h3>Tamaño de fuente en la comanda</h3>
-<span>Por defecto es de tamaño default.</span>
-</td>
-<td>
-<select class="xTextRow2 xCursor" name="sel_size_font_comanda" id="sel_size_font_comanda">
-<option value="0">Default</option>
-<option value="1">Grande</option>
-<option value="2">Extra</option>
-</select>
-</td>
-</tr>
-</table>
-<br><br>
-<div class="xBoton2 xAzul" onclick="xGuardarCambioPrint()">Guardar Cambios</div>
-<div class="xBoton2 xVerde" onclick="xPruebaTestPrint()">Test Impresion</div>
-<div class="xInvisible">
-<form id="frm_conf_print">
-<input type="text" id="idconf_print" name="idconf_print">
-<input type="text" id="ip_print" name="ip_print">
-<input type="text" id="num_copias" name="num_copias">
-<input type="text" id="pie_pagina" name="pie_pagina">
-<input type="text" id="pie_pagina_comprobante" name="pie_pagina_comprobante">
-<input type="text" id="var_size_font" name="var_size_font">
-<input type="text" id="var_margen_iz" name="var_margen_iz">
-<input type="text" id="var_size_font_tall_comanda" name="var_size_font_tall_comanda">
-<input type="text" id="idorg" name="idorg" value$="[[xt_org]]">
-<input type="text" id="idsede" name="idsede" value$="[[xt_idsede]]">
-</form>
-</div>
-<br>
-<br>
-<br>
-<div class="xLinea2"></div>
-<br>
-<h3 class="xBold">SUB TOTALES</h3>
-<br>
-<h4>IMPUESTOS</h4>
-<p>Ingrese el porcentaje del I.G.V. en numeros, si esta exonerado solo quite el check de activo; dejando especificado el porcentaje del impuesto (se utilizara para calcular otras operaciones). </p>
-<div class="xLinea2"></div><br>
-<br>
-<form method="post" id="formProcentaje">
-<table id="tb_porcentaje" class="xtable1" width="38%">
-<thead>
-<th>Activo</th>
-<th>Impuesto</th>
-<th align="center">Porcentaje</th>
-</thead>
-<tbody></tbody>
-</table>
-<div class="xInvisible">
-<input type="text" id="idconf_print" name="idconf_print">
-</div>
-</form>
-<br><br>
-<h3 class="xBold">SERVICIOS NO FACTURABLES</h3>
-<p>Servicios no facturables como: propinas o donativos, importes que no son percibido por el restaurante. <br> Por ejemplo para cargar el servicio de atencion (propinas) podria configurar: Descripcion: Servicio , Porcentaje: 10. <br> Esto sumaria 10% del total de la cuenta. Que seria percibido por el mozo que atendio el pedido o mesa.</p>
-<div class="xLinea2"></div><br>
-<br>
-<form method="post" id="formProcentajeNoFacturable">
-<table id="tb_porcentaje_no_facturable" class="xtable1" width="50%">
-<tr data-id="" class="xSinBorde">
-<td><input type="text" class="xMiInput" placeholder="Descripcion" onChange="conMayusculas(this)" name="descripcion" id="descripcion" required></td>
-<td><input type="number" min="0" class="xMiInput" placeholder="porcentaje" pattern="0|[1-9][0-9]*" name="porcentaje" id="porcentaje" required></td>
-<td><paper-fab icon="add" onclick="xAddPorcentaje()" title="Guardar" tabindex="0"></paper-fab></td>
-</tr>
-</table>
-<div class="xInvisible">
-<input type="text" id="idconf_print" name="idconf_print">
-</div>
-</form>
-<br><br>
-<h3 class="xBold">SERVICIOS ADICIONALES</h3>
-<p>Ingrese los servicios adicionales que tienen un costo segun tipo de consumo. <br>
-Ejemplo: Para llevar ó Delivery, Descripcion: Taper, Tipo de consumo: Para llevar, Seccion:Platos de fondo, Importe:1.00 <strong>(por cada item)</strong> es decir por cada taper. <br>
-Tambien puede ingresar servicios fijos que se cobran <strong>por pedido.</strong> Ejemplo: En el servicio de Delivery se suele cobrar un monto fijo por el transporte. Quedando de esta manera: Descripcion: Servicio delivery, Tipo consumo: Delivery, Por: Pedido, Impore: 3.00.
-</p>
-<div class="xLinea2"></div><br>
-<br>
-<form method="post" id="formAdicionales">
-<table id="tb_Adicionales" class="xtable1">
-<tr data-id="" class="xSinBorde">
-<td>Activo</td>
-<td><input type="text" class="xMiInput" placeholder="Descripcion" onChange="conMayusculas(this)" name="descripcion" id="descripcion" required></td>
-<td><select class="xTextRow2" id="selTPC_adicional" inline></select></td>
-<td><select class="xTextRow2" id="selNivel_adicional" inline></select></td>
-<td><select class="xTextRow2" id="selSeccion_adicional" inline></select></td>
-<td><input type="number" min="0" class="xMiInput" placeholder="Importe" pattern="0|[1-9][0-9]*" name="importe" id="importe" onblur="xRetornaMoneda(this)" required></td>
-<td><paper-fab icon="add" onclick="xAddAdicional()" title="Guardar" tabindex="0"></paper-fab></td>
-</tr>
-</table>
-<div class="xInvisible">
-<input type="text" id="idconf_print" name="idconf_print">
-<input type="text" id="idtipo_consumo" name="idtipo_consumo">
-<input type="text" id="nivel" name="nivel">
-<input type="text" id="idseccion" name="idseccion">
-</div>
-</form>
-<br><br>
-</div>
-</div>
-<div id="div_impresoras" class="xContent">
-<h3 class="xBold">Zona de despacho e Impresoras</h3>
-<p>Listado de zonas de despacho e impresoras. Si no utilizara impresoras, especifique solo la zona de despacho. Ej: Cocina, Bar, etc...</p>
-<div class="xLinea2"></div><br>
-<p>Antes de agregar impresora se recomienda hacer un test de impresion.</p>
-<p><strong>Recurso compartido:</strong> la impresora esta conectada a una computadora por usb, compartala y escriba la direccion ejemplo: //usuario:clave@ippc/nomimpresora</p>
-<p><strong>Minutos ':</strong> Tiempo promedio en minutos que toma en despachar un pedido. Ej: En Cocina el tiempo promedio para despachar un pedido es de 15minutos; en Bar es de 3minutos. <strong>(Solo si trabaja con tablets en las zonas de despacho)</strong></p>
-<p><strong>img64 ':</strong> Indica si la impresora recibira las imagenes en 64bits</p>
-<br>
-<form method="post" id="form_impresoras">
-<table id="tb_impresoras" class="xtable1">
-<thead>
-<th><p>Zona de despacho<p><p class="xfont10">Donde se imprime o muestra<p></th>
-<th><p>Minutos '<p><p class="xfont10">tiempo promedio para depachar<p></th>
-<th><p>Impresora<p>IP / recurso compartido</th>
-<th><p>.<p>Tamaño de letra</th>
-<th><p>.<p>Margen Izquierda</th>
-<th><p>.<p>img64</th>
-<th><p>.<p>Papel</th>
-<th><paper-fab icon="add" onclick="xAddImpresora()" title="Agregar" tabindex="0"></paper-fab></th>
-</thead>
-<tr data-id="" class="xSinBorde tr_addPrint">
-<td><input type="text" class="xMiInput xPasarEnter2" placeholder="Zona de despacho" name="descripcion" id="descripcion" onChange="conMayusculas(this)" required></td>
-<td><input class="xMiInput xPasarEnter2" placeholder="" type="number" min="0" max="60" pattern="[0-9]+([\.,][0-9]+)?" step="any" id="minutos_pedido" name="minutos_pedido"></td>
-<td><input type="text" class="xMiInput xPasarEnter2" placeholder="Impresora" name="ip" id="ip" required></td>
-<td><input class="xMiInput xPasarEnter2" placeholder="0" type="number" min="0" max="3" pattern="[0-9]+([\.,][0-9]+)?" step="any" id="var_size_font" name="var_size_font"></td>
-<td><input class="xMiInput" placeholder="0" type="number" min="0" pattern="[0-9]+([\.,][0-9]+)?" step="any" id="var_margen_iz" name="var_margen_iz"></td>
-<td><input class="xMiInput" placeholder="0" type="number" min="0" max="1" pattern="[0-9]+([\.,][0-9]+)?" step="any" id="img64" name="img64"></td>
-<td>
-<select id="select_papel_zona">
-<option value="0">80 mm</option>
-<option value="1">58 mm</option>
-</select>
-</td>
-<td><a href="#" onclick="xTestPrint(0)">Test Impresion</a></td>
-</tr>
-</table>
-<div class="xInvisible">
-<input type="text" id="idorg" name="idorg" value$="[[xt_org]]">
-<input type="text" id="idsede" name="idsede" value$="[[xt_idsede]]">
-</div>
-</form>
-<br>
-<br>
-<div class="xLinea2"></div><br>
-<h3 class="xBold">Secciones e impresoras</h3>
-<p>Cada seccion puede imprimirse o mostrarse en las pantallas de diferentes zonas de despacho, por ejemplo: La seccion "platos a la carta" se imprimira o mostrara en la cocina; la seccion "tragos" se imprimira o mostrara en el bar.</p>
-<br>
-<table id="tb_sec_impr" class="xtable1">
-<thead>
-<th>Seccion</th>
-<th>Imprime o muestra en:</th>
-<th></th>
-</thead>
-</table>
-<div class="xInvisible">
-<select id="sel_impr_Sec"></select>
-</div>
-<br>
-<br>
-<div class="xLinea2"></div><br>
-<div class="xInvisible" id="div_secciones_bodega">
-<h3 class="xBold">Secciones de Bodega </h3>
-<p>Tiene un almacen que hace de bodega, Cada seccion puede imprimirse o mostrarse en las pantallas de diferentes zonas de despacho, por ejemplo: La seccion "Cervezas" se imprimira o mostrara en el bar.</p>
-<br>
-<table id="tb_sec_impr_bodega" class="xtable1">
-<thead>
-<th>Seccion</th>
-<th>Imprime o muestra en:</th>
-</thead>
-</table>
-<div class="xInvisible">
-<select id="sel_impr_Sec_bodega"></select>
-</div>
-<br>
-<br>
-<div class="xLinea2"></div><br>
-</div>
-<h3 class="xBold">Otros comprobantes</h3>
-<p>Seleccione en que impresora se imprimiran los siguientes comprobantes</p>
-<br>
-<table id="tb_otros_dic" class="xtable1">
-<thead>
-<th>Descripcion</th>
-<th>Imprime en:</th>
-</thead>
-<tr class="row" data-id="-1"><td>Pre-cuenta</td><td class="td_sel_ot_print" id="row-1"></td></tr>
-<tr class="row" data-id="-2"><td>Comprobantes (facturas,boletas,tickes)</td><td class="td_sel_ot_print" id="row-2"></td></tr>
-<tr class="row" data-id="-3"><td>Cierre de caja</td><td class="td_sel_ot_print" id="row-3"></td></tr>
-<tr class="row" data-id="-4"><td>Listado de compras (modulo compras)</td><td class="td_sel_ot_print" id="row-4"></td></tr>
-</table>
-<br>
-<br>
-<div class="xLinea2"></div><br>
-<h3 class="xBold">Impresora Local</h3>
-<p>Agrega una impresora local que se usara solo con este terminal o con esta computadora.<br>
-Esto se utiliza en el escenario de que cada caja tenga su impresora, por ejemplo puede tener 2 cajas o mas cada una con su respectiva impresora.<br>Esto tambien implica que los <strong>"Otros comprobantes"</strong> se enviaran a imprimir a esta impresora. <br>
-<strong>Img64:</strong> 1 Indica que las imagenes se imprimiran desde un mapa de bits.
-</p>
-<br>
-<form method="post" id="form_impresora_local">
-<paper-checkbox id="check_print_copia_local" onclick="printCopialocalAll()"></paper-checkbox> Imprimir una copia del pedido en la impresora local, para control interno o para el cliente.<br>
-<br>
-<table id="tb_impresora_local" class="xtable1">
-<thead>
-<th>Descripcion</th>
-<th>IP / recurso compartido</th>
-<th>Copias</th>
-<th>Tamaño de letra</th>
-<th>Margen Izquierda</th>
-<th>Img64</th>
-<th>Papel</th>
-<th></th>
-</thead>
-<tr data-id="" class="xSinBorde tr_addPrint_local" data-t="impresora">
-<td><input type="text" class="xMiInput xPasarEnter2" placeholder="Descripcion" name="descripcion" id="descripcion" required></td>
-<td><input type="text" class="xMiInput xPasarEnter2" placeholder="Descripcion" name="ip" id="ip" required></td>
-<td><input class="xMiInput xPasarEnter2" placeholder="0" type="number" min="0" max="3" pattern="[0-9]+([\.,][0-9]+)?" step="any" id="num_copias" name="num_copias"></td>
-<td><input class="xMiInput xPasarEnter2" placeholder="0" type="number" min="0" max="3" pattern="[0-9]+([\.,][0-9]+)?" step="any" id="var_size_font" name="var_size_font"></td>
-<td><input class="xMiInput" placeholder="0" type="number" min="0" max="3" pattern="[0-9]+([\.,][0-9]+)?" step="any" id="var_margen_iz" name="var_margen_iz"></td>
-<td><input class="xMiInput" placeholder="0" type="number" min="0" max="2" pattern="[0-9]+([\.,][0-9]+)?" step="any" id="img64" name="img64"></td>
-<td>
-<select id="select_papel_caja">
-<option value="0">80 mm</option>
-<option value="1">58 mm</option>
-</select>
-</td>
-<td><a href="#" onclick="xAddImpresora_local()">Guardar</a></td>
-<td><a href="#" onclick="xTestPrint(1)">Test Impresion</a></td>
-<td><a href="#" onClick="xBorrarItemPrintLocal(this)" id="btn_borrar_print_local" class="xInvisible">Anular</a></td>
-</tr>
-</table>
-<div class="xInvisible">
-<input type="text" id="idimpresora" name="idimpresora">
-<input type="text" id="idorg" name="idorg" value$="[[xt_org]]">
-<input type="text" id="idsede" name="idsede" value$="[[xt_idsede]]">
-<input type="text" id="local" name="local" value="1">
-</div>
-</form>
-<br><br><br>
-</div>
-<div id="div_almacenes" class="xContent">
-<h3>Listado de almacenes</h3>
-<p><strong>Es bodega?:</strong> Identifica el almacen donde estan los productos para la venta al publico, esto tambien figuran en la carta</p>
-<p><strong>Imprime en pedido?:</strong> Si en el pedido hay solo productos de este almacen imprime comanda o no?</p>
-<div class="xLinea2"></div><br>
-<br>
-<form method="post" id="form_almacen">
-<table id="tb_almacenes" class="xtable1">
-<thead>
-<th>Descripcion</th>
-<th>Es bodega?</th>
-<th>Imprime en pedido?</th>
-</thead>
-<tr data-id="" class="xSinBorde">
-<td><input type="text" class="xMiInput" placeholder="Descripcion" onChange="conMayusculas(this)" name="descripcion" id="descripcion" required></td>
-<td><select id="sel_bodega"><option value="0">NO</option><option value="1">SI</option></select></td>
-<td><select id="sel_imprime_comanda"><option value="0">NO</option><option value="1">SI</option></select></td>
-<td><paper-fab icon="add" onclick="xAddAlmacen()" title="Guardar" tabindex="0"></paper-fab></td>
-</tr>
-</table>
-<div class="xInvisible">
-<input type="text" id="idalmacen" name="idalmacen">
-<input type="text" id="bodega" name="bodega">
-<input type="text" id="imprimir_comanda" name="imprimir_comanda">
-<input type="text" id="idorg" name="idorg" value$="[[xt_org]]">
-<input type="text" id="idsede" name="idsede" value$="[[xt_idsede]]">
-</div>
-<br><br>
-<div class="xLinea2"></div>
-<br>
-<h3>Stock Inicial</h3>
-<p>Descarga el archivo excel para realizar el inventario inicial, luego selecciona el almacen donde ingresaran los productos y sube el archivo. Es importante que respete el formato del archivo.</p>
-<br>
-<div class="xBoton2 xAzul" onclick="xDescargarXls()"><img src="../../../images/x_down.png">Descargar Archivo</div>
-<div class="xBoton2 xVerde" onclick="dialog_subir_file_alamcen.open()"><img src="../../../images/x_up.png">Subir Archivo</div>
-<input class="xInvisible" type="file" id="fileAlamcen">
-<br>
-</form>
-<br><br>
-</div>
-<div id="div_emision_comprobantes" class="xContent">
-<h3>Configuracion para emitir comprobantes.</h3>
-<p>Indique comprobantes de pago que emite, asi como las serie y el ultimo numero correlativo emitido.</p>
-<p>Es apartir del ultimo correlativo emitido que el sistema empezara a emnumerar los comprobantes. Ej; ultimo correlativo emitido 100, entonces el sistema emitira 101.</p>
-<div class="xLinea2"></div><br>
-<br>
-<form method="post" id="form_emision_comprobante">
-<table id="tb_emision_comprobantes" class="xtable1">
-<thead>
-<th>Sede</th>
-<th>Comprobante</th>
-<th>Serie</th>
-<th>Correlativo</th>
-</thead>
-<tr data-id="" class="xSinBorde">
-<td><x-comp-find-sede id="compFindSede" onchange="_getSede(sedes)"></x-comp-find-sede></td>
-<td><x-comp-find-comprobante id="compFindComprobante" op="2" onchange="_getComprobante(comprobantes)"></x-comp-find-comprobante></td>
-<td><input type="text" autocomplete="off" class="xMiInput" placeholder="Serie" onChange="conMayusculas(this)" name="serie" id="serie" required></td>
-<td><input class="xMiInput" placeholder="Correlativo" type="number" min="0" pattern="[0-9]+([\.,][0-9]+)?" step="any" name="correlativo" id="correlativo" required></td>
-<td><paper-fab icon="add" onclick="config_comprobante_add()" title="Guardar" tabindex="0"></paper-fab></td>
-</tr>
-</table>
-<div class="xInvisible">
-<input type="text" id="idsede" name="idsede">
-<input type="text" id="idorg" name="idorg" value$="[[xt_org]]">
-<input type="text" id="idtipo_comprobante" name="idtipo_comprobante">
-</div>
-</form>
-<br><br>
-<h3>Comprobante Electronico.</h3>
-<p>Para activar la emisión de comprobantes electrónicos necesita un token único y una llave digital que son proporcionados por el equipo de soporte tecnico.</p>
-<p><strong>Importante: </strong> Para la facturacion electronica, es requerido indicar en la informacion de la sede: El ubigeo y el codigo de domicio fiscal.</p>
-<div class="xLinea2"></div><br>
-<br>
-<br><br><br>
-</div>
-<div id="div_carta_app" class="xContent">
-<x-carta-virtual-config></x-carta-virtual-config>
-<br><br>
-<x-carta-virtual-mesas></x-carta-virtual-mesas>
-</div>
-</iron-pages>
-</div>
-</div>
-</template>
+	<template>
+		<paper-dialog id="dialog_borrar" entry-animation="scale-up-animation" exit-animation="fade-out-animation" with-backdrop>
+			<div class="xtxtCentro">
+				<img src="../../../images/_dlg_remove.gif" alt="" width="150px">
+			</div>
+			<p>Esta seguro de querer borrar este registro?</p>
+			<br>
+			<div class="buttons">
+				<button class="xBoton2 xPlomo" dialog-dismiss>Cancelar</button>
+				<button class="xBoton2 xRojo" onclick="xDlgBorrar();">Si, borrar</button>
+			</div>
+		</paper-dialog>
+		<paper-dialog id="dialog_subir_file_alamcen" class="dialog_redondo" entry-animation="scale-up-animation" exit-animation="fade-out-animation" with-backdrop>
+			<div class="xContent">
+				<h4>Selecciona el almacen donde ingresan los productos:</h4>
+				<select class="xTextRow2" id="sel_almacen_file"></select>
+				<br><br><br>
+				<div class="xBoton2 xVerde" onclick="xSubirFileAlmacen();">Listo, subir archivo e ingresar</div>				
+			</div>
+		</paper-dialog>
+		<paper-dialog id="dialog_add_sede" style="max-width: 300px;" entry-animation="scale-up-animation" exit-animation="fade-out-animation" with-backdrop>
+			<div class="xContent">
+				<h4>DATOS DE SEDE</h4>
+				<form id="frm_sede">
+					<input type="text" class="xMiInput xPasarEnter2" placeholder="DESCRIPCION" onChange="conMayusculas(this)" id="nombre" name="nombre" espaciar required>
+					<!-- <input type="text" class="xMiInput xPasarEnter2" placeholder="DIRECCION" onChange="conMayusculas(this)" id="direccion" name="direccion" espaciar required> -->
+					<input type="text" class="xMiInput xPasarEnter2" placeholder="CIUDAD" onChange="conMayusculas(this)" id="ciudad" name="ciudad" espaciar required>
+					<input type="text" class="xMiInput xPasarEnter2" placeholder="ESLOGAN" id="eslogan" name="eslogan" maxlength="100" espaciar>
+					<input type="number" class="xMiInput xPasarEnter2" placeholder="NUMERO DE MESAS" id="mesas" min="1" name="mesas" espaciar>
+										
+					<input type="text" class="xMiInput xPasarEnter2" placeholder="UBIGEO" id="ubigeo" name="ubigeo" espaciar>					
+					<input type="text" class="xMiInput xPasarEnter2" placeholder="CODIGO DEL DOMICILIO FISCAL" id="codigo_del_domicilio_fiscal" name="codigo_del_domicilio_fiscal" espaciar>
+					<br><br>
+					<label for="ubigeo" class="xColorRow_Plomo">Telefono</label>
+					<input type="text" class="xMiInput xPasarEnter2" placeholder="TELEFONO" id="telefono" name="telefono" espaciar>
+					<div class="xInvisible">
+						<input type="text" id="idsede" name="idsede">
+						<input type="text" id="idorg" name="idorg" value$="[[xt_org]]">
+					</div>
+				</form>
+				<br><br>
+				<div class="xLinea2"></div>
+				<br><br>
+				<div class="xBoton2 xAzul" onclick="xGuardarSede();">Guardar</div>
+				<div class="xBoton2 xPlomo" onclick="dialog_add_sede.close();">Cancelar</div>
+			</div>
+		</paper-dialog>
+		<paper-dialog id="dialog_add_cat" style="max-width: 300px;" entry-animation="scale-up-animation" exit-animation="fade-out-animation" with-backdrop>
+			<div class="xContent">
+				<h4>CATEGORIA</h4>
+				<p>Hora en formato 24hrs ejemplo: 18:00</p>
+				<form id="frm_cat">
+					<input type="text" class="xMiInput xPasarEnter2" placeholder="DESCRIPCION" onChange="conMayusculas(this)" id="descripcion" name="descripcion" espaciar required>
+					<input type="text" class="xMiInput xPasarEnter2" placeholder="HORA INICIO" onChange="conMayusculas(this)" id="hora_ini" name="hora_ini" espaciar>
+					<input type="text" class="xMiInput xPasarEnter2" placeholder="HORA FINAL" onChange="conMayusculas(this)" id="hora_fin" name="hora_fin" espaciar>
+					<input type="text" class="xMiInput xPasarEnter2" placeholder="DETALLE" onChange="conMayusculas(this)" id="detalle" name="detalle" espaciar required>
+					<div class="xInvisible">
+						<input type="text" id="idsede" name="idsede" value$="[[xt_idsede]]">
+						<input type="text" id="idorg" name="idorg" value$="[[xt_org]]">
+						<input type="text" id="idcategoria" name="idcategoria">
+					</div>
+				</form>
+				<br><br>
+				<div class="xLinea2"></div>
+				<br><br>
+				<div class="xBoton2 xAzul" onclick="xGuardarCategoria();">Guardar</div>
+				<div class="xBoton2 xPlomo" onclick="dialog_add_cat.close();">Cancelar</div>
+			</div>
+		</paper-dialog>
+		<paper-dialog id="dialog_add_tpc" style="width: 300px;" entry-animation="scale-up-animation" exit-animation="fade-out-animation" with-backdrop>
+			<div class="xContent">
+				<h4>TIPO DE CONSUMO</h4>
+				<form id="frm_tpc">
+					<input type="text" class="xMiInput xPasarEnter2" placeholder="DESCRIPCION" onChange="conMayusculas(this)" id="descripcion" name="descripcion" espaciar required>
+					<div class="xInvisible">
+						<input type="text" id="idsede" name="idsede" value$="[[xt_idsede]]">
+						<input type="text" id="idorg" name="idorg" value$="[[xt_org]]">
+					</div>
+				</form>
+				<br><br>
+				<div class="xLinea2"></div>
+				<br><br>
+				<div class="xBoton2 xAzul" onclick="xGuardarTPC();">Guardar</div>
+				<div class="xBoton2 xPlomo" onclick="dialog_add_tpc.close();">Cancelar</div>
+			</div>
+		</paper-dialog>
+
+
+		<paper-dialog id="dialog_img_ico_carta" class="dialog_redondo overflow-auto" entry-animation="scale-up-animation" exit-animation="fade-out-animation" with-backdrop>
+			<div class="xContent">				
+				<span class="xColorRow_Plomo">Este icono se mostrara en la aplicacion de pedidos</span>
+				<div class="content-icon-seccion">
+					<template is="dom-repeat" items="{{listIconSeccion}}" as="item">															
+						<img data-index="[[index]]" onclick="updateIconSeccion(this)" class="img-ico-seccion-size-2" src="{{item.img}}" alt="a2">						
+					</template>
+				</div>
+
+			</div>
+		</paper-dialog>
+
+
+
+		<br>
+		<h3>CONFIGURACIONES</h3>
+		<div class="xLinea2"></div>		
+		<br>
+		<div>
+			<paper-tabs selected="{{selected_conf}}" id="tab_cnf" scrollable>
+				<paper-tab>DATOS DEL ESTABLECIMINETO</paper-tab>
+				<paper-tab>CATEGORIAS (CARTA)</paper-tab>
+				<paper-tab>TIPOS DE CONSUMO</paper-tab>
+				<paper-tab>REGLAS DE LA CARTA</paper-tab>
+				<paper-tab>DATOS DE IMPRESION</paper-tab>
+				<paper-tab>DESPACHO E IMPRESORAS</paper-tab>
+				<paper-tab>ALMACENES</paper-tab>
+				<paper-tab>EMISION DE COMPROBANTES</paper-tab>
+				<paper-tab>CARTA APP</paper-tab>
+			</paper-tabs>
+			<div class="xLinea2"></div>
+				<br>
+				<iron-pages selected="{{selected_conf}}">
+					<div id="div_datos_establecimiento" class="xAlinearce" style="width:100%;">
+						<div class="xm_at_cont xAlinearce xBordeDe">
+							<form id="frm_org">
+								<input type="text" class="xMiInput xPasarEnter2" placeholder="ESTABLECIMIENTO / ORGANIZACION" onChange="conMayusculas(this)" id="nombre" name="nombre" espaciar required>
+								<input type="text" class="xMiInput xPasarEnter2" placeholder="DIRECCION" onChange="conMayusculas(this)" id="direccion" name="direccion" espaciar required>
+								<input type="text" class="xMiInput xPasarEnter2" placeholder="RUC" onChange="conMayusculas(this)" id="ruc" name="ruc" espaciar required>
+								<input type="text" class="xMiInput xPasarEnter2" placeholder="TELEFONO" onChange="conMayusculas(this)" id="telefono" name="telefono" espaciar required>
+								<input type="email" class="xMiInput xPasarEnter2" placeholder="EMAIL CONTACTO" id="email" name="email" espaciar required>
+								<div class="xInvisible">
+									<input type="text" id="idorg" name="idorg">
+								</div>
+								<br><br><br>
+								<div class="xBoton2 xAzul" onclick="xGuardarOrg();">Guardar Cambios</div>
+								<!-- <div class="xBoton2 xAzul" onclick="xGenerarTk();">Generar Token</div> -->
+							</form>
+						</div>
+						<div class="xm_at_cont xAlinearce">
+							<!-- <paper-fab icon="add" onclick="dialog_add_sede.open()" data-dialog="dialog_sede" title="" tabindex="0" class="verde btnAdd" id="BtnAddSede"></paper-fab> -->
+							<table width="100%" class="xtable2" id="tb_org">
+								<thead>
+									<th>SEDE</th>
+									<th>CIUDAD</th>
+									<th width="5px"></th>
+								</thead>
+							</table>
+						</div>
+
+						<br><br>
+																
+					</div>
+
+					<div id="div_categoria">
+						<p class="xBold">Agregue las comidas o categorias que el establecimiento ofrece. Por ejemplo: Desayunos, Almuerzos, Cenas, etc. O si es una categoria General.<br>Establesca la hora de inicio y final el sistema lo mostrara u ocultara automaticamente segun la hora.</p>
+						<br>
+						<paper-fab icon="add" onclick="dialog_add_cat.open()" title="" tabindex="0" class="verde btnAdd"></paper-fab>
+						<table width="100%" class="xtable2" id="tb_cat">
+							<thead>
+								<th align="left">DESCRIPCION</th>
+								<th align="left">H. INICIO</th>
+								<th align="left">H. FINAL</th>
+								<th width="5px"></th>
+								<th width="5px"></th>
+							</thead>
+						</table>						
+					</div>
+
+					<div id="div_tpc">
+						<p class="xBold">Establecer los tipo de consumo que seran visibles en la carta, por ejemplo: Consumir en el Local, Para LLevar.</p>
+						<br>
+						<paper-fab icon="add" onclick="dialog_add_tpc.open()" title="" tabindex="0" class="verde btnAdd"></paper-fab>
+						<table width="100%" class="xtable2" id="tb_tpc">
+							<thead>
+								<th align="left">DESCRIPCION</th>
+								<th width="5px"></th>
+							</thead>
+						</table>
+					</div>
+
+					<div id="div_regla">
+						<p class="xBold">Especifique las reglas que obedece la carta, como por ejemplo: Cada plato de fondo sale con una entrada.</p>
+						<br>
+						<label for="selCategoria">Categoria: </label>
+						<select class="xTextRow2" id="selCategoria" inline></select>
+						<br><br>
+						<label for="selSeccion">Seccion : </label>
+						<select class="xTextRow2" id="selSeccion" inline></select>
+						<label for="selCon">Sale con: </label>
+						<select class="xTextRow2" id="selCon" inline></select>
+						<div class="xBoton2 xAzul" onclick="xAddRegla();">Agregar Regla</div>
+						<div class="xInvisible">
+							<form id="frm_regla">
+								<input type="text" name="idorg" id="idorg" value$="[[xt_org]]">
+								<input type="text" name="idsede" id="idsede" value$="[[xt_idsede]]">
+								<input type="text" name="idcategoria" id="idcategoria">
+								<input type="text" name="idseccion" id="idseccion">
+								<input type="text" name="idseccion_detalle" id="idseccion_detalle">
+							</form>
+						</div>
+						<br><br><br>
+						<table class="xtable2" style="max-width:600px;width:600px;" id="tb_regla">
+							<thead>
+								<th align="left">Categoria:</th>
+								<th align="left">Seccion:</th>
+								<th align="left">Sale con:</th>
+								<th></th>
+							</thead>
+						</table>
+					</div>
+
+					<div id="div_datos_print">
+						<div>
+							<table id="tb_print">
+								<tr>
+									<td>
+										<h3>IP Impresora</h3>
+										<span>Impresora ticketera donde se imprimiran los pedidos</span>
+									</td>
+									<td>
+										<input type="text" class="xMiInput" placeholder="IP xx.xx.xx.x" id="td_ip">
+									</td>
+								</tr>
+								<tr>
+									<td>
+										<h3>Numero de Copias</h3>
+										<span>Numero de Copias a imprimir por pedido</span>
+									</td>
+									<td>
+										<input class="xMiInput"  placeholder="00" type="number" min="0" pattern="[0-9]+([\.,][0-9]+)?" step="any" id="td_copia">
+									</td>
+								</tr>
+								<tr>
+									<td>
+										<h3>Pie de pagina</h3>
+										<span>Mensaje en el pie de pagina para el pedido o comanda</span>
+									</td>
+									<td>
+										<!-- <input type="text" class="xMiInput" placeholder="Pie de pagina" maxlength="200" id="td_pie"> -->
+										<textarea class="xMiInput" class="xMiInput" placeholder="Pie de pagina" maxlength="200" id="td_pie" cols="30" rows="6"></textarea>
+									</td>
+								</tr>
+								<tr>
+									<td>
+										<h3>Pie de pagina para el comprobante</h3>
+										<span>Pie de pagina que se mostrara en el <strong>comprobante</strong></span>
+									</td>
+									<td>
+										<!-- <input type="text" > -->
+										<textarea class="xMiInput" placeholder="Pie de pagina comprobante" maxlength="255" id="td_pie_comprobante" cols="30" rows="8"></textarea>
+									</td>
+								</tr>
+								<tr>
+									<td>
+										<h3>Logo</h3>
+										<span>Logo a imprimir en el ticket, ancho remcomendado 450px</span>
+									</td>
+									<td>
+										<input type="text" class="xMiInput" placeholder="Logo" maxlength="200" onclick="xSeleccionarFoto();" id="td_logo" readonly>
+										<input type="file" class="xInvisible xobj_subir_foto" id="ctrl_open_file" accept="image/*"/>
+										<img id="imgLogo" src="" alt="" width = "450">
+									</td>
+								</tr>
+								<tr>
+									<td>
+										<h3>Tamaño de letra</h3>
+										<span>Las impresoras ticketeras pueden tener hasta 3 tipos de fuente (0,1,2)</span>
+									</td>
+									<td>
+										<input class="xMiInput"  placeholder="0" type="number" min="0" max="3" pattern="[0-9]+([\.,][0-9]+)?" step="any" id="td_size_font">
+									</td>
+								</tr>
+								<tr>
+									<td>
+										<h3>Margen Izquierda</h3>
+										<span>Por defecto es 0, aumentar cantidad para centrar</span>
+									</td>
+									<td>
+										<input class="xMiInput"  placeholder="0" type="number" min="0" max="80" pattern="[0-9]+([\.,][0-9]+)?" step="any" id="td_margen_iz">
+									</td>
+								</tr>
+								<tr>
+									<td>
+										<h3>Tamaño de fuente en la comanda</h3>
+										<span>Por defecto es de tamaño default.</span>
+									</td>
+									<td>
+										<select class="xTextRow2 xCursor" name="sel_size_font_comanda" id="sel_size_font_comanda">
+											<option value="0">Default</option>
+											<option value="1">Grande</option>
+											<option value="2">Extra</option>
+										</select>
+									</td>
+								</tr>
+
+							</table>
+							<br><br>
+							<div class="xBoton2 xAzul" onclick="xGuardarCambioPrint();">Guardar Cambios</div>
+							<div class="xBoton2 xVerde" onclick="xPruebaTestPrint();">Test Impresion</div>
+
+							<div class="xInvisible">
+								<form id="frm_conf_print">
+									<input type="text" id="idconf_print" name="idconf_print">
+									<input type="text" id="ip_print" name="ip_print">
+									<input type="text" id="num_copias" name="num_copias">
+									<input type="text" id="pie_pagina" name="pie_pagina">
+									<input type="text" id="pie_pagina_comprobante" name="pie_pagina_comprobante">
+									<input type="text" id="var_size_font" name="var_size_font">
+									<input type="text" id="var_margen_iz" name="var_margen_iz">
+									<input type="text" id="var_size_font_tall_comanda" name="var_size_font_tall_comanda">
+									<!-- <input type="text" id="papel_size" name="papel_size"> -->
+									<!-- <input type="text" id="img64" name="img64"> -->
+
+									<input type="text" id="idorg" name="idorg" value$="[[xt_org]]">
+									<input type="text" id="idsede" name="idsede" value$="[[xt_idsede]]">
+									<!--input type="text" id="logo" name="logo"-->
+								</form>
+							</div>
+							<br>
+							<br>
+							<br>
+							<div class="xLinea2"></div>
+							<br>
+							<h3 class="xBold">SUB TOTALES</h3>
+							<br>
+							
+							<h4>IMPUESTOS</h4>
+							<p>Ingrese el porcentaje del I.G.V. en numeros, si esta exonerado solo quite el check de activo; dejando especificado el porcentaje del impuesto (se utilizara para calcular otras operaciones). </p>
+							<div class="xLinea2"></div><br>
+							<br>
+							<form method="post" id="formProcentaje">								
+								<table id="tb_porcentaje" class="xtable1" width="38%">	
+									<thead>
+										<th>Activo</th>
+										<th>Impuesto</th>
+										<th align="center">Porcentaje</th>
+									</thead>		
+									<tbody></tbody>						
+									<!-- <tr data-id="" class="xSinBorde">
+										<td><input type="text" class="xMiInput" placeholder="Descripcion" onChange="conMayusculas(this)" name="descripcion" id="descripcion" required></td>
+										<td><input type="number" min="0" class="xMiInput" placeholder="porcentaje" pattern="0|[1-9][0-9]*" name="porcentaje" id="porcentaje" required></td> -->
+										<!-- <td><paper-fab icon="add" onclick="xAddPorcentaje()" title="Guardar" tabindex="0"></paper-fab></td> -->
+									<!-- </tr> -->
+								</table>
+								<div class="xInvisible">
+									<input type="text" id="idconf_print" name="idconf_print">
+								</div>
+							</form>
+							<br><br>
+
+							<h3 class="xBold">SERVICIOS NO FACTURABLES</h3>
+							<p>Servicios no facturables como: propinas o donativos, importes que no son percibido por el restaurante. <br> Por ejemplo para cargar el servicio de atencion (propinas) podria configurar: Descripcion: Servicio , Porcentaje: 10. <br> Esto sumaria 10% del total de la cuenta. Que seria percibido por el mozo que atendio el pedido o mesa.</p>
+							<div class="xLinea2"></div><br>
+							<br>
+							<form method="post" id="formProcentajeNoFacturable">
+								<table id="tb_porcentaje_no_facturable" class="xtable1" width="50%">
+									<tr data-id="" class="xSinBorde">
+										<td><input type="text" class="xMiInput" placeholder="Descripcion" onChange="conMayusculas(this)" name="descripcion" id="descripcion" required></td>
+										<td><input type="number" min="0" class="xMiInput" placeholder="porcentaje" pattern="0|[1-9][0-9]*" name="porcentaje" id="porcentaje" required></td>
+										<td><paper-fab icon="add" onclick="xAddPorcentaje()" title="Guardar" tabindex="0"></paper-fab></td>
+									</tr>
+								</table>
+								<div class="xInvisible">
+									<input type="text" id="idconf_print" name="idconf_print">
+								</div>
+							</form>
+							<br><br>
+							
+							<h3 class="xBold">SERVICIOS ADICIONALES</h3>
+							<p>Ingrese los servicios adicionales que tienen un costo segun tipo de consumo. <br>
+								Ejemplo: Para llevar ó Delivery, Descripcion: Taper, Tipo de consumo: Para llevar, Seccion:Platos de fondo, Importe:1.00 <strong>(por cada item)</strong> es decir por cada taper. <br>
+								Tambien puede ingresar servicios fijos que se cobran <strong>por pedido.</strong> Ejemplo: En el servicio de Delivery se suele cobrar un monto fijo por el transporte. Quedando de esta manera: Descripcion: Servicio delivery,  Tipo consumo: Delivery, Por: Pedido, Impore: 3.00.
+							</p>
+							<div class="xLinea2"></div><br>
+							<br>
+							<form method="post" id="formAdicionales">
+								<table id="tb_Adicionales" class="xtable1">
+									<tr data-id="" class="xSinBorde">
+										<td>Activo</td>
+										<td><input type="text" class="xMiInput" placeholder="Descripcion" onChange="conMayusculas(this)" name="descripcion" id="descripcion" required></td>
+										<td><select class="xTextRow2" id="selTPC_adicional" inline></select></td>
+										<td><select class="xTextRow2" id="selNivel_adicional" inline></select></td>
+										<td><select class="xTextRow2" id="selSeccion_adicional" inline></select></td>
+										<td><input type="number" min="0" class="xMiInput" placeholder="Importe" pattern="0|[1-9][0-9]*" name="importe" id="importe" onblur="xRetornaMoneda(this)" required></td>
+										<td><paper-fab icon="add" onclick="xAddAdicional()" title="Guardar" tabindex="0"></paper-fab></td>
+									</tr>
+								</table>
+								<div class="xInvisible">
+									<input type="text" id="idconf_print" name="idconf_print">
+									<input type="text" id="idtipo_consumo" name="idtipo_consumo">
+									<input type="text" id="nivel" name="nivel">
+									<input type="text" id="idseccion" name="idseccion">
+								</div>
+							</form>
+							<br><br>
+						</div>
+					</div>
+
+					<div id="div_impresoras" class="xContent">
+						<h3 class="xBold">Zona de despacho e Impresoras</h3>
+						<p>Listado de zonas de despacho e impresoras. Si no utilizara impresoras, especifique solo la zona de despacho. Ej: Cocina, Bar, etc...</p>
+						<div class="xLinea2"></div><br>
+						<p>Antes de agregar impresora se recomienda hacer un test de impresion.</p>
+						<p><strong>Recurso compartido:</strong> la impresora esta conectada a una computadora por usb, compartala y escriba la direccion ejemplo: //usuario:clave@ippc/nomimpresora</p>
+						<p><strong>Minutos ':</strong> Tiempo promedio en minutos que toma en despachar un pedido. Ej: En Cocina el tiempo promedio para despachar un pedido es de 15minutos; en Bar es de 3minutos. <strong>(Solo si trabaja con tablets en las zonas de despacho)</strong></p>
+						<p><strong>img64 ':</strong> Indica si la impresora recibira las imagenes en 64bits</p>
+						<br>
+						<form method="post" id="form_impresoras">
+						<table id="tb_impresoras" class="xtable1">
+							<thead>
+								<th><p>Zona de despacho<p><p class="xfont10">Donde se imprime o muestra<p></th>
+								<th><p>Minutos '<p><p class="xfont10">tiempo promedio para depachar<p></th>
+								<th><p>Impresora<p>IP / recurso compartido</th>
+								<th><p>.<p>Tamaño de letra</th>
+								<th><p>.<p>Margen Izquierda</th>
+								<th><p>.<p>img64</th>
+								<th><p>.<p>Papel</th>
+								<th><paper-fab icon="add" onclick="xAddImpresora()" title="Agregar" tabindex="0"></paper-fab></th>
+							</thead>
+							<tr data-id="" class="xSinBorde tr_addPrint">
+								<td><input type="text" class="xMiInput xPasarEnter2" placeholder="Zona de despacho" name="descripcion" id="descripcion" onChange="conMayusculas(this)" required></td>
+								<td><input class="xMiInput xPasarEnter2"  placeholder="" type="number" min="0" max="60" pattern="[0-9]+([\.,][0-9]+)?" step="any" id="minutos_pedido" name="minutos_pedido"></td>
+								<td><input type="text" class="xMiInput xPasarEnter2" placeholder="Impresora"  name="ip" id="ip" required></td>
+								<td><input class="xMiInput xPasarEnter2"  placeholder="0" type="number" min="0" max="3" pattern="[0-9]+([\.,][0-9]+)?" step="any" id="var_size_font" name="var_size_font"></td>
+								<td><input class="xMiInput"  placeholder="0" type="number" min="0" pattern="[0-9]+([\.,][0-9]+)?" step="any" id="var_margen_iz" name="var_margen_iz"></td>
+								<td><input class="xMiInput" placeholder="0" type="number" min="0" max="1" pattern="[0-9]+([\.,][0-9]+)?" step="any" id="img64" name="img64"></td>
+								<td>
+									<select id="select_papel_zona">
+										<option value="0">80 mm</option>
+										<option value="1">58 mm</option>										
+									</select>
+								</td>
+								<td><a href="#" onclick="xTestPrint(0)">Test Impresion</a></td>
+							</tr>
+						</table>
+						<div class="xInvisible">
+							<input type="text" id="idorg" name="idorg" value$="[[xt_org]]">
+							<input type="text" id="idsede" name="idsede" value$="[[xt_idsede]]">
+						</div>
+						</form>
+						<br>
+						<br>
+						<div class="xLinea2"></div><br>
+
+						<h3 class="xBold">Secciones e impresoras</h3>
+						<p>Cada seccion puede imprimirse o mostrarse en las pantallas de diferentes zonas de despacho, por ejemplo: La seccion "platos a la carta" se imprimira o mostrara en la cocina; la seccion "tragos" se imprimira o mostrara en el bar.</p>
+						<br>
+						<table id="tb_sec_impr" class="xtable1">
+							<thead>
+								<th>Seccion</th>
+								<th>Imprime o muestra en:</th>
+								<th></th>
+							</thead>
+						</table>
+						<div class="xInvisible">
+							<select id="sel_impr_Sec"></select>
+						</div>
+						<br>
+						<br>
+						<div class="xLinea2"></div><br>
+
+						<div class="xInvisible" id="div_secciones_bodega">
+							<h3 class="xBold">Secciones de Bodega </h3>
+							<p>Tiene un almacen que hace de bodega, Cada seccion puede imprimirse o mostrarse en las pantallas de diferentes zonas de despacho, por ejemplo: La seccion "Cervezas" se imprimira o mostrara en el bar.</p>
+							<br>
+							<table id="tb_sec_impr_bodega" class="xtable1">
+								<thead>
+									<th>Seccion</th>
+									<th>Imprime o muestra en:</th>
+								</thead>
+							</table>
+							<div class="xInvisible">
+								<select id="sel_impr_Sec_bodega"></select>
+							</div>
+							<br>
+							<br>
+							<div class="xLinea2"></div><br>
+						</div>
+
+						<h3 class="xBold">Otros comprobantes</h3>
+						<p>Seleccione en que impresora se imprimiran los siguientes comprobantes</p>
+						<br>
+						<table id="tb_otros_dic" class="xtable1">
+							<thead>
+								<th>Descripcion</th>
+								<th>Imprime en:</th>
+							</thead>
+							<tr class="row" data-id="-1"><td>Pre-cuenta</td><td class="td_sel_ot_print" id="row-1"></td></tr>
+							<tr class="row" data-id="-2"><td>Comprobantes (facturas,boletas,tickes)</td><td class="td_sel_ot_print" id="row-2"></td></tr>
+							<tr class="row" data-id="-3"><td>Cierre de caja</td><td class="td_sel_ot_print" id="row-3"></td></tr>
+							<tr class="row" data-id="-4"><td>Listado de compras (modulo compras)</td><td class="td_sel_ot_print" id="row-4"></td></tr>
+						</table>
+						<br>
+						<br>
+						<div class="xLinea2"></div><br>
+						<h3 class="xBold">Impresora Local</h3>
+						<p>Agrega una impresora local que se usara solo con este terminal o con esta computadora.<br>
+						Esto se utiliza en el escenario de que cada caja tenga su impresora, por ejemplo puede tener 2 cajas o mas cada una con su respectiva impresora.<br>Esto tambien implica que los <strong>"Otros comprobantes"</strong> se enviaran a imprimir a esta impresora. <br>
+						<strong>Img64:</strong> 1 Indica que las imagenes se imprimiran desde un mapa de bits.
+						</p>
+						<br>
+						<form method="post" id="form_impresora_local">
+							<paper-checkbox id="check_print_copia_local" onclick="printCopialocalAll()"></paper-checkbox> Imprimir una copia del pedido en la impresora local, para control interno o para el cliente.<br>							
+						<br>
+						<table id="tb_impresora_local" class="xtable1">
+							<thead>
+								<th>Descripcion</th>
+								<th>IP / recurso compartido</th>
+								<th>Copias</th>
+								<th>Tamaño de letra</th>
+								<th>Margen Izquierda</th>
+								<th>Img64</th>
+								<th>Papel</th>
+								<th><!--paper-fab icon="add" onclick="xAddImpresora_local()" title="Agregar" tabindex="0"></paper-fab></td--></th>
+							</thead>
+							<tr data-id="" class="xSinBorde tr_addPrint_local" data-t="impresora">
+								<td><input type="text" class="xMiInput xPasarEnter2" placeholder="Descripcion" name="descripcion" id="descripcion" required></td>
+								<td><input type="text" class="xMiInput xPasarEnter2" placeholder="Descripcion"  name="ip" id="ip" required></td>								
+								<td><input class="xMiInput xPasarEnter2"  placeholder="0" type="number" min="0" max="3" pattern="[0-9]+([\.,][0-9]+)?" step="any" id="num_copias" name="num_copias"></td>
+								<td><input class="xMiInput xPasarEnter2"  placeholder="0" type="number" min="0" max="3" pattern="[0-9]+([\.,][0-9]+)?" step="any" id="var_size_font" name="var_size_font"></td>
+								<td><input class="xMiInput"  placeholder="0" type="number" min="0" max="3" pattern="[0-9]+([\.,][0-9]+)?" step="any" id="var_margen_iz" name="var_margen_iz"></td>
+								<td><input class="xMiInput" placeholder="0" type="number" min="0" max="2" pattern="[0-9]+([\.,][0-9]+)?" step="any" id="img64" name="img64"></td>
+								<td>
+									<select id="select_papel_caja">
+										<option value="0">80 mm</option>
+										<option value="1">58 mm</option>
+									</select>
+								</td>
+								<td><a href="#" onclick="xAddImpresora_local()">Guardar</a></td>
+								<td><a href="#" onclick="xTestPrint(1)">Test Impresion</a></td>								
+								<td><a href="#" onClick="xBorrarItemPrintLocal(this)" id="btn_borrar_print_local" class="xInvisible">Anular</a></td>
+							</tr>
+							
+						</table>
+						<div class="xInvisible">
+							<input type="text" id="idimpresora" name="idimpresora">
+							<input type="text" id="idorg" name="idorg" value$="[[xt_org]]">
+							<input type="text" id="idsede" name="idsede" value$="[[xt_idsede]]">
+							<input type="text" id="local" name="local" value="1">
+						</div>
+						</form>
+						<br><br><br>
+					</div>
+
+					<div id="div_almacenes" class="xContent">
+						<h3>Listado de almacenes</h3>
+						<p><strong>Es bodega?:</strong> Identifica el almacen donde estan los productos para la venta al publico, esto tambien figuran en la carta</p>
+						<p><strong>Imprime en pedido?:</strong> Si en el pedido hay solo productos de este almacen imprime comanda o no?</p>
+						<div class="xLinea2"></div><br>
+						<br>
+						<form method="post" id="form_almacen">
+							<table id="tb_almacenes" class="xtable1">
+								<thead>
+									<th>Descripcion</th>
+									<th>Es bodega?</th>
+									<th>Imprime en pedido?</th>
+								</thead>
+								<tr data-id="" class="xSinBorde">
+									<td><input type="text" class="xMiInput" placeholder="Descripcion" onChange="conMayusculas(this)" name="descripcion" id="descripcion" required></td>
+									<td><select id="sel_bodega"><option value="0">NO</option><option value="1">SI</option></select></td>
+									<td><select id="sel_imprime_comanda"><option value="0">NO</option><option value="1">SI</option></select></td>
+									<td><paper-fab icon="add" onclick="xAddAlmacen()" title="Guardar" tabindex="0"></paper-fab></td>
+								</tr>
+							</table>
+							<div class="xInvisible">
+								<input type="text" id="idalmacen" name="idalmacen">
+								<input type="text" id="bodega" name="bodega">
+								<input type="text" id="imprimir_comanda" name="imprimir_comanda">
+								<input type="text" id="idorg" name="idorg" value$="[[xt_org]]">
+								<input type="text" id="idsede" name="idsede" value$="[[xt_idsede]]">
+							</div>
+							<br><br>
+							<div class="xLinea2"></div>
+							<br>
+							<h3>Stock Inicial</h3>
+							<p>Descarga el archivo excel para realizar el inventario inicial, luego selecciona el almacen donde ingresaran los productos y sube el archivo. Es importante que respete el formato del archivo.</p>
+							<br>
+							<div class="xBoton2 xAzul" onclick="xDescargarXls();"><img src="../../../images/x_down.png">Descargar Archivo</div>
+							<div class="xBoton2 xVerde" onclick="dialog_subir_file_alamcen.open();"><img src="../../../images/x_up.png">Subir Archivo</div>
+							<input class="xInvisible" type="file" id="fileAlamcen">
+							<br>
+
+						</form>
+						<br><br>
+					</div>
+
+					<!-- EMISION DE COMPROBANTES -->
+					<div id="div_emision_comprobantes" class="xContent">
+						<h3>Configuracion para emitir comprobantes.</h3>
+						<p>Indique comprobantes de pago que emite, asi como las serie y el ultimo numero correlativo emitido.</p>
+						<p>Es apartir del ultimo correlativo emitido que el sistema empezara a emnumerar los comprobantes. Ej; ultimo correlativo emitido 100, entonces el sistema emitira 101.</p>
+						<div class="xLinea2"></div><br>
+						<br>
+
+						<form method="post" id="form_emision_comprobante">
+							<table id="tb_emision_comprobantes" class="xtable1">
+								<thead>
+									<th>Sede</th>
+									<th>Comprobante</th>
+									<th>Serie</th>
+									<th>Correlativo</th>
+								</thead>
+								<tr data-id="" class="xSinBorde">
+									<td><x-comp-find-sede  id="compFindSede" onchange="_getSede(sedes)"></x-comp-find-sede></td>
+									<td><x-comp-find-comprobante id="compFindComprobante" op="2" onchange="_getComprobante(comprobantes)"></x-comp-find-comprobante></td>
+									<td><input type="text" autocomplete="off" class="xMiInput" placeholder="Serie" onChange="conMayusculas(this)" name="serie" id="serie" required></td>
+									<td><input class="xMiInput"  placeholder="Correlativo" type="number" min="0" pattern="[0-9]+([\.,][0-9]+)?" step="any" name="correlativo" id="correlativo" required></td>
+									<td><paper-fab icon="add" onclick="config_comprobante_add()" title="Guardar" tabindex="0"></paper-fab></td>
+								</tr>
+							</table>
+							<div class="xInvisible">
+								<input type="text" id="idsede" name="idsede">
+								<input type="text" id="idorg" name="idorg" value$="[[xt_org]]">
+								<input type="text" id="idtipo_comprobante" name="idtipo_comprobante">									
+							</div>
+						</form>
+
+						<br><br>
+						<h3>Comprobante Electronico.</h3>
+						<p>Para activar la emisión de comprobantes electrónicos necesita un token único y una llave digital que son proporcionados por el equipo de soporte tecnico.</p>
+						<p><strong>Importante: </strong> Para la facturacion electronica, es requerido indicar en la informacion de la sede: El ubigeo y el codigo de domicio fiscal.</p>
+						<div class="xLinea2"></div><br>
+						<br>
+
+						<!-- <table id="tb_comprobante_electronico" class="xtable1">
+							<thead>
+								<th>Sede</th>
+								<th>Token</th>
+								<th>Id</th>
+								<th>Activo</th>
+							</thead>
+							<tbody>
+
+							</tbody>								
+						</table> -->
+						
+						<br><br><br>
+
+
+
+					</div>
+
+					<!-- carta app -->
+					<div id="div_carta_app" class="xContent">						
+						<x-carta-virtual-config></x-carta-virtual-config>
+
+						<br><br>						
+						<x-carta-virtual-mesas></x-carta-virtual-mesas>
+					</div>					
+				</iron-pages>
+			</div>
+		</div>
+	</template>
 </dom-module>
+
 <script type="text/javascript" src="config_comporbantes.js"></script>
 <script type="text/javascript" src="../../shared/config.const.js"></script>
 <script type="text/javascript" src="../../view/item_pedido_print_comprobante.js"></script>
-<script>/*<![CDATA[*/var xThisConfig,_arrPrintLocal=[],isSocket,numIconSeccion=101,xRutaIconSeccion='../../images/img-icon-carta/',xidSeccionIcon,opIcon;var xObjBorrar=0;function _getCategoria(val){console.log(val);}
-function xIniConf(){xPopupLoad=document.getElementById('xLoad');xm_LogChequea(function(){xm_log_get('ini_us');$('body').addClass('loaded');xThisConfig.xt_org=xIdOrg;xThisConfig.xt_idsede=xIdSede;xThisConfig.xt_idus=xIdUsuario;if(xIdOrg===""||xIdOrg==undefined){var _dtUs=xm_log_get('app3_us');xThisConfig.xt_org=_dtUs.ido;xThisConfig.xt_idsede=_dtUs.idsede;xThisConfig.xt_idus=_dtUs.idus;}
-_arrPrintLocal=[];xLoadOrg();xLoadCategoria();isSocket=parseInt(xm_log_get('datos_org_sede')[0].pwa)===0?false:true;loadIconSeccion();})
-$("#Titulo_page").text("Configuraciones");xThisConfig.selected_conf=0;$('.xPasarEnter2').on('keyup',function(e){var code=e.which;if(code==13||code==186){var inputs=$('input');var a=inputs.index(document.activeElement);if(inputs[a+1]!==null)
-{var nextBox=inputs[a+1];if(nextBox===undefined){return}
-if(nextBox.disabled){nextBox=inputs[a+2]}
-if(nextBox==undefined){return;}
-nextBox.focus();nextBox.select();}
-return false;}});$(document).on('click','.check_adicional',function(e){var xId=$(this).parents('tr').attr('data-id');var xcheck_val=0;if(this.checked==false){xcheck_val=1;}
-$.ajax({type:'POST',url:'../../bdphp/log.php?op=105',data:{id:xId,t:'conf_print_adicionales',c:xcheck_val}})
-event.stopPropagation();e.stopPropagation();e.stopImmediatePropagation()
-return false;})
-$(document).on('click','.check_porcentaje_impuesto',function(e){var xId=$(this).parents('tr').attr('data-id');var xcheck_val=0;if(this.checked==false){xcheck_val=1;}
-$.ajax({type:'POST',url:'../../bdphp/log.php?op=106',data:{id:xId,t:'conf_print_detalle',c:xcheck_val,campo:'activo'}})
-event.stopPropagation();e.stopPropagation();e.stopImmediatePropagation()
-return false;})
-$(document).on('click','.check_cpe',function(e){var xId=$(this).parents('tr').attr('data-id');const xcheck_val=this.checked?1:0;$.ajax({type:'POST',url:'../../bdphp/log.php?op=106',data:{id:xId,t:'sede',c:xcheck_val,campo:'facturacion_e_activo'}})
-event.stopPropagation();e.stopPropagation();e.stopImmediatePropagation()
-return false;})
-$("#tab_cnf").on('iron-select',function(){switch(xThisConfig.selected_conf){case 1:xLoadCategoriaCarta();break;case 2:xloadTPC();break;case 3:xIniRegla();break;case 4:xIniDatoPrint();break;case 5:xLoadImpresorasConf();break;case 6:xLoadAlmacenes();break;case 7:config_comprobante_getall();break;}})
-$('#fileAlamcen').change(function(){xPopupLoad.xopen();if($(this).val()==''){return}
-file=this.files[0];name=file.name;size=file.size;type=file.type;xNomFileXls=name;xhr=new XMLHttpRequest();xhr.upload.addEventListener('load',transferenciaCompletaAlmacen,false);xhr.open('POST','../../bdphp/upload.php',true);xhr.setRequestHeader("Cache-Control","no-cache");xhr.setRequestHeader("X-Requested-With","XMLHttpRequest");xhr.setRequestHeader("X-File-Name",file.name);xhr.send(file);});$(document).on('change',".xsel_sec_print",function(e){var xid_secc_row=$(this).attr('data-id');var xid_secc_print=this.value;xGuardarCambiosSeccionPrint(xid_secc_row,xid_secc_print,0);event.stopPropagation();e.stopPropagation();e.stopImmediatePropagation()
-return false;});$(document).on('change',".xsel_sec_print_papel",function(e){var xid_print=$(this).attr('data-id');var xid_papel_value=this.value;xGuardarCambiosSeccionPrintPapel(xid_print,xid_papel_value,0);event.stopPropagation();e.stopPropagation();e.stopImmediatePropagation()
-return false;});$(document).on('change',".xsel_sec_print_bodega",function(e){var xid_secc_row=$(this).attr('data-id');var xid_secc_print=this.value;xGuardarCambiosSeccionPrint(xid_secc_row,xid_secc_print,1);event.stopPropagation();e.stopPropagation();e.stopImmediatePropagation()
-return false;})
-$(document).on('change',".xsel_otros_print",function(e){var xid_secc_row=$(this).attr('data-id');var xid_secc_print=this.value;var xid_doc_print=$(this).parents('tr').attr('data-id');xGuardarCambiosConfOtrosDoc(xid_doc_print,xid_secc_row,xid_secc_print);event.stopPropagation();e.stopPropagation();e.stopImmediatePropagation()
-return false;})}
-function loadIconSeccion(){var nomIcon='',contador=0,lisIcon=[];xThisConfig.listIconSeccion=[];while(contador<=numIconSeccion){nomIcon=xRutaIconSeccion+contador+'.png';lisIcon.push({img:nomIcon});contador++;}
-xThisConfig.listIconSeccion=lisIcon;console.log('xThisConfig.listIconSeccion',xThisConfig.listIconSeccion);}
-function xDialogBorrarObj(obj){xThisConfig.xObjBorrar=obj;dialog_borrar.open();}
-function xDlgBorrar(){xBorrarItem(xThisConfig.xObjBorrar);dialog_borrar.close();}
-function xSubirFileAlmacen(){$('#fileAlamcen').click();}
-function transferenciaCompletaAlmacen(a){xNomFileXls=xIdOrg+xIdSede+xNomFileXls;xleerXls(xNomFileXls)}
-function xleerXls(xfile){xIdA=sel_almacen_file.value;if($("#fileAlamcen").val==""){return};$.ajax({type:'POST',url:'../../bdphp/leer_excel.php?op=2',data:{f:xNomFileXls,fecha:xDevolverFecha(),a:xIdA}}).done(function(dtUpP){$("#fileAlamcen").val('');xPopupLoad.xclose();dialog_subir_file_alamcen.close();alert("Se subio la informacion correctamente.");})}
-$(document).on('change','.check_almacen',function(e){var xid_al=$(this).parents('tr').attr("data-id");var xcampo_al=$(this).attr("data-campo");var xval_check=this.checked?1:0;$.ajax({type:'POST',url:'../../bdphp/log.php?op=1605',data:{id:xid_al,t:'conf_print_adicionales',campo:xcampo_al,valor:xval_check}})
-event.stopPropagation();e.stopPropagation();e.stopImmediatePropagation()
-return false;})
-function xAddAlmacen(){$("#form_almacen #bodega").val(sel_bodega.value);$("#form_almacen #imprimir_comanda").val(sel_imprime_comanda.value);xPopupLoad.xopen();$.post("../../bdphp/ManejoBD_IUD.php?tb=almacen",$("#form_almacen").serialize(),function(a){xPopupLoad.xclose();$("#form_almacen").reset();xPopupLoad.xclose();xLoadAlmacenes();})}
-function xLoadAlmacenes(){$("#tb_almacenes .row").remove();$("#tb_almacenes").append('<tr class="row"><td colspan="3"><paper-spinner active></paper-spinner></td></tr>');$.ajax({type:'POST',url:'../../bdphp/log.php?op=1604'}).done(function(dtAlm){var xdtAlm=$.parseJSON(dtAlm);var xcadena_tr_alm='';var xcadena_sel_almacen_file='';xdtAlm=xdtAlm.datos;for(var i=0;i<xdtAlm.length;i++){xcadena_sel_almacen_file=String(xcadena_sel_almacen_file+'<option value='+xdtAlm[i].idalmacen+'>'+xdtAlm[i].descripcion+'</option>');xsi_bodega=xdtAlm[i].bodega==1?'checked':'';xsi_imprmime_p=xdtAlm[i].imprimir_comanda==1?'checked':'';xcadena_tr_alm=String(xcadena_tr_alm+'<tr class="row" data-id="'+xdtAlm[i].idalmacen+'"><td>'+xdtAlm[i].descripcion+'</td>'+'<td><paper-checkbox class="check_almacen" data-campo="bodega" id="ch_bodega" '+xsi_bodega+'></paper-checkbox></td>'+'<td><paper-checkbox class="check_almacen" data-campo="imprimir_comanda" id="ch_print_comanda" '+xsi_imprmime_p+'></paper-checkbox></td>'+'</tr>')};$("#tb_almacenes .row").remove();$("#tb_almacenes").append(xcadena_tr_alm).trigger('create');$("#sel_almacen_file").html(xcadena_sel_almacen_file).trigger('create');});}
-function xDescargarXls(){var iframe;iframe=document.getElementById("download-container");if(iframe===null)
-{iframe=document.createElement('iframe');iframe.id="download-container";iframe.style.visibility='hidden';iframe.style.display='none';document.body.appendChild(iframe);}
-iframe.src='../../file/ingresar_productos.xls';}
-function xAddImpresora(){xPopupLoad.xopen();$.post("../../bdphp/ManejoBD_IUD.php?tb=impresora",$("#form_impresoras").serialize(),function(a){xPopupLoad.xclose();$("#form_impresoras #descripcion").val('');$("#form_impresoras #ip").val('');$("#form_impresoras #var_margen_iz").val('');$("#form_impresoras #var_size_font").val('');$("#form_impresoras #img64").val('');$("#form_impresoras #descripcion").focus();xPopupLoad.xclose();xLoadImpresorasConf();})}
-function xAddImpresora_local(){xPopupLoad.xopen();var _ip=$(".tr_addPrint_local #ip").val();var _des=$(".tr_addPrint_local #descripcion").val();var _margen=$(".tr_addPrint_local #var_margen_iz").val();var _font=$(".tr_addPrint_local #var_size_font").val();var _img64=$(".tr_addPrint_local #img64").val();var _imprimirCopia=check_print_copia_local.checked?1:0;var _numCopias=$(".tr_addPrint_local #num_copias").val();var _papel_size=$(".tr_addPrint_local #select_papel_caja").val();_margen=_margen===''?0:_margen;_font=_font===''?0:_font;$.ajax({type:'POST',url:'../../bdphp/log.php?op=-1061',data:{'ip':_ip,'des':_des,'margen':_margen,'font':_font,'img64':_img64,'copia_local':_imprimirCopia,'num_copias':_numCopias,'papel_size':_papel_size}}).done(function(dtImp){xPopupLoad.xclose();window.localStorage.setItem("::app3_woIpPrintLoC",_des);xLoadImpresorasConf();})}
-function xLoadImpresorasConf(){$("#tb_impresoras .row").remove();$("#tb_impresoras").append('<tr class="row"><td colspan="3"><paper-spinner active></paper-spinner></td></tr>');$.ajax({type:'POST',url:'../../bdphp/log.php?op=-105'}).done(function(dtImp){var xdtImp=$.parseJSON(dtImp),xcadena_impr='',xcandena_sel_print='',xCockie_ipID=window.localStorage.getItem('::app3_woIpPrintLoC'),xminutos_pedido='';_arrPrintLocal=[];xdtImp=xdtImp.datos;$("#btn_borrar_print_local").addClass('xInvisible');for(var i=0;i<xdtImp.length;i++){if(xdtImp[i].local==1){_arrPrintLocal.push(xdtImp[i]);continue;}
-xminutos_pedido=xdtImp[i].minutos_pedido;if(xminutos_pedido===""){xminutos_pedido='0';}
-$("#select_papel_zona  option[value="+xdtImp[i].papel_size+"]").attr('selected','selected');xcadena_impr=String(xcadena_impr+'<tr class="row" data-t="impresora" data-id="'+xdtImp[i].idimpresora+'"><td data-campo="descripcion"><span onclick="xModRow(this,0);">'+xdtImp[i].descripcion+'</span></td><td data-campo="minutos_pedido"><span onclick="xModRow(this,1);">'+xminutos_pedido+'</span></td><td data-campo="ip"><span onclick="xModRow(this,2);">'+xdtImp[i].ip+'</span></td><td data-campo="var_size_font"><span onclick="xModRow(this,0);">'+xdtImp[i].var_size_font+'</span></td>'+'<td  data-campo="var_margen_iz"><span onclick="xModRow(this,4);">'+xdtImp[i].var_margen_iz+'</span></td>'+'<td  data-campo="img64"><span onclick="xModRow(this,4);">'+xdtImp[i].img64+'</span></td>'+'<td  data-papel="papel" data-id="'+xdtImp[i].idimpresora+'">'+'<select class="xsel_sec_print_papel" data-id="'+xdtImp[i].idimpresora+'">'+$("#select_papel_zona")[0].innerHTML+'</select>'+'</td>'+'<td><span class="xDeleteRow" title="Borrar" onclick="xDialogBorrarObj(this);"></span></td></tr>')
-xcandena_sel_print=xcandena_sel_print+'<option value="'+xdtImp[i].idimpresora+'">'+xdtImp[i].descripcion+'</option>';$("#select_papel_zona  option[value="+xdtImp[i].papel_size+"]").attr('selected',false);};xLoadImpresoraLocal();$("#tb_impresoras .row").remove();$("#tb_impresoras").append(xcadena_impr).trigger('create');xcandena_sel_print=xcandena_sel_print+'<option value=0>Ninguno</option>';$("#sel_impr_Sec").html(xcandena_sel_print).trigger('create');$("#sel_impr_Sec_bodega").html(xcandena_sel_print).trigger('create');$.ajax({type:'POST',url:'../../bdphp/log.php?op=307'}).done(function(DtPrint){xThisConfig.dt_impr=$.parseJSON(DtPrint);xThisConfig.dt_impr=xThisConfig.dt_impr.datos;xLoadSecciones();});})}
-function xLoadImpresoraLocal(){var _cadenaPrintLocal='';const cantPrintLocal=_arrPrintLocal.length;const xCockie_ipID=window.localStorage.getItem('::app3_woIpPrintLoC'),xminutos_pedido='';const estadoIni=cantPrintLocal===1?'<p class="xFondoRowverde"><strong>Asignado</strong></p>':'<a href="#" class="cursor" onclick="xAsignarPrintLocal(this)" title="Asignar impresora a ESTE equipo">Asingar</a>';_arrPrintLocal.map(x=>{$("#select_papel_caja  option[value="+x.papel_size+"]").attr('selected','selected');const labelAsignado=x.descripcion===xCockie_ipID?'<p class="xFondoRowverde"><strong>Asignado</strong></p>':estadoIni;_cadenaPrintLocal+=`<tr class="row"data-des="${x.descripcion}"data-id="${x.idimpresora}"data-t="impresora"><td>${x.descripcion}</td><td>${x.ip}</td><td>${x.num_copias}</td><td>${x.var_size_font}</td><td>${x.var_margen_iz}</td><td>${x.img64}</td><td data-papel="papel"data-id="${x.idimpresora}"><select class="xsel_sec_print_papel"data-id="${x.idimpresora}">'${ $("#select_papel_caja")[0].innerHTML}'</select></td><td>${labelAsignado}</td><td><span class="xDeleteRow"title="Borrar"onclick="xDialogBorrarObj(this);"></span></td></tr>`;$("#select_papel_caja  option[value="+x.papel_size+"]").attr('selected',false);});$("#tb_impresora_local .row").remove();$("#tb_impresora_local").append(_cadenaPrintLocal).trigger('create');}
-function xAsignarPrintLocal(obj){const idPrintLocal=$(obj).parent().parent().attr('data-des');window.localStorage.setItem("::app3_woIpPrintLoC",idPrintLocal);xLoadImpresoraLocal();}
-function printCopialocalAll(){const _imprimirCopia=check_print_copia_local.checked?0:1;$.ajax({type:'POST',url:'../../bdphp/log.php?op=-1051',data:{copia_local:_imprimirCopia}})}
-function xModRow(obj,tipo){var xvalObj=$(obj).text();if($(obj).find('input').length>0){$(obj).find('input').select();return;}
-$(obj).html('<input type="text" class="xMiInput xPasarEnter2 xAlinearIzquierda" onblur="xModBlur(this,'+tipo+')" value="'+xvalObj+'" select>').trigger('create');$(obj).find('input').select();}
-function xModBlur(obj,tipo){var xvalObj=$(obj).val(),xtb=$(obj).parents('table'),xrow_obj=$(obj).parent(),xid_row=$(xrow_obj).parents('.row').attr('data-id'),xcampo_row=$(xrow_obj).parent().attr('data-campo');$.ajax({type:'POST',url:'../../bdphp/log.php?op=2106',data:{campo:xcampo_row,valor:xvalObj,id:xid_row}}).done(function(dtPrint){if(dtPrint.indexOf('Error')!=-1){alert(dtPrint)}})}
-function xModRowImpuesto(obj){var xvalObj=$(obj).text();if($(obj).find('input').length>0){$(obj).find('input').select();return;}
-$(obj).html('<input type="number" min="0" class="xMiInput" placeholder="porcentaje" pattern="0|[1-9][0-9]*" onblur="xModBlurImpuesto(this)" value="'+xvalObj+'" select>').trigger('create');$(obj).find('input').select();}
-function xModBlurImpuesto(obj){var xvalObj=$(obj).val(),xtb=$(obj).parents('table'),xrow_obj=$(obj).parent(),xid_row=$(xrow_obj).parents('.row').attr('data-id');$.ajax({type:'POST',url:'../../bdphp/log.php?op=2107',data:{campo:'porcentaje',valor:xvalObj,id:xid_row}}).done(function(dtPrint){if(dtPrint.indexOf('Error')!=-1){alert(dtPrint)}})}
-function xBorrarItemPrintLocal(obj){xRowObj=obj.parentNode.parentNode;xTableRow=$(xRowObj).attr('data-t');xIdROw=$(xRowObj).attr('data-id')
-xBorrarRegistro(xTableRow,xIdROw);$("#form_impresora_local").reset();xLoadImpresorasConf();}
-function xTestPrint(xOpC){var xArrayPasarTest=new Array();var xClasTr='',sel_papel='';if(xOpC==0){xClasTr='.tr_addPrint';sel_papel=' #select_papel_zona';}else{xClasTr='.tr_addPrint_local';sel_papel=' #select_papel_caja';}
-xArrayPasarTest={'ip_print':$(xClasTr+" #ip").val(),'mum_copias':0,'pie_pagina':xThisConfig.dt_impr[0].pie_pagina,'logo':xThisConfig.dt_impr[0].logo,'size_font':$(xClasTr+" #var_size_font").val(),'margen_iz':$(xClasTr+" #var_margen_iz").val(),'papel_size':$(xClasTr+sel_papel).val()};console.log('print params',xArrayPasarTest);const _sys_local=parseInt(xm_log_get('datos_org_sede')[0].sys_local);const _data={Array_enca:xArrayPasarTest}
-if(_sys_local===1){xPopupLoad.xopen();xSendDataPrintServer(_data,3,'prueba');setTimeout(()=>{xPopupLoad.xclose();},1000);return;}
-$.ajax({type:'POST',url:'../../print/x-test_print.php',data:{Array_enca:xArrayPasarTest}}).done(function(dtPrint){if(dtPrint.indexOf('Error')!=-1){alert(dtPrint)}})}
-function xLoadSecciones(){$.ajax({type:'POST',url:'../../bdphp/log.php?op=409'}).done(function(dtSec){var xdtSec=$.parseJSON(dtSec);var xCadena_sec='',imgIcon='';xdtSec=xdtSec.datos
-for(var i=0;i<xdtSec.length;i++){imgIcono=xdtSec[i].img!=''?xdtSec[i].img:i+'.png';$("#sel_impr_Sec  option[value="+xdtSec[i].idimpresora+"]").attr('selected','selected');xCadena_sec=String(xCadena_sec+'<tr class="row" data-t="seccion" data-id="'+xdtSec[i].idseccion+'">'+'<td onclick="openImgIconDialog(this, 0)"> <img class="img-ico-seccion xCursor" src="'+xRutaIconSeccion+imgIcono+'" alt="img-ico">'+xdtSec[i].plato+'</td>'+'<td><select class="xsel_sec_print" data-id="'+xdtSec[i].idseccion+'">'+$("#sel_impr_Sec")[0].innerHTML+'</select></td>'+'<td><span class="xDeleteRow" title="Borrar" onclick="xDialogBorrarObj(this);"></span></td>'+'</tr>')
-$("#sel_impr_Sec  option[value="+xdtSec[i].idimpresora+"]").attr('selected',false);};$("#tb_sec_impr .row").remove();$("#tb_sec_impr").append(xCadena_sec).trigger('create');xLoadSecciones_bodega();})}
-function xLoadSecciones_bodega(){$.ajax({type:'POST',url:'../../bdphp/log.php?op=40901'}).done(function(dtSec){var xdtSec=$.parseJSON(dtSec);var xCadena_sec='',imgIcono='';xdtSec=xdtSec.datos
-for(var i=0;i<xdtSec.length;i++){imgIcono=xdtSec[i].img!=''?xdtSec[i].img:i+'.png';$("#sel_impr_Sec_bodega  option[value="+xdtSec[i].idimpresora+"]").attr('selected','selected')
-xCadena_sec=String(xCadena_sec+'<tr class="row" data-t="seccion" data-id="'+xdtSec[i].idseccion+'">'+'<td onclick="openImgIconDialog(this, 1)"><img class="img-ico-seccion xCursor" src="'+xRutaIconSeccion+imgIcono+'" alt="img-ico">'+xdtSec[i].plato+'</td>'+'<td><select class="xsel_sec_print_bodega" data-id="'+xdtSec[i].idseccion+'" option="'+xdtSec[i].idimpresora+'">'+$("#sel_impr_Sec_bodega")[0].innerHTML+'</select></td>'+'</tr>')};if(xdtSec.length>0){$("#tb_sec_impr_bodega .row").remove();$("#tb_sec_impr_bodega").append(xCadena_sec).trigger('create');$("#div_secciones_bodega").removeClass('xInvisible');}
-xLoadConfOtrosDoc();})}
-function xGuardarCambiosSeccionPrint(id_row,id_print,xes_bodega){var xnum_op;if(xes_bodega===1){xnum_op='40101';}else{xnum_op='4010';}
-$.ajax({type:'POST',url:'../../bdphp/log.php?op='+xnum_op,data:{ids:id_row,idp:id_print}})}
-function xGuardarCambiosSeccionPrintPapel(_id_print,_papel){$.ajax({type:'POST',url:'../../bdphp/log.php?op=40102',data:{id:_id_print,papel:_papel}})}
-function xLoadConfOtrosDoc(){$.ajax({type:'POST',url:'../../bdphp/log.php?op=4011'}).done(function(dtCf_od){var xdtCf_od=$.parseJSON(dtCf_od);xdtCf_od=xdtCf_od.datos;for(var i=0;i<xdtCf_od.length;i++){$("#sel_impr_Sec  option[value="+xdtCf_od[i].idimpresora+"]").attr('selected','selected');$("#tb_otros_dic .row #row"+xdtCf_od[i].idtipo_otro).html('<select data-id='+xdtCf_od[i].conf_print_otros+' class="xsel_otros_print">'+$("#sel_impr_Sec")[0].innerHTML+'</select>').trigger('create');$("#sel_impr_Sec  option[value="+xdtCf_od[i].idimpresora+"]").attr('selected',false);}
-if(xdtCf_od.length==0){$("#tb_otros_dic .row").each(function(index,element){$(element).find('.td_sel_ot_print').html('<select data-id class="xsel_otros_print">'+$("#sel_impr_Sec")[0].innerHTML+'</select>').trigger('create');})}})}
-function xGuardarCambiosConfOtrosDoc(id_doc,id_row,id_print){$.ajax({type:'POST',url:'../../bdphp/log.php?op=4012',data:{iddoc:id_doc,ids:id_row,idp:id_print}}).done((res)=>{console.log(res);});}
-function xloadTPC(){$("#tb_tpc").append('<tr class="row"><td colspan="3"><paper-spinner active></paper-spinner></td></tr>');$.ajax({type:'POST',url:'../../bdphp/log.php?op=406'}).done(function(dtTpc){var xdtTpc=$.parseJSON(dtTpc);var xCadenaTPC='';var xCadenaTPC_sel='';xdtTpc=xdtTpc.datos;for(var i=0;i<xdtTpc.length;i++){xCadenaTPC=String(xCadenaTPC+'<tr class="row" data-id="'+xdtTpc[i].idtipo_consumo+'" data-t="tipo_consumo"><td>'+xdtTpc[i].descripcion+'</td><td><span class="xDeleteRow" title="Borrar" onclick="xDialogBorrarObj(this);"></span></td></tr>')
-xCadenaTPC_sel=String(xCadenaTPC_sel+'<option value="'+xdtTpc[i].idtipo_consumo+'">'+xdtTpc[i].descripcion+'</option>');};$("#tb_tpc .row").remove();$("#tb_tpc").append(xCadenaTPC).trigger('create');$("#selTPC_adicional").html(xCadenaTPC_sel).trigger('create');});}
-function xGuardarTPC(){xPopupLoad.xopen();$.post("../../bdphp/ManejoBD_IUD.php?tb=tipo_consumo",$("#frm_tpc").serialize(),function(a){xPopupLoad.xclose();$("#frm_tpc").reset();dialog_add_tpc.close();xloadTPC();})}
-function xIniDatoPrint(){xLoadConf();xloadTPC();$("#ctrl_open_file").change(function(e){for(var i=0;i<e.originalEvent.srcElement.files.length;i++){var file=e.originalEvent.srcElement.files[i];$("#td_logo").val(file.name);if(file){var reader=new FileReader();reader.onload=function(e){$('#imgLogo').attr('src',e.target.result);}
-reader.readAsDataURL(file);xConvertBase64Img();}}});}
-function xLoadConf(){$.ajax({type:'POST',url:'../../bdphp/log.php?op=401'}).done(function(dtPrint){var xdtPrint=$.parseJSON(dtPrint);var xCadenaPrint='',pie_pagina_comprobante='';xdtPrint=xdtPrint.datos;pie_pagina_comprobante=xdtPrint[0].pie_pagina_comprobante===''?const_pie_pagina_comprobante:xdtPrint[0].pie_pagina_comprobante;xIdConf='';xIdConf=xdtPrint[0].idconf_print;$("#td_ip").val(xdtPrint[0].ip_print);$("#td_copia").val(xdtPrint[0].num_copias);$("#td_pie").val(xdtPrint[0].pie_pagina);$("#td_pie_comprobante").val(pie_pagina_comprobante);$("#td_logo").val(xdtPrint[0].logo);$("#td_margen_iz").val(xdtPrint[0].var_margen_iz);$("#td_size_font").val(xdtPrint[0].var_size_font);$("#td_img64").val(xdtPrint[0].var_size_font);$("#sel_size_font_comanda").val(xdtPrint[0].var_size_font_tall_comanda).change();xLoadPorcentaje();xLoadAdicionales();});}
-function xGuardarCambioPrint(){xPopupLoad.xopen();$("#frm_conf_print #idconf_print").val(xIdConf);$("#frm_conf_print #ip_print").val($("#td_ip").val());$("#frm_conf_print #num_copias").val($("#td_copia").val());$("#frm_conf_print #pie_pagina").val($("#td_pie").val());$("#frm_conf_print #pie_pagina_comprobante").val($("#td_pie_comprobante").val());$("#frm_conf_print #var_margen_iz").val($("#td_margen_iz").val());$("#frm_conf_print #var_size_font").val($("#td_size_font").val());$("#frm_conf_print #var_size_font_tall_comanda").val($("#sel_size_font_comanda").val());$("#frm_conf_print #idsede").val(xThisConfig.xt_idsede);$("#frm_conf_print #idorg").val(xThisConfig.xt_org);$.post("../../bdphp/ManejoBD_IUD.php?tb=conf_print",$("#frm_conf_print").serialize(),function(a){xPopupLoad.xclose();xIdConf=a;xItemGuardarFoto();});}
-function xPruebaTestPrint(){var xArrayPasarTest=new Array();xArrayPasarTest={'ip_print':$("#td_ip").val(),'mum_copias':$("#td_copia").val(),'pie_pagina':$("#td_pie").val(),'logo':$("#td_logo").val(),'size_font':$("#td_size_font").val(),'margen_iz':$("#td_margen_iz").val(),'margen_iz':$("#td_margen_iz").val(),'var_size_font_tall_comanda':$("#sel_size_font_comanda").val(),};const _sys_local=parseInt(xm_log_get('datos_org_sede')[0].sys_local);const _data={Array_enca:xArrayPasarTest}
-if(_sys_local===1){xPopupLoad.xopen();xSendDataPrintServer(_data,3,'prueba');setTimeout(()=>{xPopupLoad.xclose();},1000);return;}
-$.ajax({type:'POST',url:'../../print/x-test_print.php',data:{Array_enca:xArrayPasarTest}}).done(function(dtPrint){if(dtPrint.indexOf('Error')!=-1){alert(dtPrint)}})}
-function xSeleccionarFoto(){$("#ctrl_open_file").click();}
-function xConvertBase64Img(){var c=document.createElement('canvas');var img=document.getElementById('imgLogo');c.height=img.naturalHeight;c.width=img.naturalWidth;var ctx=c.getContext('2d');ctx.drawImage(img,0,0,c.width,c.height,0,0,c.width,c.height);return c.toDataURL();}
-function xItemGuardarFoto(){$(".xobj_subir_foto").each(function(index,element){if($(this).val()==''){return}
-file=this.files[0];name=file.name;size=file.size;type=file.type;xhr=new XMLHttpRequest();xhr.upload.addEventListener('load',transferenciaCompleta(name),false);xhr.open('POST','upload.php?op=2',true);xhr.setRequestHeader("Cache-Control","no-cache");xhr.setRequestHeader("X-Requested-With","XMLHttpRequest");xhr.setRequestHeader("X-File-Name",file.name);xhr.send(file);});};function transferenciaCompleta(xfile){xfile=xThisConfig.xt_org+xThisConfig.xt_idsede+xfile;const logo64=xConvertBase64Img();$.ajax({type:'POST',url:'../../bdphp/log.php?op=208',data:{i:xIdConf,d:xfile,logo:logo64}}).done(function(a){$("#td_logo").val(xfile);xPopupLoad.xclose();})}
-function xLoadPorcentaje(){$.ajax({type:'POST',url:'../../bdphp/log.php?op=407',data:{i:xIdConf}}).done(function(dtPor){$("#tb_porcentaje .row").remove();var xCadenaPor='',xCadenaPorNoFacturable='';var xdtPor=$.parseJSON(dtPor);xdtPor=xdtPor.datos;for(var i=0;i<xdtPor.length;i++){const checkActivo=parseInt(xdtPor[i].activo)===0?'checked':'';if(parseInt(xdtPor[i].es_impuesto)===1){xCadenaPor=String(xCadenaPor+'<tr class="row" data-t="conf_print_detalle" data-id="'+xdtPor[i].idconf_print_detalle+'"><td><paper-checkbox class="check_porcentaje_impuesto" '+checkActivo+'></paper-checkbox></td><td>'+xdtPor[i].descripcion+'</td><td style="width: 25%;"><span onclick="xModRowImpuesto(this);">'+xdtPor[i].porcentaje+'</span></td></tr>');}else{xCadenaPorNoFacturable=String(xCadenaPorNoFacturable+'<tr class="row" data-t="conf_print_detalle" data-id="'+xdtPor[i].idconf_print_detalle+'"><td>'+xdtPor[i].descripcion+'</td><td>'+xdtPor[i].porcentaje+'</td><td><div class="xDeleteRow" onClick="xDialogBorrarObj(this)" title="Borrar"></div></td></tr>');}};$("#tb_porcentaje tbody").append(xCadenaPor).trigger('create');$("#tb_porcentaje_no_facturable").append(xCadenaPorNoFacturable).trigger('create');});}
-function xLoadAdicionales(){$.ajax({type:'POST',url:'../../bdphp/log.php?op=408',data:{i:xIdConf}}).done(function(dtAd){$("#tb_Adicionales .row").remove();var xCadenaAd='';var xCheck_ac='';var dtAd=$.parseJSON(dtAd);dtAd=dtAd.datos;for(var i=0;i<dtAd.length;i++){xCheck_ac='';const nivel=parseInt(dtAd[i].nivel)===0?'POR ITEM':'POR PEDIDO';if(dtAd[i].estado==0){xCheck_ac='checked';}
-xCadenaAd=String(xCadenaAd+'<tr class="row" data-t="conf_print_adicionales" data-id="'+dtAd[i].idconf_print_adicionales+'"><td><paper-checkbox class="check_adicional" '+xCheck_ac+'></paper-checkbox></td><td>'+dtAd[i].descripcion+'</td><td>'+dtAd[i].des_tipo_consumo+'</td><td>'+nivel+'</td><td>'+dtAd[i].des_seccion+'</td><td>'+dtAd[i].importe+'</td><td><div class="xDeleteRow" onClick="xBorrarRegistro(this)" title="Borrar"></div></td></tr>');};$("#tb_Adicionales").append(xCadenaAd).trigger('create');});}
-function xAddPorcentaje(){xcadena='';xvalidateForm('formProcentajeNoFacturable',function(a){if(a===false){return;}
-$("#formProcentajeNoFacturable #idconf_print").val(xIdConf);$.post("../../bdphp/ManejoBD_IUD.php?tb=conf_print_detalle",$("#formProcentajeNoFacturable").serialize(),function(xUltimoId){xcadena=String(xcadena+'<tr class="row" data-t="conf_print_detalle" data-id="'+xUltimoId+'"><td>'+$("#formProcentajeNoFacturable #descripcion").val()+'</td><td>'+$("#formProcentajeNoFacturable #porcentaje").val()+'</td><td><div class="xDeleteRow" onClick="xDialogBorrarObj(this)" title="Borrar"></div></td></tr>');$("#tb_porcentaje_no_facturable").append(xcadena).trigger('create');$('#tb_porcentaje_no_facturable').reset();$("#tb_porcentaje_no_facturable #descripcion").focus();});});}
-function xAddAdicional(){xcadena='';xvalidateForm('formAdicionales',function(a){if(a===false){return;}
-$("#formAdicionales #idconf_print").val(xIdConf);$("#formAdicionales #idtipo_consumo").val($("#selTPC_adicional").val());$("#formAdicionales #idseccion").val($("#selSeccion_adicional").val());$("#formAdicionales #nivel").val($("#selNivel_adicional").val());const xdes_tpc_sel=selTPC_adicional[selTPC_adicional.selectedIndex].textContent;const xdes_ad_seccion=selSeccion_adicional[selSeccion_adicional.selectedIndex].textContent;const xdes_nivel_seccion=selNivel_adicional[selNivel_adicional.selectedIndex].textContent;$.post("../../bdphp/ManejoBD_IUD.php?tb=conf_print_adicionales",$("#formAdicionales").serialize(),function(xUltimoId){xcadena=String(xcadena+'<tr class="row" data-t="conf_print_adicionales" data-id="'+xUltimoId+'"><td><paper-checkbox class="check_adicional" checked></paper-checkbox></td><td>'+$("#formAdicionales #descripcion").val()+'</td><td>'+xdes_tpc_sel+'</td><td>'+xdes_nivel_seccion+'</td><td>'+xdes_ad_seccion+'</td><td>'+$("#formAdicionales #importe").val()+'</td><td><div class="xDeleteRow" onClick="xDialogBorrarObj(this)" title="Borrar"></div></td></tr>');$("#tb_Adicionales").append(xcadena).trigger('create');$('#formAdicionales').reset();$("#formAdicionales #descripcion").focus();});});}
-function xIniRegla(){xLoadReglasCarta();}
-function xAddRegla(){var xidSel=$("#selSeccion").val();var xidSelCon=$("#selCon").val();var xidCat=$("#selCategoria").val();if(xidSel==xidSelCon){alert('Seleccione secciones diferentes');return;}
-xPopupLoad.xopen();$("#frm_regla #idcategoria").val(xidCat);$("#frm_regla #idseccion").val(xidSel);$("#frm_regla #idseccion_detalle").val(xidSelCon);$.post("../../bdphp/ManejoBD_IUD.php?tb=regla_carta",$("#frm_regla").serialize(),function(a){xPopupLoad.xclose();xLoadReglasCarta();})}
-function xLoadCategoria(){$.ajax({type:'POST',url:'../../bdphp/log.php?op=1'}).done(function(dtCAct){var xCadenaCat='';var xdtCAct=$.parseJSON(dtCAct);xdtCAct=xdtCAct.datos;for(var i=0;i<xdtCAct.length;i++){xCadenaCat=String(xCadenaCat+'<option value="'+xdtCAct[i].idcategoria+'">'+xdtCAct[i].descripcion+'</option>');};$("#selCategoria").html(xCadenaCat).trigger('create');});$.ajax({type:'POST',url:'../../bdphp/log.php?op=201'}).done(function(dtSec){var xCadenaCat='';var xdtSec=$.parseJSON(dtSec);xdtSec=xdtSec.datos;xThisConfig.dt_seccion=xdtSec;for(var i=0;i<xdtSec.length;i++){xCadenaCat=String(xCadenaCat+'<option value="'+xdtSec[i].value+'">'+xdtSec[i].label+'</option>');};$("#selSeccion").html(xCadenaCat).trigger('create');$("#selSeccion_adicional").html(xCadenaCat).trigger('create');$("#selCon").html(xCadenaCat).trigger('create');});cadenaSelNivel='<option value="0">POR ITEM</option><option value="1">POR PEDIDO</option>';$("#selNivel_adicional").html(cadenaSelNivel).trigger('create');}
-function xLoadReglasCarta(){$("#tb_regla .row").remove();$("#tb_regla").append('<tr class="row"><td colspan="3"><paper-spinner active></paper-spinner></td></tr>');$.ajax({type:'POST',url:'../../bdphp/log.php?op=4'}).done(function(dtRla){var xCadenaRgl='';var xdtRla=$.parseJSON(dtRla);xdtRla=xdtRla.datos;for(var i=0;i<xdtRla.length;i++){xCadenaRgl=String(xCadenaRgl+'<tr class="row" data-t="regla_carta" data-id="'+xdtRla[i].idregla_carta+'"><td>'+xdtRla[i].des_categoria+'</td><td>'+xdtRla[i].des_seccion+'</td><td>'+xdtRla[i].des_con+'</td><td><span class="xDeleteRow" title="Borrar" onclick="xDialogBorrarObj(this);"></span></td></tr>');};$("#tb_regla .row").remove();$("#tb_regla").append(xCadenaRgl).trigger('create');});}
-function xLoadCategoriaCarta(){$("#tb_cat").append('<tr class="row"><td colspan="4"><paper-spinner active></paper-spinner></td></tr>');$.ajax({type:'POST',url:'../../bdphp/log.php?op=405'}).done(function(dtCat){var xcadena_cat='';var xdtCat=$.parseJSON(dtCat);xdtCat=xdtCat.datos;xThisConfig.dt_cat=xdtCat;for(var i=0;i<xdtCat.length;i++){xcadena_cat=String(xcadena_cat+'<tr class="row" data-index='+i+' data-id="'+xdtCat[i].idcategoria+'" data-t="categoria"><td>'+xdtCat[i].descripcion+'</td><td>'+xdtCat[i].hora_ini+'</td><td>'+xdtCat[i].hora_fin+'</td><td title="Modificar" onClick="xModificarCat(this)"><span class="icon xCursor"><img src="../../images/edit.png"></span></td><td><span class="xDeleteRow" title="Borrar" onclick="xDialogBorrarObj(this);"></span></td></tr>')};$("#tb_cat .row").remove();$("#tb_cat").append(xcadena_cat).trigger('create');});}
-function xModificarSede(obj){var xids=$(obj).parents('tr').attr('data-id');$("#frm_sede #idsede").val(xThisConfig.dt_sede[xids].idsede);$("#frm_sede #nombre").val(xThisConfig.dt_sede[xids].nom_sede);$("#frm_sede #ciudad").val(xThisConfig.dt_sede[xids].ciudad);$("#frm_sede #eslogan").val(xThisConfig.dt_sede[xids].eslogan);$("#frm_sede #mesas").val(xThisConfig.dt_sede[xids].mesas);$("#frm_sede #telefono").val(xThisConfig.dt_sede[xids].telefono);$("#frm_sede #ubigeo").val(xThisConfig.dt_sede[xids].ubigeo);$("#frm_sede #codigo_del_domicilio_fiscal").val(xThisConfig.dt_sede[xids].codigo_del_domicilio_fiscal);dialog_add_sede.open();}
-function xModificarCat(obj){var xids=$(obj).parents('tr').attr('data-index');$("#frm_cat #idcategoria").val(xThisConfig.dt_cat[xids].idcategoria);$("#frm_cat #descripcion").val(xThisConfig.dt_cat[xids].descripcion);$("#frm_cat #hora_ini").val(xThisConfig.dt_cat[xids].hora_ini);$("#frm_cat #hora_fin").val(xThisConfig.dt_cat[xids].hora_fin);$("#frm_cat #detalle").val(xThisConfig.dt_cat[xids].detalle);dialog_add_cat.open();}
-function xGuardarOrg(){xvalidateFormInput('frm_org',function(a){if(a===false){return;}
-xPopupLoad.xopen();$.post("../../bdphp/ManejoBD_IUD.php?tb=org",$("#frm_org").serialize(),function(id){xPopupLoad.xclose();})});}
-function xGenerarTk(){}
-function xGuardarSede(){xvalidateFormInput('frm_sede',function(a){if(a===false){return;}
-xPopupLoad.xopen();$.post("../../bdphp/ManejoBD_IUD.php?tb=sede",$("#frm_sede").serialize(),function(id){dialog_add_sede.close();xPopupLoad.xclose();$("#frm_sede").reset();xLoadOrg();})});}
-function xGuardarCategoria(){xvalidateFormInput('frm_cat',function(a){if(a===false){return;}
-xPopupLoad.xopen();$.post("../../bdphp/ManejoBD_IUD.php?tb=categoria",$("#frm_cat").serialize(),function(id){dialog_add_cat.close();$("#frm_cat").reset();xPopupLoad.xclose();xLoadCategoriaCarta();})});}
-function xLoadOrg(){$("#tb_org").append('<tr class="row"><td colspan="2"><paper-spinner active></paper-spinner></td></tr>');$.ajax({type:'POST',url:'../../bdphp/log.php?op=404'}).done(function(dtOrg){var xcadena_org='';var xdtOrg=$.parseJSON(dtOrg);xdtOrg=xdtOrg.datos;xThisConfig.dt_sede=xdtOrg;$("#frm_org #idorg").val(xdtOrg[0].idorg);$("#frm_org #nombre").val(xdtOrg[0].nombre);$("#frm_org #direccion").val(xdtOrg[0].direccion);$("#frm_org #ruc").val(xdtOrg[0].ruc);$("#frm_org #telefono").val(xdtOrg[0].telefono);$("#frm_org #email").val(xdtOrg[0].email);for(var i=0;i<xdtOrg.length;i++){xcadena_org=String(xcadena_org+'<tr class="row" data-id='+i+'><td>'+xdtOrg[i].nom_sede+'</td><td>'+xdtOrg[i].ciudad+'</td><td title="Modificar" onClick="xModificarSede(this)"><span class="icon xCursor"><img src="../../images/edit.png"></span></td></tr>')};$("#tb_org .row").remove();$("#tb_org").append(xcadena_org).trigger('create');});}
-function openImgIconDialog(obj,_opIcon){opIcon=_opIcon;xidSeccionIcon=obj.parentElement.dataset.id
-dialog_img_ico_carta.open();}
-function updateIconSeccion(obj){const _img=obj.dataIndex+'.png';xPopupLoad.xopen();$.ajax({type:'POST',url:'../../bdphp/log_004.php?op=8',data:{i:xidSeccionIcon,img:_img,opIcon:opIcon}}).done(function(a){if(opIcon===0){xLoadSecciones();}else{xLoadSecciones_bodega();}
-dialog_img_ico_carta.close();xPopupLoad.xclose();})}
-Polymer({is:'x-configuraciones',properties:{xt_org:Number,xt_idsede:Number,xt_idus:Number,dt_sede:Object,dt_cat:Object,dt_impr:Object,listIconSeccion:[]},attached:function(){this.selected_conf=0;xThisConfig=this;xIniConf();},detached:function(){}})/*]]>*/</script>
+<!-- <script type="text/javascript" src="../../view/socket.service.p.js"></script> -->
+
+<script>
+var xThisConfig, _arrPrintLocal=[], isSocket, numIconSeccion = 101, xRutaIconSeccion = '../../images/img-icon-carta/', xidSeccionIcon, opIcon;
+var xObjBorrar = 0; // object contiene informacion de la fila a borrar + tabla e id
+function _getCategoria(val) { console.log(val);}
+
+
+
+
+function xIniConf(){
+	xPopupLoad=document.getElementById('xLoad');
+	xm_LogChequea(function(){
+		xm_log_get('ini_us');
+		$('body').addClass('loaded');
+		//if(xIdOrg==='' || xIdOrg===undefined){xIdOrg=window.localStorage.getItem('::app3_wo');}
+		//if(xIdUsuario==='' || xIdUsuario===undefined){xIdUsuario=window.localStorage.getItem('::app3_woU');}
+		//if(xIdSede==='' || xIdSede===undefined){	xIdSede=window.localStorage.getItem('::app3_woS');}
+
+		xThisConfig.xt_org=xIdOrg;
+		xThisConfig.xt_idsede=xIdSede;
+		xThisConfig.xt_idus=xIdUsuario;
+
+		if (xIdOrg === "" || xIdOrg == undefined){
+			var _dtUs = xm_log_get('app3_us');
+			xThisConfig.xt_org=_dtUs.ido;
+			xThisConfig.xt_idsede=_dtUs.idsede;
+			xThisConfig.xt_idus=_dtUs.idus;	
+		}
+
+		_arrPrintLocal = [];
+
+		xLoadOrg();
+		xLoadCategoria();
+
+		isSocket = parseInt(xm_log_get('datos_org_sede')[0].pwa) === 0 ? false : true;
+
+		loadIconSeccion();
+	})
+	
+	// compFindSede=document.getElementById('compFindCategoria');
+    // compFindSede.addEventListener('getValorIncial', function (e) {
+    //     console.log('event: ', e.detail.categorias); // true
+	// });
+		
+
+	$("#Titulo_page").text("Configuraciones");
+	xThisConfig.selected_conf=0;
+
+	$('.xPasarEnter2').on('keyup',function(e){
+		var code=e.which;
+		if ( code==13||code==186 ) {
+			var inputs = $('input'); // storage a array of Inputs
+			var a = inputs.index(document.activeElement);
+			if (inputs[a + 1] !== null)
+			{
+			  var nextBox = inputs[a + 1];
+			  if(nextBox===undefined){return}
+			  if(nextBox.disabled){nextBox = inputs[a + 2]}
+
+			  if(nextBox==undefined){return;}
+			  nextBox.focus();
+			  nextBox.select();
+			  //event.preventDefault();
+			}
+			return false;
+		}
+	});
+	$(document).on('click','.check_adicional',function(e){
+		var xId=$(this).parents('tr').attr('data-id');
+		var xcheck_val=0;
+		if(this.checked==false){xcheck_val=1;}
+		$.ajax({ type: 'POST', url: '../../bdphp/log.php?op=105', data:{id:xId,t:'conf_print_adicionales',c:xcheck_val}})
+
+		event.stopPropagation();
+		e.stopPropagation();
+		e.stopImmediatePropagation()
+		return false;
+	})
+
+	$(document).on('click','.check_porcentaje_impuesto',function(e){
+		var xId=$(this).parents('tr').attr('data-id');
+		var xcheck_val=0;
+		if(this.checked==false){xcheck_val=1;}
+		$.ajax({ type: 'POST', url: '../../bdphp/log.php?op=106', data:{id:xId,t:'conf_print_detalle',c:xcheck_val, campo: 'activo'}})
+
+		event.stopPropagation();
+		e.stopPropagation();
+		e.stopImmediatePropagation()
+		return false;
+	})
+
+	$(document).on('click','.check_cpe',function(e){
+		var xId=$(this).parents('tr').attr('data-id');
+		const  xcheck_val= this.checked ? 1 : 0;
+		
+		$.ajax({ type: 'POST', url: '../../bdphp/log.php?op=106', data:{id:xId,t:'sede',c:xcheck_val, campo: 'facturacion_e_activo'}})
+
+		event.stopPropagation();
+		e.stopPropagation();
+		e.stopImmediatePropagation()
+		return false;
+	})
+
+
+	$("#tab_cnf").on('iron-select',function(){
+		switch(xThisConfig.selected_conf){
+		//case 0:;break;
+		case 1:xLoadCategoriaCarta();break;
+		case 2:xloadTPC();break;
+		case 3:xIniRegla();break;
+		case 4:xIniDatoPrint();break;
+		case 5:xLoadImpresorasConf();break;
+		case 6:xLoadAlmacenes();break;
+		case 7:config_comprobante_getall();break;
+	}
+	})
+
+	$('#fileAlamcen').change(function(){
+		xPopupLoad.xopen();
+        //xSubirXls($("#file"));
+        if($(this).val()==''){return}
+
+		//xContUpEnd++;
+		file=this.files[0]; name = file.name; size = file.size; type = file.type;
+		xNomFileXls=name;
+		xhr = new XMLHttpRequest();
+
+		xhr.upload.addEventListener ('load', transferenciaCompletaAlmacen, false);
+
+		xhr.open('POST','../../bdphp/upload.php',true);
+
+		xhr.setRequestHeader("Cache-Control", "no-cache");
+		xhr.setRequestHeader("X-Requested-With", "XMLHttpRequest");
+		xhr.setRequestHeader("X-File-Name", file.name);
+
+		xhr.send(file);
+	});
+
+	$(document).on('change',".xsel_sec_print",function(e){
+		var xid_secc_row=$(this).attr('data-id');
+		var xid_secc_print=this.value;
+		xGuardarCambiosSeccionPrint(xid_secc_row,xid_secc_print,0);
+
+		event.stopPropagation();
+		e.stopPropagation();
+		e.stopImmediatePropagation()
+		return false;
+	});
+
+	$(document).on('change',".xsel_sec_print_papel",function(e){
+		var xid_print = $(this).attr('data-id');
+		var xid_papel_value = this.value;
+		xGuardarCambiosSeccionPrintPapel(xid_print,xid_papel_value,0);
+
+		event.stopPropagation();
+		e.stopPropagation();
+		e.stopImmediatePropagation()
+		return false;
+	});
+
+	$(document).on('change',".xsel_sec_print_bodega",function(e){		
+		var xid_secc_row=$(this).attr('data-id');
+		var xid_secc_print=this.value;
+		xGuardarCambiosSeccionPrint(xid_secc_row,xid_secc_print,1);
+
+		event.stopPropagation();
+		e.stopPropagation();
+		e.stopImmediatePropagation()
+		return false;
+	})
+	$(document).on('change',".xsel_otros_print",function(e){
+		var xid_secc_row=$(this).attr('data-id');//==='0' ? '' : $(this).attr('data-id');
+		var xid_secc_print=this.value;
+		var xid_doc_print=$(this).parents('tr').attr('data-id');
+		xGuardarCambiosConfOtrosDoc(xid_doc_print,xid_secc_row,xid_secc_print);
+
+		event.stopPropagation();
+		e.stopPropagation();
+		e.stopImmediatePropagation()
+		return false;
+	})
+}
+
+function loadIconSeccion() {
+	var nomIcon = '', contador = 0, lisIcon = [];
+	xThisConfig.listIconSeccion = [];
+	while (contador <= numIconSeccion) {		
+		nomIcon = xRutaIconSeccion+contador+'.png';
+		lisIcon.push({img: nomIcon});
+		contador++;
+	}
+
+	xThisConfig.listIconSeccion = lisIcon;
+
+	console.log('xThisConfig.listIconSeccion', xThisConfig.listIconSeccion);
+}
+
+
+// dialog borrar
+function xDialogBorrarObj(obj) {
+	xThisConfig.xObjBorrar = obj;
+	dialog_borrar.open();
+}
+
+function xDlgBorrar() {
+	xBorrarItem(xThisConfig.xObjBorrar);
+	dialog_borrar.close();
+}
+
+///alamences////
+///alamences////
+function xSubirFileAlmacen(){
+	$('#fileAlamcen').click();
+}
+
+function transferenciaCompletaAlmacen(a){
+	xNomFileXls=xIdOrg+xIdSede+xNomFileXls;
+	xleerXls(xNomFileXls)
+}
+function xleerXls(xfile){
+	xIdA=sel_almacen_file.value;
+	if($("#fileAlamcen").val==""){return};
+	$.ajax({ type: 'POST', url: '../../bdphp/leer_excel.php?op=2',data:{f:xNomFileXls,fecha:xDevolverFecha(),a:xIdA}})
+	.done( function (dtUpP) {
+		console.log(dtUpP);
+		$("#fileAlamcen").val('');
+		xPopupLoad.xclose();
+		//var xrptUp=$.parseJSON(dtUpP);
+		//f(xrptUp.success==false){alert(xrptUp.error); return;}
+		dialog_subir_file_alamcen.close();
+		alert("Se subio la informacion correctamente.");
+	})
+}
+
+$(document).on('change','.check_almacen',function(e){
+	var xid_al=$(this).parents('tr').attr("data-id");
+	var xcampo_al=$(this).attr("data-campo");
+	var xval_check=this.checked ? 1:0;
+	$.ajax({ type: 'POST', url: '../../bdphp/log.php?op=1605', data:{id:xid_al,t:'conf_print_adicionales', campo:xcampo_al,valor:xval_check}})
+	event.stopPropagation();
+	e.stopPropagation();
+	e.stopImmediatePropagation()
+	return false;
+})
+function xAddAlmacen(){
+	$("#form_almacen #bodega").val(sel_bodega.value);
+	$("#form_almacen #imprimir_comanda").val(sel_imprime_comanda.value);
+	xPopupLoad.xopen();
+	$.post("../../bdphp/ManejoBD_IUD.php?tb=almacen",$("#form_almacen").serialize(),function(a){
+		xPopupLoad.xclose();
+		$("#form_almacen").reset();
+		xPopupLoad.xclose();
+		xLoadAlmacenes();
+	})
+}
+function xLoadAlmacenes(){
+	$("#tb_almacenes .row").remove();
+	$("#tb_almacenes").append('<tr class="row"><td colspan="3"><paper-spinner active></paper-spinner></td></tr>');
+	$.ajax({ type: 'POST', url: '../../bdphp/log.php?op=1604'})
+	.done( function (dtAlm) {
+		var xdtAlm=$.parseJSON(dtAlm);
+		var xcadena_tr_alm='';
+		var xcadena_sel_almacen_file='';
+		xdtAlm=xdtAlm.datos;
+		for (var i = 0; i < xdtAlm.length; i++) {
+			xcadena_sel_almacen_file=String(xcadena_sel_almacen_file+ '<option value='+xdtAlm[i].idalmacen+'>'+xdtAlm[i].descripcion+'</option>');
+			xsi_bodega=xdtAlm[i].bodega==1 ? 'checked':'';
+			xsi_imprmime_p=xdtAlm[i].imprimir_comanda==1 ? 'checked':'';
+			xcadena_tr_alm=String(xcadena_tr_alm+'<tr class="row" data-id="'+xdtAlm[i].idalmacen+'"><td>'+xdtAlm[i].descripcion+'</td>'+
+				'<td><paper-checkbox class="check_almacen" data-campo="bodega" id="ch_bodega" '+xsi_bodega+'></paper-checkbox></td>'+
+				'<td><paper-checkbox class="check_almacen" data-campo="imprimir_comanda" id="ch_print_comanda" '+xsi_imprmime_p+'></paper-checkbox></td>'+
+				'</tr>')
+		};
+		$("#tb_almacenes .row").remove();
+		$("#tb_almacenes").append(xcadena_tr_alm).trigger('create');
+		$("#sel_almacen_file").html(xcadena_sel_almacen_file).trigger('create');
+	});
+}
+
+function xDescargarXls(){
+		var iframe;
+        iframe = document.getElementById("download-container");
+        if (iframe === null)
+        {
+            iframe = document.createElement('iframe');
+            iframe.id = "download-container";
+            iframe.style.visibility = 'hidden';
+            iframe.style.display='none';
+            document.body.appendChild(iframe);
+        }
+        iframe.src = '../../file/ingresar_productos.xls';
+}
+///alamences////
+///alamences////
+
+////////impreosras y secciones
+////////impreosras y secciones
+function xAddImpresora(){
+	xPopupLoad.xopen();
+	$.post("../../bdphp/ManejoBD_IUD.php?tb=impresora",$("#form_impresoras").serialize(),function(a){
+		xPopupLoad.xclose();
+		//$("#form_impresoras").reset();
+		$("#form_impresoras #descripcion").val('');
+		$("#form_impresoras #ip").val('');
+		$("#form_impresoras #var_margen_iz").val('');
+		$("#form_impresoras #var_size_font").val('');
+		$("#form_impresoras #img64").val('');
+		$("#form_impresoras #descripcion").focus();
+		xPopupLoad.xclose();
+		xLoadImpresorasConf();
+	})
+}
+function xAddImpresora_local(){
+	xPopupLoad.xopen();
+
+	//$.post("../../bdphp/ManejoBD_IUD.php?tb=impresora",$("#form_impresora_local").serialize(),function(a){
+	
+	var _ip = $(".tr_addPrint_local #ip").val();
+	var _des = $(".tr_addPrint_local #descripcion").val();
+	var _margen = $(".tr_addPrint_local #var_margen_iz").val(); 
+	var _font = $(".tr_addPrint_local #var_size_font").val();
+	var _img64 = $(".tr_addPrint_local #img64").val();
+	var _imprimirCopia = check_print_copia_local.checked ? 1 : 0; // indica si se imprime una copia del pedido en la impresora local
+	var _numCopias = $(".tr_addPrint_local #num_copias").val(); // indica el numero de copias que se imprime en la impresora local
+	var _papel_size = $(".tr_addPrint_local #select_papel_caja").val();
+	
+	_margen = _margen === '' ? 0 : _margen;
+	_font = _font === '' ? 0 : _font;
+
+	$.ajax({ type: 'POST', url: '../../bdphp/log.php?op=-1061', data:{'ip':_ip,'des':_des,'margen':_margen,'font':_font, 'img64': _img64, 'copia_local': _imprimirCopia, 'num_copias': _numCopias, 'papel_size': _papel_size}})
+	.done( function (dtImp) {
+		xPopupLoad.xclose();
+		// document.cookie="app3_print_ID="+$(".tr_addPrint_local #descripcion").val(); 
+		window.localStorage.setItem("::app3_woIpPrintLoC",_des);
+		//$("#form_impresora_local").reset();
+		//xPopupLoad.xclose();
+		xLoadImpresorasConf();
+	})
+}
+function xLoadImpresorasConf(){
+	$("#tb_impresoras .row").remove();
+	$("#tb_impresoras").append('<tr class="row"><td colspan="3"><paper-spinner active></paper-spinner></td></tr>');
+	$.ajax({ type: 'POST', url: '../../bdphp/log.php?op=-105'})
+	.done( function (dtImp) {
+		var xdtImp=$.parseJSON(dtImp),xcadena_impr='',xcandena_sel_print=''
+		,xCockie_ipID=window.localStorage.getItem('::app3_woIpPrintLoC'),xminutos_pedido='';
+		//getCookie("app3_print_ID")
+
+		_arrPrintLocal=[];
+		xdtImp=xdtImp.datos;
+		$("#btn_borrar_print_local").addClass('xInvisible');
+		for (var i = 0; i < xdtImp.length; i++) {
+			if(xdtImp[i].local==1){// impresora local
+				// if(xdtImp[i].descripcion==xCockie_ipID){
+				// 	$(".tr_addPrint_local").attr('data-id',xdtImp[i].idimpresora);
+				// 	$("#form_impresora_local #idimpresora").val(xdtImp[i].idimpresora);
+				// 	$(".tr_addPrint_local #descripcion").val(xdtImp[i].descripcion);
+				// 	$(".tr_addPrint_local #ip").val(xdtImp[i].ip);
+				// 	$(".tr_addPrint_local #var_size_font").val(xdtImp[i].var_size_font);
+				// 	$(".tr_addPrint_local #var_margen_iz").val(xdtImp[i].var_margen_iz);
+				// 	$(".tr_addPrint_local #img64").val(xdtImp[i].img64);
+				// 	$(".tr_addPrint_local #num_copias").val(xdtImp[i].num_copias);
+				// 	$("#form_impresora_local #local").val(1)
+				// 	$("#btn_borrar_print_local").removeClass('xInvisible');
+
+				// 	check_print_copia_local.checked = xdtImp[i].copia_local === "0" ? false : true;
+				// }
+
+				_arrPrintLocal.push(xdtImp[i]);
+				continue;
+			}
+
+			xminutos_pedido=xdtImp[i].minutos_pedido;
+			if(xminutos_pedido===""){xminutos_pedido='0';}
+
+			//papel 
+			$("#select_papel_zona  option[value="+xdtImp[i].papel_size+"]").attr('selected','selected');			
+
+			xcadena_impr=String(xcadena_impr+'<tr class="row" data-t="impresora" data-id="'+xdtImp[i].idimpresora+'"><td data-campo="descripcion"><span onclick="xModRow(this,0);">'+xdtImp[i].descripcion+'</span></td><td data-campo="minutos_pedido"><span onclick="xModRow(this,1);">'+xminutos_pedido+'</span></td><td data-campo="ip"><span onclick="xModRow(this,2);">'+xdtImp[i].ip+'</span></td><td data-campo="var_size_font"><span onclick="xModRow(this,0);">'+xdtImp[i].var_size_font+'</span></td>'+ 
+				'<td  data-campo="var_margen_iz"><span onclick="xModRow(this,4);">'+xdtImp[i].var_margen_iz+'</span></td>'+
+				'<td  data-campo="img64"><span onclick="xModRow(this,4);">' + xdtImp[i].img64 + '</span></td>' +
+				'<td  data-papel="papel" data-id="'+xdtImp[i].idimpresora+'">'+
+					'<select class="xsel_sec_print_papel" data-id="'+xdtImp[i].idimpresora+'">'+$("#select_papel_zona")[0].innerHTML + '</select>'+
+				'</td>'+
+				'<td><span class="xDeleteRow" title="Borrar" onclick="xDialogBorrarObj(this);"></span></td></tr>')
+			xcandena_sel_print=xcandena_sel_print+'<option value="'+xdtImp[i].idimpresora+'">'+xdtImp[i].descripcion+'</option>';
+
+			$("#select_papel_zona  option[value="+xdtImp[i].papel_size+"]").attr('selected',false);
+		};
+
+		xLoadImpresoraLocal();
+		$("#tb_impresoras .row").remove();
+		$("#tb_impresoras").append(xcadena_impr).trigger('create');
+
+		xcandena_sel_print=xcandena_sel_print+'<option value=0>Ninguno</option>';
+		$("#sel_impr_Sec").html(xcandena_sel_print).trigger('create');
+		$("#sel_impr_Sec_bodega").html(xcandena_sel_print).trigger('create');
+		//encabezado pie de pagina logo
+		$.ajax({ type: 'POST', url: '../../bdphp/log.php?op=307'})
+		.done( function (DtPrint) {
+			xThisConfig.dt_impr=$.parseJSON(DtPrint);
+			xThisConfig.dt_impr=xThisConfig.dt_impr.datos;
+
+			xLoadSecciones();
+		});
+	})
+}
+
+function xLoadImpresoraLocal() {
+	var _cadenaPrintLocal='';
+	const cantPrintLocal = _arrPrintLocal.length;
+	
+	const xCockie_ipID = window.localStorage.getItem('::app3_woIpPrintLoC'), xminutos_pedido = '';
+	//si solo hay una impresora registrada lo marca como asignado
+	const estadoIni = cantPrintLocal === 1 ? '<p class="xFondoRowverde"><strong>Asignado</strong></p>' : '<a href="#" class="cursor" onclick="xAsignarPrintLocal(this)" title="Asignar impresora a ESTE equipo">Asingar</a>'; 	
+	_arrPrintLocal.map(x => {		
+		$("#select_papel_caja  option[value="+x.papel_size+"]").attr('selected','selected');
+		const labelAsignado = x.descripcion === xCockie_ipID ? '<p class="xFondoRowverde"><strong>Asignado</strong></p>' : estadoIni;
+		_cadenaPrintLocal += `<tr class="row" data-des="${x.descripcion}" data-id="${x.idimpresora}" data-t="impresora">
+				<td>${x.descripcion}</td>
+				<td>${x.ip}</td>
+				<td>${x.num_copias}</td>
+				<td>${x.var_size_font}</td>
+				<td>${x.var_margen_iz}</td>
+				<td>${x.img64}</td>
+				<td  data-papel="papel" data-id="${x.idimpresora}">
+					<select class="xsel_sec_print_papel" data-id="${x.idimpresora}">'${ $("#select_papel_caja")[0].innerHTML}'</select>
+				</td>
+				<td>${labelAsignado}</td>
+				<td><span class="xDeleteRow" title="Borrar" onclick="xDialogBorrarObj(this);"></span></td>
+			</tr>`;
+
+		$("#select_papel_caja  option[value="+x.papel_size+"]").attr('selected',false);
+	});
+
+
+	$("#tb_impresora_local .row").remove();
+	$("#tb_impresora_local").append(_cadenaPrintLocal).trigger('create');
+}
+
+function xAsignarPrintLocal(obj) {
+	const idPrintLocal = $(obj).parent().parent().attr('data-des');
+	window.localStorage.setItem("::app3_woIpPrintLoC", idPrintLocal);
+	xLoadImpresoraLocal();
+}
+
+// guarda copia_local a todas las impresoras locales
+function printCopialocalAll() {
+	const _imprimirCopia = check_print_copia_local.checked ? 0 : 1;
+	$.ajax({ type: 'POST', url: '../../bdphp/log.php?op=-1051', data: { copia_local: _imprimirCopia } })
+	
+}
+
+function xModRow(obj,tipo){
+	var xvalObj=$(obj).text();
+	if($(obj).find('input').length>0){$(obj).find('input').select();return;}
+	$(obj).html('<input type="text" class="xMiInput xPasarEnter2 xAlinearIzquierda" onblur="xModBlur(this,'+tipo+')" value="'+xvalObj+'" select>').trigger('create');
+	$(obj).find('input').select();
+}
+function xModBlur(obj,tipo){
+	var xvalObj=$(obj).val(),xtb=$(obj).parents('table'),xrow_obj=$(obj).parent(),xid_row=$(xrow_obj).parents('.row').attr('data-id'),xcampo_row=$(xrow_obj).parent().attr('data-campo');
+	$.ajax({ type: 'POST', url: '../../bdphp/log.php?op=2106',data:{campo:xcampo_row,valor:xvalObj,id:xid_row}})
+	.done( function (dtPrint) {
+		if(dtPrint.indexOf('Error')!=-1){alert(dtPrint)}
+	})
+}
+
+function xModRowImpuesto(obj){
+	var xvalObj=$(obj).text();
+	if($(obj).find('input').length>0){$(obj).find('input').select();return;}
+	$(obj).html('<input type="number" min="0" class="xMiInput" placeholder="porcentaje" pattern="0|[1-9][0-9]*" onblur="xModBlurImpuesto(this)" value="'+xvalObj+'" select>').trigger('create');
+	$(obj).find('input').select();
+}
+function xModBlurImpuesto(obj){
+	var xvalObj=$(obj).val(),
+		xtb=$(obj).parents('table'),
+		xrow_obj=$(obj).parent(),
+		xid_row=$(xrow_obj).parents('.row').attr('data-id');
+		
+	$.ajax({ type: 'POST', url: '../../bdphp/log.php?op=2107',data:{campo:'porcentaje',valor:xvalObj,id:xid_row}})
+	.done( function (dtPrint) {
+		if(dtPrint.indexOf('Error')!=-1){alert(dtPrint)}
+	})
+}
+
+function xBorrarItemPrintLocal(obj){
+	xRowObj=obj.parentNode.parentNode;
+	xTableRow=$(xRowObj).attr('data-t');
+	xIdROw=$(xRowObj).attr('data-id')
+	xBorrarRegistro(xTableRow,xIdROw);
+	$("#form_impresora_local").reset();
+	xLoadImpresorasConf();
+}
+function xTestPrint(xOpC){
+	var xArrayPasarTest=new Array();
+	var xClasTr='', sel_papel='';
+	if(xOpC==0){xClasTr='.tr_addPrint';sel_papel=' #select_papel_zona';}else{xClasTr='.tr_addPrint_local';sel_papel=' #select_papel_caja';}
+	xArrayPasarTest={
+		'ip_print':$(xClasTr+" #ip").val(),
+		'mum_copias':0,
+		'pie_pagina':xThisConfig.dt_impr[0].pie_pagina,
+		'logo':xThisConfig.dt_impr[0].logo,
+		'size_font':$(xClasTr+" #var_size_font").val(),
+		'margen_iz':$(xClasTr+" #var_margen_iz").val(), 
+		// 'img64': $(xClasTr + " #img64").val(),
+		'papel_size': $(xClasTr + sel_papel).val()
+	};
+
+	// si eta en la web
+	console.log('print params', xArrayPasarTest);
+	const _sys_local = parseInt(xm_log_get('datos_org_sede')[0].sys_local);
+	const _data = {
+		Array_enca:xArrayPasarTest
+	}
+
+	if (_sys_local === 1) {
+		xPopupLoad.xopen();
+		xSendDataPrintServer(_data, 3, 'prueba');
+		setTimeout(() => {
+			xPopupLoad.xclose();			
+		}, 1000);
+		return;
+	}
+	///
+	
+	$.ajax({ type: 'POST', url: '../../print/x-test_print.php',data:{Array_enca:xArrayPasarTest}})
+	.done( function (dtPrint) {
+		if(dtPrint.indexOf('Error')!=-1){alert(dtPrint)}
+	})
+}
+
+function xLoadSecciones(){
+	$.ajax({ type: 'POST', url: '../../bdphp/log.php?op=409'})
+	.done( function (dtSec) {
+		var xdtSec=$.parseJSON(dtSec);
+		var xCadena_sec='', imgIcon = '';
+		//var xsel_impr=$("#sel_impr_Sec");
+		xdtSec=xdtSec.datos
+		for (var i = 0; i < xdtSec.length; i++) {
+			imgIcono = xdtSec[i].img != '' ? xdtSec[i].img : i+'.png';
+			//sel_impr_Sec.value=xdtSec[i].idimpresora;
+			//$("#sel_impr_Sec > option")[0].css('checked','true')
+			//sel_impr_Sec.options[xdtSec[i].idimpresora].selected=true;
+
+			$("#sel_impr_Sec  option[value="+xdtSec[i].idimpresora+"]").attr('selected','selected');
+			xCadena_sec=String(xCadena_sec+'<tr class="row" data-t="seccion" data-id="'+xdtSec[i].idseccion+'">'+
+												'<td onclick="openImgIconDialog(this, 0)"> <img class="img-ico-seccion xCursor" src="'+ xRutaIconSeccion + imgIcono+'" alt="img-ico">'+xdtSec[i].plato+'</td>'+
+												'<td><select class="xsel_sec_print" data-id="'+xdtSec[i].idseccion+'">'+$("#sel_impr_Sec")[0].innerHTML+'</select></td>'+
+												'<td><span class="xDeleteRow" title="Borrar" onclick="xDialogBorrarObj(this);"></span></td>'+
+												'</tr>')
+			$("#sel_impr_Sec  option[value="+xdtSec[i].idimpresora+"]").attr('selected',false);
+		};
+		$("#tb_sec_impr .row").remove();
+		$("#tb_sec_impr").append(xCadena_sec).trigger('create');
+
+		xLoadSecciones_bodega();
+		//xLoadConfOtrosDoc();
+	})
+}
+
+function xLoadSecciones_bodega(){
+	$.ajax({ type: 'POST', url: '../../bdphp/log.php?op=40901'})
+	.done( function (dtSec) {
+		var xdtSec=$.parseJSON(dtSec);
+		var xCadena_sec='',imgIcono = '';
+		//var xsel_impr=$("#sel_impr_Sec");
+		xdtSec=xdtSec.datos
+		for (var i = 0; i < xdtSec.length; i++) {
+			imgIcono = xdtSec[i].img != '' ? xdtSec[i].img : i+'.png';
+			//sel_impr_Sec.value=xdtSec[i].idimpresora;
+			//$("#sel_impr_Sec > option")[0].css('checked','true')
+			//sel_impr_Sec.options[xdtSec[i].idimpresora].selected=true;
+			$("#sel_impr_Sec_bodega  option[value="+xdtSec[i].idimpresora+"]").attr('selected','selected')
+			xCadena_sec=String(xCadena_sec+'<tr class="row" data-t="seccion" data-id="'+xdtSec[i].idseccion+'">'+
+				'<td onclick="openImgIconDialog(this, 1)"><img class="img-ico-seccion xCursor" src="'+ xRutaIconSeccion + imgIcono+'" alt="img-ico">'+xdtSec[i].plato+'</td>'+
+				'<td><select class="xsel_sec_print_bodega" data-id="'+xdtSec[i].idseccion+'" option="'+xdtSec[i].idimpresora+'">'+$("#sel_impr_Sec_bodega")[0].innerHTML+'</select></td>'+
+				'</tr>')
+			//$("#sel_impr_Sec_bodega  option[value="+xdtSec[i].idimpresora+"]").attr('selected','selected')
+		};
+		if(xdtSec.length>0){
+			$("#tb_sec_impr_bodega .row").remove();
+			$("#tb_sec_impr_bodega").append(xCadena_sec).trigger('create');
+			$("#div_secciones_bodega").removeClass('xInvisible');
+		}
+		xLoadConfOtrosDoc();
+	})
+}
+
+function xGuardarCambiosSeccionPrint(id_row,id_print,xes_bodega){
+	var xnum_op;
+	if(xes_bodega===1){xnum_op='40101';}else{xnum_op='4010';}
+	$.ajax({ type: 'POST', url: '../../bdphp/log.php?op='+xnum_op,data:{ids:id_row,idp:id_print}})
+}
+
+function xGuardarCambiosSeccionPrintPapel(_id_print,_papel){
+	$.ajax({ type: 'POST', url: '../../bdphp/log.php?op=40102',data:{id:_id_print,papel:_papel}})	
+}
+
+function xLoadConfOtrosDoc(){
+	$.ajax({ type: 'POST', url: '../../bdphp/log.php?op=4011'})
+	.done( function (dtCf_od) {
+		var xdtCf_od=$.parseJSON(dtCf_od);
+		xdtCf_od=xdtCf_od.datos;
+		for (var i = 0; i < xdtCf_od.length; i++) {
+			$("#sel_impr_Sec  option[value="+xdtCf_od[i].idimpresora+"]").attr('selected','selected');
+			$("#tb_otros_dic .row #row"+xdtCf_od[i].idtipo_otro).html('<select data-id='+xdtCf_od[i].conf_print_otros+' class="xsel_otros_print">'+$("#sel_impr_Sec")[0].innerHTML+'</select>').trigger('create');
+			$("#sel_impr_Sec  option[value="+xdtCf_od[i].idimpresora+"]").attr('selected',false);
+		}
+		//si esta vacio //nuevp
+		if(xdtCf_od.length==0){
+			$("#tb_otros_dic .row").each(function(index,element){
+				$(element).find('.td_sel_ot_print').html('<select data-id class="xsel_otros_print">'+$("#sel_impr_Sec")[0].innerHTML+'</select>').trigger('create');
+			})
+		}
+	})
+}
+function xGuardarCambiosConfOtrosDoc(id_doc,id_row,id_print){
+	$.ajax({ type: 'POST', url: '../../bdphp/log.php?op=4012',data:{iddoc:id_doc,ids:id_row,idp:id_print}})
+	.done((res)=> {
+		console.log(res);
+	});
+	
+}
+////////////////////
+////////////////////
+
+
+///TIPOS DE CONSUMO///////////////
+///TIPOS DE CONSUMO///////////////
+function xloadTPC(){
+	$("#tb_tpc").append('<tr class="row"><td colspan="3"><paper-spinner active></paper-spinner></td></tr>');
+	$.ajax({ type: 'POST', url: '../../bdphp/log.php?op=406'})
+	.done( function (dtTpc) {
+		var xdtTpc=$.parseJSON(dtTpc);
+		var xCadenaTPC='';
+		var xCadenaTPC_sel='';
+		xdtTpc=xdtTpc.datos;
+		for (var i = 0; i < xdtTpc.length; i++) {
+			xCadenaTPC=String(xCadenaTPC+'<tr class="row" data-id="'+xdtTpc[i].idtipo_consumo+'" data-t="tipo_consumo"><td>'+xdtTpc[i].descripcion+'</td><td><span class="xDeleteRow" title="Borrar" onclick="xDialogBorrarObj(this);"></span></td></tr>')
+			xCadenaTPC_sel=String(xCadenaTPC_sel+'<option value="'+xdtTpc[i].idtipo_consumo+'">'+xdtTpc[i].descripcion+'</option>');
+		};
+		$("#tb_tpc .row").remove();
+		$("#tb_tpc").append(xCadenaTPC).trigger('create');
+		$("#selTPC_adicional").html(xCadenaTPC_sel).trigger('create');
+	});
+}
+function xGuardarTPC(){
+	xPopupLoad.xopen();
+	$.post("../../bdphp/ManejoBD_IUD.php?tb=tipo_consumo",$("#frm_tpc").serialize(),function(a){
+		xPopupLoad.xclose();
+		$("#frm_tpc").reset();
+		dialog_add_tpc.close();
+		xloadTPC();
+	})
+}
+
+///DATOS PRINT///////////////
+///DATOS PRINT///////////////
+function xIniDatoPrint(){
+
+	xLoadConf();
+	xloadTPC();
+
+	$("#ctrl_open_file").change(function(e) {
+		for (var i = 0; i < e.originalEvent.srcElement.files.length; i++) {
+			var file = e.originalEvent.srcElement.files[i];
+			$("#td_logo").val(file.name);
+			//$("#ctrl_open_file").after(img);
+
+			if (file) {
+				var reader = new FileReader();
+				reader.onload = function (e) {
+					$('#imgLogo').attr('src', e.target.result);
+				}
+				reader.readAsDataURL(file);
+				xConvertBase64Img();
+			}
+		}
+	});
+}
+function xLoadConf(){
+	$.ajax({ type: 'POST', url: '../../bdphp/log.php?op=401'})
+	.done( function (dtPrint) {
+		var xdtPrint=$.parseJSON(dtPrint);
+		var xCadenaPrint='', pie_pagina_comprobante='';
+		xdtPrint=xdtPrint.datos;
+
+		pie_pagina_comprobante = xdtPrint[0].pie_pagina_comprobante === '' ? const_pie_pagina_comprobante : xdtPrint[0].pie_pagina_comprobante;
+		xIdConf='';
+		xIdConf=xdtPrint[0].idconf_print;
+		$("#td_ip").val(xdtPrint[0].ip_print);
+		$("#td_copia").val(xdtPrint[0].num_copias);
+		$("#td_pie").val(xdtPrint[0].pie_pagina);
+		$("#td_pie_comprobante").val(pie_pagina_comprobante);
+		$("#td_logo").val(xdtPrint[0].logo);
+		$("#td_margen_iz").val(xdtPrint[0].var_margen_iz);
+		$("#td_size_font").val(xdtPrint[0].var_size_font);
+		$("#td_img64").val(xdtPrint[0].var_size_font);
+		$("#sel_size_font_comanda").val(xdtPrint[0].var_size_font_tall_comanda).change();
+
+		xLoadPorcentaje();
+		xLoadAdicionales();
+	});
+}
+function xGuardarCambioPrint(){
+	xPopupLoad.xopen();
+	$("#frm_conf_print #idconf_print").val(xIdConf);
+	$("#frm_conf_print #ip_print").val($("#td_ip").val());
+	$("#frm_conf_print #num_copias").val($("#td_copia").val());
+	$("#frm_conf_print #pie_pagina").val($("#td_pie").val());
+	$("#frm_conf_print #pie_pagina_comprobante").val($("#td_pie_comprobante").val());
+	$("#frm_conf_print #var_margen_iz").val($("#td_margen_iz").val());
+	$("#frm_conf_print #var_size_font").val($("#td_size_font").val());
+	$("#frm_conf_print #var_size_font_tall_comanda").val($("#sel_size_font_comanda").val());
+	$("#frm_conf_print #idsede").val(xThisConfig.xt_idsede);
+	$("#frm_conf_print #idorg").val(xThisConfig.xt_org);
+	// $("#frm_conf_print #papel_size").val($("#select_papel_caja").val());
+	// $("#frm_conf_print #img64").val($("#td_img64").val());
+
+	$.post("../../bdphp/ManejoBD_IUD.php?tb=conf_print",$("#frm_conf_print").serialize(),function(a){
+		xPopupLoad.xclose();
+		xIdConf=a;
+		xItemGuardarFoto();
+		//xLoadReglasCarta();
+	});
+
+}
+function xPruebaTestPrint(){
+	var xArrayPasarTest=new Array();
+	xArrayPasarTest={
+		'ip_print':$("#td_ip").val(),
+		'mum_copias':$("#td_copia").val(),
+		'pie_pagina':$("#td_pie").val(),
+		'logo':$("#td_logo").val(),
+		'size_font':$("#td_size_font").val(),
+		'margen_iz':$("#td_margen_iz").val(), 
+		'margen_iz': $("#td_margen_iz").val(),
+		'var_size_font_tall_comanda': $("#sel_size_font_comanda").val(),
+		// 'papel_size': $("#select_papel_caja").val()
+	};
+
+	// si eta en la web
+	const _sys_local = parseInt(xm_log_get('datos_org_sede')[0].sys_local);
+	const _data = {
+		Array_enca:xArrayPasarTest
+	}
+
+	if (_sys_local === 1) {
+		xPopupLoad.xopen();
+		xSendDataPrintServer(_data, 3, 'prueba');
+		setTimeout(() => {
+			xPopupLoad.xclose();			
+		}, 1000);
+		return;
+	}
+	///
+
+
+	$.ajax({ type: 'POST', url: '../../print/x-test_print.php',data:{Array_enca:xArrayPasarTest}})
+	.done( function (dtPrint) {
+		if(dtPrint.indexOf('Error')!=-1){alert(dtPrint)}
+	})
+}
+
+
+
+function xSeleccionarFoto(){
+	$("#ctrl_open_file").click();
+}
+
+function xConvertBase64Img() {
+	var c = document.createElement('canvas');
+	var img = document.getElementById('imgLogo');
+	c.height = img.naturalHeight;
+	c.width = img.naturalWidth;
+	var ctx = c.getContext('2d');
+
+	ctx.drawImage(img, 0, 0, c.width, c.height, 0, 0, c.width, c.height);
+	return c.toDataURL();
+}
+
+function xItemGuardarFoto(){
+	$(".xobj_subir_foto").each(function(index, element) {
+	if($(this).val()==''){return}
+	file=this.files[0]; name = file.name; size = file.size; type = file.type;
+	xhr = new XMLHttpRequest();
+	xhr.upload.addEventListener ('load', transferenciaCompleta(name), false);
+
+	xhr.open('POST','upload.php?op=2',true);
+
+	xhr.setRequestHeader("Cache-Control", "no-cache");
+	xhr.setRequestHeader("X-Requested-With", "XMLHttpRequest");
+	xhr.setRequestHeader("X-File-Name", file.name);
+	xhr.send(file);
+	});
+};
+
+function transferenciaCompleta(xfile){
+	xfile=xThisConfig.xt_org+xThisConfig.xt_idsede+xfile;
+	const logo64 = xConvertBase64Img();
+	$.ajax({ type: 'POST', url: '../../bdphp/log.php?op=208', data:{i: xIdConf, d: xfile, logo: logo64}})
+	.done( function (a) {
+		$("#td_logo").val(xfile);
+		xPopupLoad.xclose();
+	})
+}
+function xLoadPorcentaje(){
+	$.ajax({ type: 'POST', url: '../../bdphp/log.php?op=407', data:{i:xIdConf}})
+	.done( function (dtPor) {
+		$("#tb_porcentaje .row").remove();
+		var xCadenaPor='', xCadenaPorNoFacturable = '';
+		var xdtPor=$.parseJSON(dtPor);
+		xdtPor=xdtPor.datos;
+
+		for (var i = 0; i < xdtPor.length; i++) {
+			const checkActivo = parseInt(xdtPor[i].activo) === 0 ? 'checked' : '';
+			if ( parseInt(xdtPor[i].es_impuesto) === 1 ) {
+				xCadenaPor = String(xCadenaPor+'<tr class="row" data-t="conf_print_detalle" data-id="'+xdtPor[i].idconf_print_detalle+'"><td><paper-checkbox class="check_porcentaje_impuesto" '+ checkActivo +'></paper-checkbox></td><td>'+xdtPor[i].descripcion+'</td><td style="width: 25%;"><span onclick="xModRowImpuesto(this);">'+xdtPor[i].porcentaje+'</span></td></tr>');
+			} else {
+				xCadenaPorNoFacturable = String(xCadenaPorNoFacturable+'<tr class="row" data-t="conf_print_detalle" data-id="'+xdtPor[i].idconf_print_detalle+'"><td>'+xdtPor[i].descripcion+'</td><td>'+xdtPor[i].porcentaje+'</td><td><div class="xDeleteRow" onClick="xDialogBorrarObj(this)" title="Borrar"></div></td></tr>');
+			}			
+		};
+
+		$("#tb_porcentaje tbody").append(xCadenaPor).trigger('create');
+		$("#tb_porcentaje_no_facturable").append(xCadenaPorNoFacturable).trigger('create');
+	});
+}
+function xLoadAdicionales(){
+	$.ajax({ type: 'POST', url: '../../bdphp/log.php?op=408', data:{i:xIdConf}})
+	.done( function (dtAd) {
+		$("#tb_Adicionales .row").remove();
+		var xCadenaAd='';
+		var xCheck_ac='';
+		var dtAd=$.parseJSON(dtAd);
+		dtAd=dtAd.datos;
+		for (var i = 0; i < dtAd.length; i++) {
+			xCheck_ac='';
+			const nivel = parseInt(dtAd[i].nivel) === 0 ? 'POR ITEM' : 'POR PEDIDO';
+
+			if(dtAd[i].estado==0){xCheck_ac='checked';}
+			
+			xCadenaAd=String(xCadenaAd+'<tr class="row" data-t="conf_print_adicionales" data-id="'+dtAd[i].idconf_print_adicionales+'"><td><paper-checkbox class="check_adicional" '+xCheck_ac+'></paper-checkbox></td><td>'+dtAd[i].descripcion+'</td><td>'+dtAd[i].des_tipo_consumo+'</td><td>'+nivel+'</td><td>'+dtAd[i].des_seccion+'</td><td>'+dtAd[i].importe+'</td><td><div class="xDeleteRow" onClick="xBorrarRegistro(this)" title="Borrar"></div></td></tr>');
+		};
+		$("#tb_Adicionales").append(xCadenaAd).trigger('create');
+	});
+}
+function xAddPorcentaje(){
+	xcadena='';
+	xvalidateForm('formProcentajeNoFacturable',function(a){
+		if(a===false){return;}
+		$("#formProcentajeNoFacturable #idconf_print").val(xIdConf);
+		$.post("../../bdphp/ManejoBD_IUD.php?tb=conf_print_detalle",$("#formProcentajeNoFacturable").serialize(),function(xUltimoId){
+			xcadena=String(xcadena+'<tr class="row" data-t="conf_print_detalle" data-id="'+xUltimoId+'"><td>'+$("#formProcentajeNoFacturable #descripcion").val()+'</td><td>'+$("#formProcentajeNoFacturable #porcentaje").val()+'</td><td><div class="xDeleteRow" onClick="xDialogBorrarObj(this)" title="Borrar"></div></td></tr>');
+			$("#tb_porcentaje_no_facturable").append(xcadena).trigger('create');
+			$('#tb_porcentaje_no_facturable').reset();
+			$("#tb_porcentaje_no_facturable #descripcion").focus();
+		});
+	});
+}
+
+
+function xAddAdicional(){
+	xcadena='';
+	xvalidateForm('formAdicionales',function(a){
+		if(a===false){return;}
+		$("#formAdicionales #idconf_print").val(xIdConf);
+		$("#formAdicionales #idtipo_consumo").val($("#selTPC_adicional").val());
+		$("#formAdicionales #idseccion").val($("#selSeccion_adicional").val());
+		$("#formAdicionales #nivel").val($("#selNivel_adicional").val());
+		const xdes_tpc_sel=selTPC_adicional[selTPC_adicional.selectedIndex].textContent;
+		const xdes_ad_seccion=selSeccion_adicional[selSeccion_adicional.selectedIndex].textContent;
+		const xdes_nivel_seccion=selNivel_adicional[selNivel_adicional.selectedIndex].textContent;
+		$.post("../../bdphp/ManejoBD_IUD.php?tb=conf_print_adicionales",$("#formAdicionales").serialize(),function(xUltimoId){
+			xcadena=String(xcadena+'<tr class="row" data-t="conf_print_adicionales" data-id="'+xUltimoId+'"><td><paper-checkbox class="check_adicional" checked></paper-checkbox></td><td>'+$("#formAdicionales #descripcion").val()+'</td><td>'+xdes_tpc_sel+'</td><td>'+xdes_nivel_seccion+'</td><td>'+xdes_ad_seccion+'</td><td>'+$("#formAdicionales #importe").val()+'</td><td><div class="xDeleteRow" onClick="xDialogBorrarObj(this)" title="Borrar"></div></td></tr>');
+			$("#tb_Adicionales").append(xcadena).trigger('create');
+			$('#formAdicionales').reset();
+			$("#formAdicionales #descripcion").focus();
+		});
+	});
+}
+///DATOS PRINT///////////////
+///DATOS PRINT///////////////
+
+
+
+///REGLAS CARTA///////////////
+///REGLAS CARTA///////////////
+function xIniRegla(){
+	//xLoadCategoria();
+	xLoadReglasCarta();
+}
+
+function xAddRegla(){
+	var xidSel=$("#selSeccion").val();
+	var xidSelCon=$("#selCon").val();
+	var xidCat=$("#selCategoria").val();
+	if(xidSel==xidSelCon){alert('Seleccione secciones diferentes'); return;}
+
+	xPopupLoad.xopen();
+	$("#frm_regla #idcategoria").val(xidCat);
+	$("#frm_regla #idseccion").val(xidSel);
+	$("#frm_regla #idseccion_detalle").val(xidSelCon);
+	$.post("../../bdphp/ManejoBD_IUD.php?tb=regla_carta",$("#frm_regla").serialize(),function(a){
+		xPopupLoad.xclose();
+		xLoadReglasCarta();
+	})
+}
+function xLoadCategoria(){
+	$.ajax({ type: 'POST', url: '../../bdphp/log.php?op=1'})
+	.done( function (dtCAct) {
+		var xCadenaCat='';
+		var xdtCAct=$.parseJSON(dtCAct);
+		xdtCAct=xdtCAct.datos;
+		for (var i = 0; i < xdtCAct.length; i++) {
+			xCadenaCat=String(xCadenaCat+'<option value="'+xdtCAct[i].idcategoria+'">'+xdtCAct[i].descripcion+'</option>');
+		};
+		$("#selCategoria").html(xCadenaCat).trigger('create');
+	});
+	//seccion
+	$.ajax({ type: 'POST', url: '../../bdphp/log.php?op=201'})
+	.done( function (dtSec) {
+		var xCadenaCat='';
+		var xdtSec=$.parseJSON(dtSec);
+		xdtSec=xdtSec.datos;
+		xThisConfig.dt_seccion=xdtSec;
+		for (var i = 0; i < xdtSec.length; i++) {
+			xCadenaCat=String(xCadenaCat+'<option value="'+xdtSec[i].value+'">'+xdtSec[i].label+'</option>');
+		};
+
+		$("#selSeccion").html(xCadenaCat).trigger('create');
+		$("#selSeccion_adicional").html(xCadenaCat).trigger('create');
+		$("#selCon").html(xCadenaCat).trigger('create');
+	});
+
+
+	// nivel -- por pedido o por item
+	// si es por item tiene en cuenta la seccion
+	// si es todo el pedido ignora la seccion
+	cadenaSelNivel = '<option value="0">POR ITEM</option><option value="1">POR PEDIDO</option>';
+	$("#selNivel_adicional").html(cadenaSelNivel).trigger('create');
+
+
+
+}
+function xLoadReglasCarta(){
+	$("#tb_regla .row").remove();
+	$("#tb_regla").append('<tr class="row"><td colspan="3"><paper-spinner active></paper-spinner></td></tr>');
+	$.ajax({ type: 'POST', url: '../../bdphp/log.php?op=4'})
+	.done( function (dtRla) {
+		var xCadenaRgl='';
+		var xdtRla=$.parseJSON(dtRla);
+		xdtRla=xdtRla.datos;
+		for (var i = 0; i < xdtRla.length; i++) {
+			xCadenaRgl=String(xCadenaRgl+'<tr class="row" data-t="regla_carta" data-id="'+xdtRla[i].idregla_carta+'"><td>'+xdtRla[i].des_categoria+'</td><td>'+xdtRla[i].des_seccion+'</td><td>'+xdtRla[i].des_con+'</td><td><span class="xDeleteRow" title="Borrar" onclick="xDialogBorrarObj(this);"></span></td></tr>');
+		};
+		$("#tb_regla .row").remove();
+		$("#tb_regla").append(xCadenaRgl).trigger('create');
+	});
+}
+
+function xLoadCategoriaCarta(){
+	$("#tb_cat").append('<tr class="row"><td colspan="4"><paper-spinner active></paper-spinner></td></tr>');
+	$.ajax({ type: 'POST', url: '../../bdphp/log.php?op=405'})
+	.done( function (dtCat) {
+		var	xcadena_cat='';
+		var xdtCat=$.parseJSON(dtCat);
+		xdtCat=xdtCat.datos;
+		xThisConfig.dt_cat=xdtCat;
+		for (var i = 0; i < xdtCat.length; i++) {
+			xcadena_cat=String(xcadena_cat+'<tr class="row" data-index='+i+' data-id="'+xdtCat[i].idcategoria+'" data-t="categoria"><td>'+xdtCat[i].descripcion+'</td><td>'+xdtCat[i].hora_ini+'</td><td>'+xdtCat[i].hora_fin+'</td><td title="Modificar" onClick="xModificarCat(this)"><span class="icon xCursor"><img src="../../images/edit.png"></span></td><td><span class="xDeleteRow" title="Borrar" onclick="xDialogBorrarObj(this);"></span></td></tr>')
+		};
+		$("#tb_cat .row").remove();
+		$("#tb_cat").append(xcadena_cat).trigger('create');
+	});
+}
+///REGLAS CARTA///////////////
+///REGLAS CARTA///////////////
+
+
+function xModificarSede(obj){
+	var xids=$(obj).parents('tr').attr('data-id');
+	$("#frm_sede #idsede").val(xThisConfig.dt_sede[xids].idsede);
+	$("#frm_sede #nombre").val(xThisConfig.dt_sede[xids].nom_sede);
+	$("#frm_sede #ciudad").val(xThisConfig.dt_sede[xids].ciudad);
+	$("#frm_sede #eslogan").val(xThisConfig.dt_sede[xids].eslogan);
+	$("#frm_sede #mesas").val(xThisConfig.dt_sede[xids].mesas);
+	$("#frm_sede #telefono").val(xThisConfig.dt_sede[xids].telefono);
+	$("#frm_sede #ubigeo").val(xThisConfig.dt_sede[xids].ubigeo);
+	$("#frm_sede #codigo_del_domicilio_fiscal").val(xThisConfig.dt_sede[xids].codigo_del_domicilio_fiscal);
+	dialog_add_sede.open();
+
+}
+function xModificarCat(obj){
+	var xids=$(obj).parents('tr').attr('data-index');
+	$("#frm_cat #idcategoria").val(xThisConfig.dt_cat[xids].idcategoria);
+	$("#frm_cat #descripcion").val(xThisConfig.dt_cat[xids].descripcion);
+	$("#frm_cat #hora_ini").val(xThisConfig.dt_cat[xids].hora_ini);
+	$("#frm_cat #hora_fin").val(xThisConfig.dt_cat[xids].hora_fin);
+	$("#frm_cat #detalle").val(xThisConfig.dt_cat[xids].detalle);
+	dialog_add_cat.open();
+
+}
+function xGuardarOrg(){
+	xvalidateFormInput('frm_org',function(a){
+		if(a===false){return;}
+		xPopupLoad.xopen();
+		$.post("../../bdphp/ManejoBD_IUD.php?tb=org",$("#frm_org").serialize(),function(id){
+			xPopupLoad.xclose();
+		})
+	});
+}
+
+function xGenerarTk() {
+	
+}
+
+function xGuardarSede(){
+	xvalidateFormInput('frm_sede',function(a){
+		if(a===false){return;}
+		xPopupLoad.xopen();
+		$.post("../../bdphp/ManejoBD_IUD.php?tb=sede",$("#frm_sede").serialize(),function(id){
+			dialog_add_sede.close();
+			xPopupLoad.xclose();
+			$("#frm_sede").reset();
+			xLoadOrg();
+		})
+	});
+}
+function xGuardarCategoria(){
+	xvalidateFormInput('frm_cat',function(a){
+		if(a===false){return;}
+		xPopupLoad.xopen();
+		$.post("../../bdphp/ManejoBD_IUD.php?tb=categoria",$("#frm_cat").serialize(),function(id){
+			dialog_add_cat.close();
+			$("#frm_cat").reset();
+			xPopupLoad.xclose();
+			xLoadCategoriaCarta();
+		})
+	});
+}
+function xLoadOrg(){
+	$("#tb_org").append('<tr class="row"><td colspan="2"><paper-spinner active></paper-spinner></td></tr>');
+	$.ajax({ type: 'POST', url: '../../bdphp/log.php?op=404'})
+	.done( function (dtOrg) {
+		var	xcadena_org='';
+		var xdtOrg=$.parseJSON(dtOrg);
+		xdtOrg=xdtOrg.datos;
+		xThisConfig.dt_sede=xdtOrg;
+
+		$("#frm_org #idorg").val(xdtOrg[0].idorg);
+		$("#frm_org #nombre").val(xdtOrg[0].nombre);
+		$("#frm_org #direccion").val(xdtOrg[0].direccion);
+		$("#frm_org #ruc").val(xdtOrg[0].ruc);
+		$("#frm_org #telefono").val(xdtOrg[0].telefono);
+		$("#frm_org #email").val(xdtOrg[0].email);
+
+		for (var i = 0; i < xdtOrg.length; i++) {
+			xcadena_org=String(xcadena_org+'<tr class="row" data-id='+i+'><td>'+xdtOrg[i].nom_sede+'</td><td>'+xdtOrg[i].ciudad+'</td><td title="Modificar" onClick="xModificarSede(this)"><span class="icon xCursor"><img src="../../images/edit.png"></span></td></tr>')
+		};
+		$("#tb_org .row").remove();
+		$("#tb_org").append(xcadena_org).trigger('create');
+	});
+}
+
+function openImgIconDialog(obj, _opIcon) {
+	opIcon = _opIcon; // 0 seccion 1 producto_familia
+	xidSeccionIcon = obj.parentElement.dataset.id
+	dialog_img_ico_carta.open();
+}
+
+function updateIconSeccion(obj) {	
+	const _img = obj.dataIndex+'.png';
+	xPopupLoad.xopen();
+	$.ajax({ type: 'POST', url: '../../bdphp/log_004.php?op=8', data:{i:xidSeccionIcon,img:_img, opIcon: opIcon}})
+	.done( function (a) {
+		// dialog_foto.close();
+		if ( opIcon === 0 )	{ xLoadSecciones(); } else { xLoadSecciones_bodega(); }
+		
+		dialog_img_ico_carta.close();
+		xPopupLoad.xclose();
+	})
+}
+
+
+
+Polymer({
+	is:'x-configuraciones',
+	properties:{
+		xt_org:Number,
+		xt_idsede:Number,
+		xt_idus:Number,
+		dt_sede:Object,
+		dt_cat:Object,
+		dt_impr:Object,
+		listIconSeccion: []
+	},
+	attached:function(){
+		this.selected_conf=0;
+		xThisConfig=this;
+		xIniConf();
+		// _cpSocketIsConnect();
+	},
+	detached:function(){
+		// _cpSocketClose();
+	}
+})
+</script>

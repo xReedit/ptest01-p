@@ -143,7 +143,7 @@ function sheetDataProductos($sheet) {
     //echo 'new:'.$xrow_producto_new;
     if($xrow_producto_new==0){
       $sqlProducto="insert into producto (descripcion,idproducto_familia,codigo_barra,stock_minimo,precio,precio_unitario,precio_venta, idorg, idsede) values ".$re;            
-      echo ' | sql:'.$sqlProducto;
+      // echo ' | sql:'.$sqlProducto;
       //echo 'add producto '.$sqlProducto;
       $idProducto=$bdP->xConsulta_UltimoId($sqlProducto);
       $reDP=$reDP.'('.$IdAlmacen.','.$idProducto.','.$row_cant_almacem.','.$fecha_actual.'),';        
