@@ -5,9 +5,10 @@ function xEstructuraItemsJsonComprobante(_SubItems,xArraySubTotales,cpe=false){l
 rv[grupo]={id:x.iditem,cantidad:parseFloat(_cantidad),des:x.des,punitario:x.precio,precio_total:_total,precio_print:parseInt(x.precio_print)!=0?_total:x.precio_print,seccion:x.des_seccion,tipo_consumo:x.idtipo_consumo,procede:x.procede,idprocede:x.idprocede,stock_actual:x.stock_actual}
 return rv}
 rv[grupo].cantidad=parseFloat(rv[grupo].cantidad)+parseFloat(x.cantidad);rv[grupo].precio_total=parseFloat(parseFloat(rv[grupo].precio_total)+parseFloat(x.precio_total)).toFixed(2);rv[grupo].precio_print=rv[grupo].precio_total;return rv;},[]);group.sort((a,b)=>(a.des>b.des)-(a.des<b.des)).sort((a,b)=>(a.seccion>b.seccion)-(a.seccion<b.seccion));group=Object.values(group);let cantAddSubtotal=0;xArraySubTotales.map(x=>{if(x.id===undefined){return;}
+if(x.id===0){return;}
 if(x.tachado===true){return;}
 if(x.esImpuesto==="1"){return;}
-const seccion=x.id.indexOf('a')>=0?'ADICIONALES':'SERVICIOS';const cantidad=parseInt(x.importe/x.punitario);const index=group.length+1;cantAddSubtotal=x.importe;group.push({id:index.toString(),cantidad:cantidad,des:x.descripcion,punitario:x.punitario,precio_total:x.importe,seccion:seccion});});if(cpe){cantAddSubtotal=parseFloat(xArraySubTotales[0].importe)+parseFloat(cantAddSubtotal);xArraySubTotales[0].importe=xMoneda(cantAddSubtotal);}
+const seccion=x.id.toString().indexOf('a')>=0?'ADICIONALES':'SERVICIOS';const _pUnitario=x.punitario?parseFloat(x.punitario):parseFloat(x.importe);const cantidad=parseInt(parseFloat(x.importe)/_pUnitario);const index=group.length+1;cantAddSubtotal=x.importe;group.push({id:index.toString(),cantidad:cantidad,des:x.descripcion,punitario:x.punitario,precio_total:x.importe,seccion:seccion});});if(cpe){cantAddSubtotal=parseFloat(xArraySubTotales[0].importe)+parseFloat(cantAddSubtotal);xArraySubTotales[0].importe=xMoneda(cantAddSubtotal);}
 return group;}
 function xEstructuraItemsAgruparPrintJsonComprobante(items){return xEstructuraItemsGroupFormatoImpresion(items,"seccion");}
 function xEstructuraItemsGroupFormatoImpresion(xs,key){const arr_rpt_json=xs;arr_rpt_json.des='**';let rpt={}
