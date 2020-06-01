@@ -6,7 +6,8 @@ function _cpSocketOpen() {
 
         if ( !this.socketCP._socket) {            
             this.socketCP.connectSocket();
-            this.listenSocketP();            
+            this.listenSocketP();         
+            
         } else {
             if ( !this.socketCP._socket.connected ) {
                 this.socketCP.connectSocket();
@@ -20,8 +21,18 @@ function _cpSocketOpen() {
 
 function listenSocketP() {
 
+    console.log('this.socketCP', this.socketCP);
+    /// guardar conexion sede
+    setTimeout(() => {    
+        $.ajax({ type: 'POST', url: '../../bdphp/log_005.php?op=14', data: { socketId:  this.socketCP._socket.id}})
+        .done( function (res) {
+            console.log(res);
+        });
+    }, 1200);
+
     // restore si hay
     this.socketCP.listen('nuevoPedido').subscribe(res => {
+        console.log('nuevoPedido msocket', res);
         try {                
             _cpSocketPintarPedido(res);
         } catch (error) {}            
@@ -70,6 +81,9 @@ function listenSocketP() {
         } catch (error) {}
     });
 
+
+    
+
 }
 
 // function _cpSocketIsConnect() {
@@ -111,6 +125,18 @@ function _cpSocketClose() {
     } catch (error) {        
     }
     // this.socketCP.disconnectSocket();
+}
+
+// notifica al repartidor pedido desde el comercio
+function _cpSocketNoiticaRepartidorFromComercio(pedido) {
+    if (!isSocket) { return; }
+    this.socketCP.emit('set-repartidor-pedido-asigna-comercio', pedido);
+}
+
+// notifica para llamar al repartidor de papaya
+function _cpSocketComercioLLamaRepartidorPapaya() {
+    if (!isSocket) { return; }
+    this.socketCP.emit('set-solicitar-repartidor-papaya', null);
 }
 
 // cuando se paga la cuenta en caja

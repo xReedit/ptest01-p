@@ -386,5 +386,30 @@
 			$sql = "update sede set pwa_delivery_comercio_online=".$val." where idsede =".$g_idsede;
 			$bd->xConsulta($sql);	
 			break;
+		
+		case 13: // load repartidor sede
+			$sql = "select * from repartidor where idsede_suscrito =".$g_idsede." and estado = 0 order by nombre";
+			$bd->xConsulta($sql);
+			break;
+		
+		case 1301:// asignar repartidor
+			$idrepartidor = $_POST['idrepartidor'];
+			$idpedido = $_POST['idpedido'];
+			$sql = "update pedido set idrepartidor = ".$idrepartidor." where idpedido = ".$idpedido;
+			$bd->xConsulta($sql);
+			break;
+		
+		case 1302: // lamar repartidor papaya
+			$idpedido = $_POST['idpedido'];
+			$sql = "update pedido set flag_solicita_repartidor_papaya = 1 where idpedido = ".$idpedido;
+			$bd->xConsulta($sql);
+			break;
+		
+		// conectar sede
+		case 14: 
+			$soketId = $_POST['socketId'];
+			$sql = "insert into sede_socketid (idsede, socketid, conectado) values (".$g_idsede.", '".$soketId."',  '1')  ON DUPLICATE KEY UPDATE socketid = '".$soketId."', conectado='1'";
+			$bd->xConsulta($sql);
+			break;
 	}
 ?>

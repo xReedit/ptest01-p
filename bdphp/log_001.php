@@ -263,21 +263,21 @@
 		/// buscamos el ultimo correlativo
 		// $correlativo_comprobante = returnCorrelativo($x_array_comprobante);
 		// $correlativo_comprobante = 0; 
-		// $idtipo_comprobante_serie = $x_array_comprobante['idtipo_comprobante_serie'];
-		// if ($x_array_comprobante['idtipo_comprobante'] != "0"){ // 0 = ninguno | no imprimir comprobante
+		$idtipo_comprobante_serie = $x_array_comprobante['idtipo_comprobante_serie'];
+		if ($x_array_comprobante['idtipo_comprobante'] != "0"){ // 0 = ninguno | no imprimir comprobante
 
 			
 		// 	$sql_doc_correlativo="select correlativo + 1  from tipo_comprobante_serie where idtipo_comprobante_serie = ".$idtipo_comprobante_serie;
 		// 	$correlativo_comprobante = $bd->xDevolverUnDato($sql_doc_correlativo);		
 			
-		// 	$sql_update_value_correlativo = "update tipo_comprobante_serie set facturacion_correlativo_api=1 where idtipo_comprobante_serie=".$idtipo_comprobante_serie;
-		// 	$bd->xConsulta_NoReturn($sql_update_value_correlativo);
+			$sql_update_value_correlativo = "update tipo_comprobante_serie set facturacion_correlativo_api=1 where idtipo_comprobante_serie=".$idtipo_comprobante_serie;
+			$bd->xConsulta_NoReturn($sql_update_value_correlativo);
 			
 		// 		// $sql_doc_correlativo = "update tipo_comprobante_serie set correlativo = ".$correlativo_comprobante." where idtipo_comprobante_serie = ".$idtipo_comprobante_serie;
 		// 		// $bd->xConsulta_NoReturn($sql_doc_correlativo);			
 		// } else {
 		// 	$correlativo_comprobante='0';
-		// }
+		}
 
 		// $sqlrp="insert into registro_pago(idorg,idsede,idusuario,idcliente,fecha,total,idtipo_consumo, idtipo_comprobante_serie, correlativo) values (".$_SESSION['ido'].",".$_SESSION['idsede'].",".$_SESSION['idusuario'].",".$idc.",DATE_FORMAT(now(),'%d/%m/%Y %H:%i:%s'),'".$importe_total."',".$tipo_consumo.",".$idtipo_comprobante_serie.",'".$correlativo_comprobante."');";
 		$correlativo_comprobante = '';		
@@ -372,15 +372,15 @@
 		/// buscamos el ultimo correlativo
 		// $correlativo_comprobante = returnCorrelativo($x_array_comprobante);
 		// $correlativo_comprobante = 0; 
-		// $idtipo_comprobante_serie = $x_array_comprobante['idtipo_comprobante_serie'];
-		// if ($x_array_comprobante['idtipo_comprobante'] != "0"){ // 0 = ninguno | no imprimir comprobante
+		$idtipo_comprobante_serie = $x_array_comprobante['idtipo_comprobante_serie'];
+		if ($x_array_comprobante['idtipo_comprobante'] != "0"){ // 0 = ninguno | no imprimir comprobante
 
 	
 		// 	$sql_doc_correlativo="select correlativo + 1  from tipo_comprobante_serie where idtipo_comprobante_serie = ".$idtipo_comprobante_serie;
 		// 	$correlativo_comprobante = $bd->xDevolverUnDato($sql_doc_correlativo);		
 
-		// 	$sql_update_value_correlativo = "update tipo_comprobante_serie set facturacion_correlativo_api=1 where idtipo_comprobante_serie=".$idtipo_comprobante_serie;
-		// 	$bd->xConsulta_NoReturn($sql_update_value_correlativo);
+			$sql_update_value_correlativo = "update tipo_comprobante_serie set facturacion_correlativo_api=1 where idtipo_comprobante_serie=".$idtipo_comprobante_serie;
+			$bd->xConsulta_NoReturn($sql_update_value_correlativo);
 			
 		// 	// if ($x_array_comprobante['codsunat'] == "0") { // si no es factura electronica
 		// 		// guardamos el correlativo //
@@ -390,7 +390,7 @@
 		// 	// si es factura elctronica guarda despues tigger ce 
 		// } else {
 		// 	$correlativo_comprobante='0';
-		// }
+		}
 
 		// $sqlrp="insert into registro_pago(idorg,idsede,idusuario,idcliente,fecha,total,idtipo_consumo, idtipo_comprobante_serie, correlativo) values (".$_SESSION['ido'].",".$_SESSION['idsede'].",".$_SESSION['idusuario'].",".$idc.",DATE_FORMAT(now(),'%d/%m/%Y %H:%i:%s'),'".$importe_total."',".$tipo_consumo.",".$idtipo_comprobante_serie.",'".$correlativo_comprobante."');";
 		$correlativo_comprobante='';

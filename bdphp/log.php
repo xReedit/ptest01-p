@@ -1824,12 +1824,12 @@
 			}
 
 			$sql="
-				SELECT p.idpedido,p.nummesa,p.numpedido,p.correlativo_dia,p.reserva, p.idtipo_consumo,
+				SELECT p.*,
 					SUBSTRING_INDEX(u.nombres, ' ', 1) AS nom_usuario,p.referencia, p.subtotales_tachados,
 					concat('P',LPAD(p.correlativo_dia,5,'0')) AS des_pedido,TIMESTAMPDIFF(MINUTE , STR_TO_DATE(concat(p.fecha,' ',p.hora),'%d/%m/%Y %H:%i:%s'), CURRENT_TIMESTAMP() ) AS min_transcurridos
 					, p.tiempo_atencion, p.val_color_despachado, p.total, p.json_datos_delivery
 					, c.idcliente, c.nombres, p.is_from_client_pwa, p.idcliente
-					, r.nombre as nom_repartidor, r.apellido as ap_repartidor, r.telefono as tel_repartidor
+					, r.idrepartidor, r.nombre as nom_repartidor, r.apellido as ap_repartidor, r.telefono as tel_repartidor					
 				FROM pedido AS p
 					left JOIN usuario AS u using(idusuario)
 					left join cliente as c using(idcliente)
