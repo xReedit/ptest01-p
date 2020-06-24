@@ -54,7 +54,7 @@
 <td><input type="number" class="xMiInput xPasarEnter2" style="width:100%" placeholder="Cant" onChange="conMayusculas(this)" required id="cant_item" autofocus></td>
 <td><input type="text" class="xMiInput xPasarEnter2" style="width:100%" placeholder="Descripcion" onChange="conMayusculas(this)" required id="des_item"></td>
 <td><input type="number" class="xMiInput xAlinearDerecha punitario" onChange="conMayusculas(this)" onblur="xRetornaMoneda(this)" placeholder="P. Unitario" id="punitario" name="precio" required></td>
-<td><input type="number" class="xMiInput xAlinearDerecha xprecio" onChange="conMayusculas(this)" onblur="xRetornaMoneda(this)" placeholder="P. Total" id="ptotal" name="total" required></td>
+<td><input type="number" class="xMiInput xAlinearDerecha xprecio" onChange="conMayusculas(this)" onblur="xRetornaMoneda(this)" placeholder="P. Total" id="ptotal" name="total" required readonly></td>
 </tr>
 <template is="dom-repeat" items="{{arrItems}}" as="item">
 <tr data-value="[[index]]">

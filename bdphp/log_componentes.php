@@ -52,6 +52,10 @@
             $sql="SELECT * FROM tipo_pago WHERE estado=0 and idtipo_pago != 4";
             $bd->xConsulta($sql);
             break;
+        case 601:// load tipo pago from app
+            $sql="SELECT * FROM tipo_pago WHERE estado=0 and idtipo_pago = 4";
+            $bd->xConsulta($sql);
+            break;
         case 7://load clientes
             $sql="SELECT * FROM cliente where (idorg=$g_ido) AND estado=0 order by nombres";
             $bd->xConsulta($sql);
