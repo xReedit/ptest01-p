@@ -5,9 +5,10 @@
 	{
 		function __construct()
 		{
+			$this->jne = new \Jne\jne();
 			$this->reniec = new \Reniec\Reniec(); 
 			$this->essalud = new \EsSalud\EsSalud();
-			$this->mintra = new \MinTra\mintra();
+			$this->mintra = new \MinTra\mintra();			
 			$this->token = new \Reniec\Token();
 		}
 
@@ -21,6 +22,21 @@
 					"error" 		=> "01"
 				);
 				return $rpt;
+			}
+
+			// echo "service a jne";
+			$response = $this->jne->check( $dni );
+			if($response->success == true)
+			{
+				$rpt = (object)array(
+					"success" 		=> true,
+					"source" 		=> "jne",
+					"haydatos"    => $response->result->Nombres === "" ? false : true,
+					"result" 		=> $response->result
+				);
+				if ($rpt->haydatos) {
+				 return $rpt;   
+				}
 			}
 			
 			$response = $this->reniec->search( $dni );
@@ -85,7 +101,7 @@
 	header('Access-Control-Allow-Origin: *');
 	header('Content-Type: text/plain');
 	
-	$dni = ( isset($dni))? $dni : false;
+	$dni = ( isset($dni))? $dni : false;	
 	echo json_encode( $response->search( $dni, $token ) );
 
 
