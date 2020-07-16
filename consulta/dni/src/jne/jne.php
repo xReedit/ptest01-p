@@ -4,7 +4,7 @@ namespace Jne;
 class jne 
 {
     private const URL_CONSULT = 'https://aplicaciones007.jne.gob.pe/srop_publico/Consulta/api/AfiliadoApi/GetNombresCiudadano';
-    private const REQUEST_TOKEN = '30OB7qfO2MmL2Kcr1z4S0ttQcQpxH9pDUlZnkJPVgUhZOGBuSbGU4qM83JcSu7DZpZw-IIIfaDZgZ4vDbwE5-L9EPoBIHOOC1aSPi4FS_Sc1:clDOiaq7mKcLTK9YBVGt2R3spEU8LhtXEe_n5VG5VLPfG9UkAQfjL_WT9ZDmCCqtJypoTD26ikncynlMn8fPz_F_Y88WFufli38cUM-24PE1';
+    private const REQUEST_TOKEN = 'Dmfiv1Unnsv8I9EoXEzbyQExSD8Q1UY7viyyf_347vRCfO-1xGFvDddaxDAlvm0cZ8XgAKTaWclVFnnsGgoy4aLlBGB5m-E8rGw_ymEcCig1:eq4At-H2zqgXPrPnoiDGFZH0Fdx5a-1UiyVaR4nQlCvYZzAhzmvWxLwkUk6-yORYrBBxEnoG5sm-Hkiyc91so6-nHHxIeLee5p700KE47Cw1';
 
     
     function __construct()
@@ -14,10 +14,10 @@ class jne
     }
 
     function getDataJne( $dni )
-		{
-			if(strlen(trim($dni))==8)
-			{
-			               
+        {
+            if(strlen(trim($dni))==8)
+            {
+                           
                 $url = self::URL_CONSULT;   
                 $ch = curl_init($url);
                 $postdata = json_encode(['CODDNI' => $dni]);
@@ -51,49 +51,49 @@ class jne
                 // print_r($arr);
         
                 $rtn = array(
-                    "DNI" 			=>(string)$dni,
+                    "DNI"           =>(string)$dni,
                     "apellidos"     =>(string)$ApePat.' '.$ApeMat,
-                    "paterno" 		=>(string)$ApePat,
-                    "materno" 		=>(string)$ApeMat,
-                    "nombre" 		=>(string)$Nombre,
-                    "Nombres" 		=>(string)$Nombre,
-                    "sexo" 			=>'',
-                    "nacimiento" 	=>'',
-                    "gvotacion" 	=>''
+                    "paterno"       =>(string)$ApePat,
+                    "materno"       =>(string)$ApeMat,
+                    "nombre"        =>(string)$Nombre,
+                    "Nombres"       =>(string)$Nombre,
+                    "sexo"          =>'',
+                    "nacimiento"    =>'',
+                    "gvotacion"     =>''
                 );
                 return $rtn;
 
-			}
-			return false;
-		}
-		function check( $dni, $inJSON = false )
-		{            
-			if( strlen($dni) == 8 )
-			{
-				$info = $this->getDataJne( $dni );
-				if( $info!=false )
-				{
-					$rtn = (object)array(
-						"success" 	=> true,
-						"result" 	=> $info
-					);
-				}
-				else
-				{
-					$rtn = (object)array(
-						"success" 	=> false,
-						"msg" 		=> "No se ha encontrado resultados."
-					);
-				}
-				return ($inJSON==true) ? json_encode($rtn,JSON_PRETTY_PRINT):$rtn;
-			}
+            }
+            return false;
+        }
+        function check( $dni, $inJSON = false )
+        {            
+            if( strlen($dni) == 8 )
+            {
+                $info = $this->getDataJne( $dni );
+                if( $info!=false )
+                {
+                    $rtn = (object)array(
+                        "success"   => true,
+                        "result"    => $info
+                    );
+                }
+                else
+                {
+                    $rtn = (object)array(
+                        "success"   => false,
+                        "msg"       => "No se ha encontrado resultados."
+                    );
+                }
+                return ($inJSON==true) ? json_encode($rtn,JSON_PRETTY_PRINT):$rtn;
+            }
 
-			$rtn = (object)array(
-				"success" 	=> false,
-				"msg" 		=> "Nro de DNI no valido."
-			);
-			return ($inJSON==true) ? json_encode( $rtn, JSON_PRETTY_PRINT ) : $rtn;
-		}
+            $rtn = (object)array(
+                "success"   => false,
+                "msg"       => "Nro de DNI no valido."
+            );
+            return ($inJSON==true) ? json_encode( $rtn, JSON_PRETTY_PRINT ) : $rtn;
+        }
 
     
 }
