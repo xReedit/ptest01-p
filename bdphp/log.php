@@ -1458,7 +1458,7 @@
 			$sql_pedido_detalle='';
 
 			//registra pedido borrado
-			$sqlpedido_borrado="insert into pedido_borrados (idpedido,idpedido_detalle,iditem,idcarta_lista,idusuario,idusuario_permiso,importe,fecha,hora,procede_tabla) values(".$idpedido.",".$idpedido_detalle.",".$iditem.",".$idcarta_lista.",".$_POST["u"].",".$_SESSION['idusuario'].",".$precio_unitario_item.",'".$fecha_now."','".$hora_now."',".$tabla_procede."); ";
+			$sqlpedido_borrado="insert into pedido_borrados (idpedido,idpedido_detalle,iditem,idcarta_lista,idusuario,idusuario_permiso,importe,fecha,hora,procede_tabla, fecha_cierre) values(".$idpedido.",".$idpedido_detalle.",".$iditem.",".$idcarta_lista.",".$_POST["u"].",".$_SESSION['idusuario'].",".$precio_unitario_item.",'".$fecha_now."','".$hora_now."',".$tabla_procede.", ''); ";
 
 			//descuenta en pedido_detalle
 			$campo_precio='';
@@ -1474,7 +1474,7 @@
 			//ejecutar
 			//$sql_ejecuta=$sql_pedido.$sql_pedido_detalle.$sql_porcion.$sq_carta_lista.$sql_almacen;
 			$sql_ejecuta=$sql_pedido.$sql_pedido_detalle.$sqlpedido_borrado; //.$sql_porcion.$sq_carta_lista.$sql_almacen;
-			//print $sql_ejecuta;
+			// print $sql_ejecuta;
 			$bd->xMultiConsulta($sql_ejecuta);
 
 			break;
