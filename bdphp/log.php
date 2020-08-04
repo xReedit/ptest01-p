@@ -2036,7 +2036,8 @@
 			$bd->xConsulta($sql);
 			break;
 		case 602://buscar cliente		
-			$sql="SELECT * FROM cliente where ruc='".$_POST['doc']."' and estado=0 order by nombres";
+			// $sql="SELECT * FROM cliente where ruc='".$_POST['doc']."' and estado=0 order by nombres";
+			$sql="SELECT * FROM cliente where ruc='".$_POST['doc']."' and estado=0 order by idcliente desc"; // para que agarre el ultimo
 			$bd->xConsulta($sql);
 			break;
 		case 603://Load tipo comprobante		
