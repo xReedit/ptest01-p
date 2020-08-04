@@ -1,45 +1,46 @@
 <dom-module id="x-comp-list-direcciones-cliente">
-	<template is="dom-bind">        
-		<select id="compFindListDirCliente" class="xTextRow2 xCursor" onchange="selectOptionDirCliente()">
+    <template is="dom-bind">        
+        <select id="compFindListDirCliente" class="xTextRow2 xCursor" onchange="selectOptionDirCliente()">
             <template is="dom-repeat" items="{{list}}" as="direccion">
                 <option value="[[index]]">[[direccion.direccion]] </option>
             </template>
         </select>
-	</template>
+    </template>
 </dom-module>
 <script>
     var xThisListDireccion;    
-	
-	function xCompListDireccionIni() {
+    
+    function xCompListDireccionIni() {
         console.log('xThisListDireccion',  this.idcliente);
         console.log( 'xThisListDireccion',  xThisListDireccion.idcliente);
-		// onLoadDireccionesCliente();
+        // onLoadDireccionesCliente();
     }
     
     function onLoadDireccionesCliente(id) {
         // if (!id) {return }
         if ( id === 0 ) { emitFirtsoption(); return; }
-        const _url = `${URL_SERVER}/delivery/get-direccion-cliente`
+        const _url = '../../bdphp/log_componentes.php?op=12'
         $.ajax({
-					type: 'POST',
+                    type: 'POST',
                     url: _url,
                     data: {
                         idcliente: id
                     }
-				})
-				.done(function (res) {
+                })
+                .done(function (res) {
                     console.log(res);
+                    xThisListDireccion.list = JSON.parse(res).datos;
 
-                    xThisListDireccion.list = res.data;
+                    // xThisListDireccion.list = res.data;
                     emitFirtsoption();
-				});
+                });
     }
 
     function selectOptionDirCliente() {
-			const index = xThisListDireccion.$.compFindListDirCliente.value;
+            const index = xThisListDireccion.$.compFindListDirCliente.value;
             xThisListDireccion.direccion_selected = xThisListDireccion.list[index];
             xThisListDireccion.fire('getDireccionSelected', xThisListDireccion.direccion_selected);
-			// xThisListDireccion.list.index = index;
+            // xThisListDireccion.list.index = index;
         }
     
     function emitFirtsoption() {
@@ -55,30 +56,30 @@
 
 
 
-	Polymer({
+    Polymer({
         is: 'x-comp-list-direcciones-cliente',
         properties: {
             list: Object,
             direccion_selected: {
-					type: Object,
-					// value : {},
-					reflectToAttribute: true,
-					notify: true,
-					value: function () {
-						return {};
-					},
-					observer: 'dirClienteChanged'
-				},
+                    type: Object,
+                    // value : {},
+                    reflectToAttribute: true,
+                    notify: true,
+                    value: function () {
+                        return {};
+                    },
+                    observer: 'dirClienteChanged'
+                },
             idcliente: {
                 type: Number,
                 reflectToAttribute: true,
                 notify: true,
                 observer: 'tipoPagoNameChanged'
             }
-		}, 
-		attached: function() {
-			xThisListDireccion=this;
-			xCompListDireccionIni();
+        }, 
+        attached: function() {
+            xThisListDireccion=this;
+            xCompListDireccionIni();
         },
         tipoPagoNameChanged: function (id) {
             console.log('xThisListDireccion',  id);
@@ -86,6 +87,6 @@
                 xThisListDireccion.list = [];
             }
             onLoadDireccionesCliente(id)
-		},
+        },
     })
 </script>

@@ -80,4 +80,9 @@
             $sql="SELECT * FROM almacen where (idorg=$g_ido and idsede=$g_idsede) and estado=0";
             $bd->xConsulta($sql);
             break;
+        case 12:// load direccion cliente
+            $idcliente = $_POST['idcliente'];
+            $sql = "SELECT cpd.* from cliente_pwa_direccion cpd where cpd.idcliente =".$idcliente." and cpd.estado=0";
+            $bd->xConsulta($sql);
+            break;
     }
