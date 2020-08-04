@@ -267,8 +267,8 @@
 			// $sql = "update item set subitem_required_select = ".$arrItem['required_select'].", subitem_cant_select=".$arrItem['cant_select']." where iditem=".$arrItem['iditem'];
 			// $bd->xConsulta_NoReturn($sql);
 			
-			// $sql = "update item_subitem_content set subitem_required_select = ".$arrItem['required_select'].", subitem_cant_select=".$arrItem['cant_select'].", is_sum_cant_subitems = ".$arrItem['is_sum_cant_subitems']."  where iditem_subitem_content=".$arrItem['iditem_subitem_content'];
-			$sql = "update item_subitem_content set is_sum_cant_subitems = ".$arrItem['is_sum_cant_subitems']."  where iditem_subitem_content=".$arrItem['iditem_subitem_content'];
+			$sql = "update item_subitem_content set subitem_required_select = ".$arrItem['required_select'].", subitem_cant_select=".$arrItem['cant_select'].", is_sum_cant_subitems = ".$arrItem['is_sum_cant_subitems']."  where iditem_subitem_content=".$arrItem['iditem_subitem_content'];
+			// $sql = "update item_subitem_content set is_sum_cant_subitems = ".$arrItem['is_sum_cant_subitems']."  where iditem_subitem_content=".$arrItem['iditem_subitem_content'];
 			$bd->xConsulta_NoReturn($sql);
 
 			$sql = "update item_subitem_content_detalle set subitem_required_select = ".$arrItem['required_select'].", subitem_cant_select=".$arrItem['cant_select']." where iditem_subitem_content=".$arrItem['iditem_subitem_content']." and iditem=".$arrItem['iditem'];
@@ -409,6 +409,30 @@
 		case 14: 
 			$soketId = $_POST['socketId'];
 			$sql = "insert into sede_socketid (idsede, socketid, conectado) values (".$g_idsede.", '".$soketId."',  '1')  ON DUPLICATE KEY UPDATE socketid = '".$soketId."', conectado='1'";
+			$bd->xConsulta($sql);
+			break;
+		case 15:  // metas			
+			$sql = "select * from sede_meta where idsede = ".$g_idsede;;
+			$bd->xConsulta($sql);
+			break;
+		case 16: // indicadores
+			$sql = "SELECT r.idregistro_pago, r.fecha, CURDATE() f_registro, rpd.idtipo_pago, tp.descripcion as destp, rpd.importe
+					from registro_pago r 
+						inner join registro_pago_detalle rpd on rpd.idregistro_pago = r.idregistro_pago
+						inner join tipo_pago tp on tp.idtipo_pago = rpd.idtipo_pago
+					where r.idsede = $g_idsede  and r.estado=0 and STR_TO_DATE(r.fecha, '%d/%m/%Y') = CURDATE()";
+			$bd->xConsulta($sql);
+			break;
+		case 1601: // indicadores tipo consumo top secciones e items
+			$sql="SELECT p.idpedido, p.fecha, CURDATE() f_registro, tpc.descripcion destpc, s.descripcion dessec, i.descripcion ides, u.usuario usuario
+					,pd.ptotal_r importe, pd.cantidad_r cantidad
+				from pedido p
+					inner join pedido_detalle pd on pd.idpedido = p.idpedido
+					inner join tipo_consumo tpc on tpc.idtipo_consumo = p.idtipo_consumo	
+					inner join item i on i.iditem = pd.iditem
+					inner join seccion s on s.idseccion = pd.idseccion
+					left join usuario u on u.idusuario = p.idusuario
+				where p.idsede= $g_idsede and p.estado=0 and pd.estado = 0 and STR_TO_DATE(p.fecha, '%d/%m/%Y') = CURDATE()";
 			$bd->xConsulta($sql);
 			break;
 	}

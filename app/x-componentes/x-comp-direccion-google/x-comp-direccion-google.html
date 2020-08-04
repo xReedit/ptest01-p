@@ -1,0 +1,34 @@
+<script  type="text/javascript" src="https://maps.googleapis.com/maps/api/js?key=AIzaSyAknWQFyVH1RpR2OAL0vRTHTapaIpfKSqo&libraries=places"></script>
+<dom-module id="x-comp-direccion-google">
+	<template is="dom-bind">        
+		<input type="text" class="xMiInput xPasarEnter2 w-100" id="autocomplete" placeholder="DIRECCION">
+	</template>
+</dom-module>
+<script>
+	var xThisComDireccionGoogle;
+	
+	function xCompDatosDelInitDir() {
+		onBusquedaApi();
+    }
+    
+    function onBusquedaApi() {
+        var autocomplete = document.getElementById('autocomplete'); 
+        search = new google.maps.places.Autocomplete(autocomplete);
+        search.addListener('place_changed', () => {
+            var place = search.getPlace();
+            xThisComDireccionGoogle.fire('getPlaces', place);
+        });
+    }
+
+
+	Polymer({
+        is: 'x-comp-direccion-google',
+        properties: {
+
+		}, 
+		attached: function() {
+			xThisComDireccionGoogle=this;
+			xCompDatosDelInitDir();
+		}
+    })
+</script>

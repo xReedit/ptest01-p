@@ -204,7 +204,14 @@
 			
 
 			// si es delivery y si trae datos adjuntos -- json-> direccion telefono forma pago
-			$json_datos_delivery=array_key_exists('arrDatosDelivery', $x_array_pedido_header) ? json_encode($x_array_pedido_header['arrDatosDelivery']) : '';
+			$json_datos_delivery='';
+			if ( array_key_exists('arrDatosDelivery', $x_array_pedido_header) ) {
+				$arrD = $x_array_pedido_header['arrDatosDelivery'];
+				
+				// desde 03/08/2020 -- omologacion con papaya express
+				$x_array_pedido_header['delivery'] = array_key_exists('pasoRecoger', $arrD) ? 1 : 0;
+				$json_datos_delivery = json_encode(array('p_header' => $x_array_pedido_header, 'p_body' => $x_array_pedido_body, 'p_subtotales' => $x_array_subtotales));
+			}
 			
 
             // guarda pedido
