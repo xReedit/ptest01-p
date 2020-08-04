@@ -43,6 +43,7 @@
         }
     
     function emitFirtsoption() {
+        if ( !xThisListDireccion.list ) { return;}
         const _firstOptiion = xThisListDireccion.list.length > 0 ? xThisListDireccion.list[0] : null;
         if ( _firstOptiion ) {
             xThisListDireccion.direccion_selected = _firstOptiion;            
@@ -57,7 +58,7 @@
 	Polymer({
         is: 'x-comp-list-direcciones-cliente',
         properties: {
-            list: [],
+            list: Object,
             direccion_selected: {
 					type: Object,
 					// value : {},
@@ -81,7 +82,9 @@
         },
         tipoPagoNameChanged: function (id) {
             console.log('xThisListDireccion',  id);
-            xThisListDireccion.list = [];
+            if ( xThisListDireccion.list ) {                
+                xThisListDireccion.list = [];
+            }
             onLoadDireccionesCliente(id)
 		},
     })
