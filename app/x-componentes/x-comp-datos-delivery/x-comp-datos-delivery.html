@@ -253,26 +253,39 @@
 	}
 
 	async function xAdjuntarDatosDelivery() {
-
+		var DatosCliente;
 		// guardar primero cliente y su direccion
-		var DatosCliente = {
-			idcliente: xIdCliente_pedido,
-			num_doc: txt_delivery_dni.value,
-			nombre: _inputAutocompleteDelObj.inputValue,
-			direccion: direcionSelected.direccion, //txt_delivery_direccion.value === '' ? direcionSelected.direccion : txt_delivery_direccion.value,
-			referencia: txt_delivery_referencia.value,
-			telefono: txt_delivery_telefono.value,
-			paga_con: txt_delivery_paga.value,
-			f_nac: xClientePedidoFnac, // hasta aca antes
-			ciudad: direcionSelected.ciudad,
-    		provincia: direcionSelected.provincia,
-    		departamento: direcionSelected.departamento,
-    		pais: direcionSelected.pais,
-			codigo: direcionSelected.codigo,
-			latitude: direcionSelected.latitude,
-			longitude: direcionSelected.longitude,
-			titulo: 'Casa'
-		}		
+		if ( xThisComDatosDelivery.showapigoogle ) {
+			DatosCliente = {
+				idcliente: xIdCliente_pedido,
+				num_doc: txt_delivery_dni.value,
+				nombre: _inputAutocompleteDelObj.inputValue,
+				direccion: direcionSelected.direccion, // txt_delivery_direccion.value === '' ? direcionSelected.direccion : txt_delivery_direccion.value,
+				referencia: txt_delivery_referencia.value,
+				telefono: txt_delivery_telefono.value,
+				paga_con: txt_delivery_paga.value,
+				f_nac: xClientePedidoFnac, // hasta aca antes
+				ciudad: direcionSelected.ciudad,
+				provincia: direcionSelected.provincia,
+				departamento: direcionSelected.departamento,
+				pais: direcionSelected.pais,
+				codigo: direcionSelected.codigo,
+				latitude: direcionSelected.latitude,
+				longitude: direcionSelected.longitude,
+				titulo: 'Casa'
+			}		
+		} else {
+			DatosCliente = {
+				idcliente: xIdCliente_pedido,
+				num_doc: txt_delivery_dni.value,
+				nombre: _inputAutocompleteDelObj.inputValue,
+				direccion: txt_delivery_direccion.value, // txt_delivery_direccion.value === '' ? direcionSelected.direccion : txt_delivery_direccion.value,
+				referencia: txt_delivery_referencia.value,
+				telefono: txt_delivery_telefono.value,
+				paga_con: txt_delivery_paga.value,
+				f_nac: xClientePedidoFnac, // hasta aca antes				
+			}		
+		}
 
 
 		id_cliente = xIdCliente_pedido === "" ? await ClienteService_Guardar(DatosCliente) :xIdCliente_pedido;
@@ -309,16 +322,18 @@
 			delivery: 1
 		};
 
+		var xSaveNewDireccionPwa = direcionSelected ? !direcionSelected.idcliente_pwa_direccion ? true : false : false;
+
 
 		// guardamos nueva direccion si es necesario
-		if ( !direcionSelected.idcliente_pwa_direccion ) {
+		if ( xSaveNewDireccionPwa ) {
 			const _url = `${URL_SERVER}/cliente/new-direccion`
 			$.ajax({
 						type: 'POST',
 						url: _url,
 						data: DatosCliente
 					})
-					.done(function (res) {
+					.done(function (res) {//
 						console.log(res);
 						DatosCliente.idcliente_pwa_direccion = res.data[0].idcliente_pwa_direccion;
 						resData.direccionEnvioSelected = DatosCliente;
