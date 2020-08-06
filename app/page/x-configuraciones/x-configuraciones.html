@@ -513,6 +513,7 @@ Esto se utiliza en el escenario de que cada caja tenga su impresora, por ejemplo
 <h3>Listado de almacenes</h3>
 <p><strong>Es bodega?:</strong> Identifica el almacen donde estan los productos para la venta al publico, esto tambien figuran en la carta</p>
 <p><strong>Imprime en pedido?:</strong> Si en el pedido hay solo productos de este almacen imprime comanda o no?</p>
+<p><strong>Venta Interna:</strong> Los productos del almacen estan disponibles en venta rapida solo para personal autorizado, clientes no tienen acceso</p>
 <div class="xLinea2"></div><br>
 <br>
 <form method="post" id="form_almacen">
@@ -521,11 +522,13 @@ Esto se utiliza en el escenario de que cada caja tenga su impresora, por ejemplo
 <th>Descripcion</th>
 <th>Es bodega?</th>
 <th>Imprime en pedido?</th>
+<th>Venta interna</th>
 </thead>
 <tr data-id="" class="xSinBorde">
 <td><input type="text" class="xMiInput" placeholder="Descripcion" onChange="conMayusculas(this)" name="descripcion" id="descripcion" required></td>
 <td><select id="sel_bodega"><option value="0">NO</option><option value="1">SI</option></select></td>
 <td><select id="sel_imprime_comanda"><option value="0">NO</option><option value="1">SI</option></select></td>
+<td><select id="sel_solo_venta_interna"><option value="0">NO</option><option value="1">SI</option></select></td>
 <td><paper-fab icon="add" onclick="xAddAlmacen()" title="Guardar" tabindex="0"></paper-fab></td>
 </tr>
 </table>
@@ -533,6 +536,7 @@ Esto se utiliza en el escenario de que cada caja tenga su impresora, por ejemplo
 <input type="text" id="idalmacen" name="idalmacen">
 <input type="text" id="bodega" name="bodega">
 <input type="text" id="imprimir_comanda" name="imprimir_comanda">
+<input type="text" id="solo_venta_interna" name="solo_venta_interna">
 <input type="text" id="idorg" name="idorg" value$="[[xt_org]]">
 <input type="text" id="idsede" name="idsede" value$="[[xt_idsede]]">
 </div>
@@ -635,8 +639,8 @@ function xleerXls(xfile){xIdA=sel_almacen_file.value;if($("#fileAlamcen").val=="
 $(document).on('change','.check_almacen',function(e){var xid_al=$(this).parents('tr').attr("data-id");var xcampo_al=$(this).attr("data-campo");var xval_check=this.checked?1:0;$.ajax({type:'POST',url:'../../bdphp/log.php?op=1605',data:{id:xid_al,t:'conf_print_adicionales',campo:xcampo_al,valor:xval_check}})
 event.stopPropagation();e.stopPropagation();e.stopImmediatePropagation()
 return false;})
-function xAddAlmacen(){$("#form_almacen #bodega").val(sel_bodega.value);$("#form_almacen #imprimir_comanda").val(sel_imprime_comanda.value);xPopupLoad.xopen();$.post("../../bdphp/ManejoBD_IUD.php?tb=almacen",$("#form_almacen").serialize(),function(a){xPopupLoad.xclose();$("#form_almacen").reset();xPopupLoad.xclose();xLoadAlmacenes();})}
-function xLoadAlmacenes(){$("#tb_almacenes .row").remove();$("#tb_almacenes").append('<tr class="row"><td colspan="3"><paper-spinner active></paper-spinner></td></tr>');$.ajax({type:'POST',url:'../../bdphp/log.php?op=1604'}).done(function(dtAlm){var xdtAlm=$.parseJSON(dtAlm);var xcadena_tr_alm='';var xcadena_sel_almacen_file='';xdtAlm=xdtAlm.datos;for(var i=0;i<xdtAlm.length;i++){xcadena_sel_almacen_file=String(xcadena_sel_almacen_file+'<option value='+xdtAlm[i].idalmacen+'>'+xdtAlm[i].descripcion+'</option>');xsi_bodega=xdtAlm[i].bodega==1?'checked':'';xsi_imprmime_p=xdtAlm[i].imprimir_comanda==1?'checked':'';xcadena_tr_alm=String(xcadena_tr_alm+'<tr class="row" data-id="'+xdtAlm[i].idalmacen+'"><td>'+xdtAlm[i].descripcion+'</td>'+'<td><paper-checkbox class="check_almacen" data-campo="bodega" id="ch_bodega" '+xsi_bodega+'></paper-checkbox></td>'+'<td><paper-checkbox class="check_almacen" data-campo="imprimir_comanda" id="ch_print_comanda" '+xsi_imprmime_p+'></paper-checkbox></td>'+'</tr>')};$("#tb_almacenes .row").remove();$("#tb_almacenes").append(xcadena_tr_alm).trigger('create');$("#sel_almacen_file").html(xcadena_sel_almacen_file).trigger('create');});}
+function xAddAlmacen(){$("#form_almacen #bodega").val(sel_bodega.value);$("#form_almacen #imprimir_comanda").val(sel_imprime_comanda.value);$("#form_almacen #solo_venta_interna").val(sel_solo_venta_interna.value);xPopupLoad.xopen();$.post("../../bdphp/ManejoBD_IUD.php?tb=almacen",$("#form_almacen").serialize(),function(a){xPopupLoad.xclose();$("#form_almacen").reset();xPopupLoad.xclose();xLoadAlmacenes();})}
+function xLoadAlmacenes(){$("#tb_almacenes .row").remove();$("#tb_almacenes").append('<tr class="row"><td colspan="3"><paper-spinner active></paper-spinner></td></tr>');$.ajax({type:'POST',url:'../../bdphp/log.php?op=1604'}).done(function(dtAlm){var xdtAlm=$.parseJSON(dtAlm);var xcadena_tr_alm='';var xcadena_sel_almacen_file='';xdtAlm=xdtAlm.datos;for(var i=0;i<xdtAlm.length;i++){xcadena_sel_almacen_file=String(xcadena_sel_almacen_file+'<option value='+xdtAlm[i].idalmacen+'>'+xdtAlm[i].descripcion+'</option>');xsi_bodega=xdtAlm[i].bodega==1?'checked':'';xsi_imprmime_p=xdtAlm[i].imprimir_comanda==1?'checked':'';xsi_solo_venta_interna=xdtAlm[i].solo_venta_interna==1?'checked':'';xcadena_tr_alm=String(xcadena_tr_alm+'<tr class="row" data-id="'+xdtAlm[i].idalmacen+'"><td>'+xdtAlm[i].descripcion+'</td>'+'<td><paper-checkbox class="check_almacen" data-campo="bodega" id="ch_bodega" '+xsi_bodega+'></paper-checkbox></td>'+'<td><paper-checkbox class="check_almacen" data-campo="imprimir_comanda" id="ch_print_comanda" '+xsi_imprmime_p+'></paper-checkbox></td>'+'<td><paper-checkbox class="check_almacen" data-campo="solo_venta_interna" id="ch_solo_venta_interna" '+xsi_solo_venta_interna+'></paper-checkbox></td>'+'</tr>')};$("#tb_almacenes .row").remove();$("#tb_almacenes").append(xcadena_tr_alm).trigger('create');$("#sel_almacen_file").html(xcadena_sel_almacen_file).trigger('create');});}
 function xDescargarXls(){var iframe;iframe=document.getElementById("download-container");if(iframe===null)
 {iframe=document.createElement('iframe');iframe.id="download-container";iframe.style.visibility='hidden';iframe.style.display='none';document.body.appendChild(iframe);}
 iframe.src='../../file/ingresar_productos.xls';}

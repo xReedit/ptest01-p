@@ -411,20 +411,27 @@
 			$sql = "insert into sede_socketid (idsede, socketid, conectado) values (".$g_idsede.", '".$soketId."',  '1')  ON DUPLICATE KEY UPDATE socketid = '".$soketId."', conectado='1'";
 			$bd->xConsulta($sql);
 			break;
+		
+		// INDICADORES
 		case 15:  // metas			
-			$sql = "select * from sede_meta where idsede = ".$g_idsede;;
+			$idsede = $_POST['idsede'];
+			$idsede = $idsede == 0 ? $g_idsede : $idsede;
+			$sql = "select * from sede_meta where idsede = ".$idsede;
 			$bd->xConsulta($sql);
 			break;
 		case 16: // indicadores
-			$sql = "SELECT r.idregistro_pago, r.fecha, CURDATE() f_registro, rpd.idtipo_pago, tp.descripcion as destp, rpd.importe
-					from registro_pago r 
-						inner join registro_pago_detalle rpd on rpd.idregistro_pago = r.idregistro_pago
-						inner join tipo_pago tp on tp.idtipo_pago = rpd.idtipo_pago
-					where r.idsede = $g_idsede  and r.estado=0 and STR_TO_DATE(r.fecha, '%d/%m/%Y') = CURDATE()";
+			$idsede = $_POST['idsede'];
+			$fecha = $_POST['fecha'];
+			$idsede = $idsede == 0 ? $g_idsede : $idsede;
+			$sql = "call procedure_indicador_venta_semana($idsede, '$fecha')";
 			$bd->xConsulta($sql);
 			break;
 		case 1601: // indicadores tipo consumo top secciones e items
-			$sql="SELECT p.idpedido, p.fecha, CURDATE() f_registro, tpc.descripcion destpc, s.descripcion dessec, i.descripcion ides, u.usuario usuario
+			$idsede = $_POST['idsede'];
+			$fecha = $_POST['fecha'];
+			$fecha = $fecha == 0 ? 'CURDATE()' : "STR_TO_DATE('$fecha', '%d/%m/%Y')";
+			$idsede = $idsede == 0 ? $g_idsede : $idsede;
+			$sql="SELECT p.idpedido, p.fecha, CURDATE() f_registro, if (p.is_from_client_pwa = 1, 'APP', tpc.descripcion) destpc, s.descripcion dessec, i.descripcion ides, u.usuario usuario
 					,pd.ptotal_r importe, pd.cantidad_r cantidad
 				from pedido p
 					inner join pedido_detalle pd on pd.idpedido = p.idpedido
@@ -432,7 +439,68 @@
 					inner join item i on i.iditem = pd.iditem
 					inner join seccion s on s.idseccion = pd.idseccion
 					left join usuario u on u.idusuario = p.idusuario
-				where p.idsede= $g_idsede and p.estado=0 and pd.estado = 0 and STR_TO_DATE(p.fecha, '%d/%m/%Y') = CURDATE()";
+				where p.idsede= $idsede and p.estado!=3 and pd.estado = 0 and STR_TO_DATE(p.fecha, '%d/%m/%Y') = $fecha";
+			$bd->xConsulta($sql);
+			break;
+		case 1602: // movimientos de caja
+			$idsede = $_POST['idsede'];
+			$fecha = $_POST['fecha'];
+			$fecha = $fecha == 0 ? 'CURDATE()' : "STR_TO_DATE('$fecha', '%d/%m/%Y')";
+			$idsede = $idsede == 0 ? $g_idsede : $idsede;
+			$sql = "SELECT c.motivo, c.monto, u.usuario, if(c.tipo=1, 'Ingreso', 'Salida' ) tipo
+					from ie_caja c
+						inner join usuario u on c.idusuario = u.idusuario
+					where c.idsede = $idsede and STR_TO_DATE(c.fecha, '%d/%m/%Y') = $fecha";
+			$bd->xConsulta($sql);
+			break;
+		case 1603: // pedidos eliminados
+			$idsede = $_POST['idsede'];
+			$fecha = $_POST['fecha'];
+			$fecha = $fecha == 0 ? 'CURDATE()' : "STR_TO_DATE('$fecha', '%d/%m/%Y')";
+			$idsede = $idsede == 0 ? $g_idsede : $idsede;
+
+				$sql="SELECT count(idpedido) cantidad, COALESCE(sum(total_r), 0) importe from pedido 
+					where idsede = $idsede and estado=3 and STR_TO_DATE(fecha, '%d/%m/%Y') = $fecha";
+				$bd->xConsulta($sql);
+			break;
+		case 1604: // pedidos detalle eliminados
+			$idsede = $_POST['idsede'];
+			$fecha = $_POST['fecha'];
+			$fecha = $fecha == 0 ? 'CURDATE()' : "STR_TO_DATE('$fecha', '%d/%m/%Y')";
+			$idsede = $idsede == 0 ? $g_idsede : $idsede;
+
+				$sql="SELECT count(pd.idpedido) cantidad, COALESCE(sum(pd.ptotal_r), 0) importe 
+				from pedido_detalle pd
+					inner join pedido p on pd.idpedido = p.idpedido
+					where p.idsede=$g_idsede and pd.estado=1 and STR_TO_DATE(p.fecha, '%d/%m/%Y') = $fecha";
+			$bd->xConsulta($sql);
+			break;
+		case 1605: // cmabiar meta
+				$idsede = $_POST['idsede'];				
+				$meta = $_POST['meta'];
+				$new = $_POST['new'];
+				$idsede = $idsede == 0 ? $g_idsede : $idsede;
+
+				if ( $new == "1" ) {
+					$meta_m = $meta * 30;
+					$meta_y = $meta_m * 12;
+					$sql = "insert into sede_meta(idorg, idsede, diaria, mensual, anual, fecha) values ($g_ido, $g_idsede,'$meta', '$meta_m', '$meta_y', CURDATE())";
+				} else {
+					$sql="update sede_meta set diaria='$meta' where idsede = $idsede";
+				}
+				$bd->xConsulta($sql);
+			break;
+		case 1606: // chequear si existe cierre de caja para volver a imprimirlo
+			$fecha = $_POST['fecha'];
+			$idsede = $_POST['idsede'];
+			$fecha = $fecha == 0 ? 'CURDATE()' : "STR_TO_DATE('$fecha', '%d/%m/%Y')";
+			$idsede = $idsede == 0 ? $g_idsede : $idsede;
+			$sql = "SELECT idprint_server_detalle from print_server_detalle where idsede=$idsede and idprint_server_estructura = 4 and STR_TO_DATE(fecha, '%d/%m/%Y') = $fecha";
+			$bd->xConsulta($sql);
+			break;
+		case 16061: // mandar imprimir cierre
+			$ids = $_POST['ids'];
+			$sql = "update print_server_detalle set impreso = 0, estado = 0 where idprint_server_detalle in ($ids)";
 			$bd->xConsulta($sql);
 			break;
 	}

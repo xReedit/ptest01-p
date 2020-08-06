@@ -94,6 +94,16 @@
 				if(is_array($subitem)==false){continue;}
 				$count_items++;
 				if($pos!=false){$solo_llevar=1;$item_antes_solo_llevar=$count_items;}
+				$cantidad=$subitem['cantidad'];
+
+				if ( $cantidad == 0 ) { // si cantidad es igual 0 entonces no guarda lo quita
+					$indexRemove = $subitem['iditem'];
+					echo $indexRemove;
+					unset($x_array_pedido_body[$indexRemove]);
+					continue;
+				}
+
+
 				$tipo_consumo=$subitem['idtipo_consumo'];
 				$categoria=$subitem['idcategoria'];
 

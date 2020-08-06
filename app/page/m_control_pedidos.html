@@ -19,6 +19,7 @@
 <script type=text/javascript src=../../js/PNotifyHistory.js></script>
 <link rel=stylesheet href=../../css/PNotifyBrightTheme.css>
 <script src=../../js/isotope.pkgd.min.js></script>
+<link rel=stylesheet href=../../css/mibootstra.css>
 <link rel=import href=../web_components/polymer/polymer.html>
 <link rel=import href=../web_components/x-router/x-router.html>
 <link rel=import href=../web_components/paper-input/paper-input.html>
@@ -95,7 +96,7 @@
 <span class=titulo>RESERVAS</span>
 </div>
 </li>
-<li>
+<li onclick=xOpenPage(10)>
 <div>
 <span>INDICADORES</span>
 <img class=xIconUlMenu src=../../images/_indicador_caja.png alt=indicadores>
@@ -131,7 +132,7 @@
 </paper-header-panel>
 <paper-header-panel main>
 <paper-toolbar>
-<div style=width:100% main class=xAlinearce>
+<div style=width:100% main class="xAlinearce position-fixed w-100">
 <h3 class=xAlinearce id=Titulo_page>.</h3>
 <div class="xAlinearce xDerecha" id=div_filtro_header style=margin-top:8px>
 </div>

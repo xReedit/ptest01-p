@@ -2,421 +2,71 @@
 <link rel="import" href="../../x-componentes/x-comp-find-input-cliente/x-comp-find-input-cliente.html">
 <link rel="import" href="../../x-componentes/x-comp-direccion-google/x-comp-direccion-google.html">
 <link rel="import" href="../../x-componentes/x-comp-list-direcciones-cliente/x-comp-list-direcciones-cliente.html">
-<!-- <script  type="text/javascript" src="https://maps.googleapis.com/maps/api/js?key=AIzaSyAknWQFyVH1RpR2OAL0vRTHTapaIpfKSqo&libraries=places"></script> -->
 <script src="../../view/calcCostoEntrega.js"></script>
-
 <dom-module id="x-comp-datos-delivery">
-	<template is="dom-bind">
-		<paper-dialog id="dialog_datos_delivery" class="dialog_redondo" entry-animation="scale-up-animation"
-			exit-animation="fade-out-animation" modal with-backdrop>
-			<h2>Datos adicionales</h2>
-			<span>Para la entrega del delivery</span>
-			<hr>
-			<form id="frm_cliente">
-				<div style="display: flex;">
-
-					<input type="text" class="xMiInput xPasarEnter2" placeholder="DNI" autofocus
-						onkeyup="xValidarDNIRUCDel(this.value, event, true)" onChange="conMayusculas(this)" id="txt_delivery_dni"
-						espaciar required>
-					<paper-icon-button icon="icons:search" title="Buscar DNI"
-						onclick="xValidarDNIRUCDel(txt_delivery_dni.value, event, false)"
-						style="position: absolute; right: 38px; margin-top: -5px;"></paper-icon-button>
-				</div>
-				<!-- <input type="text" class="xMiInput xPasarEnter2" placeholder="DNI"
-            autofocus onkeyup="xValidarDNIRUCDel(this.value, event)"
-            onChange="conMayusculas(this)" id="txt_delivery_dni" espaciar required> -->
-				<div class="xInvisible" id="progress_cliente_del"
-					style="width: calc(100% - 30px);margin: 0;padding: 0;margin-top: -16px;margin-left: 5px;">
-					<paper-progress indeterminate style="width: 100%;"></paper-progress>
-				</div>
-
-				<!-- <input type="text" class="xMiInput xPasarEter2" placeholder="NOMBRE" onChange="conMayusculas(this)"
-					id="txt_delivery_nombre" espaciar required>nter2" placeholder="NOMBRE" onChange="conMayusculas(this)"
-					id="txt_delivery_nombre" espaciar required> -->
-				
-				<div style="padding-left: 5px; padding-right: 15px;">
-					<x-comp-find-input-cliente 
-						id="txt_delivery_nombre" 
-						label="NOMBRES" 
-						class="xPasarEnter2">
-					</x-comp-find-input-cliente>
-				</div>
-
-
-				<div>
-					<input hidden$="{{showapigoogle}}" type="text" class="xMiInput xPasarEnter2" placeholder="DIRECCION" onChange="conMayusculas(this)"
-						id="txt_delivery_direccion" espaciar required>
-				</div>
-
-					<!-- direccion con google api -->
-					<div class="content-direccion-ciente" hidden$="{{!showapigoogle}}">
-						<x-comp-direccion-google hidden$="{{ !showdir }}" id="compDirSearch"></x-comp-direccion-google>					
-						<div class="list-direccion-cliente" hidden$="{{ showdir }}">
-							<div style="width: 100%;">
-								<x-comp-list-direcciones-cliente espaciar idcliente$="{{idclientedni}}" id="selectDirCliente"></x-comp-list-direcciones-cliente>
-							</div>
-							<div class="xFondoRowIndigo btn-add-dir xCursor" onclick="nuevaDireccion()"><span class="fs-10">+Add</span></div>
-						</div>
-					</div>
-					<!-- direccion con google api -->
-
-					<input type="text" class="xMiInput xPasarEnter2" placeholder="REFRENCIA" onChange="conMayusculas(this)"
-					id="txt_delivery_referencia" espaciar required>
-
-
-				<input type="text" class="xMiInput xPasarEnter2" placeholder="TELEFONO" onChange="conMayusculas(this)"
-					id="txt_delivery_telefono" espaciar required>
-				<input type="text" class="xMiInput xPasarEnter2" placeholder="PAGA CON" onChange="conMayusculas(this)"
-					id="txt_delivery_paga" espaciar required>
-			</form>			
-			<br>
-			<div class="div-footer-delivery">
-				<div>
-					<p class="fs-14 m-0 xColorRow_Azul text-entrega" hidden$="{{ !showcostoentrega }}">Costo de entrega: S/. {{ costoentrega }} </p>
-				</div>
-				<div class="buttons">
-					<button class="xBoton2 xPlomo" dialog-dismiss>Cancelar</button>
-					<button class="xBoton2 xVerde" onclick="xAdjuntarDatosDelivery()">Listo, adjuntar</button>
-				</div>
-			</div>
-		</paper-dialog>
-	</template>
+<template is="dom-bind">
+<paper-dialog id="dialog_datos_delivery" class="dialog_redondo" entry-animation="scale-up-animation" exit-animation="fade-out-animation" modal with-backdrop>
+<h2>Datos adicionales</h2>
+<span>Para la entrega del delivery</span>
+<hr>
+<form id="frm_cliente">
+<div style="display:flex">
+<input type="text" class="xMiInput xPasarEnter2" placeholder="DNI" autofocus onkeyup="xValidarDNIRUCDel(this.value,event,true)" onChange="conMayusculas(this)" id="txt_delivery_dni" espaciar>
+<paper-icon-button icon="icons:search" title="Buscar DNI" onclick="xValidarDNIRUCDel(txt_delivery_dni.value,event,false)" style="position:absolute;right:38px;margin-top:-5px"></paper-icon-button>
+</div>
+<div class="xInvisible" id="progress_cliente_del" style="width:calc(100% - 30px);margin:0;padding:0;margin-top:-16px;margin-left:5px">
+<paper-progress indeterminate style="width:100%"></paper-progress>
+</div>
+<div style="padding-left:5px;padding-right:15px">
+<x-comp-find-input-cliente id="txt_delivery_nombre" label="NOMBRES" class="xPasarEnter2">
+</x-comp-find-input-cliente>
+</div>
+<div>
+<input hidden$="{{showapigoogle}}" type="text" class="xMiInput xPasarEnter2" placeholder="DIRECCION" onChange="conMayusculas(this)" id="txt_delivery_direccion" espaciar required$="{{ !showapigoogle }}">
+</div>
+<div class="content-direccion-ciente" hidden$="{{!showapigoogle}}">
+<x-comp-direccion-google hidden$="{{ !showdir }}" id="compDirSearch"></x-comp-direccion-google>
+<div class="list-direccion-cliente" hidden$="{{ showdir }}">
+<div style="width:100%">
+<x-comp-list-direcciones-cliente espaciar idcliente$="{{idclientedni}}" id="selectDirCliente"></x-comp-list-direcciones-cliente>
+</div>
+<div class="xFondoRowIndigo btn-add-dir xCursor" onclick="nuevaDireccion()"><span class="fs-10">+Add</span></div>
+</div>
+</div>
+<input type="text" class="xMiInput xPasarEnter2" placeholder="REFRENCIA" onChange="conMayusculas(this)" id="txt_delivery_referencia" espaciar required>
+<input type="text" class="xMiInput xPasarEnter2" placeholder="TELEFONO" onChange="conMayusculas(this)" id="txt_delivery_telefono" espaciar>
+<input type="text" class="xMiInput xPasarEnter2" placeholder="PAGA CON" onChange="conMayusculas(this)" id="txt_delivery_paga" espaciar>
+</form>
+<br>
+<div class="div-footer-delivery">
+<div>
+<p class="fs-14 m-0 xColorRow_Azul text-entrega" hidden$="{{ !showcostoentrega }}">Costo de entrega: S/. {{ costoentrega }} </p>
+</div>
+<div class="buttons">
+<button class="xBoton2 xPlomo" dialog-dismiss>Cancelar</button>
+<button class="xBoton2 xVerde" onclick="xAdjuntarDatosDelivery()">Listo, adjuntar</button>
+</div>
+</div>
+</paper-dialog>
+</template>
 </dom-module>
-<style>
-	.content-direccion-ciente { margin: 5px 15px 10px 5px;}
-	.list-direccion-cliente { display: flex; justify-content: space-around; align-items: center;}
-	.div-footer-delivery { display: flex; justify-content: flex-end; align-items: center;}
-	.m-0 { margin: 0px; }
-	.text-entrega { font-weight: 600; }
-	.btn-add-dir {     
-		font-size: 12px;
-    	padding: 0px 10px;
-    	border-radius: 1px; }
-</style>
-<script>
-	var xThisComDatosDelivery, xIdCliente_pedido, xClientePedidoFnac, arrCompDatosAdjuntoDelivery = [], _inputAutocompleteDel,
-	_inputAutocompleteDelObj, compDirSelectCliente, calcCosto, direcionSelected, compDirSearch, dataSede,
-	comercioHabilitadoBusquedaGoogleApi, comercioHabilitadoCalcDistancia;
-	
-	function xCompDatosDelInit() {
-		calcCosto = new calcCostoEntrega();
-
-		xThisComDatosDelivery.showapigoogle = false; 
-		xThisComDatosDelivery.showdir = true;
-		xThisComDatosDelivery.showcostoentrega = false;
-
-		dataSede = xm_log_get('datos_org_all_sede')[0];
-		dataSede.latitude = parseFloat(dataSede.latitude);
-		dataSede.longitude = parseFloat(dataSede.longitude);
-		loadLastComisiones();
-
-
-		console.log('sede', xm_log_get('datos_org_all_sede'));
-
-
-		compDirSearch = document.getElementById('compDirSearch');
-		compDirSearch.addEventListener('getPlaces', function (e) {
-			direcionSelected = {};
-			direcionSelected = e.detail;
-			direcionSelected.direccion = direcionSelected.formatted_address;
-			direcionSelected.latitude = direcionSelected.geometry.location.lat();
-			direcionSelected.longitude = direcionSelected.geometry.location.lng();			
-			direcionSelected.ciudad = searchTypeMap('locality');
-    		direcionSelected.provincia = searchTypeMap('administrative_area_level_2');
-    		direcionSelected.departamento = searchTypeMap('administrative_area_level_1');
-    		direcionSelected.pais = searchTypeMap('country');
-			direcionSelected.codigo = searchTypeMap('postal_code');
-			txt_delivery_referencia.value = '';
-			// direcionSelected = e.detail.geometry.location;
-			calcularDistancia();
-		});
-
-
-		compDirSelectCliente = document.getElementById('selectDirCliente');		
-		compDirSelectCliente.addEventListener('getDireccionSelected', function (e) {
-			console.log(e);
-			txt_delivery_referencia.value = '';
-			xThisComDatosDelivery.showdir = true;
-			if (e.detail.referencia) {
-				direcionSelected = e.detail;
-				txt_delivery_referencia.value =  direcionSelected.referencia;
-				xThisComDatosDelivery.showdir = false;
-
-				calcularDistancia();
-			}
-		});
-		
-
-		_inputAutocompleteDel = document.getElementById('txt_delivery_nombre');
-		_inputAutocompleteDelObj = _inputAutocompleteDel.$.input_clie_nombres_auto;
-
-		_inputAutocompleteDel.addEventListener('input-autocomplete-selected', (event) => {
-			const cliente = event.detail;
-			xIdCliente_pedido = cliente.idcliente;
-			xClientePedidoFnac = cliente.f_nac || '';
-			$("#txt_delivery_dni").val(cliente.ruc);
-			$("#txt_delivery_direccion").val(cliente.direccion);
-			$("#txt_delivery_telefono").val(cliente.telefono);
-		});
-	}
-
-	function loadLastComisiones() {
-
-		// primero chequeamos si el comercio o sede esta activo para busqueda
-		comercioHabilitadoBusquedaGoogleApi = dataSede.pwa_habilitar_busqueda_mapa === '1'; // comercio afiliado a papaya express		
-		comercioHabilitadoCalcDistancia = dataSede.pwa_delivery_hablitar_calc_costo_servicio === '1';		
-		const comercioPropioreparto = dataSede.pwa_delivery_servicio_propio === '1';		
-
-		xThisComDatosDelivery.showapigoogle = comercioHabilitadoBusquedaGoogleApi;
-
-		// si el comercio tiene su propio reparto 
-		// y no es necesario el calculo de distancia no es necesario traer las ultimas comisiones
-		if ( comercioPropioreparto && !comercioHabilitadoCalcDistancia ) {return; }
-		// comercioHabilitadoBusquedaGoogleApi = true; // comercio afiliado a papaya express		
-
-		const _dirEstablecimineto = dataSede;
-		if (_dirEstablecimineto.pwa_delivery_hablitar_calc_costo_servicio.toString() === "1") {
-			const _dataSend = {
-				codigo_postal: _dirEstablecimineto.codigo_postal
-			};			
-
-				const _url = `${URL_SERVER}/pedido/get-last-comsion-entrega-sede`
-				$.ajax({
-						type: 'POST',
-						url: _url,
-						data: _dataSend
-					})
-					.done(function (res) {
-						console.log(res);			
-						const _data = res.data[0];
-						_dirEstablecimineto.c_minimo = _data.c_minimo;
-						_dirEstablecimineto.c_km = _data.c_km;
-						dataSede.c_minimo = _data.c_minimo;
-						dataSede.c_km = _data.c_km;
-						
-					});
-		}
-	}
-
-	function calcularDistancia() {
-		if ( !comercioHabilitadoCalcDistancia ) { return; }
-		
-		var origen = {
-					lat: dataSede.latitude,
-					lng: dataSede.longitude
-				}
-
-				var destination = {
-					lat: direcionSelected.latitude,
-					lng: direcionSelected.longitude
-				}
-
-				calcCosto.distance(origen, destination);
-				setTimeout(() => {			
-					var distanciaKm = calcCosto.getDistance();
-					// caluclar el costo
-					calcCosto.costoDistancia(distanciaKm, dataSede);
-					dataSede.c_servicio = calcCosto.getImporteDistance();
-					xThisComDatosDelivery.costoentrega = parseFloat(dataSede.c_servicio).toFixed(2);
-					xThisComDatosDelivery.showcostoentrega = true;
-					console.log('calcCosto.getImporteDistance()', calcCosto.getImporteDistance());
-
-					// agregamos a los subtotales
-					localStorage.setItem('::app3_woDUS::cxe', dataSede.c_servicio.toString());
-					xSumarTotal(); // esto de venta rapida
-				}, 500);
-
-
-	}
-
-	function xValidarDNIRUCDel(valor, e, tecla) {
-		if ( valor.length < 8 ) return;
-			if ( e.keyCode === 13 || !tecla) { // buscar cliente
-				xIdCliente_pedido = '';
-				$("#progress_cliente_del").removeClass("xInvisible");
-				xGetFindCliente(valor, 'dni', (rpt)=>{
-					if (rpt.success) {
-						xIdCliente_pedido=rpt.idcliente;
-						xThisComDatosDelivery.idclientedni = xIdCliente_pedido === '' ? 0 : xIdCliente_pedido;
-
-						console.log('xThisComDatosDelivery.idclientedni',xThisComDatosDelivery.idclientedni);
-
-						xClientePedidoFnac=rpt.f_nac || '';
-						_inputAutocompleteDelObj.inputValue = rpt.nombres;
-						// $("#txt_delivery_nombre").val(rpt.nombres);
-						$("#txt_delivery_direccion").val(rpt.direccion);
-						$("#txt_delivery_telefono").val(rpt.telefono);
-					}
-					$("#progress_cliente_del").addClass("xInvisible");
-			});
-		}
-	}
-
-	async function xAdjuntarDatosDelivery() {
-		var DatosCliente;
-		// guardar primero cliente y su direccion
-		if ( xThisComDatosDelivery.showapigoogle ) {
-			DatosCliente = {
-				idcliente: xIdCliente_pedido,
-				num_doc: txt_delivery_dni.value,
-				nombre: _inputAutocompleteDelObj.inputValue,
-				direccion: direcionSelected.direccion, // txt_delivery_direccion.value === '' ? direcionSelected.direccion : txt_delivery_direccion.value,
-				referencia: txt_delivery_referencia.value,
-				telefono: txt_delivery_telefono.value,
-				paga_con: txt_delivery_paga.value,
-				f_nac: xClientePedidoFnac, // hasta aca antes
-				ciudad: direcionSelected.ciudad,
-				provincia: direcionSelected.provincia,
-				departamento: direcionSelected.departamento,
-				pais: direcionSelected.pais,
-				codigo: direcionSelected.codigo,
-				latitude: direcionSelected.latitude,
-				longitude: direcionSelected.longitude,
-				titulo: 'Casa'
-			}		
-		} else {
-			DatosCliente = {
-				idcliente: xIdCliente_pedido,
-				num_doc: txt_delivery_dni.value,
-				nombre: _inputAutocompleteDelObj.inputValue,
-				direccion: txt_delivery_direccion.value, // txt_delivery_direccion.value === '' ? direcionSelected.direccion : txt_delivery_direccion.value,
-				referencia: txt_delivery_referencia.value,
-				telefono: txt_delivery_telefono.value,
-				paga_con: txt_delivery_paga.value,
-				f_nac: xClientePedidoFnac, // hasta aca antes				
-			}		
-		}
-
-
-		id_cliente = xIdCliente_pedido === "" ? await ClienteService_Guardar(DatosCliente) :xIdCliente_pedido;
-		DatosCliente.idcliente = id_cliente;
-
-		var resData = {
-			idcliente: DatosCliente.idcliente,
-			dni: DatosCliente.num_doc,
-			nombre: DatosCliente.nombre,
-			f_nac: DatosCliente.f_nac,
-			direccion: DatosCliente.direccion,
-			telefono: DatosCliente.telefono,
-			paga_con: DatosCliente.paga_con,
-			dato_adicional: '',
-			referencia: DatosCliente.referencia,
-			tipoComprobante: {},
-			importeTotal: 0,
-			metodoPago: {
-				idtipo_pago: 1,
-				descripcion: 'Efectivo',
-				importe: DatosCliente.paga_con,
-				checked: true,
-				visible: true
-			},
-			propina: {},
-			direccionEnvioSelected: DatosCliente,
-			establecimiento: dataSede,
-			subTotales: {},
-			pasoRecoger: false,
-			buscarRepartidor: true,
-			isFromComercio: 1, // el pedido esta yendo desde el comercio,
-			costoTotalDelivery: dataSede.c_servicio,
-			tiempoEntregaProgamado: {},
-			delivery: 1
-		};
-
-		var xSaveNewDireccionPwa = direcionSelected ? !direcionSelected.idcliente_pwa_direccion ? true : false : false;
-
-
-		// guardamos nueva direccion si es necesario
-		if ( xSaveNewDireccionPwa ) {
-			const _url = `${URL_SERVER}/cliente/new-direccion`
-			$.ajax({
-						type: 'POST',
-						url: _url,
-						data: DatosCliente
-					})
-					.done(function (res) {//
-						console.log(res);
-						DatosCliente.idcliente_pwa_direccion = res.data[0].idcliente_pwa_direccion;
-						resData.direccionEnvioSelected = DatosCliente;
-						xEmitEnvet(resData);
-					});
-		} else {
-			xEmitEnvet(resData);
-		}
-		
-
-
-		// arrCompDatosAdjuntoDelivery = [];
-		// arrCompDatosAdjuntoDelivery.push({
-		// 	DatosCliente
-		// });
-		
-
-		// arrCompDatosAdjuntoDelivery = JSON.stringify(arrCompDatosAdjuntoDelivery[0]);
-		// arrCompDatosAdjuntoDelivery = JSON.parse(arrCompDatosAdjuntoDelivery);
-		// xThisComDatosDelivery.fire('xGetDatosDelivery', {datos: arrCompDatosAdjuntoDelivery});
-		// dialog_datos_delivery.close();
-	}
-
-	function xEmitEnvet(_data) {
-		// arrCompDatosAdjuntoDelivery = [];
-		// arrCompDatosAdjuntoDelivery.push({_data});
-
-		arrCompDatosAdjuntoDelivery = _data;
-		
-
-		// arrCompDatosAdjuntoDelivery = JSON.stringify(arrCompDatosAdjuntoDelivery[0]);
-		arrCompDatosAdjuntoDelivery = JSON.stringify(arrCompDatosAdjuntoDelivery);
-		arrCompDatosAdjuntoDelivery = JSON.parse(arrCompDatosAdjuntoDelivery);
-		xThisComDatosDelivery.fire('xGetDatosDelivery', {datos: arrCompDatosAdjuntoDelivery});
-		dialog_datos_delivery.close();
-	}
-
-	function xNuevoDatosDelivery(){
-		arrCompDatosAdjuntoDelivery = [];
-	}
-
-	function _reloadDatalientes() {
-		_inputAutocompleteDel.reloadllClientes();
-	}
-
-	function nuevaDireccion() {
-		xThisComDatosDelivery.showdir = !xThisComDatosDelivery.showdir;
-	}
-
-	function searchTypeMap(search) {
-		let rpt = '';
-		direcionSelected.address_components.map((x) => {
-		x.types.map( (t) => {
-			if (t === search) {
-			rpt = x.long_name;
-			return rpt;
-			}
-		});
-		});
-		return rpt;
-  	}
-
-	Polymer({
-        is: 'x-comp-datos-delivery',
-        properties: {
-			showdir: Boolean,
-			showcostoentrega: Boolean,
-			showapigoogle: Boolean,
-			costoentrega: String,
-			idclientedni: Number
-		}, 
-		attached: function() {
-			xThisComDatosDelivery=this;
-			xCompDatosDelInit();
-		},
-		reloadInputDatalientes() {
-			_reloadDatalientes();
-		},
-		resetValInit() {
-			// al terminar la venta resetea los valors
-			xThisComDatosDelivery.idclientedni = 0;
-			xThisComDatosDelivery.showdir = true;
-			xThisComDatosDelivery.showcostoentrega = false;
-		}
-    })
-</script>
+<style>.content-direccion-ciente{margin:5px 15px 10px 5px}.list-direccion-cliente{display:flex;justify-content:space-around;align-items:center}.div-footer-delivery{display:flex;justify-content:flex-end;align-items:center}.m-0{margin:0}.text-entrega{font-weight:600}.btn-add-dir{font-size:12px;padding:0 10px;border-radius:1px}</style>
+<script>/*<![CDATA[*/var xThisComDatosDelivery,xIdCliente_pedido,xClientePedidoFnac,arrCompDatosAdjuntoDelivery=[],_inputAutocompleteDel,_inputAutocompleteDelObj,compDirSelectCliente,calcCosto,direcionSelected,compDirSearch,dataSede,comercioHabilitadoBusquedaGoogleApi,comercioHabilitadoCalcDistancia;function xCompDatosDelInit(){calcCosto=new calcCostoEntrega();xThisComDatosDelivery.showapigoogle=false;xThisComDatosDelivery.showdir=true;xThisComDatosDelivery.showcostoentrega=false;dataSede=xm_log_get('datos_org_all_sede')[0];dataSede.latitude=parseFloat(dataSede.latitude);dataSede.longitude=parseFloat(dataSede.longitude);loadLastComisiones();console.log('sede',xm_log_get('datos_org_all_sede'));compDirSearch=document.getElementById('compDirSearch');compDirSearch.addEventListener('getPlaces',function(e){direcionSelected={};direcionSelected=e.detail;direcionSelected.direccion=direcionSelected.formatted_address;direcionSelected.latitude=direcionSelected.geometry.location.lat();direcionSelected.longitude=direcionSelected.geometry.location.lng();direcionSelected.ciudad=searchTypeMap('locality');direcionSelected.provincia=searchTypeMap('administrative_area_level_2');direcionSelected.departamento=searchTypeMap('administrative_area_level_1');direcionSelected.pais=searchTypeMap('country');direcionSelected.codigo=searchTypeMap('postal_code');txt_delivery_referencia.value='';calcularDistancia();});compDirSelectCliente=document.getElementById('selectDirCliente');compDirSelectCliente.addEventListener('getDireccionSelected',function(e){console.log(e);txt_delivery_referencia.value='';xThisComDatosDelivery.showdir=true;if(e.detail.referencia){direcionSelected=e.detail;txt_delivery_referencia.value=direcionSelected.referencia;xThisComDatosDelivery.showdir=false;calcularDistancia();}});_inputAutocompleteDel=document.getElementById('txt_delivery_nombre');_inputAutocompleteDelObj=_inputAutocompleteDel.$.input_clie_nombres_auto;_inputAutocompleteDel.addEventListener('input-autocomplete-selected',(event)=>{const cliente=event.detail;xIdCliente_pedido=cliente.idcliente;xClientePedidoFnac=cliente.f_nac||'';$("#txt_delivery_dni").val(cliente.ruc);$("#txt_delivery_direccion").val(cliente.direccion);$("#txt_delivery_telefono").val(cliente.telefono);});}
+function loadLastComisiones(){comercioHabilitadoBusquedaGoogleApi=dataSede.pwa_habilitar_busqueda_mapa==='1';comercioHabilitadoCalcDistancia=dataSede.pwa_delivery_hablitar_calc_costo_servicio==='1';const comercioPropioreparto=dataSede.pwa_delivery_servicio_propio==='1';xThisComDatosDelivery.showapigoogle=comercioHabilitadoBusquedaGoogleApi;if(comercioPropioreparto&&!comercioHabilitadoCalcDistancia){return;}
+const _dirEstablecimineto=dataSede;if(_dirEstablecimineto.pwa_delivery_hablitar_calc_costo_servicio.toString()==="1"){const _dataSend={codigo_postal:_dirEstablecimineto.codigo_postal};const _url=`${URL_SERVER}/pedido/get-last-comsion-entrega-sede`$.ajax({type:'POST',url:_url,data:_dataSend}).done(function(res){console.log(res);const _data=res.data[0];_dirEstablecimineto.c_minimo=_data.c_minimo;_dirEstablecimineto.c_km=_data.c_km;dataSede.c_minimo=_data.c_minimo;dataSede.c_km=_data.c_km;});}}
+function calcularDistancia(){if(!comercioHabilitadoCalcDistancia){return;}
+var origen={lat:dataSede.latitude,lng:dataSede.longitude}
+var destination={lat:direcionSelected.latitude,lng:direcionSelected.longitude}
+calcCosto.distance(origen,destination);setTimeout(()=>{var distanciaKm=calcCosto.getDistance();calcCosto.costoDistancia(distanciaKm,dataSede);dataSede.c_servicio=calcCosto.getImporteDistance();xThisComDatosDelivery.costoentrega=parseFloat(dataSede.c_servicio).toFixed(2);xThisComDatosDelivery.showcostoentrega=true;console.log('calcCosto.getImporteDistance()',calcCosto.getImporteDistance());localStorage.setItem('::app3_woDUS::cxe',dataSede.c_servicio.toString());xSumarTotal();},500);}
+function xValidarDNIRUCDel(valor,e,tecla){if(valor.length<8)return;if(e.keyCode===13||!tecla){xIdCliente_pedido='';$("#progress_cliente_del").removeClass("xInvisible");xGetFindCliente(valor,'dni',(rpt)=>{if(rpt.success){xIdCliente_pedido=rpt.idcliente;xThisComDatosDelivery.idclientedni=xIdCliente_pedido===''?0:xIdCliente_pedido;console.log('xThisComDatosDelivery.idclientedni',xThisComDatosDelivery.idclientedni);xClientePedidoFnac=rpt.f_nac||'';_inputAutocompleteDelObj.inputValue=rpt.nombres;$("#txt_delivery_direccion").val(rpt.direccion);$("#txt_delivery_telefono").val(rpt.telefono);}
+$("#progress_cliente_del").addClass("xInvisible");});}}
+async function xAdjuntarDatosDelivery(){var pase=false;xvalidateFormInput('frm_cliente',function(a){pase=a;if(a===false){return;}});if(!pase){return;}
+var DatosCliente;if(xThisComDatosDelivery.showapigoogle){DatosCliente={idcliente:xIdCliente_pedido,num_doc:txt_delivery_dni.value,nombre:_inputAutocompleteDelObj.inputValue,direccion:direcionSelected.direccion,referencia:txt_delivery_referencia.value,telefono:txt_delivery_telefono.value,paga_con:txt_delivery_paga.value,f_nac:xClientePedidoFnac,ciudad:direcionSelected.ciudad,provincia:direcionSelected.provincia,departamento:direcionSelected.departamento,pais:direcionSelected.pais,codigo:direcionSelected.codigo,latitude:direcionSelected.latitude,longitude:direcionSelected.longitude,titulo:'Casa'}}else{DatosCliente={idcliente:xIdCliente_pedido,num_doc:txt_delivery_dni.value,nombre:_inputAutocompleteDelObj.inputValue,direccion:txt_delivery_direccion.value,referencia:txt_delivery_referencia.value,telefono:txt_delivery_telefono.value,paga_con:txt_delivery_paga.value,f_nac:xClientePedidoFnac,}}
+id_cliente=xIdCliente_pedido===""?await ClienteService_Guardar(DatosCliente):xIdCliente_pedido;DatosCliente.idcliente=id_cliente;var resData={idcliente:DatosCliente.idcliente,dni:DatosCliente.num_doc,nombre:DatosCliente.nombre,f_nac:DatosCliente.f_nac,direccion:DatosCliente.direccion,telefono:DatosCliente.telefono,paga_con:DatosCliente.paga_con,dato_adicional:'',referencia:DatosCliente.referencia,tipoComprobante:{},importeTotal:0,metodoPago:{idtipo_pago:1,descripcion:'Efectivo',importe:DatosCliente.paga_con,checked:true,visible:true},propina:{},direccionEnvioSelected:DatosCliente,establecimiento:dataSede,subTotales:{},pasoRecoger:false,buscarRepartidor:true,isFromComercio:1,costoTotalDelivery:dataSede.c_servicio,tiempoEntregaProgamado:{},delivery:1};var xSaveNewDireccionPwa=direcionSelected?!direcionSelected.idcliente_pwa_direccion?true:false:false;if(xSaveNewDireccionPwa){const _url=`${URL_SERVER}/cliente/new-direccion`$.ajax({type:'POST',url:_url,data:DatosCliente}).done(function(res){console.log(res);DatosCliente.idcliente_pwa_direccion=res.data[0].idcliente_pwa_direccion;resData.direccionEnvioSelected=DatosCliente;xEmitEnvet(resData);});}else{xEmitEnvet(resData);}}
+function xEmitEnvet(_data){if(_data.direccion)
+arrCompDatosAdjuntoDelivery=_data;arrCompDatosAdjuntoDelivery=JSON.stringify(arrCompDatosAdjuntoDelivery);arrCompDatosAdjuntoDelivery=JSON.parse(arrCompDatosAdjuntoDelivery);xThisComDatosDelivery.fire('xGetDatosDelivery',{datos:arrCompDatosAdjuntoDelivery});dialog_datos_delivery.close();}
+function xNuevoDatosDelivery(){arrCompDatosAdjuntoDelivery=[];}
+function _reloadDatalientes(){_inputAutocompleteDel.reloadllClientes();}
+function nuevaDireccion(){xThisComDatosDelivery.showdir=!xThisComDatosDelivery.showdir;}
+function searchTypeMap(search){let rpt='';direcionSelected.address_components.map((x)=>{x.types.map((t)=>{if(t===search){rpt=x.long_name;return rpt;}});});return rpt;}
+Polymer({is:'x-comp-datos-delivery',properties:{showdir:Boolean,showcostoentrega:Boolean,showapigoogle:Boolean,costoentrega:String,idclientedni:Number},attached:function(){xThisComDatosDelivery=this;xCompDatosDelInit();},reloadInputDatalientes(){_reloadDatalientes();},resetValInit(){xThisComDatosDelivery.idclientedni=0;xThisComDatosDelivery.showdir=true;xThisComDatosDelivery.showcostoentrega=false;}})/*]]>*/</script>
