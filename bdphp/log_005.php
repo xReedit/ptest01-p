@@ -431,7 +431,7 @@
 			$fecha = $_POST['fecha'];
 			$fecha = $fecha == 0 ? 'CURDATE()' : "STR_TO_DATE('$fecha', '%d/%m/%Y')";
 			$idsede = $idsede == 0 ? $g_idsede : $idsede;
-			$sql="SELECT p.idpedido, p.fecha, CURDATE() f_registro, if ( p.is_from_client_pwa = 1 && p.idusuario!=0, 'APP', tpc.descripcion) destpc, s.descripcion dessec, i.descripcion ides, u.usuario usuario
+			$sql="SELECT p.idpedido, p.fecha, CURDATE() f_registro, if ( p.is_from_client_pwa = 1 && p.idusuario = 0, 'APP', tpc.descripcion) destpc, s.descripcion dessec, i.descripcion ides, u.usuario usuario
 					,pd.ptotal_r importe, pd.cantidad_r cantidad
 				from pedido p
 					inner join pedido_detalle pd on pd.idpedido = p.idpedido
