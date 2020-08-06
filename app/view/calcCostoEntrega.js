@@ -26,7 +26,11 @@ class calcCostoEntrega {
     distance(start, end) {
         var directionsService = new google.maps.DirectionsService();
 
-        
+        start.lat = typeof start.lat === 'string' ? parseFloat(start.lat) : start.lat;
+        start.lng = typeof start.lng === 'string' ? parseFloat(start.lng) : start.lng;
+
+        end.lat = typeof end.lat === 'string' ? parseFloat(end.lat) : end.lat;
+        end.lng = typeof end.lng === 'string' ? parseFloat(end.lng) : end.lng;
 
         var request = {
             origin: start,
@@ -56,7 +60,7 @@ class calcCostoEntrega {
         var c_servicio = parseFloat(dirEstablecimiento.c_minimo.toString()); // puede variar
         var menosKm = 0;
         menosKm = km > 2 ? 2 : menosKm;
-        menosKm = km >= 4 ? 0 : menosKm; // si es mayor o igual  a 4 kilometros entonce no resta        
+        menosKm = km > 4 ? 0 : menosKm; // si es mayor o igual  a 4 kilometros entonce no resta        
         if ( km > 2 ) {
             c_servicio = (( km - menosKm ) * c_km) + c_servicio;
             dirEstablecimiento.c_servicio = c_servicio;
