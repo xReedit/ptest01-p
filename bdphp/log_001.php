@@ -98,7 +98,7 @@
 
 				if ( $cantidad == 0 ) { // si cantidad es igual 0 entonces no guarda lo quita
 					$indexRemove = $subitem['iditem'];
-					echo $indexRemove;
+					// echo $indexRemove; // error loading // se queda cargando porque no espera este resultado
 					unset($x_array_pedido_body[$indexRemove]);
 					continue;
 				}
@@ -220,7 +220,7 @@
 				
 				// desde 03/08/2020 -- omologacion con papaya express
 				$x_array_pedido_header['delivery'] = array_key_exists('pasoRecoger', $arrD) ? 1 : 0;
-				$json_datos_delivery = json_encode(array('p_header' => $x_array_pedido_header, 'p_body' => $x_array_pedido_body, 'p_subtotales' => $x_array_subtotales));
+				$json_datos_delivery = json_encode(array('p_header' => $x_array_pedido_header,'p_subtotales' => $x_array_subtotales)); // , 'p_body' => $x_array_pedido_body, 'p_subtotales' => $x_array_subtotales
 			}
 			
 
