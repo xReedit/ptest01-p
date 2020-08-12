@@ -130,7 +130,8 @@
 				// -- ESTO PARA CONTROL DE PEDIDOS
 
 				$lisSubItemsSelect = $subitem['subitems_view'];
-				if ( $lisSubItemsSelect == null ) {
+				// if ( $lisSubItemsSelect == null ) {
+				if ( !isset($lisSubItemsSelect[0]) ) {
 
 					// print $subItemSelect;
 					$sql_pedido_detalle=$sql_pedido_detalle."(?,".$tipo_consumo.",".$categoria.",".$subitem['iditem'].",".$idItem2.",'".$subitem['idseccion']."','".$subitem['cantidad']."','".$subitem['cantidad']."','".$subitem['precio']."','".$precio_total."','".$precio_total."','".$subitem['des'].$indicaciones_p."',".$viene_de_bodega.",".$tabla_procede.",".$pwa.",'".$subItemSelect."'),";
