@@ -359,7 +359,8 @@
 			$bd->xConsulta($sql);
 			break;
 		case 110: // registro pago app
-			$fecha = $_POST['f'];			
+			$f_de = $_POST['f_de'];
+			$f_a = $_POST['f_a'];
 			// $sql = "SELECT rp.idregistro_pago, c.nombres as nomcliente, rp.fecha, 
 			// 		(select nummesa from pedido where idregistro_pago = rp.idregistro_pago limit 1) as nummesa,
 			// 		format(rp.total, 2) as importe, tpc.descripcion as canal, cast(rp.data_pago_pwa as json)  as datos
@@ -370,7 +371,14 @@
 			// 	order by rp.idregistro_pago desc";
 			// $bd->xConsulta($sql);
 
-			$sql = "SELECT * from pwa_pago_transaction where idsede=$g_idsede and cast(fecha as date) = cast('".$fecha."' as date) order by idpwa_pago_transaction desc";
+			// $sql = "SELECT * from pwa_pago_transaction where idsede=$g_idsede and cast(fecha as date) = cast('".$fecha."' as date) order by idpwa_pago_transaction desc";
+			$sql =  "SELECT tr.fecha, p.idpedido, p.correlativo_dia, p.nummesa, tpc.descripcion canal, p.total_r as importe, c.nombres cliente, tr.data_transaction
+						, p.check_liquidado, p.check_pagado, p.check_pago_fecha
+					from pedido p
+					inner join cliente c on c.idcliente = p.idcliente
+					inner join tipo_consumo tpc on tpc.idtipo_consumo = p.idtipo_consumo
+					inner join pwa_pago_transaction tr on tr.idpwa_pago_transaction = p.idpwa_pago_transaction
+					where p.idsede = $g_idsede and  STR_TO_DATE(p.fecha, '%d/%m/%Y') between STR_TO_DATE('$f_de', '%d/%m/%Y') and STR_TO_DATE('$f_a', '%d/%m/%Y')";
 			$bd->xConsulta($sql);
 
 			break;
@@ -431,7 +439,7 @@
 			$fecha = $_POST['fecha'];
 			$fecha = $fecha == 0 ? 'CURDATE()' : "STR_TO_DATE('$fecha', '%d/%m/%Y')";
 			$idsede = $idsede == 0 ? $g_idsede : $idsede;
-			$sql="SELECT p.idpedido, p.fecha, CURDATE() f_registro, if ( p.is_from_client_pwa = 1 && p.idusuario = 0, 'APP', tpc.descripcion) destpc, s.descripcion dessec, i.descripcion ides, u.usuario usuario
+			$sql="SELECT p.idpedido, p.fecha, CURDATE() f_registro, if (p.is_from_client_pwa = 1, 'APP', tpc.descripcion) destpc, s.descripcion dessec, i.descripcion ides, u.usuario usuario
 					,pd.ptotal_r importe, pd.cantidad_r cantidad
 				from pedido p
 					inner join pedido_detalle pd on pd.idpedido = p.idpedido
@@ -501,6 +509,22 @@
 		case 16061: // mandar imprimir cierre
 			$ids = $_POST['ids'];
 			$sql = "update print_server_detalle set impreso = 0, estado = 0 where idprint_server_detalle in ($ids)";
+			$bd->xConsulta($sql);
+			break;
+		case 17: // reimprimir cierre de caja
+			$f = $_POST['f'];			
+			$sql = "INSERT INTO print_server_detalle (idorg, idsede, idprint_server_estructura, descripcion_doc, detalle_json,fecha,hora, idusuario) 
+			SELECT idorg, idsede, idprint_server_estructura, descripcion_doc, detalle_json,fecha,hora, idusuario 
+				from print_server_detalle 
+			where idprint_server_estructura = 4 and idusuario = $g_idusuario and fecha = '$f' LIMIT 1";
+			$bd->xConsulta($sql);
+			break;
+		case 1701: // reimprimir comprobante
+			$c = $_POST['comprobante'];			
+			$sql = "INSERT INTO print_server_detalle (idorg, idsede, idprint_server_estructura, descripcion_doc, detalle_json,fecha,hora, idusuario) 
+			SELECT idorg, idsede, idprint_server_estructura, descripcion_doc, detalle_json,fecha,hora, idusuario 
+				from print_server_detalle 
+			where idprint_server_estructura = 2 and CONCAT(detalle_json->>'$.ArrayComprobante.inicial',detalle_json->>'$.ArrayComprobante.serie','-', detalle_json->>'$.ArrayComprobante.correlativo') = '$c'";
 			$bd->xConsulta($sql);
 			break;
 	}

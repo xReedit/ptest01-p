@@ -1,8 +1,8 @@
 // var socketCP;
 var socketCP = new socketService();
 function _cpSocketOpen() { 
-    if (isSocket) {
-        isSocket = parseInt(xm_log_get('datos_org_sede')[0].pwa) === 0 ? false : true;
+    // if (isSocket) {
+        // isSocket = parseInt(xm_log_get('datos_org_sede')[0].pwa) === 0 ? false : true;
 
         if ( !this.socketCP._socket) {            
             this.socketCP.connectSocket();
@@ -15,13 +15,13 @@ function _cpSocketOpen() {
             }
         }
 
-    }
+    // }
 }
 
 
 function listenSocketP() {
 
-    console.log('this.socketCP', this.socketCP);
+    // console.log('this.socketCP', this.socketCP);
     /// guardar conexion sede
     setTimeout(() => {    
         $.ajax({ type: 'POST', url: '../../bdphp/log_005.php?op=14', data: { socketId:  this.socketCP._socket.id}})
@@ -67,6 +67,7 @@ function listenSocketP() {
     // NOTIFICAR PAGO CLIENTE FROM APP
     this.socketCP.listen('notificar-pago-pwa').subscribe(res => {
         try { // puede venir de zona de despacho                             
+            console.log('notifica pago', res);
             _cpSocketPintarPedido(null);
             _cpSocketPintarNumerosPagosNotificados();
             pNotificaPago(res);

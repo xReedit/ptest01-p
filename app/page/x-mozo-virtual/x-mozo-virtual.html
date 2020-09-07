@@ -1,0 +1,24 @@
+
+<link rel="import" href="../x-configuraciones/x-carta-virtual-config/x-carta-virtual-mesas.html">
+<dom-module id="x-mozo-virtual">
+	<template is="dom">
+        <div class="p-3">
+            <x-carta-virtual-mesas></x-carta-virtual-mesas>
+        </div>
+    </template>
+</dom-module>
+<script>
+    var xThisMozo;
+
+    $("#Titulo_page").text("Mozo Virtual");
+	$('body').addClass('loaded');
+    Polymer({
+        is: 'x-mozo-virtual',
+        properties: {
+			
+        },
+        attached: function () {            
+            xThisMozo = this;            
+        }            
+    })
+</script>

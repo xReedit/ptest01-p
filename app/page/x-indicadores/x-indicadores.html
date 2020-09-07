@@ -97,6 +97,49 @@
 <hr>
 <div class="flexbox">
 <div class="left">
+<p class="text-left fs-16 fw-600">Mozo Virtual</p>
+<hr>
+<table class="w-100">
+<thead>
+<th align="left">Canal</th>
+<th align="center">Cantidad</th>
+<th align="right">Importe</th>
+</thead>
+<tbody>
+<template is="dom-repeat" items="{{listMozoVirtual}}" as="item">
+<tr>
+<td align="left">{{ item.descripcion }}</td>
+<td align="center">{{ item.t2 }}</td>
+<td align="right">{{ item.t3 }}</td>
+</tr>
+</template>
+</tbody>
+</table>
+</div>
+<div class="left">
+<p class="text-left fs-16 fw-600">Pagos desde APP</p>
+<hr>
+<table class="w-100">
+<thead>
+<th align="left">Canal</th>
+<th align="center">Cantidad</th>
+<th align="right">Importe</th>
+</thead>
+<tbody>
+<template is="dom-repeat" items="{{listPagosApp}}" as="item">
+<tr>
+<td align="left">{{ item.descripcion }}</td>
+<td align="center">{{ item.t2 }}</td>
+<td align="right">{{ item.t3 }}</td>
+</tr>
+</template>
+</tbody>
+</table>
+</div>
+</div>
+<hr>
+<div class="flexbox">
+<div class="left">
 <p class="text-left fs-16 fw-600">Lista de Secciones</p>
 <hr>
 <table class="w-100">
@@ -168,7 +211,8 @@
 </dom-module>
 <style>.div-grafico{text-align:center}.xIndicadorSize1{width:250px;height:200px;margin:0 auto;clear:both}.graficoSemana{display:inline-block;min-height:256px;width:49%}.div-item{text-align:center;max-width:250px;min-width:200px}.flexbox{display:flex;flex-direction:column;padding:5px;align-content:space-between;justify-content:space-between}.flexbox>div{text-align:center;padding:20px 0;margin:5px}@media(min-width:576px){.flexbox{flex-flow:row wrap}.flexbox>.left{order:1;flex:1}.flexbox>.right{order:2;flex:1}.flexbox>.next{order:2;flex:1}.flexbox>.center{order:3;width:100%}}@media(min-width:768px){.flexbox{flex-flow:row nowrap}.flexbox>div{width:33.33%!important}.flexbox>.left{order:1}.flexbox>.center{order:2}.flexbox>.right{order:3}.flexbox>.next{order:2}}</style>
 <script>var xThis,compSede,dataMeta,dataVentasDia,dataVentasCanalConsumo,dataCaja,metaDiaria=0,grafico_meta_diaria=null,porcentajeMedaDia=0,crosVenta,crosCanalConsumo,crosCaja,sumImporteTotal=0,dataFiltro={},idsCierres=[];function initIndicadores(){xThisI.showBtnCierreCaja=false;compSede=document.getElementById('compSedeIndicador');iniFiltros();$('body').addClass('loaded');$("#Titulo_page").text("INDICADORES");}
-function iniLoaddata(){loadMestasSede();loadCanalConsumoTops();loadMovimientoCaja();loadAnulados();loadIfCierreCaja()}
+function iniLoaddata(){loadMestasSede();loadCanalConsumoTops();loadMovimientoCaja();loadAnulados();loadIfCierreCaja()
+loadMozoVirtual();loadPagoAPP();}
 function changeFecha(val){dataFiltro.fecha=xDevolverFechaFormatInputDate(val.target.value);iniLoaddata();}
 function changeSede(val){dataFiltro.idsede=val.idsede;iniLoaddata();}
 function iniFiltros(){dataFiltro={idsede:0,fecha:0}
@@ -180,6 +224,8 @@ function loadMovimientoCaja(){$.ajax({type:'POST',url:'../../bdphp/log_005.php?o
 function loadAnulados(){$.ajax({type:'POST',url:'../../bdphp/log_005.php?op=1603',data:dataFiltro}).done(function(res){var res=JSON.parse(res).datos[0];res.importe=parseFloat(res.importe).toFixed(2);xThisI.listPedidosAnulados=res;});$.ajax({type:'POST',url:'../../bdphp/log_005.php?op=1604',data:dataFiltro}).done(function(res){var res=JSON.parse(res).datos[0];res.importe=parseFloat(res.importe).toFixed(2);xThisI.listPedidosItemAnulados=res;});}
 function loadMestasSede(){$.ajax({type:'POST',url:'../../bdphp/log_005.php?op=15',data:dataFiltro}).done(function(res){dataMeta=JSON.parse(res).datos[0];if(dataMeta){metaDiaria=dataMeta.diaria;loadVentasDia();}else{dialog_meta.open();}});}
 function loadIfCierreCaja(){$.ajax({type:'POST',url:'../../bdphp/log_005.php?op=1606',data:dataFiltro}).done(function(res){idsCierres=JSON.parse(res).datos;xThisI.showBtnCierreCaja=idsCierres.length>0;});}
+function loadMozoVirtual(){xThisI.listMozoVirtual=[];$.ajax({type:'POST',url:'../../bdphp/log.php?op=700221',data:dataFiltro}).done(function(res){var resp=JSON.parse(res);xThisI.listMozoVirtual=resp.datos;console.log('xThisI.listMozoVirtual',xThisI.listMozoVirtual);});}
+function loadPagoAPP(){$.ajax({type:'POST',url:'../../bdphp/log.php?op=700211',data:dataFiltro}).done(function(res){xThisI.listPagosApp=JSON.parse(res).datos;});}
 function reImprimirCierre(){var _ids=idsCierres.map(x=>x.idprint_server_detalle).join(',');xPopupLoad.xopen();setTimeout(()=>{xPopupLoad.xclose();},600);$.ajax({type:'POST',url:'../../bdphp/log_005.php?op=16061',data:{ids:_ids}}).done(function(res){var countRes=JSON.parse(res).datos;xThisI.showBtnCierreCaja=countRes.length>0;});}
 function cocinarDataVentasDia(){sumImporteTotal=dataMetdataVentasDia.filter(x=>x.hoy.toString()==="1").map(x=>parseFloat(x.importe)).reduce((a,b)=>a+b,0);porcentajeMedaDia=((sumImporteTotal/metaDiaria)*100).toFixed(1);graficoMetaDiaria(porcentajeMedaDia);var crosVentaHoy=crossfilter(dataMetdataVentasDia.filter(x=>x.hoy.toString()==="1"));var ddTp=crosVentaHoy.dimension(item=>item.destp);let byTipoPago=ddTp.group().reduceSum(item=>parseFloat(item.importe));xThisI.listTipoPago=byTipoPago.all().map(x=>{x.value=x.value.toFixed(2);return x});var ddNomDia=crosVenta.dimension(item=>item.nomdia);let byVentaSemana=ddNomDia.group().reduceSum(item=>parseFloat(item.importe));xThisI.listSemana=byVentaSemana.orderNatural().all();graficoVentasSemana();}
 function cocinarCanalConsumoTops(){var ddCanal=crosCanalConsumo.dimension(item=>item.destpc);let byCanalConsumo=ddCanal.group().reduceSum(item=>parseFloat(item.importe));xThisI.listCanalConsumo=byCanalConsumo.all();graficoCanalesConsumo();var ddSeccion=crosCanalConsumo.dimension(item=>item.dessec);xThisI.listSeccion=sumCountDimension(ddSeccion);var ddProducto=crosCanalConsumo.dimension(item=>item.ides);xThisI.listProducto=sumCountDimension(ddProducto);}
@@ -195,4 +241,4 @@ function graficoCanalesConsumo(){var ctx=document.getElementById('myChart').getC
 function graficoVentasSemana(){var ctx=document.getElementById('myChartVentasSemana').getContext('2d');var myBarChart=new Chart(ctx,{type:'line',data:{labels:xThisI.listSemana.map(x=>x.key.split('|')[1]),datasets:[{label:'Importe',data:xThisI.listSemana.map(x=>x.value),backgroundColor:["#DBF2F2"],borderColor:["#87D5D5"],borderWidth:2}],},options:{legend:{display:false,position:'bottom'}}});}
 function xGuardarMeta(){var meta=txt_new_meta.value;dataFiltro.meta=meta
 dataFiltro.new=dataMeta?0:1;$.ajax({type:'POST',url:'../../bdphp/log_005.php?op=1605',data:dataFiltro}).done(function(res){dialog_meta.close();porcentajeMedaDia=((sumImporteTotal/meta)*100).toFixed(1);if(dataMeta){graficoMetaDiaria(porcentajeMedaDia);}else{iniLoaddata();}});}
-Polymer({is:'x-indicadores',properties:{listTipoPago:[],listCanalConsumo:[],listSeccion:[],listProducto:[],listCaja:[],listSemana:[],listPedidosAnulados:[],listPedidosItemAnulados:[],showBtnCierreCaja:Boolean,metaD:Number,xt_org:Number,xt_idsede:Number,},attached:function(){xThisI=this;initIndicadores();},detached:function(){grafico_meta_diaria=null;}})</script>
+Polymer({is:'x-indicadores',properties:{listTipoPago:[],listCanalConsumo:[],listSeccion:[],listProducto:[],listCaja:[],listSemana:[],listPedidosAnulados:[],listPedidosItemAnulados:[],listMozoVirtual:[],listPagosApp:[],showBtnCierreCaja:Boolean,metaD:Number,xt_org:Number,xt_idsede:Number,},attached:function(){xThisI=this;initIndicadores();},detached:function(){grafico_meta_diaria=null;}})</script>

@@ -51,11 +51,14 @@
 <body oncontextmenu="return false" unresolved class="fullbleed layout vertical">
 <x-dialog id=xLoad></x-dialog>
 <div class=xInvisible>
-<audio id=notificaLlamadoCliente autobuffer>
+<audio id=notificaLlamadoCliente autobuffer preload=auto>
 <source src=../../sound/notifica-llamado.mp3 type="audio/mpeg"/>
 </audio>
-<audio id=notificaPagoCliente autobuffer>
+<audio id=notificaPagoCliente autobuffer preload=auto>
 <source src=../../sound/notifica-pago.mp3 type="audio/mpeg"/>
+</audio>
+<audio id=notificaNuevoPedido autobuffer preload=auto>
+<source src=../../sound/notifica-pedido.wav type="audio/mpeg"/>
 </audio>
 </div>
 <paper-drawer-panel>

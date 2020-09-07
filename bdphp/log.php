@@ -1493,8 +1493,9 @@
 		case 3051:	//load pedido control de pedidos /load pedido desde mi pedido
 			$nummesa=$_POST['m'];
 			$numpedido=$_POST['p'];
+			$isConfirmarPago= isset($_POST['confirmar_pago']) ? $_POST['confirmar_pago'] : 0;
 			// 0 idpedido
-			$sql="CALL procedure_bus_pedido_bd_3051(".$nummesa.",'".$numpedido."', 0,".$g_ido.",".$g_idsede.");";
+			$sql="CALL procedure_bus_pedido_bd_3051(".$nummesa.",'".$numpedido."', 0,".$g_ido.",".$g_idsede.",".$isConfirmarPago.");";
 			
 			// $condicion='p.nummesa='.$nummesa;
 			// if($nummesa==0){
@@ -1534,7 +1535,7 @@
 				INNER JOIN tipo_consumo AS tp ON tp.idtipo_consumo=pd.idtipo_consumo
 			WHERE ".$condicion." and (p.idorg=".$g_ido." and p.idsede=".$g_idsede.") AND p.estado IN (0,1) AND pd.pagado=0
 			ORDER BY pd.idtipo_consumo,pd.idseccion, pd.idpedido_detalle
-			";*/
+			";*/			
 			$bd->xConsulta($sql);
 			break;
 		case 306://reglas de la carta
@@ -1817,6 +1818,16 @@
 		case 507:// load detalle del pedido
 			$nummesa=$_POST['m'];
 			$numpedido=$_POST['p'];
+			$isConfirmarPago= isset($_POST['confirmar_pago']) ? $_POST['confirmar_pago'] : 0;
+			$isQyueryConfirmar = '';
+			
+			// si no es confimar pago
+			if ( $isConfirmarPago == 0 ) {
+				$isQyueryConfirmar = 'p.estado IN(0,1)';
+			} else {
+				// si es solo para confirmar
+				$isQyueryConfirmar = 'p.confirmar_pago = 1';
+			}
 
 			$condicion='p.nummesa='.$nummesa;
 			if($nummesa==0){
@@ -1834,8 +1845,10 @@
 					left JOIN usuario AS u using(idusuario)
 					left join cliente as c using(idcliente)
 					left join repartidor as r on r.idrepartidor = p.idrepartidor
-				WHERE ".$condicion." and (p.idorg=".$g_ido." and p.idsede=".$g_idsede.") AND p.estado IN(0,1)
-				";
+				WHERE ".$condicion." and (p.idorg=".$g_ido." and p.idsede=".$g_idsede.")
+						AND ".$isQyueryConfirmar;
+
+				// AND (p.estado IN(0,1) OR (p.confirmar_pago = 1))
 
 			$bd->xConsulta($sql);
 			break;
@@ -2037,7 +2050,7 @@
 			break;
 		case 602://buscar cliente		
 			// $sql="SELECT * FROM cliente where ruc='".$_POST['doc']."' and estado=0 order by nombres";
-			$sql="SELECT * FROM cliente where ruc='".$_POST['doc']."' and estado=0 order by idcliente desc"; // para que agarre el ultimo
+			$sql="SELECT * FROM cliente where ruc='".$_POST['doc']."' and estado=0 order by idcliente desc"; // para que agarre el 
 			$bd->xConsulta($sql);
 			break;
 		case 603://Load tipo comprobante		
@@ -2150,6 +2163,52 @@
 				SELECT ie.motivo AS descripcion ,'' as t1,'' as t2, format(ie.monto,2) as t3
 				FROM ie_caja AS ie WHERE (ie.idorg=".$g_ido." AND ie.idsede=".$g_idsede." AND ie.idusuario=".$_SESSION['idusuario'].") AND ie.estado=0 AND ie.cierre=0 and ie.tipo=2
 				ORDER BY ie.tipo
+			";
+			$bd->xConsulta($sql);
+			break;
+		case 70021:// PAGOS DESDE EL APP
+			$sql="
+			SELECT tpc.descripcion AS descripcion,'' as t1, count(p.correlativo_dia) as t2,  format(sum(p.total_r),2) as t3
+				from pedido p
+				inner join cliente c on c.idcliente = p.idcliente
+				inner join tipo_consumo tpc on tpc.idtipo_consumo = p.idtipo_consumo
+				inner join pwa_pago_transaction tr on tr.idpwa_pago_transaction = p.idpwa_pago_transaction
+				where p.idsede=".$g_idsede." AND p.idusuario=".$_SESSION['idusuario']." AND p.cierre=0
+				GROUP by  tpc.descripcion
+			";
+			$bd->xConsulta($sql);
+			break;
+		case 700211:// PAGOS DESDE EL APP x fecha
+			$f = $_POST['fecha'];
+			$sql="
+			SELECT tpc.descripcion AS descripcion,'' as t1, count(p.correlativo_dia) as t2,  format(sum(p.total_r),2) as t3
+				from pedido p
+				inner join cliente c on c.idcliente = p.idcliente
+				inner join tipo_consumo tpc on tpc.idtipo_consumo = p.idtipo_consumo
+				inner join pwa_pago_transaction tr on tr.idpwa_pago_transaction = p.idpwa_pago_transaction
+				where p.idsede=".$g_idsede." and p.fecha = '".$f."'
+				GROUP by  tpc.descripcion
+			";
+			$bd->xConsulta($sql);
+			break;
+		case 70022:// MOZO VIRTUAL
+			$sql="
+				select rs.canal as descripcion, '' t1, count(p.idpedido) t2, format(sum(p.total_r),2) t3 
+				from pedido p 
+					inner join registra_scan_qr rs on rs.idregistra_scan_qr = p.idregistra_scan_qr
+					where p.idsede=".$g_idsede." AND p.idusuario=".$_SESSION['idusuario']." AND p.cierre=0
+				GROUP by rs.canal				
+			";
+			$bd->xConsulta($sql);
+			break;
+		case 700221:// MOZO VIRTUAL // por fecha
+			$f = $_POST['fecha'];
+			$sql="
+				select rs.canal as descripcion, '' t1, count(p.idpedido) t2, format(sum(p.total_r),2) t3 
+				from pedido p 
+					inner join registra_scan_qr rs on rs.idregistra_scan_qr = p.idregistra_scan_qr
+					where p.idsede=".$g_idsede." and p.fecha = '".$f."'
+				GROUP by rs.canal				
 			";
 			$bd->xConsulta($sql);
 			break;
@@ -2622,7 +2681,7 @@
 						break;
 				}
 			}
-			//print $sql_array;
+			// print $sql_array;
 			if($sql_array!=''){$bd->xMultiConsulta($sql_array);}
 			break;
 		case 1802://borrar  producto seleccionado del alamecen seleccionado
