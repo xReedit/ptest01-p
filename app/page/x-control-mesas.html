@@ -466,7 +466,8 @@ xtxt_subtota_total=itemList.des_tipo_consumo.toUpperCase()==='DELIVERY'?'-':'S/.
 +' data-numpedido="'+itemList.numpedido+'"  data-abrir-detalle="1" onclick="xLoadDetallesPedido(this)">'+
 xIconPedido+'<p class="tipo">'+labelTitle+'</p>'+'<h3 class="numero xBold">'+numBold+'</h3>'+
 _labelIdpedido+
-_referencia+'<p class="tiempo xfont11"></p>'+xref_reserva+'<p class="importe xBold">'+xtxt_subtota_total+'</p>'+'</div>');itemList.dibujado=true;itemList.actualizado=true;});xdtPe[xdtPe.length-1].actualizado=true;if(xCadenaNewItem!=''){var $itemsNew=$(xCadenaNewItem);$('.grid').append($itemsNew).isotope('appended',$itemsNew);}
+_referencia+'<p class="tiempo xfont11"></p>'+xref_reserva+'<p class="importe xBold">'+xtxt_subtota_total+'</p>'+'</div>');itemList.dibujado=true;itemList.actualizado=true;});if(xdtPe.length>0){xdtPe[xdtPe.length-1].actualizado=true;}
+if(xCadenaNewItem!=''){var $itemsNew=$(xCadenaNewItem);$('.grid').append($itemsNew).isotope('appended',$itemsNew);}
 iIniIsotope=true;pasoRedibujado=true;setTimeout(()=>{pasoRedibujado=false;},500);xCadenaNewItem='';xResetMesaDefault(xdtPe.map(x=>{const _val=x.nummesa==0?'|'+xCeroIzq(x.correlativo_dia,4)+'|':'|'+xCeroIzq(x.nummesa,2)+'|';return _val;}).join(','));});$('.grid').isotope('updateSortData');}
 function _cpSocketPintarPedido(pedido){pNotificaNuevoPedido(pedido);xPintarEstadoPedido()}
 function _cpSocketPintarNumerosPagosNotificados(){var divLabelFromApp=$('#labelPagoFromApp');var cantPagosNotificados=parseInt(divLabelFromApp.find('.xIndicadorCant-no-remove').text());cantPagosNotificados=isNaN(cantPagosNotificados)?0:cantPagosNotificados;cantPagosNotificados++;divLabelFromApp.find('.xIndicadorCant-no-remove').remove();divLabelFromApp.append('<span class="xIndicadorCant-no-remove">'+cantPagosNotificados+'</span>').trigger('create');}
