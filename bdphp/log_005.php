@@ -372,13 +372,14 @@
 			// $bd->xConsulta($sql);
 
 			// $sql = "SELECT * from pwa_pago_transaction where idsede=$g_idsede and cast(fecha as date) = cast('".$fecha."' as date) order by idpwa_pago_transaction desc";
-			$sql =  "SELECT tr.fecha, p.idpedido, p.correlativo_dia, p.nummesa, tpc.descripcion canal, p.total_r as importe, c.nombres cliente, tr.data_transaction
+			$sql =  "SELECT tr.fecha, p.idpedido, p.correlativo_dia, p.nummesa, tpc.descripcion canal, sum(p.total_r) as importe, c.nombres cliente, tr.data_transaction
 						, p.check_liquidado, p.check_pagado, p.check_pago_fecha
 					from pedido p
 					inner join cliente c on c.idcliente = p.idcliente
 					inner join tipo_consumo tpc on tpc.idtipo_consumo = p.idtipo_consumo
 					inner join pwa_pago_transaction tr on tr.idpwa_pago_transaction = p.idpwa_pago_transaction
-					where p.idsede = $g_idsede and  STR_TO_DATE(p.fecha, '%d/%m/%Y') between STR_TO_DATE('$f_de', '%d/%m/%Y') and STR_TO_DATE('$f_a', '%d/%m/%Y')";
+					where p.idsede = $g_idsede and  STR_TO_DATE(p.fecha, '%d/%m/%Y') between STR_TO_DATE('$f_de', '%d/%m/%Y') and STR_TO_DATE('$f_a', '%d/%m/%Y')
+					GROUP by p.idpwa_pago_transaction";
 			$bd->xConsulta($sql);
 
 			break;

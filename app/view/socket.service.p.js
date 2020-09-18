@@ -143,7 +143,7 @@ function _cpSocketComercioLLamaRepartidorPapaya() {
 // cuando se paga la cuenta en caja
 // requiere idcliente
 function _cpSocketEmitPedidoPagoCliente(listIdCliente) {
-    if (!isSocket) { return; }
+    // if (!isSocket) { return; }
     console.log('listIdCliente', listIdCliente);
     this.socketCP.emit('pedido-pagado-cliente', listIdCliente);
 }
