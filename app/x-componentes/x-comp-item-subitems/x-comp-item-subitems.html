@@ -81,14 +81,14 @@
 
             <div class="xfooter-bottom">
                 <button class="xBoton2 xPlomo xInvisible" id="dlgBtn" onclick="xListoDlgVR_comp();">
-			        Cerrar
+                    Cerrar
                 </button>
                 <div class="txt-precio">
                     {{precioProducto}}
                 </div>
             </div>
         </div>
-		</paper-dialog>
+        </paper-dialog>
     </template>
 </dom-module>
 <style>
@@ -242,6 +242,8 @@
             itemPedidos_objItemSelected = xArrayPedidoObj[tpc][id];
         }
 
+        console.log('itemPedidos_objItemSelected', itemPedidos_objItemSelected);
+
         itemPedidos_objItemSelected.des = itemPedidos_objItemSelected.des ? itemPedidos_objItemSelected.des : itemPedidos_objItemSelected.des_item;
         xThisComSubItem.desProducto = itemPedidos_objItemSelected.des;
         xThisComSubItem.detalleProducto = itemPedidos_objItemSelected.detalle;
@@ -344,8 +346,8 @@
         // setTimeout(() => {
         // }, 10);
         // itemPedidos_objItemSelected.subitems.map((asub) => {
-		// 	xThisComSubItem.listSubItems.filter((bsub) => asub.iditem_subitem === bsub.iditem_subitem)[0].cantidad = asub.cantidad;
-		// });       
+        //  xThisComSubItem.listSubItems.filter((bsub) => asub.iditem_subitem === bsub.iditem_subitem)[0].cantidad = asub.cantidad;
+        // });       
         // cocinarListSubItemsView();
         // xThisComSubItem.listSubItems = listUpdate;
     }
@@ -485,7 +487,7 @@
             cantRpt += parseInt(objTpc.precio_total); 
           }
         });
-
+        cantRpt = cantRpt === 0 ? parseInt(itemPedidos_objItemSelected.precio_unitario) : cantRpt;
         return parseFloat(cantRpt).toFixed(2);
     }
 
@@ -495,13 +497,13 @@
     //   type: "POST",
     //   url: "../../bdphp/log.php?op=303",
     //   data: { i: xid, p: xprocede }
-    // }).done(function(dtItem) {	  
-	//   itemPedidos_objItemSelected.idcarta_lista = itemPedidos_objItemSelected.iditem;
-	  itemPedidos_objItemSelected.des_item = itemPedidos_objItemSelected.des;
+    // }).done(function(dtItem) {     
+    //   itemPedidos_objItemSelected.idcarta_lista = itemPedidos_objItemSelected.iditem;
+      itemPedidos_objItemSelected.des_item = itemPedidos_objItemSelected.des;
 
-	  var xdtItem = itemPedidos_objItemSelected; //$.parseJSON(dtItem);
-	  
-	  
+      var xdtItem = itemPedidos_objItemSelected; //$.parseJSON(dtItem);
+      
+      
       // xdtItem = xdtItem.datos;
 
       var xClassEstadoStock = ''
@@ -641,11 +643,11 @@
     // });
         $("#txt_referencia").val(xindicaciones);
     }
-		
+        
 
-	Polymer({
-		is: 'x-comp-item-subitems',
-		properties: {
+    Polymer({
+        is: 'x-comp-item-subitems',
+        properties: {
             item_select: Object,
             listContentSub: {
                 type: Object,
@@ -667,9 +669,9 @@
             isSubItemReq: Boolean,
             isExistSubItems: Boolean,
             isOptionRequeridosComplet: Boolean // si hay opciones requeridas por marcar
-		},
-		attached: function () {
-            xThisComSubItem = this;				
+        },
+        attached: function () {
+            xThisComSubItem = this;             
             xThisComSubItem.cantSubItemSelect = 0 ;
         },
         openDialog: function(tpc, id) {
@@ -678,5 +680,5 @@
         refreshSubItems: function () {
             xRefresSubItems_comp();
         }
-	})
+    })
 </script>
