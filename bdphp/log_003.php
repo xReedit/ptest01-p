@@ -17,6 +17,9 @@
 	$fecha_now = date("d/m/Y");
 	$hora_now = date("H:i:s");
 
+
+	
+
     switch ($op) {
 		case '1': //registrar impresion
 			$detalle_json = addslashes($_POST['datos']); //addslashes para caracteres especiales 
@@ -26,6 +29,19 @@
 											values (".$g_ido.",".$g_idsede.",".$g_us.",".$idprint_server_estructura.", '".$tipo."','".$fecha_now."','".$hora_now."','".$detalle_json."')";
 						
 			$ultimoID = $bd->xConsulta_UltimoId($sql);
+
+
+			$port = 5819; // Port the node app listens to
+			$address = 'http://localhost'; // IP the node app is on
+
+			$socket = socket_create(AF_INET, SOCK_STREAM, SOL_TCP);
+			$result = socket_connect($socket, $address, $port);
+
+			// $data = array('itemid' => '1234567', 'steamid' => '769591951959', 'otherinfo' => 'hi there');
+			// $encdata = json_encode($data);
+			// socket_write($socket, $encdata, strlen($encdata));
+			socket_close($socket);
+
 			print $ultimoID;
 			
 			break;

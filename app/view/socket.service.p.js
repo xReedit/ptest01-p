@@ -105,17 +105,17 @@ function listenSocketP() {
 
 // notifica nuevo pedido
 function _cpSocketprinterOnly(pedido) {
-    if (!isSocket) { return; }
+    // if (!isSocket) { return; }
     this.socketCP.emit('printerOnly', pedido);
 }
 
 function _cpSocketEmitItemModificado(item) {
-    if (!isSocket) { return; }
+    // if (!isSocket) { return; }
     this.socketCP.emit('itemModificado', item);
 }
 
 function _cpSocketEmitPrinterOnly(item) {
-    if (!isSocket) { return; }
+    // if (!isSocket) { return; }
     this.socketCP.emit('printerOnly', item);
 }
 
@@ -130,13 +130,13 @@ function _cpSocketClose() {
 
 // notifica al repartidor pedido desde el comercio
 function _cpSocketNoiticaRepartidorFromComercio(pedido) {
-    if (!isSocket) { return; }
+    // if (!isSocket) { return; }
     this.socketCP.emit('set-repartidor-pedido-asigna-comercio', pedido);
 }
 
 // notifica para llamar al repartidor de papaya
 function _cpSocketComercioLLamaRepartidorPapaya() {
-    if (!isSocket) { return; }
+    // if (!isSocket) { return; }
     this.socketCP.emit('set-solicitar-repartidor-papaya', null);
 }
 

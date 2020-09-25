@@ -205,6 +205,8 @@
 </table>
 </div>
 </div>
+<div id="content_dynamic">
+</div>
 <br><br>
 </div>
 </template>
@@ -212,12 +214,13 @@
 <style>.div-grafico{text-align:center}.xIndicadorSize1{width:250px;height:200px;margin:0 auto;clear:both}.graficoSemana{display:inline-block;min-height:256px;width:49%}.div-item{text-align:center;max-width:250px;min-width:200px}.flexbox{display:flex;flex-direction:column;padding:5px;align-content:space-between;justify-content:space-between}.flexbox>div{text-align:center;padding:20px 0;margin:5px}@media(min-width:576px){.flexbox{flex-flow:row wrap}.flexbox>.left{order:1;flex:1}.flexbox>.right{order:2;flex:1}.flexbox>.next{order:2;flex:1}.flexbox>.center{order:3;width:100%}}@media(min-width:768px){.flexbox{flex-flow:row nowrap}.flexbox>div{width:33.33%!important}.flexbox>.left{order:1}.flexbox>.center{order:2}.flexbox>.right{order:3}.flexbox>.next{order:2}}</style>
 <script>var xThis,compSede,dataMeta,dataVentasDia,dataVentasCanalConsumo,dataCaja,metaDiaria=0,grafico_meta_diaria=null,porcentajeMedaDia=0,crosVenta,crosCanalConsumo,crosCaja,sumImporteTotal=0,dataFiltro={},idsCierres=[];function initIndicadores(){xThisI.showBtnCierreCaja=false;compSede=document.getElementById('compSedeIndicador');iniFiltros();$('body').addClass('loaded');$("#Titulo_page").text("INDICADORES");}
 function iniLoaddata(){loadMestasSede();loadCanalConsumoTops();loadMovimientoCaja();loadAnulados();loadIfCierreCaja()
-loadMozoVirtual();loadPagoAPP();}
+contenidoDinamico();loadMozoVirtual();loadPagoAPP();}
 function changeFecha(val){dataFiltro.fecha=xDevolverFechaFormatInputDate(val.target.value);iniLoaddata();}
 function changeSede(val){dataFiltro.idsede=val.idsede;iniLoaddata();}
 function iniFiltros(){dataFiltro={idsede:0,fecha:0}
 iniLoaddata();}
 function callInterval(){xPopupLoad.xopen();iniLoaddata();setTimeout(()=>{xPopupLoad.xclose();},600);}
+function contenidoDinamico(){$.ajax({type:'POST',url:'../../bdphp/log_005.php?op=18',data:dataFiltro}).done(function(res){$('#content_dynamic').html(res).trigger('create');});}
 function loadVentasDia(){$.ajax({type:'POST',url:'../../bdphp/log_005.php?op=16',data:dataFiltro}).done(function(res){dataMetdataVentasDia=JSON.parse(res).datos;crosVenta=crossfilter(dataMetdataVentasDia);cocinarDataVentasDia();});}
 function loadCanalConsumoTops(){$.ajax({type:'POST',url:'../../bdphp/log_005.php?op=1601',data:dataFiltro}).done(function(res){dataVentasCanalConsumo=JSON.parse(res).datos;crosCanalConsumo=crossfilter(dataVentasCanalConsumo);cocinarCanalConsumoTops();});}
 function loadMovimientoCaja(){$.ajax({type:'POST',url:'../../bdphp/log_005.php?op=1602',data:dataFiltro}).done(function(res){xThisI.listCaja=JSON.parse(res).datos;});}
