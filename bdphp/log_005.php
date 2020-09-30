@@ -530,6 +530,19 @@
 			break;
 		case 18: // contenido dinamico
 			echo '<hr>';
-		break;
+			break;
+		
+		case 19: // update item no visible cliente
+			$check = $_POST['check'];
+			$id = $_POST['id'];
+			$sql="update carta_lista set is_visible_cliente = $check where idcarta_lista='$id'";
+			$bd->xConsulta($sql);
+			break;
+		case 1901: // update item no visible cliente
+			$check = $_POST['check'];
+			$id = $_POST['id'];
+			$sql="update seccion set is_visible_cliente = $check where idseccion=$id";
+			$bd->xConsulta($sql);
+			break;
 	}
 ?>

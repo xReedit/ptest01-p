@@ -1025,6 +1025,7 @@
 
 			$sql = "
 			SELECT c.idcarta, cl.idcarta_lista,s.idseccion, i.iditem,s.descripcion AS des_seccion, i.descripcion AS des_item, cl.precio, cl.cantidad,s.sec_orden,i.detalle,i.img,cl.cant_preparado,c.fecha,s.imprimir,s.ver_stock_cero
+				,cl.is_visible_cliente,s.is_visible_cliente as is_visible_cliente_seccion
 			FROM carta_lista AS cl
 				INNER JOIN carta AS c using(idcarta)
 				INNER JOIN seccion AS s using(idseccion)
