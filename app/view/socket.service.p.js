@@ -82,6 +82,14 @@ function listenSocketP() {
         } catch (error) {}
     });
 
+    // NOTIFICAR QUE SE IMPRIMIO PRECUENTA DE MESA
+    this.socketCP.listen('notifica-impresion-precuenta').subscribe(res => {
+        console.log('listen notifica-impresion-precuenta');
+        try {
+            _cpSocketPintarPedido(null);
+        } catch (error) {}
+    });
+
 
     
 
@@ -117,6 +125,11 @@ function _cpSocketEmitItemModificado(item) {
 function _cpSocketEmitPrinterOnly(item) {
     // if (!isSocket) { return; }
     this.socketCP.emit('printerOnly', item);
+}
+
+function _cpSocketEmitPrinterPrecuenta(item) {
+    // if (!isSocket) { return; }
+    this.socketCP.emit('notificar-impresion-precuenta', item);
 }
 
 function _cpSocketClose() {

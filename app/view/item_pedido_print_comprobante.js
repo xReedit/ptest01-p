@@ -41,3 +41,4 @@ _data=JSON.stringify(_data);_tipo=_tipo==='pre cuenta'?'comanda':_tipo;$.ajax({u
 _cpSocketEmitPrinterOnly(dataSend);setTimeout(()=>{$.ajax({url:'../../bdphp/log_003.php?op=101',type:'POST',data:{id:UltimoIdPrint}}).done((x)=>{if(parseInt(x)===1){alert('Error con la impresora: Verifique el ip, que este prendida y que tenga papel');}})},2500);}).fail(function(e){alert("error",e);console.log('error',e);});}
 function xReturnCorrelativoComprobante(_obj){let _rpt;if(_obj.codsunat==='0'){_rpt=parseInt(_obj.correlativo)+1;_rpt=xCeroIzq(_rpt,7);$.ajax({type:'POST',url:'../../bdphp/log_002.php',data:{op:'103',i:_obj.idtipo_comprobante_serie}});}else{const tomaDelApi=parseInt(_obj.facturacion_correlativo_api)===0?false:true;_rpt=tomaDelApi?'#':parseInt(_obj.correlativo)+1;if(!tomaDelApi){_obj.facturacion_correlativo_api=1;}}
 return _rpt;}
+function xUpdatePrintPrecuentaPedido(_id){$.ajax({url:'../../bdphp/log_003.php?op=6',type:'POST',data:{id:_id}});}

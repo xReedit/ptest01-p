@@ -1,0 +1,294 @@
+<dom-module id="x-orden-pedido">
+    <template is="dom">
+        <!-- <div class="p-20">
+            <h2>Orden de pedido</h2>
+        </div> -->
+        <br><br>
+        <div class="xMiCard xradius" style="width:85%; max-width: 1100px;">
+			<div class="xEncanezadoCard" style="background: lavenderblush; color: #424242;">
+                <div class="d-flexx justify-content-between align-items-center">
+                    <h3>Orden de pedido</h3>                    
+                </div>                
+            </div>	
+            <div class="xLinea2"></div>
+                <div class="p-2" style="background: beige; color: #424242;">
+                    <paper-button><div class="xMiBoton_icon_lateral2" style="margin-top:-15px; width: 90px;" onclick="xOpenAnularPedidoHistorial();" id="btn_anular_pedido"><img src="../../../images/_otros_ingresos.png"><p>Adelantos</p></div></paper-button>
+                    <paper-button><div class="xMiBoton_icon_lateral2" style="margin-top:-15px; width: 90px;" onclick="xOpenAnularPedidoHistorial();" id="btn_anular_pedido"><img src="../../../images/_apuntar_cuenta_vr.png"><p>Notas o cambios</p></div></paper-button>
+                    <paper-button><div class="xMiBoton_icon_lateral2" style="margin-top:-15px; width: 90px;" onclick="xOpenAnularPedidoHistorial();" id="btn_anular_pedido"><img src="../../../images/001-pdf.png"><p>Imprimir PDF</p></div></paper-button>
+                    <paper-button><div class="xMiBoton_icon_lateral2" style="margin-top:-15px; width: 90px;" onclick="xOpenAnularPedidoHistorial();" id="btn_anular_pedido"><img src="../../../images/_comprobante.png"><p>Emitir Comprobante</p></div></paper-button>
+                </div>
+            <div class="xLinea2"></div>
+            <div class="xContentCard" style="padding: 20px;">            
+                <div class="w-100">
+                    <form action="" id="form_pago_cliente" is="iron-form">
+                        <div class="rowx pb-2">
+                            <div class="col-sm-7">                            
+                                <h5>Cliente</h5>
+                                <input type="text" class="xMiInput xPasarEnter2 w-100" placeholder="Nombre / Razon Social" onChange="conMayusculas(this)" id="frm_nombres" required espaciar>
+                                <input type="text" class="xMiInput xPasarEnter2 w-100" placeholder="Direccion de entrega" onChange="conMayusculas(this)" id="frm_direccion" espaciar>
+                                <input type="text" class="xMiInput xPasarEnter2 w-100" placeholder="Telefono" onChange="conMayusculas(this)" id="frm_telefono" required espaciar>
+                            </div>
+                            <div class="col-sm-4">
+                                <h5>Fecha de entrega</h5>                            
+                                <input type="datetime-local" class="xMiInput w-100" placeholder="Fecha de entrega" id="f_entrega" required enlinea espaciar>                                            
+                                <input type="text" class="xMiInput xPasarEnter2 w-100" placeholder="Hora" onChange="conMayusculas(this)" id="txt_nombres" espaciar>
+                                <input type="text" class="xMiInput xPasarEnter2 w-100" placeholder="Nota" onChange="conMayusculas(this)" id="txt_nombres" espaciar>
+                            </div>
+                        </div>
+                    </form>
+                    <br>
+                    <div class="xLinea2"></div>
+                    <br><br>
+                    <div class="w-100 d-flexx justify-content-end">
+                        <button class="btn btn-sm btn-success" onclick="xAddItem();">+ Agregar</button>
+                    </div>
+                    <table class="xtable4" width="100%">
+                        <thead>
+                            <th class="xSinBorde" width="60%">Descripcion</th>
+                            <th class="xSinBorde" width="10px">Cant</th>
+                            <th class="xSinBorde" width="30px" align="right">P.Unitario</th>
+                            <th class="xSinBorde" width="30px" align="right">P.Total</th>
+                            <!-- <th class="xSinBorde" width="10px"></th> -->
+                        </thead>
+                        <tr class="xSinBorde" data-id="">                        
+                            <td><input type="text" class="xMiInput xPasarEnter2" style="width:100%;" placeholder="Descripcion" onChange="conMayusculas(this)" required id="des_item"></td>
+                            <td><input type="number" class="xMiInput xPasarEnter2" style="width:100%;" placeholder="Cant" onChange="conMayusculas(this)" required id="cant_item" autofocus></td>
+                            <td><input type="number" class="xMiInput xAlinearDerecha punitario" onChange="conMayusculas(this)" onblur="xRetornaMoneda(this)"  placeholder="P. Unitario" id="punitario" name="precio" required></td>
+                            <td><input type="number" class="xMiInput xAlinearDerecha xprecio" onChange="conMayusculas(this)" onblur="xRetornaMoneda(this)"   placeholder="P. Total" id="ptotal" name="total" required readonly></td>
+                            <!-- <td><paper-fab icon="add" onclick="xAddItem()" title="Agregar item"></paper-fab></td> -->
+                        </tr>        
+                        <template is="dom-repeat" items="{{arrItems}}" as="item">
+                            <tr data-value="[[index]]">
+                                <td> <span class="xDeleteRowNeutro" title="Borrar" onclick="xBorrarItemLocalArr(this);"></span>  {{item.descripcion}} </td>
+                                <td> {{item.cantidad}} </td>
+                                <td align="right">  {{item.punitario}} </td>
+                                <td align="right"> {{item.ptotal}}</td>
+                            </tr>
+                        </template>                    
+                        <template is="dom-repeat" items="{{arrTotales}}" as="total">
+                            <tr class="tt_row">
+                                <td colspan="2" class="xSinBorde"></td>
+                                <td align="right"> {{ total.descripcion }} </td>
+                                <td align="right"> {{ total.importe }} </td>
+                            </tr>
+                        </template>
+                    </table>
+                    <br><br>
+                    <hr>
+                    <br>
+                    <div class="rowx pb-2">
+                        <div class="col-sm-5">
+                            <div class="d-flexx align-items-center">
+                                <h5>Notas o cambios</h5>                                
+                                <!-- <button class="btn btn-sm btn-success ml-1" onclick="xAddItem();"> + </button> -->
+                            </div>
+                        </div>
+                        <div class="col-sm-5">
+                            <div class="d-flexx align-items-center">
+                                <h5>Adelantos</h5>
+                                <!-- <button class="btn btn-sm btn-success ml-1" onclick="xAddItem();"> + </button> -->
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </template>
+</dom-module>
+<script>
+    var xThisOrden, xPopupLoad, _arrCliente = [], _arrTotal=[], _arrItems = [], cnf_ComprobanteSel, xIdCliente_pago, _listValid = false, _formValid = false, _modificarCliente=false;
+    var impresoraSelect = {}, IdTpConsumo=0, rptDoc, itemsConEstructuraPrint, arr_comprobante = [], _idregistro, txt_fecha_cpe_manual='', isSocket=true;
+    
+    function xIniOrdenPedido() {
+        xThisOrden.formValid = false;
+        _listValid = false;
+        _formValid = false;
+        xThisOrden.modificarCliente = false;
+        xThisOrden.arrItems = [];
+        xThisOrden.arrTotales = [];
+        xThisOrden.listImpresoras = [];
+        xThisOrden.cpe_show = false;
+        xThisOrden.fecha_manual = false
+
+        const arrEstructura = xm_log_get('estructura_pedido');
+        IdTpConsumo = arrEstructura[0].idtipo_consumo;
+
+        fact_getAllImpresoras();
+        
+
+        $('body').addClass('loaded');
+        $("#Titulo_page").text("Facturador");
+
+        $('.xPasarEnter2').on('keyup', function (e) {
+            var code = e.which;
+            if (code == 13 || code == 186) {
+                var inputs = $('input'); // storage a array of Inputs
+                var a = inputs.index(document.activeElement);
+                if (inputs[a + 1] !== null) {
+                    var nextBox = inputs[a + 1];
+                    if (nextBox === undefined) { return }
+                    if (nextBox.disabled) { nextBox = inputs[a + 2] }
+
+                    if (nextBox == undefined) { return; }
+                    nextBox.focus();
+                    nextBox.select();
+                }
+                event.stopPropagation();
+                e.stopPropagation();
+                e.stopImmediatePropagation()
+                return false;
+            }
+        });
+        $(".punitario").on('keyup', function (e) {
+            var code = e.which;
+            xCalcTotal();
+            if (code == 13 || code == 186) {
+                $("#punitario").val(xMoneda(this.value));
+                $("#ptotal").focus();
+                xAddItem();
+            }
+        });
+        $(".xprecio").on('keyup', function (e) {
+            var code = e.which;
+            if (code == 13 || code == 186) {
+                xAddItem();
+            }
+        });
+
+        $("#txt_fecha").on('change', function () {
+            var d = $(this).val().split('-');
+            txt_fecha_cpe_manual = d[1] === undefined ? '' : $(this).val();                        
+            // xIniPagination();
+        });
+    }
+
+    function xCalcTotal() {
+        const xCan_item = $("#cant_item").val() === '' ? 0 : parseFloat($("#cant_item").val());    
+        const xPUnitario = $("#punitario").val() === '' ? 0 : parseFloat($("#punitario").val());
+        const ptotal = (parseFloat(parseFloat(xCan_item) * parseFloat(xPUnitario)).toFixed(2)) || 0; 
+        
+        // $("#punitario").val(xMoneda(xCan_item));
+        $("#ptotal").val(ptotal);
+        // $("#ptotal").focus();
+    }
+
+    function xAddItem() {
+        const xCan_item = $("#cant_item").val();
+        const xDes_item = $("#des_item").val();
+        const xPUnitario = $("#punitario").val();
+        const xPTotal = $("#ptotal").val();
+        if (xCan_item === '' || xDes_item === '' && xPUnitario === '' && xPTotal === '') { return }
+
+
+        const id = xCeroIzq(_arrItems.length + 1, 3);
+        const item = {  'id': id, 
+                        'iditem': id, 
+                        'idtipo_consumo': IdTpConsumo,
+                        'des_seccion': 'ITEMS',
+                        'cantidad': xCan_item, 
+                        'descripcion': xDes_item, 
+                        'punitario': xPUnitario, 
+                        'precio': xPUnitario,
+                        'ptotal': xPTotal,
+                        'precio_total_calc': xPTotal
+                    };
+        _arrItems.push(item);
+        xThisOrden.arrItems = JSON.parse(JSON.stringify(_arrItems));
+        //arrItems = JSON.parse(JSON.stringify(arrItems));
+        console.log(xThisOrden.arrItems);
+        xCalcularTotal();
+        xNuevoItem();
+    }
+    
+    function xBorrarItemLocalArr(obj) {
+        const i = obj.parentElement.parentElement.dataValue;
+        _arrItems.splice(i,1);
+        xThisOrden.arrItems = JSON.parse(JSON.stringify(_arrItems));
+        xCalcularTotal();
+    }
+
+    function xNuevoItem() {
+        console.log('nuevo');
+        $("#cant_item").val('');
+        $("#des_item").val('');
+        $("#punitario").val('');
+        $("#ptotal").val('');
+        $("#des_item").focus();
+    }
+
+    function xCalcularTotal() {
+        var xCartaSubtotales = xm_log_get('carta_subtotales');
+        _arrTotal = [];
+
+        const SumaLista = this._arrItems.map( x => parseFloat(x.ptotal)).reduce((a,b) => a+b, 0);
+        _listValid = parseInt(SumaLista) === 0 ? false : true;
+        
+
+
+        _arrTotal.push({ 'descripcion': 'Sub Total', 'importe': xMoneda(SumaLista) });
+
+        xCartaSubtotales.map(x => {
+            if (x.es_impuesto === '1') {
+                const impuesto = parseFloat(x.monto);
+                const importeCalc = x.activo === '0' ? parseFloat(SumaLista * (impuesto / 100)).toFixed(2) : '0.00';
+                _arrTotal.push({'descripcion': x.descripcion, 'importe': importeCalc});
+            }
+        });
+
+
+        const total = _arrTotal.map(x => parseFloat(x.importe)).reduce((a, b) => a + b, 0);
+        _arrTotal.push({ 'descripcion': 'Total', 'importe': xMoneda(total) });
+        
+        xThisOrden.arrTotales = JSON.parse(JSON.stringify(_arrTotal));
+
+        xValidarBtnProcesar();
+        // console.log(_arrTotal);
+    }
+
+    function xValidarBtnProcesar() {
+        // si es boleta y el total no pasa de 700 no requiere cliente
+        if (_arrTotal.length > 0) {
+            if ( xThisOrden.codsunat === "03" && _listValid && parseFloat(_arrTotal[2].importe) <= 700) {
+                xThisOrden.formValid = true;                
+                return;            
+            }
+        }
+
+        xThisOrden.formValid = _listValid && _formValid;
+    }
+
+    function fact_getAllImpresoras() {
+        $.ajax({ type: 'POST', url: '../../bdphp/log_002.php', data: {op: '5'} })
+            .done(function (dtValues) {
+                var _arrPrint = []
+                dtValues = $.parseJSON(dtValues);
+                _arrPrint.push({idimpresora:-1, descripcion: 'MOSTRAR EN PDF'})
+                dtValues.datos.map(x =>
+                    _arrPrint.push(x)
+                );
+
+                xThisOrden.listImpresoras = JSON.parse(JSON.stringify(_arrPrint));
+
+                impresoraSelect = _arrPrint[0];
+                console.log(xThisOrden.listImpresoras);
+            });
+    }
+
+
+    Polymer({
+			is: 'x-orden-pedido',
+			properties: {
+                arrItems:[],
+                arrTotales: [],
+                listImpresoras: [],
+				ListOrdenes: []				
+			},
+			attached: function () {
+				xThisOrden = this;
+				xIniOrdenPedido();
+			},
+			displayIndex: function (index) {
+				return xCeroIzq(index + 1, 1);
+			},
+		});
+</script>

@@ -137,21 +137,25 @@
 			$bd->xConsulta($sql);
 		case 4:// clientes
 			$pagination = $_POST['pagination'];						
-            $filtro = $pagination['pageFilter'] === '' ? '' : " and CONCAT(nombres,ruc, if(LENGTH(ruc)>8, 'PJ', 'PN'), direccion, telefono, f_registro) like '%".$pagination['pageFilter']."%'";
+            $filtro = $pagination['pageFilter'] === '' ? '' : " and CONCAT(c.nombres,c.ruc, if(LENGTH(c.ruc)>8, 'PJ', 'PN'), c.direccion, c.telefono, c.f_registro) like '%".$pagination['pageFilter']."%'";
 			// $filtroFecha = $fecha === '' ? ' and cierre=0 ' : " AND SUBSTRING_INDEX(fecha,' ',1) = '".$fecha."' ";
 			// $filtroFechaCount = $fecha === '' ? '' : " and (SUBSTRING_INDEX(c.fecha,' ',1)= '".$fecha."')";
 
 			$sql = "
-				select *, if(LENGTH(ruc)>8, 'PJ', 'PN') as tipo from cliente
-				where (idorg=".$g_ido.")".$filtro." and nombres != '' and estado=0
-				order by nombres asc limit ".$pagination['pageLimit']." OFFSET ".$pagination['pageDesde'];
+				select c.*, if(LENGTH(c.ruc)>8, 'PJ', 'PN') as tipo from cliente c 
+				LEFT join pedido p on p.idcliente = c.idcliente
+				where (p.idorg=".$g_ido." or c.idorg=".$g_ido.")".$filtro." and c.nombres != '' and c.estado=0
+				order by c.nombres asc limit ".$pagination['pageLimit']." OFFSET ".$pagination['pageDesde'];
 			
 			$sqlCount="
-                SELECT count(idcliente) as d1 from cliente
-                where (idorg=".$g_ido.")".$filtro." and nombres != '' and estado=0";            
+				SELECT count(c.idcliente) as d1 from cliente c
+				LEFT join pedido p on p.idcliente = c.idcliente
+				where (p.idorg=".$g_ido." or c.idorg=".$g_ido.")".$filtro." and c.nombres != '' and c.estado=0";            
+				
+			// echo $sqlCount;
             
 			$rowCount = $bd->xDevolverUnDato($sqlCount);
-			// echo $sqlCount;
+			
 			$rpt = $bd->xConsulta($sql);            
             print $rpt."**".$rowCount;
 			break;

@@ -31,16 +31,16 @@
 			$ultimoID = $bd->xConsulta_UltimoId($sql);
 
 
-			$port = 5819; // Port the node app listens to
-			$address = 'http://localhost'; // IP the node app is on
+			// $port = 5819; // Port the node app listens to
+			// $address = 'http://localhost'; // IP the node app is on
 
-			$socket = socket_create(AF_INET, SOCK_STREAM, SOL_TCP);
-			$result = socket_connect($socket, $address, $port);
+			// $socket = socket_create(AF_INET, SOCK_STREAM, SOL_TCP);
+			// $result = socket_connect($socket, $address, $port);
 
-			// $data = array('itemid' => '1234567', 'steamid' => '769591951959', 'otherinfo' => 'hi there');
-			// $encdata = json_encode($data);
-			// socket_write($socket, $encdata, strlen($encdata));
-			socket_close($socket);
+			// // $data = array('itemid' => '1234567', 'steamid' => '769591951959', 'otherinfo' => 'hi there');
+			// // $encdata = json_encode($data);
+			// // socket_write($socket, $encdata, strlen($encdata));
+			// socket_close($socket);
 
 			print $ultimoID;
 			
@@ -85,6 +85,11 @@
 			$sql = "SELECT logo64 FROM sede where idsede=".$g_idsede;
 			$logo = $bd->xDevolverUnDato($sql);	
 			echo $logo;
+			break;
+		case '6': // update is_precuenta pedido
+			$id = $_POST['id'];
+			$sql='update pedido set is_precuenta = 1 where idpedido = '.$id;
+			$bd->xConsulta($sql);			
 			break;
 	}
 
