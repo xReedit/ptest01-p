@@ -332,8 +332,9 @@
 				
 
 
-
-				$json_datos_delivery = json_encode(array('p_body' => $x_array_pedido_body, 'p_header' => $x_array_pedido_header,'p_subtotales' => $x_array_subtotales)); // , 'p_body' => $x_array_pedido_body, 'p_subtotales' => $x_array_subtotales
+				$json_body = addslashes(json_encode($x_array_pedido_body));
+				$json_body = json_decode($json_body);
+				$json_datos_delivery = json_encode(array('p_body' => $json_body, 'p_header' => $x_array_pedido_header,'p_subtotales' => $x_array_subtotales)); // , 'p_body' => $x_array_pedido_body, 'p_subtotales' => $x_array_subtotales
 				// $is_delivery = 1;
 			}
 			
