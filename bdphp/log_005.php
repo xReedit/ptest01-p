@@ -141,23 +141,24 @@
 			// $filtroFecha = $fecha === '' ? ' and cierre=0 ' : " AND SUBSTRING_INDEX(fecha,' ',1) = '".$fecha."' ";
 			// $filtroFechaCount = $fecha === '' ? '' : " and (SUBSTRING_INDEX(c.fecha,' ',1)= '".$fecha."')";
 
-			$sql = "
-				select c.*, if(LENGTH(c.ruc)>8, 'PJ', 'PN') as tipo from cliente c 
-				LEFT join pedido p on p.idcliente = c.idcliente
-				where (p.idorg=".$g_ido." or c.idorg=".$g_ido.")".$filtro." and c.nombres != '' and c.estado=0
-				order by c.nombres asc limit ".$pagination['pageLimit']." OFFSET ".$pagination['pageDesde'];
+			// $sql = "
+			// 	select c.*, if(LENGTH(c.ruc)>8, 'PJ', 'PN') as tipo from cliente c 
+			// 	LEFT join pedido p on p.idcliente = c.idcliente
+			// 	where (p.idorg=".$g_ido." or c.idorg=".$g_ido.")".$filtro." and c.nombres != '' and c.estado=0
+			// 	order by c.nombres asc limit ".$pagination['pageLimit']." OFFSET ".$pagination['pageDesde'];
 			
-			$sqlCount="
-				SELECT count(c.idcliente) as d1 from cliente c
-				LEFT join pedido p on p.idcliente = c.idcliente
-				where (p.idorg=".$g_ido." or c.idorg=".$g_ido.")".$filtro." and c.nombres != '' and c.estado=0";            
+			// $sqlCount="
+			// 	SELECT count(c.idcliente) as d1 from cliente c
+			// 	LEFT join pedido p on p.idcliente = c.idcliente
+			// 	where (p.idorg=".$g_ido." or c.idorg=".$g_ido.")".$filtro." and c.nombres != '' and c.estado=0";            
 				
 			// echo $sqlCount;
             
-			$rowCount = $bd->xDevolverUnDato($sqlCount);
+			// $rowCount = $bd->xDevolverUnDato($sqlCount);
 			
-			$rpt = $bd->xConsulta($sql);            
-            print $rpt."**".$rowCount;
+			// $rpt = $bd->xConsulta($sql);            
+			// print $rpt."**".$rowCount;
+			echo 'restaurar';
 			break;
 		case 401:// historial cliente
 			$sql = "select idcliente, STR_TO_DATE(fecha, '%d/%m/%Y') fecha, fecha as fecha_mostrar, total  from registro_pago where idcliente=".$_POST['i']." and estado=0";
