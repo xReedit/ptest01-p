@@ -14,9 +14,9 @@
 
 	date_default_timezone_set('America/Lima');
 
-	$g_ido = $_SESSION['ido'];
-	$g_idsede = $_SESSION['idsede'];
-	$g_idusuario = $_SESSION['idusuario'];
+	$g_ido = isset($_SESSION['ido']) ? $_SESSION['ido'] : 0;
+	$g_idsede = isset($_SESSION['idsede']) ? $_SESSION['idsede'] : 0;
+	$g_idusuario = isset($_SESSION['idusuario']) ? $_SESSION['idusuario'] : 0;
 	$fecha_now = date("d/m/Y");
 	$hora_now = date("H:i:s");
 	

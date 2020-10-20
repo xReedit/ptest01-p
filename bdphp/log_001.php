@@ -1,6 +1,4 @@
 <?php
-
-	
 	//log registrar peidod y pago
 	// session_set_cookie_params('4000'); // 1 hour
 	// session_regenerate_id(true); 
@@ -50,6 +48,7 @@
 		
 		$x_array_pedido_header = $_POST['p_header'];
 		$x_array_pedido_body = $_POST['p_body'];
+		$x_array_pedido_body_homologacion = $_POST['p_body_h']; // 151020 homologacion con papaya express
 		$x_array_subtotales = $_POST['p_subtotales'];
 		
 		$x_array_pedido_header = is_object($x_array_pedido_header) || is_array($x_array_pedido_header) ? $x_array_pedido_header : json_decode($x_array_pedido_header, true);
@@ -124,8 +123,8 @@
 				if($indicaciones_p!==''){$indicaciones_p=" (".$indicaciones_p.")";$indicaciones_p=strtolower($indicaciones_p);}
 				
 				//
-				$idItem2 = $subitem['iditem2'] ? $subitem['iditem2'] : $subitem['iditem'];
-				$pwa = $subitem['pwa'] ? $subitem['pwa'] : 0;				
+				$idItem2 = isset($subitem['iditem2']) ? $subitem['iditem2'] : $subitem['iditem'];
+				$pwa = isset($subitem['pwa']) ? $subitem['pwa'] : 0;				
 				$subItemSelect = json_encode($subitem['subitems_view'], true);
 				
 				//  -- 29/07/2020 SI TIENE SUBITEMS ENTONCES EN EL DETALLE DESGLOSA
@@ -189,7 +188,7 @@
 		$importe_total=0; // la primera fila es subtotal o total si no hay adicionales
 		$importe_subtotal = $x_array_subtotales[0]['importe'];
 		foreach ( $x_array_subtotales as $sub_total ) {
-			$tachado = $sub_total['tachado'] === "true" ? 1 : 0;  
+			$tachado =  isset($sub_total['tachado']) ? $sub_total['tachado'] === "true" ? 1 : 0 : 0;   
 			$importe_row = $tachado === 1 ? $sub_total['importe_tachado'] : $sub_total['importe'];
 			$importe_total = $sub_total['importe'];
 			$sql_subtotales = $sql_subtotales."(?,".$_SESSION['ido'].",".$_SESSION['idsede'].",'".$sub_total['descripcion']."','".$importe_row."',".$tachado."),";
@@ -215,127 +214,34 @@
 			$correlativo_dia=$bd->xDevolverUnDato($sql);
 			$correlativo_dia++;
 			
-
+			$arrDeliveryPedido = isset( $x_array_pedido_header['arrDatosDelivery'] ) ? $x_array_pedido_header['arrDatosDelivery'] : null;
 			// si es delivery y si trae datos adjuntos -- json-> direccion telefono forma pago
 			$json_datos_delivery='';
+			$is_delivery = 0;
 			
-			if ( array_key_exists('arrDatosDelivery', $x_array_pedido_header) ) {
+			// if ( array_key_exists('arrDatosDelivery', $x_array_pedido_header) ) {
+				
+			if ( count($arrDeliveryPedido) > 0 ) {
 				$arrD = $x_array_pedido_header['arrDatosDelivery'];
+				$isComercioAppDeliveryMapa = isset($x_array_pedido_header['isComercioAppDeliveryMapa']) ? $x_array_pedido_header['isComercioAppDeliveryMapa'] : 0;
 				
 				// desde 03/08/2020 -- omologacion con papaya express
 				// $x_array_pedido_header['delivery'] = array_key_exists('pasoRecoger', $arrD) ? 1 : 0;
 				$is_delivery = array_key_exists('pasoRecoger', $arrD) ? 1 : 0;
 				$x_array_pedido_header['delivery'] = $is_delivery;
-				
-				// si es delivery cocina al array pedido para ponerlo en formato app
-				$arr_tpc_master = array('tipoconsumo' => []);
-				$arr_tipoc = array('titulo' => '', 'secciones' => [], 'descripcion' => '', 'idtipo_consumo' => '', 'count_items_seccion' => 1, 'cantidad_seleccionada' => 1 );
-				$arr_secciones = [];
-				$arr_seccion_add = [];
-				$arr_items = [];
-				$isAddSeccion = false;
-				if ( $is_delivery == 1 ) {
-					 
-					foreach ($x_array_pedido_body as $tpc ) {						
-						foreach ($tpc as $item_s ) {
-							if(is_array($item_s)==true){
-							// if(is_object($tpc_item)) {								
-
-								// tipo consumo
-								$arr_tipoc['descripcion'] = $tpc['des'];
-								$arr_tipoc['titulo'] = $tpc['titulo'];
-								$arr_tipoc['idtipo_consumo'] = $tpc['id'];
-
-								// secciones
-								$id_seccion = $item_s['idseccion'];
-								// $arr_seccion_add = array_filter($arr_secciones, function($v, $k) { 
-								// 	if ($v['idseccion'] == $id_seccion) { 
-								// 		return $v 
-								// 	};
-								//  }, ARRAY_FILTER_USE_KEY);
-								$isAddSeccion = false;
-								$arr_seccion_add = filter_by_value($arr_secciones, 'idseccion', $id_seccion);
-
-								// si no existe seccion
-								if ( !is_array($arr_seccion_add) ) {
-									$isAddSeccion = true;
-									$arr_seccion_add = array(
-										'des' => $item_s['des_seccion'],
-										'idseccion' => $item_s['idseccion'],
-										'sec_orden' => 1,
-										'count_items' => 1,
-										'idimpresora' => $item_s['idimpresora'],
-										'ver_stock_cero' => $item_s['visible'],
-										'items' => []
-									);
-								}
 								
-								
-								// items
-								$item_new = array(
-									'des' => $item_s['des'],
-									'img' => '',
-									'sumar' => false,
-									'iditem' => $item_s['iditem'],
-									'precio' => $item_s['precio'],
-									'procede' => $item_s['procede'],
-									'seccion' => $item_s['des_seccion'],
-									'visible' => true,
-									'cantidad' => $item_s['cantidad'],
-									'detalles' => $item_s['detalle'],
-									'selected' => true,
-									'subitems' => $item_s['subitems'],
-									'idseccion' => $item_s['idseccion'],
-									'isalmacen' => $item_s['idalmacen_items'],
-									'isporcion' => $item_s['isporcion'],
-									'sec_orden' => 1,
-									'des_seccion' => $item_s['des_seccion'],
-									'idimpresora' => $item_s['idimpresora'],
-									'precio_print' => $item_s['precio_total'],
-									'precio_total' => $item_s['precio_total'],
-									'idcarta_lista' => $item_s['iditem'],
-									'subitems_view' => $item_s['subitems_view'],
-									'precio_default' => $item_s['precio'],
-									'ver_stock_cero' => 0,
-									'precio_unitario' => $item_s['precio_unitario'],
-									'imprimir_comanda' => $item_s['imprimir_comanda'],
-									'itemtiposconsumo' => [],
-									'precio_total_calc' => $item_s['precio_total_calc'],
-									'subitems_selected' => [],
-									'subitem_cant_select' => $item_s['subitem_cant_select'],
-									'cantidad_seleccionada' => $item_s['cantidad'],
-									'subitem_required_select' => $item_s['subitem_required_select']
-								);
-
-								// agregamos en la seccion
-								array_push($arr_seccion_add['items'], $item_new);								
-
-
-
-
-								if ( $isAddSeccion == true ) { // si es seccion nueva agrega
-									array_push($arr_secciones, $arr_seccion_add);
-								}
-
-
-							}
-						}
-					}
-					
-					// adjuntamos					 
-					$arr_tipoc['secciones'] = $arr_secciones;
-					array_push($arr_tpc_master['tipoconsumo'], $arr_tipoc);
-					
-					$x_array_pedido_body = $arr_tpc_master;
+				if ( $is_delivery == 1 && $isComercioAppDeliveryMapa == 1) {									
+					$x_array_pedido_body = $x_array_pedido_body_homologacion;					
 				}
-				
-				
-
-
-				$json_body = addslashes(json_encode($x_array_pedido_body));
-				$json_body = json_decode($json_body);
-				$json_datos_delivery = json_encode(array('p_body' => $json_body, 'p_header' => $x_array_pedido_header,'p_subtotales' => $x_array_subtotales)); // , 'p_body' => $x_array_pedido_body, 'p_subtotales' => $x_array_subtotales
+					
+				// $json_datos_delivery = json_encode(array('p_body' => $x_array_pedido_body, 'p_header' => $x_array_pedido_header,'p_subtotales' => $x_array_subtotales)); // , 'p_body' => $x_array_pedido_body, 'p_subtotales' => $x_array_subtotales
 				// $is_delivery = 1;
+
+				// solo guarda los encabezados si es solo delivery y no este habilitado en el app express
+				$json_body = addslashes($x_array_pedido_body);				
+				$json_body = json_decode(stripslashes($json_body), JSON_UNESCAPED_UNICODE);
+
+				$json_datos_delivery = json_encode(array('p_body' => $json_body, 'p_header' => $x_array_pedido_header,'p_subtotales' => $x_array_subtotales)); // , 'p_body' => $x_array_pedido_body, 'p_subtotales' => $x_array_subtotales
 			}
 			
 
@@ -390,6 +296,7 @@
 	}
 
 	function filter_by_value ($array, $index, $value){
+		$newarray = [];
         if(is_array($array) && count($array)>0) 
         {
             foreach(array_keys($array) as $key){
@@ -437,7 +344,7 @@
 		$importe_total=0; // la primera fila es subtotal o total si no hay adicionales
 		$importe_subtotal = $x_array_subtotales[0]['importe'];
 		foreach ( $x_array_subtotales as $sub_total ) {
-			$tachado = $sub_total['tachado'] === "true" ? 1 : 0; 
+			$tachado = isset($sub_total['tachado']) ? $sub_total['tachado'] === "true" ? 1 : 0 : 0; 
 			$importe_row = $tachado === 1 ? $sub_total['importe_tachado'] : $sub_total['importe'];
 			$importe_total = $sub_total['importe'];
 			$sql_subtotales = $sql_subtotales."(?,".$_SESSION['ido'].",".$_SESSION['idsede'].",'".$sub_total['descripcion']."','".$importe_row."',".$tachado."),";			
@@ -547,7 +454,8 @@
 		$importe_total=0; // la primera fila es subtotal o total si no hay adicionales
 		$importe_subtotal = $x_array_subtotales[0]['importe'];
 		foreach ( $x_array_subtotales as $sub_total ) {
-			$tachado = $sub_total['tachado'] === "true" ? 1 : 0; 
+			// $tachado = $sub_total['tachado'] === "true" ? 1 : 0; 
+			$tachado = isset($sub_total['tachado']) ? $sub_total['tachado'] === "true" ? 1 : 0 : 0; 
 			$importe_row = $tachado === 1 ? $sub_total['importe_tachado'] : $sub_total['importe'];
 			$importe_total = $sub_total['importe'];
 			$sql_subtotales = $sql_subtotales."(?,".$_SESSION['ido'].",".$_SESSION['idsede'].",'".$sub_total['descripcion']."','".$importe_row."',".$tachado."),";			

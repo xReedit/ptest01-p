@@ -188,7 +188,7 @@ function _cpSocketRestoreFromPedidoStorage() {
                         console.log('resetPedido item', JSON.stringify(item));
                         pedidoSend.push(item);
                     }
-                })
+                });
         });
     }    
 

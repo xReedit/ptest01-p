@@ -12,8 +12,8 @@
 
     date_default_timezone_set('America/Lima');
 
-    $g_ido = $_SESSION['ido'];
-    $g_idsede = $_SESSION['idsede'];
+    $g_ido = isset($_SESSION['ido']) ? $_SESSION['ido'] : 0;
+    $g_idsede = isset($_SESSION['idsede']) ? $_SESSION['idsede'] : 0;
     
     switch($_GET['op'])
     {

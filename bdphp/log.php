@@ -19,8 +19,8 @@
 	//$_SESSION['idusuario']=1;
 	//$_SESSION['idterminal']=3;
 
-	$g_ido = $_SESSION['ido'];
-	$g_idsede = $_SESSION['idsede'];
+	$g_ido = isset($_SESSION['ido']) ? $_SESSION['ido'] : 0; 
+	$g_idsede = isset($_SESSION['idsede']) ? $_SESSION['idsede'] : 0;
 	$fecha_now = date("d/m/Y");
 	$hora_now = date("H:i:s");
 
@@ -116,12 +116,12 @@
 
 				$u_per=$_POST['p'];
 				$u_per=explode('/', $u_per);
-				$u_per=$u_per[1];
+				$u_per= isset($u_per[1]) ?  $u_per[1] : null;
 
 				$u_per=explode('?', $u_per);
-				$u_per=$u_per[0];
+				$u_per= isset($u_per[0]) ? $u_per[0] : null;
 
-				$pos=strpos($_SESSION['u_pas_rl'],$u_per);
+				$pos = isset($_SESSION['u_pas_rl']) ? strpos($_SESSION['u_pas_rl'],$u_per) : false;
 				if ($pos=== false) {
 					print 0;
 				}else{//si existe en tabla verifica permiso
@@ -129,7 +129,8 @@
 					$sql="select codigo as d1 from us_home_opciones where url_pas LIKE '%".$u_per."%'";
 					$cod_p=$bd->xDevolverUnDato($sql);
 
-					$pos=strpos($_SESSION['acc'],$cod_p);
+					
+					$pos = isset($_SESSION['acc']) ? strpos($_SESSION['acc'],$cod_p) : false;
 					if($pos===false){print 1;}else{print 0;}
 				}
 			break;
@@ -188,8 +189,11 @@
 			$bd->xCerrarSesion();
 			session_id(uniqid());
 			session_start();
-			$_SESSION['uid']==null;
-			unset($_SESSION["uid"]); 
+
+			if ( isset($_SESSION['uid']) ) {
+				$_SESSION['uid']==null;
+				unset($_SESSION["uid"]); 
+			}			
 	
 			session_destroy();
 			session_commit();
@@ -717,8 +721,10 @@
 		//MI PEDIDO APP ANFITRION CLIENTE
 		//MI PEDIDO APP ANFITRION CLIENTE
 		case 204001: //guardar historial
-			$sql_carta_historial = "CALL procedure_historial_carta(".$_POST['id'].")";
-			$bd->xConsulta($sql_carta_historial);
+			////// no guarda para no generar mas problemas //// 1020
+			// $sql_carta_historial = "CALL procedure_historial_carta(".$_POST['id'].")";
+			// $bd->xConsulta($sql_carta_historial);
+			
 			break;
 		case 2041://solo secciones en mi pedido
 			/*$sql="
