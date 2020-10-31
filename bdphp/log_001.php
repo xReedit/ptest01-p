@@ -140,6 +140,14 @@
 				} else {
 					$pUnitarioItem = $subitem['precio'];
 					$DesItemUp = $subitem['des'];
+
+					// cuando la cantidad del item es mas que los subitems seleccionados					
+					$lenghSubItem = count($lisSubItemsSelect);
+					$cantItemSeleccionda = $subitem['cantidad_seleccionada'];
+					$PrecioTotalItemSeleccionda = $subitem['precio_total'];
+
+					$cantItemSeleccionda = $subitem['cantidad'] - $lenghSubItem;
+
 					foreach ($lisSubItemsSelect as $sub) {						
 
 						$pUnitario = $sub['precio'];
@@ -163,6 +171,14 @@
 						// print $subItemSelect;
 						$sql_pedido_detalle=$sql_pedido_detalle."(?,".$tipo_consumo.",".$categoria.",".$subitem['iditem'].",".$idItem2.",'".$subitem['idseccion']."','".$subitem['cantidad']."','".$subitem['cantidad']."','".$subitem['precio']."','".$precio_total."','".$precio_total."','".$subitem['des']."',".$viene_de_bodega.",".$tabla_procede.",".$pwa.",'".$subItemSelect."'),";
 
+						$PrecioTotalItemSeleccionda = $PrecioTotalItemSeleccionda - $precio_total;
+
+					}
+
+					// si los subitems son menores a la cantidad total seleccionada entonces guarda la diferencia
+					if ($cantItemSeleccionda > 0) {
+						$PrecioTotalItemSeleccionda = number_format($PrecioTotalItemSeleccionda, 2);
+						$sql_pedido_detalle=$sql_pedido_detalle."(?,".$tipo_consumo.",".$categoria.",".$subitem['iditem'].",".$idItem2.",'".$subitem['idseccion']."','".$cantItemSeleccionda."','".$cantItemSeleccionda."','".$subitem['precio']."','".$PrecioTotalItemSeleccionda."','".$PrecioTotalItemSeleccionda."','".$DesItemUp.$indicaciones_p."',".$viene_de_bodega.",".$tabla_procede.",".$pwa.",'".$subItemSelect."'),";
 					}
 				}
 

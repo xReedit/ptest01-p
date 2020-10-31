@@ -47,7 +47,7 @@ arr_seccion_add.items.push({'des':item_s.des,'img':'','sumar':false,'iditem':ite
 if(isSeccionAdd){arr_tipoc.secciones=arr_secciones;arr_tpc_master.tipoconsumo.push(arr_tipoc);console.log('arr_tpc_master',arr_tpc_master);}}}
 arr_res=arr_tpc_master.tipoconsumo.length>0?arr_tpc_master:[];return arr_res;}
 function xChangeTipoConsumoItems(idtipo_consumo){const canalSelect=xArrayPedidoObj.filter(i=>i).filter(i=>i.id===idtipo_consumo)[0];xArrayPedidoObj.filter(i=>i).filter(i=>i.id!==idtipo_consumo).map(tpc=>{for(const i in tpc){if(tpc.hasOwnProperty(i)){const item_s=tpc[i];if(typeof item_s!=='object'){continue;}
-canalSelect[i]=item_s;delete tpc[i];}}});xVerMipedidoVR();}
+item_s.idtipo_consumo=canalSelect.id;canalSelect[i]=item_s;delete tpc[i];}}});xVerMipedidoVR();}
 $(document.body).on('keyup','.xMiTextReferencia',function(e){if(!xidTipoConsumo)return;const val_ref=e.target.value;itemPedidos_objItemSelected.indicaciones=val_ref;itemPedidos_objItemSelected.xindicaciones=val_ref;try{xArrayPedidoObj[xidTipoConsumo][xidItem].indicaciones=val_ref;}catch(error){}
 window.localStorage.setItem("::app3_sys_dta_pe",JSON.stringify(xArrayPedidoObj))
 e.stopPropagation();e.stopImmediatePropagation()
@@ -104,7 +104,8 @@ function xCargarCategoriaActual(responde){var xCategoriaActual;var xdtCat=xm_log
 if(xdtCat.length==1){xCategoriaActual=xdtCat[0].idcategoria}
 return responde(xdtCat);}
 function xGeneralLoadItems(xidCategoria,x_rpt){$.ajax({type:'POST',url:'../../bdphp/log.php?op=205',data:{'idcategoria':xidCategoria}}).done(function(dtCarta){var xdt_rpt=$.parseJSON(dtCarta)
-xGeneralDataCarta=xdt_rpt.datos;if(x_rpt){return x_rpt(xGeneralDataCarta);}})}
+xGeneralDataCarta=xdt_rpt.datos;console.log('xGeneralDataCarta',xGeneralDataCarta);if(x_rpt){return x_rpt(xGeneralDataCarta);}})}
+function xLimpiarItemSeleccionadosSubItems(){xGeneralDataCarta.filter(x=>x.subitems_selected).map(x=>{x.subitems_selected=[];});}
 function xGeneralSeccionMiPedido(xidCategoria,x_rpt){const ultima_categoria_cargada=localStorage.getItem('::app3_sys_last_cat_load');if(ultima_categoria_cargada===xidCategoria&&xGeneralDataSeccion!==undefined){return x_rpt(false);}
 $.ajax({type:'POST',url:'../../bdphp/log.php?op=2041',data:{'idcategoria':xidCategoria}}).done(function(dtSecciones_mp){var xdtSecciones_mp=$.parseJSON(dtSecciones_mp)
 if(!xdtSecciones_mp.success){alert(xdtSecciones_mp.error);return;}

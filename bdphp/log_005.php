@@ -549,5 +549,49 @@
 			$sql="update seccion set is_visible_cliente = $check where idseccion=$id";
 			$bd->xConsulta($sql);
 			break;
+		
+		case 20: // orden de pago			
+			$arrItem=$_POST['item'];
+			$sql="call procedure_orden_pedido($g_idsede, $g_idusuario,'".$arrItem."')";
+			$bd->xConsulta($sql);
+			break;
+		case 2001: // guadar adelanto
+			$idOrden = $_POST['id'];
+			$concepto = $_POST['concepto'];
+			$importe = $_POST['importe'];
+			$idtipo_pago = $_POST['idtipo_pago'];
+
+			$sql = "insert into orden_pedido_adelanto (idorden_pedido, idtipo_pago, concepto, importe, fecha_hora) values ($idOrden, $idtipo_pago, '$concepto', '$importe', DATE_FORMAT(now(),'%d/%m/%Y %H:%i:%s'))";
+			$bd->xConsulta_NoReturn($sql);
+
+			$sql = "select tp.descripcion des_tipo_pago, opa.* from orden_pedido_adelanto opa inner join tipo_pago tp on tp.idtipo_pago = opa.idtipo_pago where opa.idorden_pedido = $idOrden";
+			$bd->xConsulta($sql);
+
+			break;
+		case 2002: // guadar nota
+			$idOrden = $_POST['id'];
+			$nota = $_POST['nota'];			
+
+			$sql = "insert into orden_pedido_notas (idorden_pedido, nota, fecha_hora) values ($idOrden, '$nota', DATE_FORMAT(now(),'%d/%m/%Y %H:%i:%s'))";
+			$bd->xConsulta_NoReturn($sql);
+
+			// registra ingreso en caja
+
+
+			$sql = "select * from orden_pedido_notas where idorden_pedido = $idOrden";
+			$bd->xConsulta($sql);
+			break;
+		case 30: // lista orden pedido
+			$mm = $_POST['m'];
+			$yy = $_POST['y'];
+			$sql= "
+			select STR_TO_DATE(fecha_entrega, '%Y-%m-%d') fentrega, DAY(fecha_entrega) dia, DAYOFWEEK(fecha_entrega) dia_semana, DATE_FORMAT(fecha_entrega, '%H:%i') hora, format(COALESCE(opaa.adelanto, 0), 2) total_adelanto, op.*
+			from orden_pedido  op 
+				left join (select idorden_pedido, sum(importe) adelanto from orden_pedido_adelanto opa group by opa.idorden_pedido) as opaa on opaa.idorden_pedido = op.idorden_pedido
+			where op.idsede = $g_idsede and (MONTH(op.fecha_entrega) = $mm and YEAR(op.fecha_entrega) = $yy)
+			order by date(op.fecha_entrega) 
+			";
+			$bd->xConsulta($sql);
+			break;
 	}
 ?>
