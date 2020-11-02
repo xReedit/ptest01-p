@@ -146,7 +146,8 @@
 					$cantItemSeleccionda = $subitem['cantidad_seleccionada'];
 					$PrecioTotalItemSeleccionda = $subitem['precio_total'];
 
-					$cantItemSeleccionda = $subitem['cantidad'] - $lenghSubItem;
+					// $cantItemSeleccionda = $subitem['cantidad'] - $lenghSubItem;
+
 
 					foreach ($lisSubItemsSelect as $sub) {						
 
@@ -163,10 +164,13 @@
 							$pTotal = $pUnitario * $cantSeleccionadaSubItem;
 						}
 
+						$cantItemSeleccionda = $cantItemSeleccionda - $cantSeleccionadaSubItem;
+
 						$subitem['des'] = $desItem;
 						$subitem['cantidad'] = $cantSeleccionadaSubItem;
 						$subitem['precio'] = number_format($pUnitario, 2);
 						$precio_total = number_format($pTotal, 2);
+						
 
 						// print $subItemSelect;
 						$sql_pedido_detalle=$sql_pedido_detalle."(?,".$tipo_consumo.",".$categoria.",".$subitem['iditem'].",".$idItem2.",'".$subitem['idseccion']."','".$subitem['cantidad']."','".$subitem['cantidad']."','".$subitem['precio']."','".$precio_total."','".$precio_total."','".$subitem['des']."',".$viene_de_bodega.",".$tabla_procede.",".$pwa.",'".$subItemSelect."'),";
