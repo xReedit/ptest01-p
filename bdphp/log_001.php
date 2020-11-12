@@ -126,18 +126,26 @@
 				$idItem2 = isset($subitem['iditem2']) ? $subitem['iditem2'] : $subitem['iditem'];
 				$pwa = isset($subitem['pwa']) ? $subitem['pwa'] : 0;				
 				$subItemSelect = json_encode($subitem['subitems_view'], true);
+				// $subItemSelect = null;
 				
 				//  -- 29/07/2020 SI TIENE SUBITEMS ENTONCES EN EL DETALLE DESGLOSA
 				// -- ESTO PARA CONTROL DE PEDIDOS
 
-				$lisSubItemsSelect = $subitem['subitems_view'];
+				$lisSubItemsSelect = isset($subitem['subitems_view']) ? $subitem['subitems_view'] : null;
+				$isExistSubitemsSelect = isset($lisSubItemsSelect) ? true : false; 
+				if ( $isExistSubitemsSelect == true ) {
+					$isExistSubitemsSelect  = isset($lisSubItemsSelect[0]) ? true : false;										
+				}
+				
 				// if ( $lisSubItemsSelect == null ) {
-				if ( !isset($lisSubItemsSelect[0]) ) {
+				// if ( !isset($lisSubItemsSelect[0]) ) {
+				if ( $isExistSubitemsSelect == false ) {
+					$desItemInsert = addslashes($subitem['des'].$indicaciones_p);
 
-					// print $subItemSelect;
-					$sql_pedido_detalle=$sql_pedido_detalle."(?,".$tipo_consumo.",".$categoria.",".$subitem['iditem'].",".$idItem2.",'".$subitem['idseccion']."','".$subitem['cantidad']."','".$subitem['cantidad']."','".$subitem['precio']."','".$precio_total."','".$precio_total."','".$subitem['des'].$indicaciones_p."',".$viene_de_bodega.",".$tabla_procede.",".$pwa.",'".$subItemSelect."'),";
+					// print $subItemSelect;					
+					$sql_pedido_detalle=$sql_pedido_detalle."(?,".$tipo_consumo.",".$categoria.",".$subitem['iditem'].",".$idItem2.",'".$subitem['idseccion']."','".$subitem['cantidad']."','".$subitem['cantidad']."','".$subitem['precio']."','".$precio_total."','".$precio_total."','".$desItemInsert."',".$viene_de_bodega.",".$tabla_procede.",".$pwa.",'".$subItemSelect."'),";
 
-				} else {
+				} else {					
 					$pUnitarioItem = $subitem['precio'];
 					$DesItemUp = $subitem['des'];
 
@@ -148,11 +156,15 @@
 
 					// $cantItemSeleccionda = $subitem['cantidad'] - $lenghSubItem;
 
+					$subItemSelect = addslashes(json_encode($subitem['subitems_view']));				
+					// $subItemSelect = json_encode($subItemSelect);					
+					
 
 					foreach ($lisSubItemsSelect as $sub) {						
 
 						$pUnitario = $sub['precio'];
-						$desItem = $DesItemUp.' ('.$sub['des'].')';
+						$desItem = addslashes($DesItemUp.' ('.$sub['des'].')');						
+
 						$cantSeleccionadaSubItem = $sub['cantidad_seleccionada'];
 
 						if ( $pUnitario == 0 ) {
@@ -172,8 +184,9 @@
 						$precio_total = number_format($pTotal, 2);
 						
 
-						// print $subItemSelect;
+						// print $subItemSelect;												
 						$sql_pedido_detalle=$sql_pedido_detalle."(?,".$tipo_consumo.",".$categoria.",".$subitem['iditem'].",".$idItem2.",'".$subitem['idseccion']."','".$subitem['cantidad']."','".$subitem['cantidad']."','".$subitem['precio']."','".$precio_total."','".$precio_total."','".$subitem['des']."',".$viene_de_bodega.",".$tabla_procede.",".$pwa.",'".$subItemSelect."'),";
+
 
 						$PrecioTotalItemSeleccionda = $PrecioTotalItemSeleccionda - $precio_total;
 
@@ -181,8 +194,9 @@
 
 					// si los subitems son menores a la cantidad total seleccionada entonces guarda la diferencia
 					if ($cantItemSeleccionda > 0) {
-						$PrecioTotalItemSeleccionda = number_format($PrecioTotalItemSeleccionda, 2);
-						$sql_pedido_detalle=$sql_pedido_detalle."(?,".$tipo_consumo.",".$categoria.",".$subitem['iditem'].",".$idItem2.",'".$subitem['idseccion']."','".$cantItemSeleccionda."','".$cantItemSeleccionda."','".$subitem['precio']."','".$PrecioTotalItemSeleccionda."','".$PrecioTotalItemSeleccionda."','".$DesItemUp.$indicaciones_p."',".$viene_de_bodega.",".$tabla_procede.",".$pwa.",'".$subItemSelect."'),";
+						$PrecioTotalItemSeleccionda = number_format($PrecioTotalItemSeleccionda, 2);						
+						$desItemInsert = addslashes($DesItemUp.$indicaciones_p);
+						$sql_pedido_detalle=$sql_pedido_detalle."(?,".$tipo_consumo.",".$categoria.",".$subitem['iditem'].",".$idItem2.",'".$subitem['idseccion']."','".$cantItemSeleccionda."','".$cantItemSeleccionda."','".$subitem['precio']."','".$PrecioTotalItemSeleccionda."','".$PrecioTotalItemSeleccionda."','".$desItemInsert."',".$viene_de_bodega.",".$tabla_procede.",".$pwa.",'".$subItemSelect."'),";
 					}
 				}
 
@@ -263,6 +277,10 @@
 
 				$json_datos_delivery = json_encode(array('p_body' => $json_body, 'p_header' => $x_array_pedido_header,'p_subtotales' => $x_array_subtotales)); // , 'p_body' => $x_array_pedido_body, 'p_subtotales' => $x_array_subtotales
 			}
+				// solo para pruebas
+				// $json_body = addslashes($x_array_pedido_body);				
+				// $json_body = json_decode(stripslashes($json_body), JSON_UNESCAPED_UNICODE);
+				// $json_datos_delivery = json_encode(array('p_body' => $json_body, 'p_header' => $x_array_pedido_header,'p_subtotales' => $x_array_subtotales)); // , 'p_body' => $x_array_pedido_body, 'p_subtotales' => $x_array_subtotales
 			
 
             // guarda pedido
@@ -289,9 +307,11 @@
 
 		//pedido_detalle
 		$sql_pedido_detalle='insert into pedido_detalle (idpedido,idtipo_consumo,idcategoria,idcarta_lista,iditem,idseccion,cantidad,cantidad_r,punitario,ptotal,ptotal_r,descripcion,procede,procede_tabla, pwa, subitems) values '.$sql_pedido_detalle;
+		// $sql_pedido_detalle = addslashes($sql_pedido_detalle);
+		// echo $sql_pedido_detalle;
+		
 		//pedido_subtotales
 		$sql_subtotales='insert into pedido_subtotales (idpedido,idorg,idsede,descripcion,importe, tachado) values '.$sql_subtotales;
-		// echo $sql_pedido_detalle;
 		//ejecutar
         //$sql_ejecuta=$sql_pedido_detalle.'; '.$sql_sub_total.';'; // guarda pedido detalle y pedido subtotal
         $bd->xConsulta_NoReturn($sql_pedido_detalle.';');
@@ -397,12 +417,18 @@
 		
 
                 
-        //registro tipo de pago // efectivo / tarjeta / etc
-        $cadena_tp='';
-        foreach($x_array_tipo_pago as $item){
-			$importe_detalle_pago = $item['importe'] == 'NaN' ? $importe_total : $item['importe'];
-            $cadena_tp=$cadena_tp."(".$idregistro_pago.",".$item['id'].",'".$importe_detalle_pago."'),";
-        }
+		//registro tipo de pago // efectivo / tarjeta / etc
+		// si solo tiene un item entonces guarda con la cantidad del total -- para evitar errores
+		$cadena_tp='';
+		if ( count($x_array_tipo_pago) == 1 ) {
+			$importe_detalle_pago = $importe_total;
+			$cadena_tp=$cadena_tp."(".$idregistro_pago.",".$x_array_tipo_pago[0]['id'].",'".$importe_detalle_pago."'),";
+		} else {
+			foreach($x_array_tipo_pago as $item){
+				$importe_detalle_pago = $item['importe'] == 'NaN' ? $importe_total : $item['importe'];
+				$cadena_tp=$cadena_tp."(".$idregistro_pago.",".$item['id'].",'".$importe_detalle_pago."'),";
+			}
+		}
 
         $cadena_tp=substr($cadena_tp,0,-1);
 		$cadena_tp="insert into registro_pago_detalle (idregistro_pago,idtipo_pago,importe) values ".$cadena_tp."; ";
@@ -434,6 +460,8 @@
         $bd->xConsulta_NoReturn($sql_pago_pedido);
 		$bd->xConsulta_NoReturn($cadena_tp);
 		$bd->xConsulta_NoReturn($sql_subtotales);
+
+		// echo $cadena_tp;
 		
 		// print $correlativo_comprobante."|";
 
@@ -516,10 +544,23 @@
                 
         //registro tipo de pago // efectivo / tarjeta / etc
         $cadena_tp='';
-        foreach($x_array_tipo_pago as $item){
-			$importe_detalle_pago = $item['importe'] == 'NaN' ? $importe_total : $item['importe'];
-            $cadena_tp=$cadena_tp."(".$idregistro_pago.",".$item['id'].",'".$importe_detalle_pago."'),";
-        }
+        // foreach($x_array_tipo_pago as $item){
+		// 	$importe_detalle_pago = $item['importe'] == 'NaN' ? $importe_total : $item['importe'];
+        //     $cadena_tp=$cadena_tp."(".$idregistro_pago.",".$item['id'].",'".$importe_detalle_pago."'),";
+		// }
+		
+		//registro tipo de pago // efectivo / tarjeta / etc
+		// si solo tiene un item entonces guarda con la cantidad del total -- para evitar errores
+		$cadena_tp='';
+		if ( count($x_array_tipo_pago) == 1 ) {
+			$importe_detalle_pago = $importe_total;
+			$cadena_tp=$cadena_tp."(".$idregistro_pago.",".$x_array_tipo_pago[0]['id'].",'".$importe_detalle_pago."'),";
+		} else {
+			foreach($x_array_tipo_pago as $item){
+				$importe_detalle_pago = $item['importe'] == 'NaN' ? $importe_total : $item['importe'];
+				$cadena_tp=$cadena_tp."(".$idregistro_pago.",".$item['id'].",'".$importe_detalle_pago."'),";
+			}
+		}
 
         $cadena_tp=substr($cadena_tp,0,-1);
 		$cadena_tp="insert into registro_pago_detalle (idregistro_pago,idtipo_pago,importe) values ".$cadena_tp."; ";
