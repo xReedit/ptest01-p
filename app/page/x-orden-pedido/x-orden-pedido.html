@@ -1,189 +1,542 @@
+
 <link rel="import" href="../../x-componentes/x-comp-find-tipo-pago/x-comp-find-tipo-pago.html">
+
 <dom-module id="x-orden-pedido">
-<template is="dom">
-<paper-dialog class="dialog_redondo" id="dialog_adelanto" entry-animation="scale-up-animation" exit-animation="fade-out-animation" with-backdrop>
-<div class="p-2">
-<h4>Registrar Adelanto</h4>
-<br>
-<div class="p-1 xFondoRowPlomo2">
-<x-comp-find-tipo-pago onchange="selectTipoPago(this)" id="compTipoPago"></x-comp-find-tipo-pago>
-</div>
-<input type="text" class="xMiInput xPasarEnter2 w-100" placeholder="Concepto" onChange="conMayusculas(this)" id="txt_concepto_adelanto" required espaciar>
-<input type="number" class="xMiInput xPasarEnter2 w-50" placeholder="Importe" onChange="conMayusculas(this)" id="txt_importe_adelanto" required espaciar>
-</div>
-<br>
-<div class="buttons">
-<button class="xBoton2 xPlomo" dialog-dismiss>Cancelar</button>
-<button class="xBoton2 xAzul" onclick="xRegistrarAdelanto()">Registrar Adelanto</button>
-</div>
-</paper-dialog>
-<paper-dialog class="dialog_redondo" id="dialog_nota" entry-animation="scale-up-animation" exit-animation="fade-out-animation" with-backdrop>
-<div class="p-2">
-<h4>Registrar Nota:</h4>
-<br>
-<textarea class="xMiInput xPasarEnter2 w-100" name="" id="txt_nota_nota" cols="10" rows="5" maxlength="150"></textarea>
-</div>
-<br>
-<div class="buttons">
-<button class="xBoton2 xPlomo" dialog-dismiss>Cancelar</button>
-<button class="xBoton2 xAzul" onclick="xRegistrarNota()">Registar Nota</button>
-</div>
-</paper-dialog>
-<br><br>
-<div class="xMiCard xradius" style="width:85%;max-width:1100px">
-<div class="xEncanezadoCard" style="background:lavenderblush;color:#424242">
-<div class="d-flexx justify-content-between align-items-center">
-<h3>Orden de pedido {{ correlativoOrden }}</h3>
-</div>
-</div>
-<div class="xLinea2"></div>
-<div class="p-2" style="background:beige;color:#424242">
-<paper-button><div class="xMiBoton_icon_lateral2" style="margin-top:-15px;width:90px" onclick="xOpenAnularPedidoHistorial()" id="btn_anular_pedido"><img src="../../../images/_otros_ingresos.png"><p>Adelantos</p></div></paper-button>
-<paper-button><div class="xMiBoton_icon_lateral2" style="margin-top:-15px;width:90px" onclick="xOpenAnularPedidoHistorial()" id="btn_anular_pedido"><img src="../../../images/_apuntar_cuenta_vr.png"><p>Notas o cambios</p></div></paper-button>
-<paper-button><div class="xMiBoton_icon_lateral2" style="margin-top:-15px;width:90px" onclick="xOpenAnularPedidoHistorial()" id="btn_anular_pedido"><img src="../../../images/001-pdf.png"><p>Imprimir PDF</p></div></paper-button>
-<paper-button><div class="xMiBoton_icon_lateral2" style="margin-top:-15px;width:90px" onclick="xOpenAnularPedidoHistorial()" id="btn_anular_pedido"><img src="../../../images/_comprobante.png"><p>Emitir Comprobante</p></div></paper-button>
-</div>
-<div class="xLinea2"></div>
-<div class="xContentCard" style="padding:20px">
-<div class="w-100">
-<form action="" id="form_pago_cliente">
-<div class="rowx pb-2">
-<div class="col-sm-7">
-<h5>Cliente</h5>
-<input type="text" class="xMiInput xPasarEnter2 w-100" placeholder="Nombre / Razon Social" onChange="conMayusculas(this)" id="frm_nombres" required espaciar>
-<input type="text" class="xMiInput xPasarEnter2 w-100" placeholder="Direccion de entrega" onChange="conMayusculas(this)" id="frm_direccion" espaciar>
-<input type="text" class="xMiInput xPasarEnter2 w-100" placeholder="Telefono" onChange="conMayusculas(this)" id="frm_telefono" required espaciar>
-</div>
-<div class="col-sm-4">
-<h5>Fecha de entrega</h5>
-<input type="datetime-local" class="xMiInput w-100" placeholder="Fecha de entrega" id="f_entrega" required enlinea espaciar>
-<input type="text" class="xMiInput xPasarEnter2 w-100" placeholder="Nota" onChange="conMayusculas(this)" id="txt_nota" espaciar>
-</div>
-</div>
-</form>
-<br>
-<div class="xLinea2"></div>
-<br><br>
-<div class="w-100 d-flexx justify-content-end">
-<button class="btn btn-sm btn-success" onclick="xAddItem()">+ Agregar</button>
-</div>
-<table class="xtable4" width="100%">
-<thead>
-<th class="xSinBorde" width="60%">Descripcion</th>
-<th class="xSinBorde" width="10px">Cant</th>
-<th class="xSinBorde" width="30px" align="right">P.Unitario</th>
-<th class="xSinBorde" width="30px" align="right">P.Total</th>
-</thead>
-<tr class="xSinBorde" data-id="">
-<td><input type="text" class="xMiInput xPasarEnter2" style="width:100%" placeholder="Descripcion" onChange="conMayusculas(this)" required id="des_item"></td>
-<td><input type="number" class="xMiInput xPasarEnter2" style="width:100%" placeholder="Cant" onChange="conMayusculas(this)" required id="cant_item" autofocus></td>
-<td><input type="number" class="xMiInput xAlinearDerecha punitario" onChange="conMayusculas(this)" onblur="xRetornaMoneda(this)" placeholder="P. Unitario" id="punitario" name="precio" required></td>
-<td><input type="number" class="xMiInput xAlinearDerecha xprecio" onChange="conMayusculas(this)" onblur="xRetornaMoneda(this)" placeholder="P. Total" id="ptotal" name="total" required readonly></td>
-</tr>
-<template is="dom-repeat" items="{{arrItems}}" as="item">
-<tr data-value="[[index]]">
-<td> <span class="xDeleteRowNeutro" title="Borrar" onclick="xBorrarItemLocalArr(this)"></span> {{item.descripcion}} </td>
-<td> {{item.cantidad}} </td>
-<td align="right"> {{item.punitario}} </td>
-<td align="right"> {{item.ptotal}}</td>
-</tr>
-</template>
-<template is="dom-repeat" items="{{arrTotales}}" as="total">
-<tr class="tt_row">
-<td colspan="2" class="xSinBorde"></td>
-<td align="right"> {{ total.descripcion }} </td>
-<td align="right"> {{ total.importe }} </td>
-</tr>
-</template>
-<tr hidden$="[[!showNotaAdelanto]]">
-<td colspan="2" class="xSinBorde"></td>
-<td align="right"> Adelanto </td>
-<td align="right"> <span class="xColorRow_Amarillo xBold"> {{totalAdelanto}} </span> </td>
-</tr>
-<tr hidden$="[[!showNotaAdelanto]]">
-<td colspan="2" class="xSinBorde"></td>
-<td align="right"> Pendiente </td>
-<td align="right"> <span class="xColorRow_Azul xBold"> {{totalPendiente}} </span> </td>
-</tr>
-</table>
-<br>
-<button onclick="xGuardarOrdenPedido()"> aaaaa </button>
-<br><br>
-<br>
-<hr>
-<br>
-<div class="rowx pb-2" style="display:flex;justify-content:space-between" hidden$="[[!showNotaAdelanto]]">
-<div class="col-sm-4">
-<div class="d-flexx align-items-center">
-<h5>Notas o cambios</h5>
-<button class="btn btn-sm btn-success ml-1" onclick="dialog_nota.open()"> + </button>
-</div>
-<hr>
-<table class="xtable4" width="100%">
-<thead>
-<th class="xSinBorde" width="70%">Nota</th>
-</thead>
-<template is="dom-repeat" items="{{ListOrdenNotas}}" as="item">
-<tr data-value="[[index]]">
-<td> <span class="fs-11"> {{item.fecha_hora}} | {{item.nota}} </span> </td>
-</tr>
-</template>
-</table>
-</div>
-<div class="col-sm-6">
-<div class="d-flexx align-items-center">
-<h5>Adelantos</h5>
-<button class="btn btn-sm btn-success ml-1" onclick="dialog_adelanto.open()"> + </button>
-</div>
-<hr>
-<table class="xtable4" width="100%">
-<thead>
-<th class="xSinBorde" width="70%">Concepto</th>
-<th class="xSinBorde" width="40%">T. Pago</th>
-<th class="xSinBorde" width="30px" align="right">Importe</th>
-</thead>
-<template is="dom-repeat" items="{{ListOrdenAdelanto}}" as="item">
-<tr data-value="[[index]]">
-<td> <span class="fs-11"> {{item.fecha_hora}} | {{item.concepto}} </span> </td>
-<td> <span class="fs-11"> {{item.des_tipo_pago}} </span> </td>
-<td align="right"> <span class="fs-11">{{item.importe}}</span> </td>
-</tr>
-</template>
-<tr>
-<td colspan="2"></td>
-<td align="right"> <h5>{{ totalAdelanto }}</h5> </td>
-</tr>
-</table>
-</div>
-</div>
-</div>
-</div>
-</div>
-</template>
+    <template is="dom">
+        <!-- <div class="p-20">
+            <h2>Orden de pedido</h2>
+        </div> -->
+
+        <paper-dialog class="dialog_redondo" id="dialog_adelanto" entry-animation="scale-up-animation"
+            exit-animation="fade-out-animation" with-backdrop>			
+            <div class="p-2">
+                <h4>Registrar Adelanto</h4>                
+                <br>
+                <div class="p-1 xFondoRowPlomo2">                    
+                    <x-comp-find-tipo-pago onchange="selectTipoPago(this);" id="compTipoPago"></x-comp-find-tipo-pago>
+                </div>
+                <input type="text" class="xMiInput xPasarEnter2 w-100" placeholder="Concepto" onChange="conMayusculas(this)" id="txt_concepto_adelanto" required espaciar>                
+                <input type="number" class="xMiInput xPasarEnter2 w-50" placeholder="Importe" onChange="conMayusculas(this)" id="txt_importe_adelanto" required espaciar>
+            </div>
+            <br>
+			<div class="buttons">
+				<button class="xBoton2 xPlomo" dialog-dismiss>Cancelar</button>
+				<button class="xBoton2 xAzul" onclick="xRegistrarAdelanto();">Registrar Adelanto</button>
+			</div>
+        </paper-dialog>
+        
+
+        <paper-dialog class="dialog_redondo" id="dialog_nota" entry-animation="scale-up-animation"
+			exit-animation="fade-out-animation" with-backdrop>			            
+            <div class="p-2">
+                <h4>Registrar Nota:</h4>                
+                <br>
+                <textarea class="xMiInput xPasarEnter2 w-100" name="" id="txt_nota_nota" cols="10" rows="5" maxlength="150"></textarea>
+            </div>
+			<br>
+			<div class="buttons">
+				<button class="xBoton2 xPlomo" dialog-dismiss>Cancelar</button>
+				<button class="xBoton2 xAzul" onclick="xRegistrarNota();">Registar Nota</button>
+			</div>
+		</paper-dialog>
+
+
+
+        <div class="xMiCard xradius" style="width:85%; max-width: 1100px;">
+			<div class="xEncanezadoCard" style="background: lavenderblush; color: #424242;">
+                <div class="d-flexx justify-content-between align-items-center">
+                    <h3>Orden de pedido {{ correlativoOrden }}</h3>                                       
+                    <button class="btn btn-sm btn-secondary" onclick="goBackLista()"> < Atras </button>                    
+                </div>                
+            </div>	
+            <div class="xLinea2"></div>
+                <div class="p-2" style="background: beige; color: #424242;">
+                    <!-- <paper-button><div class="xMiBoton_icon_lateral2" style="margin-top:-15px; width: 90px;" onclick="xOpenAnularPedidoHistorial();" id="btn_anular_pedido"><img src="../../../images/_otros_ingresos.png"><p>Adelantos</p></div></paper-button>
+                    <paper-button><div class="xMiBoton_icon_lateral2" style="margin-top:-15px; width: 90px;" onclick="xOpenAnularPedidoHistorial();" id="btn_anular_pedido"><img src="../../../images/_apuntar_cuenta_vr.png"><p>Notas o cambios</p></div></paper-button> -->
+                    <paper-button><div class="xMiBoton_icon_lateral2" style="margin-top:-15px; width: 90px;" onclick="xOpenAnularPedidoHistorial();" id="btn_anular_pedido"><img src="../../../images/001-pdf.png"><p>Imprimir PDF</p></div></paper-button>
+                    <paper-button><div class="xMiBoton_icon_lateral2" style="margin-top:-15px; width: 90px;" onclick="xOpenAnularPedidoHistorial();" id="btn_anular_pedido"><img src="../../../images/_comprobante.png"><p>Emitir Comprobante</p></div></paper-button>
+                </div>
+            <div class="xLinea2"></div>
+            <div class="xContentCard" style="padding: 20px;">            
+                <div class="w-100">
+                    <form action="" id="form_pago_cliente">
+                        <div class="rowx pb-2">
+                            <div class="col-sm-7">                            
+                                <h5>Cliente</h5>
+                                <input type="text" class="xMiInput xPasarEnter2 w-100" placeholder="Nombre / Razon Social" onChange="conMayusculas(this)" id="frm_nombres" required espaciar>
+                                <input type="text" class="xMiInput xPasarEnter2 w-100" placeholder="Direccion de entrega" onChange="conMayusculas(this)" id="frm_direccion" espaciar>
+                                <input type="text" class="xMiInput xPasarEnter2 w-100" placeholder="Telefono" onChange="conMayusculas(this)" id="frm_telefono" required espaciar>
+                            </div>
+                            <div class="col-sm-4">
+                                <h5>Fecha de entrega</h5>                            
+                                <input type="datetime-local" class="xMiInput w-100" placeholder="Fecha de entrega" id="f_entrega" required enlinea espaciar>                                           
+                                <input type="text" class="xMiInput xPasarEnter2 w-100" placeholder="Nota" onChange="conMayusculas(this)" id="txt_nota" espaciar>
+                            </div>
+                            <div class="xInvisible">
+                                <input type="text" id="form_idorden_pedido">
+                            </div>
+                        </div>
+                    </form>
+                    <br>
+                    <div class="xLinea2"></div>
+                    <br><br>
+                    <div class="w-100 d-flexx justify-content-end">
+                        <button class="btn btn-sm btn-success" onclick="xAddItem();">+ Agregar</button>
+                    </div>
+                    <table class="xtable4" width="100%">
+                        <thead>
+                            <th class="xSinBorde" width="60%">Descripcion</th>
+                            <th class="xSinBorde" width="10px">Cant</th>
+                            <th class="xSinBorde" width="30px" align="right">P.Unitario</th>
+                            <th class="xSinBorde" width="30px" align="right">P.Total</th>
+                            <!-- <th class="xSinBorde" width="10px"></th> -->
+                        </thead>
+                        <tr class="xSinBorde" data-id="">                        
+                            <td><input type="text" class="xMiInput xPasarEnter2" style="width:100%;" placeholder="Descripcion" onChange="conMayusculas(this)" required id="des_item"></td>
+                            <td><input type="number" class="xMiInput xPasarEnter2" style="width:100%;" placeholder="Cant" onChange="conMayusculas(this)" required id="cant_item" autofocus></td>
+                            <td><input type="number" class="xMiInput xAlinearDerecha punitario" onChange="conMayusculas(this)" onblur="xRetornaMoneda(this)"  placeholder="P. Unitario" id="punitario" name="precio" required></td>
+                            <td><input type="number" class="xMiInput xAlinearDerecha xprecio" onChange="conMayusculas(this)" onblur="xRetornaMoneda(this)"   placeholder="P. Total" id="ptotal" name="total" required readonly></td>
+                            <!-- <td><paper-fab icon="add" onclick="xAddItem()" title="Agregar item"></paper-fab></td> -->
+                        </tr>        
+                        <template is="dom-repeat" items="{{arrItems}}" as="item">
+                            <tr data-value="[[index]]">
+                                <td> <span class="xDeleteRowNeutro" title="Borrar" onclick="xBorrarItemLocalArr(this);"></span>  {{item.descripcion}} </td>
+                                <td> {{item.cantidad}} </td>
+                                <td align="right">  {{item.punitario}} </td>
+                                <td align="right"> {{item.ptotal}}</td>
+                            </tr>
+                        </template>                    
+                        <template is="dom-repeat" items="{{arrTotales}}" as="total">
+                            <tr class="tt_row">
+                                <td colspan="2" class="xSinBorde"></td>
+                                <td align="right"> {{ total.descripcion }} </td>
+                                <td align="right"> {{ total.importe }} </td>
+                            </tr>                            
+                        </template>
+                        <tr hidden$="[[!showNotaAdelanto]]">
+                            <td colspan="2" class="xSinBorde"></td>
+                            <td align="right"> Adelanto </td>
+                            <td align="right"> <span class="xColorRow_Amarillo xBold"> {{totalAdelanto}} </span> </td>
+                        </tr>
+                        <tr hidden$="[[!showNotaAdelanto]]">
+                            <td colspan="2" class="xSinBorde"></td>
+                            <td align="right"> Pendiente </td>
+                            <td align="right"> <span class="xColorRow_Azul xBold"> {{totalPendiente}} </span> </td>
+                        </tr>
+                    </table>
+                    <br>
+                    <button class="btn btn-info" onclick="xGuardarOrdenPedido()"> Listo, Guardar. </button>
+                    <br><br>
+                    <br>
+                    <hr>
+                    <br>
+                    <!-- hidden$="[[!showNotaAdelanto]]" -->
+                    <div class="rowx pb-2" style="display: flex; justify-content: space-between;" hidden$="[[!showNotaAdelanto]]">
+                        <div class="col-sm-4">
+                            <div class="d-flexx align-items-center">
+                                <h5>Notas o cambios</h5>                                
+                                <button class="btn btn-sm btn-success ml-1" onclick="dialog_nota.open();"> + </button>
+                            </div>
+                            <hr>
+                            <table class="xtable4" width="100%">
+                                <thead>                                                                        
+                                    <th class="xSinBorde" width="70%">Nota</th>                                    
+                                </thead>                                
+                                <template is="dom-repeat" items="{{ListOrdenNotas}}" as="item">
+                                    <tr data-value="[[index]]">                                        
+                                        <td> <span class="fs-11"> {{item.fecha_hora}} | {{item.nota}} </span> </td>                                        
+                                    </tr>
+                                </template>                                                                                         
+                            </table>
+                        </div>
+                        <div class="col-sm-6">
+                            <div class="d-flexx align-items-center">
+                                <h5>Adelantos</h5> 
+                                <button class="btn btn-sm btn-success ml-1" onclick="dialog_adelanto.open();"> + </button>
+                            </div>
+                            <hr>
+                            <table class="xtable4" width="100%">
+                                <thead>                                                                        
+                                    <th class="xSinBorde" width="70%">Concepto</th>
+                                    <th class="xSinBorde" width="40%">T. Pago</th>
+                                    <th class="xSinBorde" width="30px" align="right">Importe</th>
+                                </thead>                                
+                                <template is="dom-repeat" items="{{ListOrdenAdelanto}}" as="item">
+                                    <tr data-value="[[index]]">                                        
+                                        <td> <span class="fs-11"> {{item.fecha_hora}} | {{item.concepto}} </span> </td>
+                                        <td> <span class="fs-11"> {{item.des_tipo_pago}}  </span> </td>
+                                        <td align="right"> <span class="fs-11">{{item.importe}}</span> </td>                                        
+                                    </tr>
+                                </template>                                
+                                <tr>
+                                    <td colspan="2"></td>
+                                    <td align="right">  <h5>{{ totalAdelanto }}</h5> </td>
+                                </tr>                                
+                            </table>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </template>
 </dom-module>
-<script>/*<![CDATA[*/var xThisOrden,xPopupLoad,idOrdenPedido,_arrCliente=[],_arrTotal=[],_arrItems=[],cnf_ComprobanteSel,xIdCliente_pago,_listValid=false,_formValid=false,_modificarCliente=false;var impresoraSelect={},IdTpConsumo=0,rptDoc,itemsConEstructuraPrint,arr_comprobante=[],_idregistro,txt_fecha_cpe_manual='',isSocket=true,tipoPagoSelected,compTipoPagoSelected;function xIniOrdenPedido(){xThisOrden.formValid=false;_listValid=false;_formValid=false;xThisOrden.modificarCliente=false;xThisOrden.arrItems=[];xThisOrden.arrTotales=[];xThisOrden.listImpresoras=[];xThisOrden.ListOrdenAdelanto=[];xThisOrden.cpe_show=false;xThisOrden.fecha_manual=false
-xThisOrden.correlativoOrden='';const arrEstructura=xm_log_get('estructura_pedido');IdTpConsumo=arrEstructura[0].idtipo_consumo;compTipoPagoSelected=document.getElementById('compTipoPago');compTipoPagoSelected.addEventListener('getValorIncial',(e)=>{selectTipoPago(e.target);});fact_getAllImpresoras();$('body').addClass('loaded');$('.xPasarEnter2').on('keyup',function(e){var code=e.which;if(code==13||code==186){var inputs=$('input');var a=inputs.index(document.activeElement);if(inputs[a+1]!==null){var nextBox=inputs[a+1];if(nextBox===undefined){return}
-if(nextBox.disabled){nextBox=inputs[a+2]}
-if(nextBox==undefined){return;}
-nextBox.focus();nextBox.select();}
-event.stopPropagation();e.stopPropagation();e.stopImmediatePropagation()
-return false;}});$(".punitario").on('keyup',function(e){var code=e.which;xCalcTotal();if(code==13||code==186){$("#punitario").val(xMoneda(this.value));$("#ptotal").focus();xAddItem();}});$(".xprecio").on('keyup',function(e){var code=e.which;if(code==13||code==186){xAddItem();}});$("#txt_fecha").on('change',function(){var d=$(this).val().split('-');txt_fecha_cpe_manual=d[1]===undefined?'':$(this).val();});}
-function xCalcTotal(){const xCan_item=$("#cant_item").val()===''?0:parseFloat($("#cant_item").val());const xPUnitario=$("#punitario").val()===''?0:parseFloat($("#punitario").val());const ptotal=(parseFloat(parseFloat(xCan_item)*parseFloat(xPUnitario)).toFixed(2))||0;$("#ptotal").val(ptotal);}
-function xAddItem(){const xCan_item=$("#cant_item").val();const xDes_item=$("#des_item").val();const xPUnitario=$("#punitario").val();const xPTotal=$("#ptotal").val();if(xCan_item===''||xDes_item===''&&xPUnitario===''&&xPTotal===''){return}
-const id=xCeroIzq(_arrItems.length+1,3);const item={'id':id,'iditem':id,'idtipo_consumo':IdTpConsumo,'des_seccion':'ITEMS','cantidad':xCan_item,'descripcion':xDes_item,'punitario':xPUnitario,'precio':xPUnitario,'ptotal':xPTotal,'precio_total_calc':xPTotal};_arrItems.push(item);xThisOrden.arrItems=JSON.parse(JSON.stringify(_arrItems));console.log(xThisOrden.arrItems);xCalcularTotal();xNuevoItem();}
-function xBorrarItemLocalArr(obj){const i=obj.parentElement.parentElement.dataValue;_arrItems.splice(i,1);xThisOrden.arrItems=JSON.parse(JSON.stringify(_arrItems));xCalcularTotal();}
-function xNuevoItem(){console.log('nuevo');$("#cant_item").val('');$("#des_item").val('');$("#punitario").val('');$("#ptotal").val('');$("#des_item").focus();}
-function xCalcularTotal(){var xCartaSubtotales=xm_log_get('carta_subtotales');_arrTotal=[];const SumaLista=this._arrItems.map(x=>parseFloat(x.ptotal)).reduce((a,b)=>a+b,0);_listValid=parseInt(SumaLista)===0?false:true;_arrTotal.push({'descripcion':'Sub Total','importe':xMoneda(SumaLista)});xCartaSubtotales.map(x=>{if(x.es_impuesto==='1'){const impuesto=parseFloat(x.monto);const importeCalc=x.activo==='0'?parseFloat(SumaLista*(impuesto/100)).toFixed(2):'0.00';_arrTotal.push({'descripcion':x.descripcion,'importe':importeCalc});}});const total=_arrTotal.map(x=>parseFloat(x.importe)).reduce((a,b)=>a+b,0);_arrTotal.push({'descripcion':'Total','importe':xMoneda(total)});xThisOrden.arrTotales=JSON.parse(JSON.stringify(_arrTotal));xValidarBtnProcesar();}
-function xValidarBtnProcesar(){if(_arrTotal.length>0){if(xThisOrden.codsunat==="03"&&_listValid&&parseFloat(_arrTotal[2].importe)<=700){xThisOrden.formValid=true;return;}}
-xThisOrden.formValid=_listValid&&_formValid;}
-function fact_getAllImpresoras(){$.ajax({type:'POST',url:'../../bdphp/log_002.php',data:{op:'5'}}).done(function(dtValues){var _arrPrint=[]
-dtValues=$.parseJSON(dtValues);_arrPrint.push({idimpresora:-1,descripcion:'MOSTRAR EN PDF'})
-dtValues.datos.map(x=>_arrPrint.push(x));xThisOrden.listImpresoras=JSON.parse(JSON.stringify(_arrPrint));impresoraSelect=_arrPrint[0];console.log(xThisOrden.listImpresoras);});}
-function xGuardarOrdenPedido(){const dHeader={'nombres':frm_nombres.value,'direccion':frm_direccion.value,'telefono':frm_telefono.value,'fecha_entrega':f_entrega.value,'nota':txt_nota.value,'total':xThisOrden.arrTotales[xThisOrden.arrTotales.length-1].importe}
-const dtSend={header:dHeader,body:xThisOrden.arrItems,totales:xThisOrden.arrTotales}
-$.ajax({type:'POST',url:'../../bdphp/log_005.php?op=20',data:{item:JSON.stringify(dtSend)}}).done(res=>{res=JSON.parse(res).datos[0];idOrdenPedido=res.idorden;xThisOrden.correlativoOrden=xCeroIzq(res.correlativo,4);xThisOrden.showNotaAdelanto=true;});}
-function xRegistrarAdelanto(){var _importe=parseFloat(txt_importe_adelanto.value);_importe=isNaN(_importe)?0:_importe;if(_importe===0){return;}
-xPopupLoad.xopen();const _data={'id':idOrdenPedido,'idtipo_pago':tipoPagoSelected.idtipo_pago,'concepto':txt_concepto_adelanto.value,'importe':txt_importe_adelanto.value};$.ajax({type:'POST',url:'../../bdphp/log_005.php?op=2001',data:_data}).done(res=>{xPopupLoad.xclose();console.log(res);const rpt=JSON.parse(res).datos;xThisOrden.totalAdelanto=0;xThisOrden.totalPendiente=0;xThisOrden.ListOrdenAdelanto=rpt;xThisOrden.ListOrdenAdelanto.map(x=>{xThisOrden.totalAdelanto+=parseFloat(x.importe);x.importe=parseFloat(x.importe).toFixed(2);});xThisOrden.totalAdelanto=parseFloat(xThisOrden.totalAdelanto).toFixed(2);xThisOrden.totalPendiente=parseFloat(xThisOrden.arrTotales[xThisOrden.arrTotales.length-1].importe)-parseFloat(xThisOrden.totalAdelanto);xThisOrden.totalPendiente=xThisOrden.totalPendiente.toFixed(2);dialog_adelanto.close();});}
-function xRegistrarNota(){xPopupLoad.xopen();const _data={'id':idOrdenPedido,'nota':txt_nota_nota.value};$.ajax({type:'POST',url:'../../bdphp/log_005.php?op=2002',data:_data}).done(res=>{xPopupLoad.xclose();console.log(res);const rpt=JSON.parse(res).datos;xThisOrden.ListOrdenNotas=rpt;dialog_nota.close();});}
-function selectTipoPago(e){console.log('tipo pago',e.list_tipo_pago);tipoPagoSelected=e.list_tipo_pago;}
-Polymer({is:'x-orden-pedido',properties:{arrItems:[],arrTotales:[],listImpresoras:[],ListOrdenes:[],ListOrdenAdelanto:[],ListOrdenNotas:[],totalAdelanto:0,totalPendiente:0,correlativoOrden:'',showNotaAdelanto:false,},attached:function(){xThisOrden=this;xThisOrden.showNotaAdelanto=false;xIniOrdenPedido();},displayIndex:function(index){return xCeroIzq(index+1,1);},});/*]]>*/</script>
+<script>
+    var xThisOrden, xPopupLoad, idOrdenPedido, _arrCliente = [], _arrTotal=[], _arrItems = [], cnf_ComprobanteSel, xIdCliente_pago, _listValid = false, _formValid = false, _modificarCliente=false;
+    var impresoraSelect = {}, IdTpConsumo=0, rptDoc, itemsConEstructuraPrint, arr_comprobante = [], _idregistro, txt_fecha_cpe_manual='', isSocket=true, tipoPagoSelected, compTipoPagoSelected;
+    
+    function xIniOrdenPedido() {
+        xThisOrden.formValid = false;
+        _listValid = false;
+        _formValid = false;
+        xThisOrden.modificarCliente = false;
+        xThisOrden.arrItems = [];
+        xThisOrden.arrTotales = [];
+        xThisOrden.listImpresoras = [];
+        xThisOrden.ListOrdenAdelanto = [];
+        xThisOrden.cpe_show = false;
+        xThisOrden.fecha_manual = false
+        xThisOrden.correlativoOrden = '';
+
+        const arrEstructura = xm_log_get('estructura_pedido');
+        IdTpConsumo = arrEstructura[0].idtipo_consumo;
+
+        compTipoPagoSelected = document.getElementById('compTipoPago');
+        compTipoPagoSelected.addEventListener('getValorIncial', (e) => {
+            selectTipoPago(e.target);
+        });
+
+        fact_getAllImpresoras();
+        
+
+        $('body').addClass('loaded');
+        // $("#Titulo_page").text("Facturador");
+
+
+
+        $('.xPasarEnter2').on('keyup', function (e) {
+            var code = e.which;
+            if (code == 13 || code == 186) {
+                var inputs = $('input'); // storage a array of Inputs
+                var a = inputs.index(document.activeElement);
+                if (inputs[a + 1] !== null) {
+                    var nextBox = inputs[a + 1];
+                    if (nextBox === undefined) { return }
+                    if (nextBox.disabled) { nextBox = inputs[a + 2] }
+
+                    if (nextBox == undefined) { return; }
+                    nextBox.focus();
+                    nextBox.select();
+                }
+                event.stopPropagation();
+                e.stopPropagation();
+                e.stopImmediatePropagation()
+                return false;
+            }
+        });
+        $(".punitario").on('keyup', function (e) {
+            var code = e.which;
+            xCalcTotal();
+            if (code == 13 || code == 186) {
+                $("#punitario").val(xMoneda(this.value));
+                $("#ptotal").focus();
+                xAddItem();
+            }
+        });
+        $(".xprecio").on('keyup', function (e) {
+            var code = e.which;
+            if (code == 13 || code == 186) {
+                xAddItem();
+            }
+        });
+
+        $("#txt_fecha").on('change', function () {
+            var d = $(this).val().split('-');
+            txt_fecha_cpe_manual = d[1] === undefined ? '' : $(this).val();                        
+            // xIniPagination();
+        });
+    }
+
+    function xCalcTotal() {
+        const xCan_item = $("#cant_item").val() === '' ? 0 : parseFloat($("#cant_item").val());    
+        const xPUnitario = $("#punitario").val() === '' ? 0 : parseFloat($("#punitario").val());
+        const ptotal = (parseFloat(parseFloat(xCan_item) * parseFloat(xPUnitario)).toFixed(2)) || 0; 
+        
+        // $("#punitario").val(xMoneda(xCan_item));
+        $("#ptotal").val(ptotal);
+        // $("#ptotal").focus();
+    }
+
+    function xAddItem() {
+        const xCan_item = $("#cant_item").val();
+        const xDes_item = $("#des_item").val();
+        const xPUnitario = $("#punitario").val();
+        const xPTotal = $("#ptotal").val();
+        if (xCan_item === '' || xDes_item === '' && xPUnitario === '' && xPTotal === '') { return }
+
+
+        const id = xCeroIzq(_arrItems.length + 1, 3);
+        const item = {  'id': id, 
+                        'iditem': id, 
+                        'idtipo_consumo': IdTpConsumo,
+                        'des_seccion': 'ITEMS',
+                        'cantidad': xCan_item, 
+                        'descripcion': xDes_item, 
+                        'punitario': xPUnitario, 
+                        'precio': xPUnitario,
+                        'ptotal': xPTotal,
+                        'precio_total_calc': xPTotal
+                    };
+        _arrItems.push(item);
+        xThisOrden.arrItems = JSON.parse(JSON.stringify(_arrItems));
+        //arrItems = JSON.parse(JSON.stringify(arrItems));
+        // console.log(xThisOrden.arrItems);
+        xCalcularTotal();
+        xNuevoItem();
+    }
+    
+    function xBorrarItemLocalArr(obj) {
+        const i = obj.parentElement.parentElement.dataValue;
+        _arrItems.splice(i,1);
+        xThisOrden.arrItems = JSON.parse(JSON.stringify(_arrItems));
+        xCalcularTotal();
+    }
+
+    function xNuevoItem() {
+        // console.log('nuevo');
+        $("#cant_item").val('');
+        $("#des_item").val('');
+        $("#punitario").val('');
+        $("#ptotal").val('');
+        $("#des_item").focus();
+    }
+
+    function xNuevoOrden() {
+        $('#form_pago_cliente').reset();
+        xThisOrden.arrItems = [];
+        xThisOrden.arrTotales = [];
+        xThisOrden.listImpresoras = [];
+		xThisOrden.ListOrdenes = [];
+        xThisOrden.ListOrdenAdelanto =[];
+        xThisOrden.ListOrdenNotas =[];
+        xThisOrden.totalAdelanto = 0;
+        xThisOrden.totalPendiente = 0;
+        xThisOrden.correlativoOrden = '';
+        xThisOrden.showNotaAdelanto = false;
+    }
+
+    function xCalcularTotal() {
+        var xCartaSubtotales = xm_log_get('carta_subtotales');
+        _arrTotal = [];
+
+        const SumaLista = this._arrItems.map( x => parseFloat(x.ptotal)).reduce((a,b) => a+b, 0);
+        _listValid = parseInt(SumaLista) === 0 ? false : true;
+        
+
+
+        _arrTotal.push({ 'descripcion': 'Sub Total', 'importe': xMoneda(SumaLista) });
+
+        xCartaSubtotales.map(x => {
+            if (x.es_impuesto === '1') {
+                const impuesto = parseFloat(x.monto);
+                const importeCalc = x.activo === '0' ? parseFloat(SumaLista * (impuesto / 100)).toFixed(2) : '0.00';
+                _arrTotal.push({'descripcion': x.descripcion, 'importe': importeCalc});
+            }
+        });
+
+
+        const total = _arrTotal.map(x => parseFloat(x.importe)).reduce((a, b) => a + b, 0);
+        _arrTotal.push({ 'descripcion': 'Total', 'importe': xMoneda(total) });
+        
+        xThisOrden.arrTotales = JSON.parse(JSON.stringify(_arrTotal));
+
+        xValidarBtnProcesar();
+        // console.log(_arrTotal);
+    }
+
+    function xValidarBtnProcesar() {
+        // si es boleta y el total no pasa de 700 no requiere cliente
+        if (_arrTotal.length > 0) {
+            if ( xThisOrden.codsunat === "03" && _listValid && parseFloat(_arrTotal[2].importe) <= 700) {
+                xThisOrden.formValid = true;                
+                return;            
+            }
+        }
+
+        xThisOrden.formValid = _listValid && _formValid;
+    }
+
+    function fact_getAllImpresoras() {
+        $.ajax({ type: 'POST', url: '../../bdphp/log_002.php', data: {op: '5'} })
+            .done(function (dtValues) {
+                var _arrPrint = []
+                dtValues = $.parseJSON(dtValues);
+                _arrPrint.push({idimpresora:-1, descripcion: 'MOSTRAR EN PDF'})
+                dtValues.datos.map(x =>
+                    _arrPrint.push(x)
+                );
+
+                xThisOrden.listImpresoras = JSON.parse(JSON.stringify(_arrPrint));
+
+                impresoraSelect = _arrPrint[0];
+                // console.log(xThisOrden.listImpresoras);
+            });
+    }
+
+
+    function xGuardarOrdenPedido() {
+        // encabezado
+        const dHeader = {
+            'nombres' : frm_nombres.value,
+            'direccion' : frm_direccion.value,
+            'telefono' : frm_telefono.value,
+            'fecha_entrega': f_entrega.value,
+            'nota': txt_nota.value,
+            'total': xThisOrden.arrTotales[xThisOrden.arrTotales.length - 1].importe,
+            'idorden_pedido': form_idorden_pedido.value === '' ? 0 : form_idorden_pedido.value,
+            'numero': xThisOrden.correlativoOrden
+        }
+
+        const dtSend = {
+            header: dHeader,
+            body: xThisOrden.arrItems,
+            totales: xThisOrden.arrTotales
+        }
+
+        // guardar orden
+        $.ajax({ type: 'POST', url: '../../bdphp/log_005.php?op=20', data: {item: JSON.stringify(dtSend)} })
+        .done(res => {
+            res = JSON.parse(res).datos[0];
+            idOrdenPedido = res.idorden;
+            xThisOrden.correlativoOrden = xCeroIzq(res.correlativo, 4);
+            xThisOrden.showNotaAdelanto = true;
+        });
+    }
+
+    function xRegistrarAdelanto(isOnlyLoad = false){
+
+        var _importe = parseFloat(txt_importe_adelanto.value);
+        _importe = isNaN(_importe) ? 0 : _importe;
+
+        if ( _importe === 0 && !isOnlyLoad ) { return;}        
+
+        xPopupLoad.xopen();
+        // guardar orden
+        const _data = {
+            'id': idOrdenPedido,
+            'idtipo_pago': tipoPagoSelected.idtipo_pago,
+            'concepto': isOnlyLoad ? '' : txt_concepto_adelanto.value,
+            'importe': txt_importe_adelanto.value
+        };
+
+        $.ajax({ type: 'POST', url: '../../bdphp/log_005.php?op=2001', data: _data })
+        .done(res => {
+            xPopupLoad.xclose();
+            // console.log(res);
+            const rpt = JSON.parse(res).datos;
+            
+            xThisOrden.totalAdelanto = 0;
+            xThisOrden.totalPendiente = 0;
+            xThisOrden.ListOrdenAdelanto = rpt;
+            xThisOrden.ListOrdenAdelanto.map(x => {
+                xThisOrden.totalAdelanto += parseFloat(x.importe);
+                x.importe = parseFloat(x.importe).toFixed(2);
+            });
+
+            xThisOrden.totalAdelanto = parseFloat(xThisOrden.totalAdelanto).toFixed(2);
+            xThisOrden.totalPendiente = parseFloat(xThisOrden.arrTotales[xThisOrden.arrTotales.length - 1].importe) - parseFloat(xThisOrden.totalAdelanto);
+            xThisOrden.totalPendiente = xThisOrden.totalPendiente.toFixed(2);
+            dialog_adelanto.close();
+        });
+    }
+
+    function xRegistrarNota(isOnlyLoad = false){
+        
+
+        xPopupLoad.xopen();
+        // guardar orden
+        const _data = {
+            'id': idOrdenPedido,
+            'nota': isOnlyLoad ? '' : txt_nota_nota.value            
+        };
+
+        $.ajax({ type: 'POST', url: '../../bdphp/log_005.php?op=2002', data: _data })
+        .done(res => {
+            xPopupLoad.xclose();
+            // console.log(res);
+            const rpt = JSON.parse(res).datos;
+                        
+            xThisOrden.ListOrdenNotas = rpt;           
+            dialog_nota.close();
+        });
+    }    
+
+    function selectTipoPago(e) {
+        // console.log('tipo pago', e.list_tipo_pago);
+        tipoPagoSelected = e.list_tipo_pago;
+    }
+
+    function goBackLista() {
+        xNuevoOrden();
+        xThisOrden.fire('goBackOrden');
+    }
+
+    function loadOrden(getOrden) {
+        frm_nombres.value =  getOrden.cliente_nom;
+        frm_direccion.value =  getOrden.direccion_entrega;
+        frm_telefono.value =  getOrden.cliente_telefono;
+        txt_nota.value =  getOrden.nota;
+        frm_telefono.value =  getOrden.cliente_telefono;
+        f_entrega.value = getOrden.fecha_entrega;
+        form_idorden_pedido.value = getOrden.idorden_pedido;
+
+        xThisOrden.correlativoOrden = getOrden.numero;
+        idOrdenPedido = getOrden.idorden_pedido;
+
+        // items
+        _arrItems = JSON.parse(getOrden.detalle_json);        
+        xThisOrden.arrItems = _arrItems;
+        xCalcularTotal();
+
+        xThisOrden.showNotaAdelanto = true;
+
+        // load nota y adelanto
+        xRegistrarNota(true);
+        xRegistrarAdelanto(true);
+    }
+
+
+    Polymer({
+			is: 'x-orden-pedido',
+			properties: {
+                arrItems:[],
+                arrTotales: [],
+                listImpresoras: [],
+				ListOrdenes: [],
+                ListOrdenAdelanto:[],
+                ListOrdenNotas:[],
+                totalAdelanto: 0,
+                totalPendiente: 0,
+                correlativoOrden: '',
+                showNotaAdelanto: false,
+                setfechaorden: String,
+                setidorden: Number
+			},
+			attached: function () {
+				xThisOrden = this;
+                xThisOrden.showNotaAdelanto = false;
+				xIniOrdenPedido();
+			},
+			displayIndex: function (index) {
+				return xCeroIzq(index + 1, 1);
+            },
+            setValuesShowOrden: (getOrden, fecha) => {
+                // console.log('getOrden ', getOrden);
+                // console.log('fecha ', fecha);
+                _arrItems = [];
+                if ( fecha ) { f_entrega.value = fecha + 'T00:00'; }                
+                if ( getOrden ) {
+                    loadOrden(getOrden);
+                }
+            }
+		});
+</script>

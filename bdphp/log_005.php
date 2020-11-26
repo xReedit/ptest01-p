@@ -561,8 +561,11 @@
 			$importe = $_POST['importe'];
 			$idtipo_pago = $_POST['idtipo_pago'];
 
-			$sql = "insert into orden_pedido_adelanto (idorden_pedido, idtipo_pago, concepto, importe, fecha_hora) values ($idOrden, $idtipo_pago, '$concepto', '$importe', DATE_FORMAT(now(),'%d/%m/%Y %H:%i:%s'))";
-			$bd->xConsulta_NoReturn($sql);
+			if ( $concepto !== '' ) {
+				$sql = "insert into orden_pedido_adelanto (idorden_pedido, idtipo_pago, concepto, importe, fecha_hora) values ($idOrden, $idtipo_pago, '$concepto', '$importe', DATE_FORMAT(now(),'%d/%m/%Y %H:%i:%s'))";
+				$bd->xConsulta_NoReturn($sql);
+			}
+
 
 			$sql = "select tp.descripcion des_tipo_pago, opa.* from orden_pedido_adelanto opa inner join tipo_pago tp on tp.idtipo_pago = opa.idtipo_pago where opa.idorden_pedido = $idOrden";
 			$bd->xConsulta($sql);
@@ -572,8 +575,11 @@
 			$idOrden = $_POST['id'];
 			$nota = $_POST['nota'];			
 
-			$sql = "insert into orden_pedido_notas (idorden_pedido, nota, fecha_hora) values ($idOrden, '$nota', DATE_FORMAT(now(),'%d/%m/%Y %H:%i:%s'))";
-			$bd->xConsulta_NoReturn($sql);
+			if ( $nota !== '' ) {
+				$sql = "insert into orden_pedido_notas (idorden_pedido, nota, fecha_hora) values ($idOrden, '$nota', DATE_FORMAT(now(),'%d/%m/%Y %H:%i:%s'))";
+				$bd->xConsulta_NoReturn($sql);
+			}
+
 
 			// registra ingreso en caja
 
@@ -591,7 +597,25 @@
 			where op.idsede = $g_idsede and (MONTH(op.fecha_entrega) = $mm and YEAR(op.fecha_entrega) = $yy)
 			order by date(op.fecha_entrega) 
 			";
-			$bd->xConsulta($sql);
+			$bd->xConsulta($sql);			
+			// print $aa['success'];
+			break;
+
+		case 3001: // lista orden pedido
+			$mm = $_GET['month'];
+			$yy = $_GET['year'];
+			$sql= "
+			select STR_TO_DATE(fecha_entrega, '%Y-%m-%d') date,concat(count(fecha_entrega), ' Ordenes') title, 'true' badge
+			from orden_pedido  op 				
+			where op.idsede = $g_idsede and (MONTH(op.fecha_entrega) = $mm and YEAR(op.fecha_entrega) = $yy)
+			group by STR_TO_DATE(fecha_entrega, '%Y-%m-%d')
+			order by date(op.fecha_entrega)
+			";
+			// $aa = $bd->xConsulta($sql);
+
+			$aabd = $bd->xConsulta3($sql);
+			echo $aabd;
+			
 			break;
 	}
 ?>

@@ -1,0 +1,235 @@
+<!-- Zabuto Calendar -->
+<script src="../../../js/zabuto_calendar.min.js"></script>
+<link rel="import" href="./x-orden-pedido.html">
+
+<dom-module id="x-orden-lista">
+    <template is="dom">
+
+        <br><br>
+        <div hidden$="[[showOrden]]" class="xMiCard xradius" style="width:85%; max-width: 1100px;">
+			<div class="xEncanezadoCard" style="background: lavenderblush; color: #424242;">
+                <div class="d-flexx justify-content-between align-items-center">
+                    <h3>Ordenes de pedido</h3>                    
+                </div>                
+            </div>	
+            <div class="xLinea2"></div>
+            <div class="xContentCard" style="padding: 20px;">            
+                <div class="rowx">
+                    <div class="col-sm-4 mb-3">
+                        <div id="my-calendar"></div>
+                        <br><br>
+                    </div>
+                    <div class="col-sm-7 w-100">
+                        <div class="d-flexx justify-content-between align-items-center">
+                            <h3>Ordenes {{ titleFilter }}</h3>
+                            <button class="btn btn-sm btn-success xCursor" onclick="showOrdenGo()">+ Agregar</button>
+                        </div>
+                        <hr>
+                        <div class="w-100">
+                            <div hidden$="{{!loadingData}}">
+                                <paper-spinner active class="xCentradoVerticalHorizontal"></paper-spinner>
+                            </div>
+                            <table width="100%">
+                                <thead>
+                                    <th class="xSinBorde" width="15px">#</th>
+                                    <th class="xSinBorde" width="15px"># Orden</th>
+                                    <th class="xSinBorde" width="20%" >Hora</th>
+                                    <th class="xSinBorde" width="60%">Cliente</th>
+                                    <th class="xSinBorde" width="30px" align="right">Importe</th>
+                                    <th class="xSinBorde" width="30px" align="right">Adelanto</th>
+                                </thead>
+                                <tbody>
+                                    <template is="dom-repeat" items="{{listOrdenes}}" as="item">
+                                        <tr class="fs-11 xCursor" onclick="openOrden(this)" data-idorden={{item.idorden_pedido}}>
+                                            <td data-id="{{index}}"><span>{{displayIndex(index)}}</span></td>
+                                            <td> {{ item.num }} </td>
+                                            <td>                                                
+                                                <p> {{ item.hora }} </p>  
+                                            </td>
+                                            <td> 
+                                                <p>{{ item.cliente_nom }} </p> 
+                                                <p>{{ item.nota }} </p> 
+                                            </td>
+
+                                            <td align="right"> {{ item.total }} </td>
+                                            <td class$="{{ item.color_importe }}" align="right"> {{ item.total_adelanto }} </td>
+                                        </tr>
+                                    </template>
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div hidden$="[[!showOrden]]">
+            <x-orden-pedido id="compOrden"></x-orden-pedido>
+        </div>
+
+    </template>
+</dom-module>
+
+<script>
+    var xThisOrdenLista, xPopupLoad, listMasterMonth, compOrden, fechaSelectLista, idOrdenSelect;
+
+    function xIniOrdenPedidoLista() {
+        $('body').addClass('loaded');
+        $("#Titulo_page").text("Ordenes de Pedido");
+
+        compOrden = document.getElementById('compOrden');
+        compOrden.addEventListener('goBackOrden', function (e) {
+            // console.log('atras');
+            xThisOrdenLista.showOrden = false;
+        });
+
+        xThisOrdenLista.loadingData = true;
+
+        // var eventData = [
+        //     {"date":"2020-10-23","badge":true,"title":"Example for 2020-10-23","body":"<p class=\"lead\">Information for this date<\/p><p>You can add <strong>html<\/strong> in this block<\/p>","footer":"Extra information"},
+        //     {"date":"2020-10-09","badge":true,"title":"Example for 2020-10-09","body":"<p class=\"lead\">Information for this date<\/p><p>You can add <strong>html<\/strong> in this block<\/p>","footer":"Extra information"},
+        //     {"date":"2020-10-21","badge":true,"title":"Example for 2020-10-21","body":"<p class=\"lead\">Information for this date<\/p><p>You can add <strong>html<\/strong> in this block<\/p>","footer":"Extra information"},
+        //     {"date":"2020-10-16","badge":true,"title":"Example for 2020-10-16","body":"<p class=\"lead\">Information for this date<\/p><p>You can add <strong>html<\/strong> in this block<\/p>","footer":"Extra information"},
+        //     {"date":"2020-10-24","badge":false,"title":"Example for 2020-10-24","body":"<p class=\"lead\">Information for this date<\/p><p>You can add <strong>html<\/strong> in this block<\/p>","footer":"Extra information"},
+        //     {"date":"2020-10-11","badge":true,"title":"Example for 2020-10-11","body":"<p class=\"lead\">Information for this date<\/p><p>You can add <strong>html<\/strong> in this block<\/p>","footer":"Extra information"}];
+            
+        
+
+        const dateNow = new Date();
+        xloadOrdenesMMYY(dateNow.getMonth() + 1, dateNow.getFullYear());
+    }
+
+
+    function xloadOrdenesMMYY(mes, yy) {        
+        xThisOrdenLista.titleFilter = 'del mes ' + xMayusculaPrimera(xDesMes(mes - 1)) + ' ' + yy;
+        xThisOrdenLista.loadingData = true;
+        $.ajax({ type: 'POST', url: '../../bdphp/log_005.php?op=30', data: {m: mes, y: yy} })
+        .done(function (res) {
+            // console.log(res);
+            // xThisOrdenLista.listOrdenes = JSON.parse(res).datos;
+            dataInCalendar(JSON.parse(res).datos, mes, yy);
+        });
+    }
+
+    function dataInCalendar(data, mes, yy) {
+        // var eventData = [
+        //     {"date":"2020-10-23","badge":true,"title":"Example for 2020-10-23","body":"<p class=\"lead\">Information for this date<\/p><p>You can add <strong>html<\/strong> in this block<\/p>","footer":"Extra information"},
+        //     {"date":"2020-10-09","badge":true,"title":"Example for 2020-10-09","body":"<p class=\"lead\">Information for this date<\/p><p>You can add <strong>html<\/strong> in this block<\/p>","footer":"Extra information"},
+        //     {"date":"2020-10-21","badge":true,"title":"Example for 2020-10-21","body":"<p class=\"lead\">Information for this date<\/p><p>You can add <strong>html<\/strong> in this block<\/p>","footer":"Extra information"},
+        //     {"date":"2020-10-16","badge":true,"title":"Example for 2020-10-16","body":"<p class=\"lead\">Information for this date<\/p><p>You can add <strong>html<\/strong> in this block<\/p>","footer":"Extra information"},
+        //     {"date":"2020-10-24","badge":false,"title":"Example for 2020-10-24","body":"<p class=\"lead\">Information for this date<\/p><p>You can add <strong>html<\/strong> in this block<\/p>","footer":"Extra information"},
+        //     {"date":"2020-10-11","badge":true,"title":"Example for 2020-10-11","body":"<p class=\"lead\">Information for this date<\/p><p>You can add <strong>html<\/strong> in this block<\/p>","footer":"Extra information"}];
+        
+        data.map((x, i) => {
+            x.num = xCeroIzq(x.idorden_pedido, 3);
+            x.visible = true;
+            x.desFecha = xDesDiaSemana(x.dia_semana) + ' ' + x.dia; 
+            x.color_importe = parseFloat(x.total) > parseFloat(x.total_adelanto) ? 'text-warning fw-600' : 'text-success fw-600';            
+        });
+
+        listMasterMonth = data;
+        xThisOrdenLista.listOrdenes = data;
+
+        // console.log('xThisOrdenLista.listOrdenes', xThisOrdenLista.listOrdenes);
+        // console.log('eventDataCalendarMonth', xThisOrdenLista.eventDataCalendarMonth);
+
+        xThisOrdenLista.loadingData = false;
+
+        xRefreshCalendar(mes, yy);
+        
+
+    }
+
+    function xFilterDataCalendarbyDay(ddFilter) {
+        xThisOrdenLista.loadingData = true;
+        fechaSelectLista = ddFilter;
+        setTimeout(() => {            
+            xThisOrdenLista.listOrdenes = listMasterMonth.filter(d => d.fentrega === ddFilter);
+            xThisOrdenLista.titleFilter =  "del dia " + xDesDiaSemana(ddFilter, true) + ' ' + ddFilter;
+            xThisOrdenLista.loadingData = false;
+        }, 600);
+    }
+    
+    function xRefreshCalendar(mm, yy) {
+        // count ++;
+
+        // fecha1 = 10 + count;
+        // fecha2 = 12 + count;
+
+        // _fecha1 = '2020-10-'+fecha1;
+        // _fecha2 = '2020-10-'+fecha2;
+
+        // var eventData = [
+        // {"date":_fecha1,"badge":true,"title":"Example 1"},
+        // {"date":_fecha2,"badge":true,"title":"Example 2"}
+        // ];
+
+        // console.log('eventData', eventData);
+
+        $("#my-calendar").zabuto_calendar({
+            // year: 2020,            
+            // month: 10,
+            show_next: true,
+            show_previous: true,
+            // data: eventData,
+            language: "es",
+            nav_icon: {
+                prev: '<span class="xBoton2"><</span>',
+                next: '<span class="xBoton2">></span>'
+            },
+            ajax: {
+                url: '../../bdphp/log_005.php?op=3001',
+                modal: true
+            },
+            action: function () {
+                // return myDateFunction(this.id, false);
+                // console.log('click ', $(this).data('date'));
+                const _dateFilter = $(this).data('date');
+                xFilterDataCalendarbyDay(_dateFilter);
+            },
+            action_nav: function () {
+                // console.log('click ', this.id);
+                // console.log('click nav', $(this).data('navigation'));
+                // console.log('click to', $(this).data('to'));
+                const date_to = $(this).data('to');
+                xloadOrdenesMMYY(date_to.month, date_to.year);
+            },
+        });
+        
+
+
+        xThisOrdenLista.loadingData = false;
+    }
+
+
+    function showOrdenGo() {
+        compOrden.setValuesShowOrden(idOrdenSelect, fechaSelectLista);
+        idOrdenSelect = null
+        xThisOrdenLista.showOrden = true;
+    }
+
+    function openOrden(item) {
+        // console.log('item', item);
+        idOrdenSelect = xThisOrdenLista.listOrdenes.filter(i=> i.idorden_pedido === item.dataIdorden)[0];
+
+        showOrdenGo();
+    }
+
+    Polymer({
+			is: 'x-orden-lista',
+			properties: {
+                listOrdenes: [],
+                loadingData: Boolean,
+                titleFilter: String,
+                showOrden: Boolean
+			},
+			attached: function () {
+                this.showOrden = false;
+                xThisOrdenLista = this;                
+				xIniOrdenPedidoLista();
+			},
+			displayIndex: function (index) {
+				return xCeroIzq(index + 1, 1);
+			},
+		});
+</script>
