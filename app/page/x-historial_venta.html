@@ -1,5 +1,7 @@
 <link rel="import" href="../x-componentes/pagination-input/pagination-input.html">
 <dom-module id="x-historial_venta">
+<script type="text/javascript" src="../view/socket.master.service.js"></script>
+<script type="text/javascript" src="../view/socket.service.p.js"></script>
 <template>
 <x-pass id="pass_us" titulo="Usuario autorizado" valor="Pe1"></x-pass>
 <paper-dialog id="dialog_motivo_anular_historial" style="min-width:320px" entry-animation="scale-up-animation" exit-animation="fade-out-animation" with-backdrop>
@@ -52,7 +54,7 @@
 <br><br>
 <div class="xDerecha">
 <paper-button><div class="xMiBoton_icon_lateral2" style="margin-top:-15px;width:90px" onclick="xOpenAnularPedidoHistorial()" id="btn_anular_pedido"><img src="../../images/_delete_pedido.png"><p>Anular pedido</p></div></paper-button>
-<paper-button><div class="xMiBoton_icon_lateral2" style="margin-top:-15px;width:100px" onclick="xImprimirPrecuenta()"><img src="../../images/_pre_cuenta.png"><p>Imprimir pre-cuenta</p></div></paper-button>
+<paper-button><div class="xMiBoton_icon_lateral2" style="margin-top:-15px;width:100px" onclick="xImprimirPrecuentaHistorial()"><img src="../../images/_pre_cuenta.png"><p>Imprimir pre-cuenta</p></div></paper-button>
 <paper-button disabled="[[xYaTieneComprobante]]"><div class="xMiBoton_icon_lateral2" style="margin-top:-15px;width:50px" onclick="xAbrirDialogComprobante()"><img src="../../images/_comprobante.png"><p>Emitir Comprobante</p></div></paper-button>
 <paper-button hidden$="[[!xIsPuedeReimprimirCPE]]"><div class="xMiBoton_icon_lateral2" style="margin-top:-15px;width:50px" onclick="reImprimirComprobante()"><img src="../../images/_print_vr.png"><p>Reimprimir Comprobante</p></div></paper-button>
 </div>
@@ -134,12 +136,12 @@ arrSumSubtTotales=xdt_subt;for(var i=0;i<xdt_subt.length;i++){const classTachado
 xcadena_total=String(xcadena_total+'<tr><td colspan="2" align="left"><h4>FORMA DE PAGO</h4></td></tr>');$.ajax({type:'POST',url:'../../bdphp/log.php?op=2004',data:{i:xidregistro_pago_sel}}).done(function(dt_tpp){var xdt_tpp=$.parseJSON(dt_tpp);if(!xdt_tpp.success){xPopupLoad.xclose();alert(xdt_tpp.error);return;}
 xdt_tpp=xdt_tpp.datos;for(var i=0;i<xdt_tpp.length;i++){xcadena_total=String(xcadena_total+'<tr><td>'+xdt_tpp[i].tipo_pago+'</td><td align="right">'+xdt_tpp[i].importe+'</td></tr>');};xcadena_total='<div><table width="30%" id="tb_totales" class="xRowPading4 xDerecha">'+xcadena_total+'</table></div><br>'+xhtml_anulado;$("#xBody").append(xcadena_total).trigger('create');})})}
 function xMandarCocinarImpresionComprobante_historial(){var arr_cliente=xRpt_pago[0].cliente;var arr_comprobante=xRpt_pago[0].comprobante;const arrayItems=xCargarDatosAEstructuraImpresion(xThisHistVenta.xdtPedDet);xPopupLoad.xopen();$.ajax({type:'POST',url:'../../bdphp/log_001.php',data:{p_from:'fe',p_comprobante:arr_comprobante,idregistro_pago:xidregistro_pago_sel}}).done(function(xrpt_correlativo){const _arrRpt=xm_all_SetResponseLog_001(xrpt_correlativo);arr_comprobante.correlativo=xCeroIzqNumComprobante(_arrRpt.correlativo_comprobante);xCocinarImprimirComprobante(arrayItems,arrSumSubtTotales,arr_comprobante,arr_cliente,xidregistro_pago_sel,-2);xThisHistVenta.xYaTieneComprobante=true;xdt_h[index_historial].idtipo_comprobante=arr_comprobante.idtipo_comprobante;$("#row_historial"+index_historial).append(x_icon_facturado);xThisHistVenta.$.dialog_comprobante.close();xPopupLoad.xclose();})}
-function xImprimirPrecuenta(){var xArrayItemPreCuenta=[];var xDtBd=xArrayDtOrdenFiltro;xArrayItemPreCuenta=xArrayTpC.slice();xArrayItemPreCuenta=JSON.parse(JSON.stringify(xArrayItemPreCuenta));for(b in xArrayTpC){for(var i in xDtBd){if(xArrayTpC[b].id==xDtBd[i].idtipo_consumo){if(xDtBd[i].visible==1){continue;}
+function xImprimirPrecuentaHistorial(){var xArrayItemPreCuenta=[];var xDtBd=xArrayDtOrdenFiltro;xArrayItemPreCuenta=xArrayTpC.slice();xArrayItemPreCuenta=JSON.parse(JSON.stringify(xArrayItemPreCuenta));for(b in xArrayTpC){for(var i in xDtBd){if(xArrayTpC[b].id==xDtBd[i].idtipo_consumo){if(xDtBd[i].visible==1){continue;}
 if(xArrayTpC[b]==null){continue}
 xDtBd[i].precio_print=xDtBd[i].ptotal;xDtBd[i].des=xDtBd[i].descripcion;xArrayItemPreCuenta[xArrayTpC[b].id][i]=xDtBd[i];}}};var xmesa_pc=$("#txt_mesa").text();var xmunp_pc=$("#txt_correlativo").text();xmunp_pc=xmunp_pc.split('-');xmunp_pc=xmunp_pc[1];xArrayPrintEncaLi_pre_cuenta={'m':xmesa_pc,'r':'','num_pedido':xmunp_pc,'reservar':0,'solo_llevar':0,'correlativo_dia':xmunp_pc,'precuenta':true};xMandarImprimirOtroDoc(xArrayPrintEncaLi_pre_cuenta,xDtPrint,xArrayItemPreCuenta,arrSumSubtTotales,-1);}
 function reImprimirCierre(){xPopupLoad.xopen()
 fecha=xDevolverFechaFormatInputDate(txt_fecha.value);$.ajax({type:'POST',url:'../../bdphp/log_005.php?op=17',data:{f:fecha}}).done(function(res){setTimeout(()=>{xPopupLoad.xclose()},1500);});}
 function reImprimirComprobante(){xPopupLoad.xopen()
 const _cpe=xdt_pdE.num_comprobante;$.ajax({type:'POST',url:'../../bdphp/log_005.php?op=1701',data:{comprobante:_cpe}}).done(function(res){setTimeout(()=>{xPopupLoad.xclose()},1500);});}
-Polymer({is:'x-historial_venta',properties:{xdtPedDet:Object,isCierreCaja:Boolean,xYaTieneComprobante:boolean=true,xYaPedidoCerrado:boolean=true,xIsPuedeReimprimirCPE:boolean=false},attached:function(){this.xIsPuedeReimprimirCPE=false;this.xYaTieneComprobante=true;this.xYaPedidoCerrado=true;this.isCierreCaja=false;xThisHistVenta=this;xIniHistVenta();}})/*]]>*/</script>
+Polymer({is:'x-historial_venta',properties:{xdtPedDet:Object,isCierreCaja:Boolean,xYaTieneComprobante:boolean=true,xYaPedidoCerrado:boolean=true,xIsPuedeReimprimirCPE:boolean=false},attached:function(){this.xIsPuedeReimprimirCPE=false;this.xYaTieneComprobante=true;this.xYaPedidoCerrado=true;this.isCierreCaja=false;xThisHistVenta=this;xIniHistVenta();setTimeout(()=>{_cpSocketOpen();},1000);},detached:function(){_cpSocketClose();}})/*]]>*/</script>
 </dom-module>

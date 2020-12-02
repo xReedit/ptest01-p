@@ -88,7 +88,7 @@
 			break;
 		case '6': // update is_precuenta pedido
 			$id = $_POST['id'];
-			$sql='update pedido set is_precuenta = 1 where idpedido = '.$id;
+			$sql='update pedido set is_precuenta = 1 where idpedido in ('.$id.')';
 			$bd->xConsulta($sql);			
 			break;
 	}
