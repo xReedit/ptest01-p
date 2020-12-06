@@ -1624,7 +1624,7 @@ function xVerMipedidoVR(){
 					});
 				}
 
-				xCadenaItemArray=String('<tr class="xPedidoItem row xCursor" onclick="xOpenDlgItemVR('+ i +','+ n.iditem.toString()  +', '+ n +');" data-id="'+n.iditem+'" data-idseccion="'+n.idseccion+'" data-seccion="'+n.des_seccion+'" data-idbus="'+n.idseccion+'" data-idtipocobus="'+n.idtipo_consumo+'" data-idprocede="'+n.idprocede+'" data-procede="'+n.procede+'" data-procedeindex="'+n.procede_index+'" data-ventarapida=1 data-imprimircomanda="'+n.imprimir_comanda+'" data-iddescontar="'+n.idprocede+'" data-cant_descontar="'+n.cant_descontar+'" data-idalmacen_items="'+n.idalmacen_items+'">'+
+				xCadenaItemArray=String('<tr class="xPedidoItem row xCursor" onclick="xOpenDlgItemVR('+ i +','+ n.iditem.toString()  +', this);" data-id="'+n.iditem+'" data-idseccion="'+n.idseccion+'" data-seccion="'+n.des_seccion+'" data-idbus="'+n.idseccion+'" data-idtipocobus="'+n.idtipo_consumo+'" data-idprocede="'+n.idprocede+'" data-procede="'+n.procede+'" data-procedeindex="'+n.procede_index+'" data-ventarapida=1 data-imprimircomanda="'+n.imprimir_comanda+'" data-iddescontar="'+n.idprocede+'" data-cant_descontar="'+n.cant_descontar+'" data-idalmacen_items="'+n.idalmacen_items+'">'+
 					'<td width="90%">'+xCeroIzq(n.cantidad,2)+' | '+n.des+' '+xIndicacionItem+'</td>'+
 					'<td class="xInvisible" data-ColumName="cantidad" id="cant_descontar">'+xCeroIzq(n.cantidad,2)+'</td>'+
 					'<td width="10px" align="right" class="xtb_pedido_importe" data-ColumName="ptotal" id="ptotal">'+n.precio_total+'</td>'+					
@@ -1802,9 +1802,9 @@ function setValuesStorage() {
 	// toogleFullscreen.checked = parseInt(valScreen) === 0 ? false : true;
 }
 
-function xOpenDlgItemVR(tpc, id, rowItem) {
-	console.log('rowItem', rowItem);
-	id = rowItem.iditem.toString();
+function xOpenDlgItemVR(tpc, idItemRow, elObjRow) {
+	console.log('rowItem', idItemRow);
+	const id = elObjRow.dataset.id; //idItemRow.toString();
 	// itemPedidos_objItemSelected = xArrayPedidoObj[tpc][id];
 	// xCompSubitems.item_select = itemPedidos_objItemSelected;
 	xCompSubitems.openDialog(tpc, id);
