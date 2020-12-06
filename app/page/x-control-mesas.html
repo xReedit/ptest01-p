@@ -2913,7 +2913,15 @@ function xPintarEstadoPedido() {
 				// if (itemList) {
 					if ( itemList.dibujado ) { return; }
 					const  datosDelivery = itemList.json_datos_delivery;
-					itemList.json_datos_delivery = datosDelivery != '' && datosDelivery != '{}' && datosDelivery != '[]' ? JSON.parse(datosDelivery) : null;
+					
+					try {						
+						itemList.json_datos_delivery = datosDelivery != '' && datosDelivery != '{}' && datosDelivery != '[]' ? JSON.parse(datosDelivery) : null;
+					} catch (error) {
+						// si el string tiene saltos de pagina /n
+						itemList.json_datos_delivery = JSON.parse(datosDelivery.replace(/(\r\n|\n|\r)/g,""));
+					}
+					
+					
 					xref_reserva = '';
 					xidtipo_c = itemList.idtipo_consumo;
 					if (parseInt(itemList.reserva) === 1) {
