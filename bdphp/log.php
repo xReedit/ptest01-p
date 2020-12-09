@@ -1101,8 +1101,12 @@
 			break;
 		case 208://guardar logo print
 			$sql="update conf_print set logo='".$_POST['d']."' where idconf_print=".$_POST['i'];
+
+			// 081220 quitamos la img64 no se utiliza y hace mas largo el json
 			$sqlLogo64 = "; update sede set logo64 = '".$_POST['logo']."' where idsede=".$g_idsede;
 			$bd->xMultiConsulta($sql.$sqlLogo64);
+
+			// $bd->xConsulta($sql);
 			break;
 		//pedido
 		case 3: //amar array con tipo de consumo
