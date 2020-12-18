@@ -1,5 +1,4 @@
 <dom-module id="x-caja">
-<script rel="preload" type="text/javascript" src="../../../js/socket.io.js"></script>
 <link rel="preload" href="../../../images/_msj_envio_sunat.gif" as="image" media="(max-width: 600px)">
 <template>
 <paper-dialog class="dialog_redondo" id="dialog_enviando_sunat" style="width:245px" modal entry-animation="scale-up-animation" exit-animation="fade-out-animation">
@@ -186,4 +185,4 @@ xtbReport.find('#'+seccion).html(xTitulo+xTituloEncabezadoTB+xCadenaAdd+xtotal+'
 function xImprimir(){var xCtrCierre=$("#ImprimeCierre");xCtrCierre.find('#xImpFecha').text(xDevolverFecha()+' '+xDevolverHora());xImprSelec('ImprimeCierre');}
 function xCerrarTerminal(){xCerrarSession();}
 function xReImprimirCierre(){dialog_erro_print.close();xPopupLoad.titulo="Enviando...";xPopupLoad.xopen();xImprimirCierre(xArrayEncabezadoCierre,xArrayCierrePrint);}
-Polymer({is:'x-caja',properties:{xt_org:Number,xt_idsede:Number,xt_idus:Number},attached:function(){this.selected=0;xThisCaja=this;xIniCaja();},detached:function(){}})/*]]>*/</script>
+Polymer({is:'x-caja',properties:{xt_org:Number,xt_idsede:Number,xt_idus:Number},attached:function(){this.selected=0;xThisCaja=this;xIniCaja();setTimeout(()=>{_cpSocketOpen();},1000);},detached:function(){_cpSocketClose();}})/*]]>*/</script>
