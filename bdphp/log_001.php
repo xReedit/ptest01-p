@@ -236,9 +236,12 @@
 			//num pedido
 			$numpedido=array_key_exists('num_pedido', $x_array_pedido_header) ? $x_array_pedido_header['num_pedido'] : '';
 			if ( $numpedido == '' ) { // cuando es nuevo, si ya lo manda des control de pedidos adjunta al numpedido raiz
-				$sql="select count(idpedido) as d1 from pedido where idorg=".$_SESSION['ido']." and idsede=".$_SESSION['idsede'];
-				$numpedido=$bd->xDevolverUnDato($sql);
-				$numpedido++;
+				$numpedido = 1;
+				// $sql="select count(idpedido) as d1 from pedido where idorg=".$_SESSION['ido']." and idsede=".$_SESSION['idsede'];
+				// $sql="SELECT numpedido FROM pedido WHERE idsede = ".$_SESSION['idsede']." order by idpedido desc limit 1";
+				
+				// $numpedido=$bd->xDevolverUnDato($sql);
+				// $numpedido++;
 			}
 
 			//numcorrelativo segun fecha
@@ -258,6 +261,13 @@
 			if ( count($arrDeliveryPedido) > 0 ) {
 				$arrD = $x_array_pedido_header['arrDatosDelivery'];
 				$isComercioAppDeliveryMapa = isset($x_array_pedido_header['isComercioAppDeliveryMapa']) ? $x_array_pedido_header['isComercioAppDeliveryMapa'] : 0;
+
+				//071220 a la referencia le quitamos los caracteres especiales
+				$ref_cocinada = addslashes($arrD['referencia']);
+				$x_array_pedido_header['arrDatosDelivery']['referencia'] = $ref_cocinada;
+				if ( isset($x_array_pedido_header['arrDatosDelivery']['direccionEnvioSelected'])) {
+					$x_array_pedido_header['arrDatosDelivery']['direccionEnvioSelected']['referencia'] = $ref_cocinada;
+				}
 				
 				// desde 03/08/2020 -- omologacion con papaya express
 				// $x_array_pedido_header['delivery'] = array_key_exists('pasoRecoger', $arrD) ? 1 : 0;
@@ -288,7 +298,15 @@
 					values(".$_SESSION['ido'].",".$_SESSION['idsede'].",".$idc.",DATE_FORMAT(now(),'%d/%m/%Y'),DATE_FORMAT(now(),'%H:%i:%s'),now(),'".$x_array_pedido_header['mesa']."','".$numpedido."','".$correlativo_dia."','".$x_array_pedido_header['referencia']."','".$importe_subtotal."','".$importe_total."',".$solo_llevar.",".$tipo_consumo.",".$x_array_pedido_header['idcategoria'].",".$x_array_pedido_header['reservar'].",".$_SESSION['idusuario'].",'". $x_array_pedido_header['subtotales_tachados'] ."',".$estado_p.",'".$json_datos_delivery."', ".$is_delivery.", ".$is_delivery.")";
 			
 			// echo $sql;
-            $id_pedido=$bd->xConsulta_UltimoId($sql);
+			$id_pedido=$bd->xConsulta_UltimoId($sql);
+			
+			// 291220
+			// actualizamos el numpedido colocando el ultimo idpedido
+			if ( $numpedido == 1 ) {
+				$sql = "update pedido set numpedido = $id_pedido where idpedido = $id_pedido";
+				$bd->xConsulta_NoReturn($sql);
+			}
+
                 
 		}else{
 			//actualiza monto
