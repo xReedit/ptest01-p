@@ -4,14 +4,15 @@
 <dom-module id="x-comp-find-sede">
 <template>
 <div>
-<select id="compFindListSede" class="xTextRow2 xCursor" onchange="selectOptionSede()">
+<select id="compFindListSede" class$="[[clasecss]]" onchange="selectOptionSede()">
 <template is="dom-repeat" items="{{listSede}}" as="sede">
 <option value="[[index]]">[[sede.nombre]] </option>
 </template>
 </select>
 </div>
 </template>
-<script>var xThisComSede;function getAllSedes(){$.ajax({type:'POST',url:'../../bdphp/log_componentes.php?op=1'}).done(function(dtSede){dtSede=$.parseJSON(dtSede);xThisComSede.listSede=dtSede.datos;xThisComSede.sedes=xThisComSede.listSede[0];xThisComSede.getValorIncial(xThisComSede.sedes);});}
+<style>.comp-sede-template-1{border:1px solid lightgray;border-radius:5px;padding:5px;color:#616161}.comp-sede-template-1:hover{background:lavenderblush}.comp-sede-template-1.beige:hover{background:beige}.comp-sede-template-2{border:0;border-bottom:1px solid lightgray;padding:0 5px 5px 0}</style>
+<script>var xThisComSede;function getAllSedes(){xThisComSede.clasecss=xThisComSede.clasecss===''?'xTextRow2 xCursor':xThisComSede.clasecss;$.ajax({type:'POST',url:'../../bdphp/log_componentes.php?op=1'}).done(function(dtSede){dtSede=$.parseJSON(dtSede);xThisComSede.listSede=dtSede.datos;xThisComSede.sedes=xThisComSede.listSede[0];xThisComSede.getValorIncial(xThisComSede.sedes);});}
 function selectOptionSede(){const index=xThisComSede.$.compFindListSede.value;xThisComSede.sedes=xThisComSede.listSede[index];}
-Polymer({is:'x-comp-find-sede',properties:{listSede:[],sedes:{type:Object,reflectToAttribute:true,notify:true,value:function(){return{};},observer:'sedeNameChanged'},},listeners:{'onchange':'getSede'},sedeNameChanged:function(sede){return sede;},getSede(){return this.sedes;},attached:function(){xThisComSede=this;getAllSedes();},getValorIncial:function(sede){this.fire('getValorIncial',{sedes:sede});}})</script>
+Polymer({is:'x-comp-find-sede',properties:{listSede:[],clasecss:String,sedes:{type:Object,reflectToAttribute:true,notify:true,value:function(){return{};},observer:'sedeNameChanged'},},listeners:{'onchange':'getSede'},sedeNameChanged:function(sede){return sede;},getSede(){return this.sedes;},attached:function(){xThisComSede=this;getAllSedes();},getValorIncial:function(sede){this.fire('getValorIncial',{sedes:sede});}})</script>
 </dom-module>

@@ -91,6 +91,15 @@ function listenSocketP() {
     });
 
 
+    // NOTIFICAR QUE SE IMPRIMIO comanda del pedido para poner el flag
+    this.socketCP.listen('notifica-impresion-comanda').subscribe(pedido => {
+        console.log('notifica-impresion-comanda', pedido);
+        try {
+            _cpSocketPintarFlagPedidoImpreso(pedido);
+        } catch (error) {}
+    });
+
+
     
 
 }

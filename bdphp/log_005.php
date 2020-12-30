@@ -617,5 +617,39 @@
 			echo $aabd;
 			
 			break;
+		
+
+		// estadisticas
+		case 40:
+			$idsede = $_POST['idsede'];
+
+			$idsede = $idsede == 0 ? $g_idsede : $idsede;
+
+			$sql = "SELECT rpd.*, STR_TO_DATE(rp.fecha, '%d/%m/%Y') fecha, DATE_FORMAT(STR_TO_DATE(rp.fecha, '%d/%m/%Y %H:%i:%s %p'), '%H %p') hora, rp.estado, rp.fecha_cierre, tp.descripcion des_tp, tc.idtipo_comprobante, tc.descripcion comprobante, rp.correlativo 
+				, if (rp.fecha_cierre = '', 1, 0 ) hoy, tp.img
+			from registro_pago_detalle rpd 
+				 inner join registro_pago rp on rp.idregistro_pago = rpd.idregistro_pago 
+				 inner join tipo_pago tp on rpd.idtipo_pago = tp.idtipo_pago 
+				 left join tipo_comprobante_serie tcs on rp.idtipo_comprobante_serie = tcs.idtipo_comprobante_serie
+				 LEFT join tipo_comprobante tc on tcs.idtipo_comprobante = tc.idtipo_comprobante 
+			 where rp.idsede = $idsede and (rp.cierre = 0 or STR_TO_DATE(fecha_cierre, '%d/%m/%Y') =  DATE_ADD(CURDATE(), INTERVAL -1 DAY) )";
+			 
+			$bd->xConsulta($sql);
+			break;
+		
+		// estadisticas // pedidos
+		case 4001:
+			$idsede = $_POST['idsede'];
+
+			$idsede = $idsede == 0 ? $g_idsede : $idsede;
+
+			$sql = "select p.idpedido, p.estado, p.fecha_hora, p.total_r importe, pd.estado anulado 
+				, if (p.cierre = '', 1, 0 ) hoy, pd.ptotal_r importe_item
+			from pedido p
+				inner join pedido_detalle pd on p.idpedido = pd.idpedido 
+			where p.idsede = $idsede and (p.cierre = 0 or STR_TO_DATE(p.fecha , '%d/%m/%Y') =  DATE_ADD(CURDATE(), INTERVAL -1 DAY) )";
+			 
+			$bd->xConsulta($sql);
+			break;
 	}
 ?>

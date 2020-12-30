@@ -1,0 +1,739 @@
+<dom-module id="x-indicadores2">
+    <link rel="import" href="../../x-componentes/x-comp-find-sede/x-comp-find-sede.html">
+    <link rel="import" href="../../x-componentes/x-comp-option-group/x-comp-option-group.html">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/2.9.3/Chart.min.js"></script>
+
+    <script type="text/javascript" src="../../../js/crossfilter.min.js"></script>
+
+    <template is="dom">
+        <paper-dialog id="dialog_meta" modal style="min-width: 330px;" modal entry-animation="scale-up-animation" exit-animation="fade-out-animation">
+			<h4>Meta diaria</h4>
+			<span>Establesca una meta diaria de ventas.</span>
+			<div>
+				<input type="number" class="xMiInput" placeholder="Meta diaria"  inline id="txt_new_meta">
+			</div>
+			<br>
+			<hr>
+			<br>
+			<div class="xBoton2 xVerde divLeft23" onclick="xGuardarMeta();">Guardar</div>
+			<div class="xBoton2 xPlomo divLeft23" dialog-dismiss>Cerrar</div>
+			<br><br>
+		</paper-dialog>
+
+
+
+        <br>
+        <div class="xMiCard xradius" style="width:90%; max-width: 1250px;">
+			<div class="xEncanezadoCard" style="background: lavenderblush; color: #424242;">
+                <div class="d-flexx align-items-center">                                                                         
+                    <div style="max-width: 350px;" class="pr-2">
+                        <p class="fs-9 text-secondary">Local</p>
+                        <div class="d-flexx align-items-baseline">
+                            <x-comp-find-sede id="compSedeIndicador" clasecss="comp-sede-template-1 beige xCursor" onchange="changeSede(sedes)"></x-comp-find-sede>					
+
+                            <div class="ml-2 xCursor xBoton_flat_2 beige text-secondary" title="Mas Opciones">
+                                <i class="fa fa-cog fa-1x"></i>
+                                <span class="fs-12">Opciones</span>
+                            </div>                        
+                        </div>
+                    </div>
+                </div>                
+            </div>	
+
+            
+            <div class="xContentCard border-bottom" style="padding: 20px;">            
+                <div class="w-100">
+                    Estadisticas
+                    <br>                    
+                    <x-comp-option-group listop="{{listOpciones}}" onclick="changeOption(this)"></x-comp-option-group>
+                </div>
+            </div>
+
+            <div class="xContentCard border-bottom" style="padding: 20px;">            
+                <div class="flexbox">
+                    <div class="left">
+                        <p class="fs-18 text-secondary fw-600">Total de ventas hoy</p>
+                        <p class="fs-50 color-text-principal fw-600"> S/. {{ dtVentasHoy.sumImporteTotalHoyShow }}</p>                        
+                        <p class="text-secondary">Día anterior <span class="fw-600">S/. {{ dtVentasHoy.sumImporteTotalAyer }}</span></p>                                                
+
+                        <br>
+                        <div class="d-flexx">
+                            <div class="content-dato" entero$="[[dtVentasHoy.entero]]">
+                                <div class="ico-dato-l">
+                                    <i hidden$="[[!dtVentasHoy.entero]]" class="fa fa-level-up fa-2x" aria-hidden="true"></i>
+                                    <i hidden$="[[dtVentasHoy.entero]]" class="fa fa-level-down fa-2x" aria-hidden="true"></i>
+                                </div>
+                                <div class="text-right">
+                                    <p class="fs-30 fw-600 pb-1"> 
+                                        <span hidden$="[[!dtVentasHoy.entero]]"><i class="fa fa-plus"></i></span>
+                                        <!-- <span hidden$="[[dtVentasHoy.entero]]"><i class="fa fa-minus"></i></span> -->
+                                        {{ dtVentasHoy.porcentaje }}%</p>
+                                    <p>
+                                        <span hidden$="[[!dtVentasHoy.entero]]">Aumento</span>
+                                        <span hidden$="[[dtVentasHoy.entero]]">Menos</span>
+                                        <span class="fw-600">S/. {{ dtVentasHoy.diferencia }}</span>
+                                    </p>
+                                </div>
+                            </div>
+
+                            <div class="content-dato ml-2" rojo$="[[dtVentasHoy.m_rojo]]" ambar$="[[dtVentasHoy.m_ambar]]" verde$="[[dtVentasHoy.m_verde]]">                                
+                                <div class="text-right">
+                                    <p class="fs-30 fw-600 pb-1"> <span><i class="fa fa-flag"></i></span> {{ dtVentasHoy.porcentaje_diaria }}%</p>                                                        
+                                    <p>Meta Diaria</p>
+                                </div>
+                            </div>
+                        </div>
+                        <br>
+                    </div>
+
+                    <div class="right">
+                        <canvas id="myChart"></canvas>
+                        <br>
+                    </div>
+                </div>
+            </div>
+            <br>
+
+            <!-- tipo de pago -->
+            <div class="xContentCard" style="padding: 20px;">            
+                <div class="flexbox">
+                    <div class="left p-3">
+
+                        <template is="dom-repeat" items="{{listTipoPago}}" as="tpc">
+                            <div class="pb-3 border-bottom mb-2">
+                                 <p class="pb-2"> Total de venta con <span class="fw-600"> {{tpc.key}} </span> </p>
+
+                                 <div class="d-flexx justify-content-between align-items-center">
+                                     
+                                     <div class="d-flexx align-items-center">
+                                         <img src$="[[ tpc.img ]]" alt="">
+                                         <p class="fs-28 color-text-principal fw-600 pl-2"> S/. {{ tpc.importe_hoy }}</p>
+                                         
+                                         
+                                         <p hidden$="[[ !tpc.showAyer ]]" class="fs-25 pl-2 lblInfo" verde$="[[tpc.entero]]" rojo$="[[ !tpc.entero ]]"> 
+                                            <span hidden$="[[!tpc.entero]]"><i class="fa fa-plus"></i></span>
+                                            <!-- <span hidden$="[[tpc.entero]]"><i class="fa fa-minus"></i></span> -->
+                                            <span class="fw-600"> {{ tpc.porcentaje }}%</span>
+                                         </p>
+                                     </div>
+
+                                     <!-- icon -->                                     
+                                     <div class="ico-dato-m text-white mr-2" verde$="[[tpc.entero]]" rojo$="[[ !tpc.entero ]]">
+                                        <span hidden$="[[!tpc.entero]]"><i class="fa fa-level-up"></i></span>
+                                        <span hidden$="[[tpc.entero]]"><i class="fa fa-level-down"></i></span>
+                                     </div>
+
+                                 </div>
+
+                                 <div hidden$="[[ !tpc.showAyer ]]">
+                                     <p class="text-secondary">Dia anterior S/.{{ tpc.importe_ayer }}</p>
+                                 </div>
+
+                            </div>
+                         </template>
+                        
+                    </div>
+
+                    <!-- totales pedidos -->
+                    <div class="right p-3">
+                        <table width="100%">  
+                            <thead>
+                                <th width="35%"></th>
+                                <th align="right"><span class="fs-12 text-secondary">Hoy</span></th>
+                                <th align="right"><span class="fs-12 text-secondary">Ayer</span> </th>
+                                <th align="right"><span class="fs-12 text-secondary">Incremento</span></th>
+                            </thead>
+                            <tr class="border-bottom mb-2" style="height: 67px;">
+                                <td> <p class="fw-600 fs-15 text-secondary">Pedidos realizados</p> </td>
+                                <td align="right"> <p class="fw-600 fs-15 color-text-principal">{{ listPedidosTotales.pedidos_totales.hoy }}</p> </td>
+                                <td align="right">                                     
+                                    <p class="fw-600 fs-15 text-secondary"> {{ listPedidosTotales.pedidos_totales.ayer }} </p>
+                                </td>
+                                <td align="right" class="text-right">
+                                    <div class="align-items-center" style="display: inline-flex;">
+                                        <p class="fs-20 fw-600 pr-2 lblInfo" verde$="[[listPedidosTotales.pedidos_totales.entero]]" rojo$="[[ !listPedidosTotales.pedidos_totales.entero ]]">  
+                                            {{ listPedidosTotales.pedidos_totales.porcentaje }}% 
+                                        </p>
+                                        <!-- icon -->                                     
+                                        <div class="ico-dato-m text-white mr-2" verde$="[[listPedidosTotales.pedidos_totales.entero]]" rojo$="[[ !listPedidosTotales.pedidos_totales.entero ]]">
+                                            <span hidden$="[[!listPedidosTotales.pedidos_totales.entero]]"><i class="fa fa-level-up"></i></span>
+                                            <span hidden$="[[listPedidosTotales.pedidos_totales.entero]]"><i class="fa fa-level-down"></i></span>
+                                         </div>
+                                    </div>
+                                </td>
+                            </tr>
+
+                            <!-- tiket promedio -->
+                            <tr class="border-bottom mb-2" style="height: 67px;">
+                                <td> <p class="fw-600 fs-15 text-secondary">Ticket promedio</p> </td>
+                                <td align="right"> <p class="fw-600 fs-15 color-text-principal"> S/. {{ listPedidosTotales.ticket_promedio.hoy }}</p> </td>
+                                <td align="right">                                     
+                                    <p class="fw-600 fs-15 text-secondary"> S/. {{ listPedidosTotales.ticket_promedio.ayer }} </p>
+                                </td>
+                                <td align="right" class="text-right">
+                                    <div class="align-items-center" style="display: inline-flex;">
+                                        <p class="fs-20 fw-600 pr-2 lblInfo" verde$="[[listPedidosTotales.ticket_promedio.entero]]" rojo$="[[ !listPedidosTotales.ticket_promedio.entero ]]">  
+                                            {{ listPedidosTotales.ticket_promedio.porcentaje }}% 
+                                        </p>
+                                        <!-- icon -->                                     
+                                        <div class="ico-dato-m text-white mr-2" verde$="[[listPedidosTotales.ticket_promedio.entero]]" rojo$="[[ !listPedidosTotales.ticket_promedio.entero ]]">
+                                            <span hidden$="[[!listPedidosTotales.ticket_promedio.entero]]"><i class="fa fa-level-up"></i></span>
+                                            <span hidden$="[[listPedidosTotales.ticket_promedio.entero]]"><i class="fa fa-level-down"></i></span>
+                                         </div>
+                                    </div>
+                                </td>
+                            </tr>
+
+                            <!-- cantidad Pedidos Anulados -->
+                            <tr class="border-bottom mb-2" style="height: 67px;">
+                                <td> <p class="fw-600 fs-15 text-secondary">Cantidad Pedidos Anulados</p> </td>
+                                <td align="right"> <p class="fw-600 fs-15 color-text-principal text-danger"> {{ listPedidosTotales.pedidos_anulados.hoy }}</p> </td>
+                                <td align="right">                                     
+                                    <p class="fw-600 fs-15 text-secondary"> {{ listPedidosTotales.pedidos_anulados.ayer }} </p>
+                                </td>
+                                <td align="right" class="text-right">
+                                    <div class="align-items-center" style="display: inline-flex;">
+                                        <p class="fs-20 fw-600 pr-2 lblInfo" verde$="[[listPedidosTotales.pedidos_anulados.entero]]" rojo$="[[ !listPedidosTotales.pedidos_anulados.entero ]]">  
+                                            {{ listPedidosTotales.pedidos_anulados.porcentaje }}% 
+                                        </p>
+                                        <!-- icon -->                                     
+                                        <div class="ico-dato-m text-white mr-2" verde$="[[listPedidosTotales.pedidos_anulados.entero]]" rojo$="[[ !listPedidosTotales.pedidos_anulados.entero ]]">
+                                            <span hidden$="[[!listPedidosTotales.pedidos_anulados.entero]]"><i class="fa fa-level-up"></i></span>
+                                            <span hidden$="[[listPedidosTotales.pedidos_anulados.entero]]"><i class="fa fa-level-down"></i></span>
+                                         </div>
+                                    </div>
+                                </td>
+                            </tr>
+
+                            <!-- importe Pedidos Anulados -->
+                            <tr class="border-bottom mb-2" style="height: 67px;">
+                                <td> <p class="fw-600 fs-15 text-secondary">Importe Pedidos Anulados</p> </td>
+                                <td align="right"> <p class="fw-600 fs-15 color-text-principal text-danger"> S/. {{ listPedidosTotales.pedidos_anulados.importe_hoy }}</p> </td>
+                                <td colspan="2">                                                                         
+                                </td>                                
+                            </tr>
+                            
+                        </table>
+                    </div>
+                </div>
+            </div>
+
+
+        </div>
+            
+    </template>
+</dom-module>
+<style>
+    .border-header-e {
+        border-radius: 5px;
+        border: 1px solid #e0e0e0;
+        background: aliceblue;
+        margin-top: 15px;        
+    }
+
+    .content-dato {
+        display: inline-flex;
+        background: #ff5252;
+        padding: 15px;
+        border-radius: 6px;
+        color: white;
+        align-items: center;
+        margin-bottom: 15px;
+        
+    }
+
+    .content-dato[entero] {
+        background: #4DCD82;
+    }
+
+    .content-dato[rojo] {
+        background: #ff5252;
+    }
+
+    .content-dato[ambar] {
+        background: #ffd740;
+    }
+
+    .content-dato[verde] {
+        background: #4DCD82;
+    }
+
+    .ico-dato-l {
+        padding: 10px;        
+        border-radius: 5px;
+        margin-right: 10px;
+        background: rgba(250,250,250,0.5);
+    }
+
+    .ico-dato-m {
+        padding: 8px 15px;        
+        border-radius: 5px;        
+        background: rgba(250,250,250,0.5);
+    }
+
+    .ico-dato-m[rojo] {
+        background: #dfacac;
+    }
+
+    .ico-dato-m[ambar] {
+        background: #ffd740;
+    }
+
+    .ico-dato-m[verde] {
+        background: #8fe5b3;
+    }
+
+    .lblInfo[verde]{
+        color: #4DCD82;
+    }
+
+    .lblInfo[rojo]{
+        color: #ff5252;
+    }
+
+
+    /* .ico-dato-l[entero] {
+        background: #C0F7D0;         
+    } */
+
+    .flexbox {
+		display: flex;
+		flex-direction: column;
+		padding: 5px;
+		align-content: space-between;
+		justify-content: space-between;
+		}
+
+		.flexbox>div {
+		/* text-align: center; */
+		/* padding: 20px 0; */
+		/* margin: 5px; */
+		}
+
+		@media(min-width:576px) {
+		.flexbox {
+			flex-flow: row wrap;
+		}
+		.flexbox>.left {
+			order: 1;
+			flex: 1;
+		}
+		.flexbox>.right {
+			order: 2;
+			flex: 1;
+		}
+		.flexbox>.next {
+			order: 2;
+			flex: 1;
+		}
+		.flexbox>.center {
+			order: 3;
+			width: 100%;
+		}
+		}
+
+		@media(min-width:768px) {
+		.flexbox {
+			flex-flow: row nowrap;
+		}
+		.flexbox>div {
+			width: 33.33% !important;
+		}
+		.flexbox>.left {
+			order: 1;
+		}
+		.flexbox>.center {
+			order: 2;
+		}
+		.flexbox>.right {
+			order: 3;
+			/* flex: 1; */
+		}
+		.flexbox>.next {
+			order: 2;
+		}
+        }
+        
+    .color-text-principal {
+        color: #5dc2e7;
+        line-height: initial;
+    }
+
+</style>
+<script>
+    var xThisI2, _listOp, dataFiltro, dataMetdataVentasDia, crosVenta, metaDiaria, _dtVentasHoy;
+    function initIndicadores2() {
+
+        _listOp = [{descripcion: 'Hoy', activo: true, value: 0},
+        {descripcion: 'Semana', activo: false, value: 1}, {descripcion: 'Mes', activo: false, value: 2}]
+
+        xThisI2.listOpciones = _listOp;
+
+        dataFiltro = {
+            idsede: 0,
+            intervalo: 0 // hoy, semana, mes
+        }
+
+        // meta diaria
+        loadMestasSede();
+
+        $('body').addClass('loaded');
+        $("#Titulo_page").text("Indicadores");
+    }
+
+    function changeOption(e) {
+        console.log('e', e.optionselected);
+        dataFiltro.intervalo = e.optionselected;
+        xloadDataVentas();
+    }
+
+    function changeSede(val) {
+        dataFiltro.idsede = val.idsede;
+        loadMestasSede();
+    }
+    
+    function loadMestasSede() {		
+		$.ajax({
+				type: 'POST',
+				url: '../../bdphp/log_005.php?op=15',
+				data: dataFiltro
+			})
+			.done(function (res) {
+				// console.log(res);						
+				dataMeta = JSON.parse(res).datos[0];
+				if ( dataMeta )  {
+					metaDiaria = dataMeta.diaria;				
+					xloadDataVentas();
+				} else {
+					dialog_meta.open();
+				}
+			});
+	}
+
+    function xloadDataVentas() {
+        $.ajax({
+				type: 'POST',
+				url: '../../bdphp/log_005.php?op=40',
+				data: dataFiltro
+			})
+			.done(function (res) {				
+                // console.log(res);
+                dataMetdataVentasDia = JSON.parse(res).datos;		
+                crosVenta = crossfilter(dataMetdataVentasDia);
+                
+                xDataVentas_tipo_pago();
+                xloadDataPedidos();
+			});
+    }
+
+    // pedidos count, ticket promedio, anulados
+    function xloadDataPedidos() {
+        $.ajax({
+				type: 'POST',
+				url: '../../bdphp/log_005.php?op=4001',
+				data: dataFiltro
+			})
+			.done(function (res) {				
+                // console.log(res);
+                const _data = JSON.parse(res).datos;		
+                // crosVenta = crossfilter(_dta);
+                
+                tablaInfoPedidos(_data);
+			});
+    }
+
+    // tipo de pago    
+    function xDataVentas_tipo_pago() {
+        _dtVentasHoy = {
+            sumImporteTotalHoyShow: 0,
+            sumImporteTotalHoy: 0,
+            sumImporteTotalAyer: 0,
+            diferencia: 0,
+            porcentaje: 0,
+            entero: true,
+            signo: '+',
+            porcentaje_diaria: 0,
+            m_rojo: false,
+            m_ambar: false,
+            m_verde: false,
+        }
+
+        // hoy
+        _dtVentasHoy.sumImporteTotalHoy = (dataMetdataVentasDia.filter(x => x.hoy.toString() === "1").map(x => parseFloat(x.importe)).reduce((a, b) => a + b, 0));        
+
+        // ayer
+        _dtVentasHoy.sumImporteTotalAyer = dataMetdataVentasDia.filter(x => x.hoy.toString() === "0").map(x => parseFloat(x.importe)).reduce((a, b) => a + b, 0);        
+
+        // diferencia
+        _dtVentasHoy.diferencia = _dtVentasHoy.sumImporteTotalHoy - _dtVentasHoy.sumImporteTotalAyer;
+        _dtVentasHoy.porcentaje = Math.round((_dtVentasHoy.diferencia / _dtVentasHoy.sumImporteTotalHoy) * 100);
+        _dtVentasHoy.entero = _dtVentasHoy.diferencia < 0 ? false : true;
+        _dtVentasHoy.signo = _dtVentasHoy.entero ? '+' : '-';
+
+        // formato
+        _dtVentasHoy.sumImporteTotalHoyShow = numeroConComas(xMoneda(_dtVentasHoy.sumImporteTotalHoy));
+        _dtVentasHoy.sumImporteTotalAyer = numeroConComas(xMoneda(_dtVentasHoy.sumImporteTotalAyer));
+        _dtVentasHoy.diferencia = numeroConComas(xMoneda(_dtVentasHoy.diferencia));
+
+        // xThisI2.dtVentasHoy = JSON.parse( JSON.stringify(_dtVentasHoy) );
+        calcularPorcentajeMetaDiaria(); // aca lo parsea
+
+        console.log('_dtVentasHoy', _dtVentasHoy);
+
+        tablaTipoPago(dataMetdataVentasDia);                
+        
+        // grafico por horas
+        var crosVentaHoy = crossfilter(dataMetdataVentasDia.filter(x => x.hoy.toString() === "1"));
+        var ddHoraHoy = crosVentaHoy.dimension(item => item.hora);
+        var byHora = ddHoraHoy.group().reduceSum(item => parseFloat(item.importe));
+        var _listHora = byHora.all(); //.map(x => {x.value = numeroConComas(x.value.toFixed(2)); return x});
+
+        graficoVentasHoraHoy(_listHora);
+        
+
+    }
+
+    // dataMetdataVentasDia / dia, semana, mes
+    function tablaTipoPago(dataMetdataVentasDia) {
+        // hoy
+        
+        var crosVentaHoy = crossfilter(dataMetdataVentasDia.filter(x => x.hoy.toString() === "1"));
+        var ddTp = crosVentaHoy.dimension(item => item.des_tp + ':' + item.img);
+        let byTipoPago = ddTp.group().reduceSum(item => parseFloat(item.importe));
+        var _listTipoPago = byTipoPago.all().map(x => {x.value = numeroConComas(x.value.toFixed(2)); return x});		
+
+        // ayer
+
+        var crosVentaAyer = crossfilter(dataMetdataVentasDia.filter(x => x.hoy.toString() === "0"));
+        ddTp = crosVentaAyer.dimension(item => item.des_tp + ':' + item.img );
+        byTipoPago = ddTp.group().reduceSum(item => parseFloat(item.importe));
+        var _listTipoPagoAyer = byTipoPago.all().map(x => {x.value = numeroConComas(x.value.toFixed(2)); return x});
+
+        var _dtTipoPago = [];
+        _listTipoPago.map(tp => {
+            // importe ayer
+            var importeHoy = tp.value
+            var importeAyer = _listTipoPagoAyer.filter(c => c.key === tp.key)[0];
+            importeAyer = importeAyer ? importeAyer.value * 1: 0;
+            var _diferencia = importeHoy - importeAyer;
+            var _porcentaje = Math.round((_diferencia / importeHoy) * 100);
+            var _entero = _porcentaje > 0
+            
+            var des_icon = tp.key.split(':');
+
+            // importeAyer = importeAyer.toFixed(2);
+            var _item = {
+                key: des_icon[0].toLowerCase(),
+                importe_hoy: numeroConComas(importeHoy),
+                showAyer: importeAyer !== 0,
+                importe_ayer: importeAyer === 0 ? '-' : numeroConComas(importeAyer.toFixed(2)),                
+                importe_diferencia: _diferencia,
+                porcentaje: _porcentaje,
+                entero: _entero,                
+                img: '../../images/' + des_icon[1]
+            }
+
+            _dtTipoPago.push(_item);
+
+        });
+
+        xThisI2.listTipoPago = JSON.parse( JSON.stringify(_dtTipoPago) );
+    }
+
+    function tablaInfoPedidos(data) {
+
+        var _dtPedidoTotales = {
+            pedidos_totales:{hoy: 0, ayer: 0, porcentaje: 0, entero: false},
+            ticket_promedio:{hoy: 0, ayer: 0, porcentaje: 0, entero: false},
+            pedidos_anulados:{hoy: 0, ayer: 0, porcentaje: 0, entero: false, importe_hoy: 0}            
+        }
+
+        // HOY
+        var crosVentaHoy = crossfilter(data.filter(x => x.hoy.toString() === "1"));
+        var ddIdPedido = crosVentaHoy.dimension(item => item.idpedido);
+        var lisPedidos = ddIdPedido.group().all();
+        var cantidadPedidosHoy = lisPedidos.length;
+
+        // -> importe total
+        var importeTotalPedidosHoy = ddIdPedido.group().reduceSum(item => parseFloat(item.importe_item));
+        importeTotalPedidosHoy = importeTotalPedidosHoy.all().map(x => x.value).reduce((a, b) => a + b, 0);
+        console.log('importeTotalPedidosHoy', importeTotalPedidosHoy);
+
+        // -> cantidad anulados
+        var ddIdPedidoAnulados = crosVentaHoy.dimension(item => item.anulado.toString() === "1");
+        var countPedidosAnuladosHoy = ddIdPedidoAnulados.group().all().length;        
+        var importePedidosAnuladosHoy = ddIdPedidoAnulados.group().reduceSum(item => parseFloat(item.importe_item));
+        importePedidosAnuladosHoy = importePedidosAnuladosHoy.all().filter(x => x.key).map(x => x.value).reduce((a, b) => a + b, 0);
+
+
+
+        // AYER
+        var crosVentaAyer = crossfilter(data.filter(x => x.hoy.toString() === "0"));
+        ddIdPedido = crosVentaAyer.dimension(item => item.idpedido);
+        lisPedidos = ddIdPedido.group().all();
+        var cantidadPedidosAyer = lisPedidos.length;
+
+        // -> importe total
+        var importeTotalPedidosAyer = ddIdPedido.group().reduceSum(item => parseFloat(item.importe_item));
+        importeTotalPedidosAyer = importeTotalPedidosAyer.all().map(x => x.value).reduce((a, b) => a + b, 0);
+        console.log('importeTotalPedidosAyer', importeTotalPedidosAyer);
+
+        // -> cantidad anulados
+        ddIdPedidoAnulados = crosVentaAyer.dimension(item => item.anulado.toString() === "1");
+        var countPedidosAnuladosAyer = ddIdPedidoAnulados.group().all().length;    
+        var importePedidosAnuladosAyer = ddIdPedidoAnulados.group().reduceSum(item => parseFloat(item.importe_item));
+        importePedidosAnuladosAyer = importePedidosAnuladosAyer.all().filter(x => x.key).map(x => x.value).reduce((a, b) => a + b, 0);
+        
+        _dtPedidoTotales.pedidos_totales.hoy = xCeroIzq(cantidadPedidosHoy, 2);
+        _dtPedidoTotales.pedidos_totales.ayer = xCeroIzq(cantidadPedidosAyer, 2);
+        _dtPedidoTotales.pedidos_totales.porcentaje = Math.round(((cantidadPedidosHoy - cantidadPedidosAyer) / cantidadPedidosHoy) * 100);
+        _dtPedidoTotales.pedidos_totales.entero = _dtPedidoTotales.pedidos_totales.porcentaje > 0;
+
+
+        _dtPedidoTotales.ticket_promedio.hoy = Math.round(importeTotalPedidosHoy / cantidadPedidosHoy);
+        _dtPedidoTotales.ticket_promedio.ayer = Math.round(importeTotalPedidosAyer / cantidadPedidosAyer);
+        _dtPedidoTotales.ticket_promedio.hoy = isNaN( _dtPedidoTotales.ticket_promedio.hoy ) ? 0 : _dtPedidoTotales.ticket_promedio.hoy;
+        _dtPedidoTotales.ticket_promedio.ayer = isNaN( _dtPedidoTotales.ticket_promedio.ayer ) ? 0 : _dtPedidoTotales.ticket_promedio.ayer;
+        _dtPedidoTotales.ticket_promedio.porcentaje = Math.round(((_dtPedidoTotales.ticket_promedio.hoy - _dtPedidoTotales.ticket_promedio.ayer) / _dtPedidoTotales.ticket_promedio.hoy) * 100);
+        _dtPedidoTotales.ticket_promedio.entero = _dtPedidoTotales.ticket_promedio.porcentaje > 0;
+        _dtPedidoTotales.ticket_promedio.hoy =  _dtPedidoTotales.ticket_promedio.hoy != 0 ? numeroConComas(Math.round(importeTotalPedidosHoy / cantidadPedidosHoy).toFixed(2)) : 0;
+        _dtPedidoTotales.ticket_promedio.ayer = _dtPedidoTotales.ticket_promedio.ayer !=0 ? numeroConComas(Math.round(importeTotalPedidosAyer / cantidadPedidosAyer).toFixed(2)) : 0;
+
+        _dtPedidoTotales.pedidos_anulados.hoy = xCeroIzq(countPedidosAnuladosHoy, 2);
+        _dtPedidoTotales.pedidos_anulados.ayer = xCeroIzq(countPedidosAnuladosAyer, 2);
+        _dtPedidoTotales.pedidos_anulados.porcentaje = Math.round(((countPedidosAnuladosHoy - countPedidosAnuladosAyer) / countPedidosAnuladosHoy) * 100);
+        _dtPedidoTotales.pedidos_anulados.entero = _dtPedidoTotales.pedidos_anulados.porcentaje > 0;
+        _dtPedidoTotales.pedidos_anulados.importe_hoy = numeroConComas(importePedidosAnuladosHoy.toFixed(2));
+
+        console.log('_dtPedidoTotales', _dtPedidoTotales);
+
+        xThisI2.listPedidosTotales = JSON.parse(JSON.stringify(_dtPedidoTotales));
+
+        
+
+        
+    }
+
+
+
+
+
+
+
+
+
+
+
+    function graficoVentasHoraHoy(dtGraficoHora){
+
+		var ctx = document.getElementById('myChart').getContext('2d');		
+        var gradient = ctx.createLinearGradient(0, 0, 0, 250);
+        gradient.addColorStop(0, 'rgba(168,240,255, 1)');   
+        gradient.addColorStop(1, 'rgba(168,240,255, 0)');
+
+		var myBarChart = new Chart(ctx, {
+			type: 'line',
+			data: {
+				labels: dtGraficoHora.map(x => x.key),
+				datasets: [{
+					label: 'Importe',
+					data: dtGraficoHora.map(x => x.value),
+                    // backgroundColor: ["#A9F1FF"],
+                    backgroundColor : gradient, 
+					borderColor: ["#57D2FE"],
+					borderWidth: 2
+				}],
+			},			
+			options: {				
+				legend: {
+					display: false,					
+					position: 'bottom'
+                },
+                scales: {
+						xAxes: [{
+							gridLines: {
+                                display: true,
+                                drawBorder: true,
+                                drawOnChartArea: false,                                
+                            }
+						}],
+						yAxes: [{
+							gridLines: {
+                                display: true,
+                                drawBorder: true,
+                                drawOnChartArea: false,
+                            }
+						}]
+				}
+			}			
+		});
+	}
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+    function xGuardarMeta(){        
+		var meta = txt_new_meta.value;
+		dataFiltro.meta = meta
+        dataFiltro.new = dataMeta ? 0 : 1;
+        metaDiaria = meta;
+		$.ajax({
+				type: 'POST',
+				url: '../../bdphp/log_005.php?op=1605',
+				data:  dataFiltro
+			})
+			.done(function (res) {
+				dialog_meta.close();
+				
+                // porcentajeMedaDia = ((sumImporteTotal /  meta) * 100).toFixed(1);		
+                calcularPorcentajeMetaDiaria(meta)
+			});
+
+    }
+    
+    function calcularPorcentajeMetaDiaria() {
+        _dtVentasHoy.porcentaje_diaria = ((parseFloat(_dtVentasHoy.sumImporteTotalHoy) /  metaDiaria) * 100).toFixed(1);
+
+        _dtVentasHoy.m_rojo = false;
+        _dtVentasHoy.m_ambar = false;
+        _dtVentasHoy.m_verde = false;
+
+        if ( _dtVentasHoy.porcentaje_diaria < 30 ) { _dtVentasHoy.m_rojo = true;  }
+        if ( _dtVentasHoy.porcentaje_diaria > 30 && _dtVentasHoy.porcentaje_diaria < 80 ) { _dtVentasHoy.m_ambar = true;  }
+        if ( _dtVentasHoy.porcentaje_diaria > 80 ) { _dtVentasHoy.m_verde = true;  }
+
+        xThisI2.dtVentasHoy = JSON.parse( JSON.stringify(_dtVentasHoy) );
+    }
+
+    Polymer({
+		is: 'x-indicadores2',
+		properties: {
+            listOpciones: Object,
+            listTipoPago: Object,
+            listPedidosTotales: Object,
+            dtVentasHoy: Object,            
+		},
+		attached: function () {
+			// this.selected = 0,
+			xThisI2 = this;
+			initIndicadores2();
+		},
+		detached:function(){
+			// grafico_meta_diaria = null;			
+		}
+	})
+</script>

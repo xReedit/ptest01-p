@@ -1616,7 +1616,7 @@
 			break;
 		case 404:// organizacion
 			$sql="
-				SELECT o.*, s.idsede, s.nombre AS nom_sede, s.direccion as dir_sede, s.ciudad,s.eslogan,s.mesas, s.ubigeo, s.codigo_del_domicilio_fiscal
+				SELECT o.*, s.telefono sedetelefono, s.idsede, s.nombre AS nom_sede, s.direccion as dir_sede, s.ciudad,s.eslogan,s.mesas, s.ubigeo, s.codigo_del_domicilio_fiscal
 				FROM org AS o
 					INNER JOIN sede AS s using(idorg)
 				WHERE (o.idorg=".$g_ido.") and s.estado=0
@@ -3290,7 +3290,7 @@ function xDtUS($op_us){
 			// WHERE (cp.idorg=".$g_ido." AND cp.idsede=".$g_idsede.")"; s.logo64
 			$sql_us="
 			SELECT cp.var_size_font_tall_comanda, cp.ip_print, cp.num_copias, cp.pie_pagina, cp.pie_pagina_comprobante, cp.logo, '' as logo64, s.nombre AS des_sede, s.eslogan, s.mesas, s.ciudad
-				,isprint_subtotales_comanda
+				,isprint_subtotales_comanda, isprint_copy_short
 			FROM conf_print AS cp
             	INNER JOIN sede AS s ON cp.idsede = s.idsede
 			WHERE (cp.idorg=".$g_ido." AND cp.idsede=".$g_idsede.")";

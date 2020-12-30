@@ -83,7 +83,7 @@ xThisPago.diferencia=xdif_text;xThisPago.tipoPagoRequiereCliente=xtipoP.filter(x
 xFireSend(xPase)
 if(evento&&evento.keyCode===13){xListoRegistraPago();}});}
 async function xValidarDNIRUC(valor,e,tecla=true){var servicio='ruc';valor=valor?valor:sel_cliente.value;xThisPago.mensajeErrorDocumento='';if(!xThisPago.$.sel_cliente.validate()){xThisPago.$.sel_cliente.invalid=true;xThisPago.mensajeErrorDocumento='Solo numeros';return;}
-if(xThisPago.ComprobanteRequiereCliente&&e.keyCode!==13){if(xThisPago.tipoComprovanteSelecionado.codsunat==='01'){xThisPago.placeholder_clie='Cliente RUC';if(valor.length<11){xThisPago.$.sel_cliente.invalid=true;xThisPago.mensajeErrorDocumento='Nro de RUC no valido';}}else{xThisPago.placeholder_clie='Cliente DNI o RUC';}
+if(xThisPago.ComprobanteRequiereCliente&&e.keyCode!==13&&tecla===true){if(xThisPago.tipoComprovanteSelecionado.codsunat==='01'){xThisPago.placeholder_clie='Cliente RUC';if(valor.length<11){xThisPago.$.sel_cliente.invalid=true;xThisPago.mensajeErrorDocumento='Nro de RUC no valido';}}else{xThisPago.placeholder_clie='Cliente DNI o RUC';}
 _inputAutocompleteObj.inputValue='';$("#clie_direccion").val('');xIdCliente_pago='';EmitirValidacionFormCliente();return;}
 if(valor.length<=8){xThisPago.placeholder_clie="DNI";servicio='dni';}else{xThisPago.placeholder_clie="RUC";if(valor.length<11){xThisPago.$.sel_cliente.invalid=true;xThisPago.mensajeErrorDocumento='Nro de RUC no valido';return;}}
 if(valor.length===0){xThisPago.placeholder_clie='Cliente DNI o RUC';_inputAutocompleteObj.inputValue='';$("#clie_direccion").val('');xIdCliente_pago='';return;}
