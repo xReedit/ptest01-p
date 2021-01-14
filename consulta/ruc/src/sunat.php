@@ -82,11 +82,11 @@
 				//RazonSocial
 				$patron='/<input type="hidden" name="desRuc" value="(.*)">/';
 				$output = preg_match_all($patron, $Page, $matches, PREG_SET_ORDER);
-				if(isset($matches[0]))
-				{
+				// if(isset($matches[0]))
+				// {
 					$RS = utf8_encode(str_replace('"','', ($matches[0][1])));
-					$rtn = array("RUC"=>$ruc,"RazonSocial"=>trim($RS));
-				}
+					$rtn = array("RUC"=>$ruc,"RazonSocial"=>trim($matches[0][1]));
+				// }
 
 				//Telefono
 				$patron='/<td class="bgn" colspan=1>Tel&eacute;fono\(s\):<\/td>[ ]*-->\r\n<!--\t[ ]*<td class="bg" colspan=1>(.*)<\/td>/';
@@ -106,10 +106,11 @@
 
 				$busca=array(
 					"NombreComercial" 		=> "Nombre Comercial",
+					"NombreComercialAleternativo"		=> "RUC",					
 					"Tipo" 					=> "Tipo Contribuyente",
 					"Inscripcion" 			=> "Fecha de Inscripci&oacute;n",
 					"Estado" 				=> "Estado del Contribuyente",
-					"Direccion" 			=> "Direcci&oacute;n del Domicilio Fiscal",
+					"Direccion" 			=> "*Domicilio Fiscal",
 					"SistemaEmision" 		=> "Sistema de Emisi&oacute;n de Comprobante",
 					"ActividadExterior"		=> "Actividad de Comercio Exterior",
 					"SistemaContabilidad" 	=> "Sistema de Contabilidad",
@@ -124,7 +125,24 @@
 					$output = preg_match_all($patron, $Page, $matches, PREG_SET_ORDER);
 					if(isset($matches[0]))
 					{
-						$rtn[$i] = trim(utf8_encode( preg_replace( "[\s+]"," ", ($matches[0][1]) ) ) );
+						$rtn[$i] = trim(utf8_encode( preg_replace( "[\s+]"," ", ($matches[0][1]) ) ) );						
+					} else {
+					
+						$patron='/<td.*?colspan=1[ ]*class="bgn"[ ]*>'.$v.':[ ]*<\/td>\r\n[\t]*[ ]*+<[^>]*class="bg" colspan=[1|3]+>(.*)<\/td>/';
+						$output = preg_match_all($patron, $Page, $matches, PREG_SET_ORDER);
+						if(isset($matches[0]))
+						{
+							$reptSearch = trim(utf8_encode( preg_replace( "[\s+]"," ", ($matches[0][1]) ) ) );
+							if ( $v === 'RUC' ) {
+								if ( strrpos($rtn['RazonSocial'], '***') != false) {
+									$reptSearch = str_replace($ruc.' - ', '', $reptSearch);
+									$rtn['RazonSocial'] = $reptSearch;
+								}
+							}							
+							
+							$rtn[$i] = $reptSearch;
+						}
+
 					}
 				}
 			}
@@ -310,7 +328,8 @@
 						"success" 	=> true,
 						"haydatos"  => false,
 						"result" 	=> [],
-						"msg" 		=> "No se ha encontrado resultados."
+						"msg" 		=> "No se ha encontrado resultados.",
+						"info" 	=> $info
 					);
 				}
 				return ($inJSON==true)?json_encode($rtn, JSON_PRETTY_PRINT):$rtn;
