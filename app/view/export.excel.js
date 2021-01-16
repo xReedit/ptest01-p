@@ -1,1 +1,19 @@
-var tableToExcel=(function(){var c="data:application/vnd.ms-excel;charset=UTF-8;base64,",b='<html xmlns:o="urn:schemas-microsoft-com:office:office" xmlns:x="urn:schemas-microsoft-com:office:excel" xmlns="http://www.w3.org/TR/REC-html40"><meta http-equiv="content-type" content="application/vnd.ms-excel; charset=UTF-8"><head><!--[if gte mso 9]><xml><x:ExcelWorkbook><x:ExcelWorksheets><x:ExcelWorksheet><x:Name>{worksheet}</x:Name><x:WorksheetOptions><x:DisplayGridlines/></x:WorksheetOptions></x:ExcelWorksheet></x:ExcelWorksheets></x:ExcelWorkbook></xml><![endif]--></head><body><table>{table}</table></body></html>',a=function(e){return window.btoa(unescape(encodeURIComponent(e)))},d=function(e,f){return e.replace(/{(\w+)}/g,function(g,h){return f[h]})};return function(g,f){if(!g.nodeType){g=document.getElementById(g)}var e={worksheet:f||"Worksheet",table:g.innerHTML};window.location.href=c+a(d(b,e))}})();
+var tableToExcel = (function () {
+    var uri = 'data:application/vnd.ms-excel;charset=UTF-8;base64,'
+        , template = '<html xmlns:o="urn:schemas-microsoft-com:office:office" xmlns:x="urn:schemas-microsoft-com:office:excel" xmlns="http://www.w3.org/TR/REC-html40"><meta http-equiv="content-type" content="application/vnd.ms-excel; charset=UTF-8"><head><!--[if gte mso 9]><xml><x:ExcelWorkbook><x:ExcelWorksheets><x:ExcelWorksheet><x:Name>{worksheet}</x:Name><x:WorksheetOptions><x:DisplayGridlines/></x:WorksheetOptions></x:ExcelWorksheet></x:ExcelWorksheets></x:ExcelWorkbook></xml><![endif]--></head><body><table>{table}</table></body></html>'
+        , base64 = function (s) { return window.btoa(unescape(encodeURIComponent(s))) }
+        , format = function (s, c) { return s.replace(/{(\w+)}/g, function (m, p) { return c[p]; }) }
+    return function (table, name) {
+        if (!table.nodeType) table = document.getElementById(table)
+        var ctx = { worksheet: name || 'Worksheet', table: table.innerHTML }
+        
+        var link = document.createElement('a');
+        link.download = filename;
+        link.href = uri + base64(format(template, ctx));
+        link.click();
+
+        // window.location.href = uri + base64(format(template, ctx))
+    }
+})()
+
+// 'data:application/vnd.ms-excel;base64,'
