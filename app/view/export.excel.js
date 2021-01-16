@@ -8,7 +8,7 @@ var tableToExcel = (function () {
         var ctx = { worksheet: name || 'Worksheet', table: table.innerHTML }
         
         var link = document.createElement('a');
-        link.download = filename;
+        link.download = 'reporte.xls';
         link.href = uri + base64(format(template, ctx));
         link.click();
 
