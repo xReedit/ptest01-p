@@ -1008,6 +1008,14 @@
 
 			$bd->xConsulta($sql);
 			break;
+		case 20051: // para evitar carga execiba separamos los subitems
+			$id_item = $_POST['iditem'];
+
+			$sql = "call procedure_loadcarta_205_subitem($id_item)";
+			// echo $id_item.' - '.$sql;
+
+			$bd->xConsulta($sql);
+			break;
 		case 2051://load listado de carta actual solo item de carta, para elaborar carta
 			// $sql="
 			// SELECT c.idcarta, cl.idcarta_lista,s.idseccion, i.iditem,s.descripcion AS des_seccion, i.descripcion AS des_item, cl.precio, cl.cantidad,s.sec_orden,i.detalle,i.img,cl.cant_preparado,c.fecha,s.imprimir,s.ver_stock_cero
@@ -1845,19 +1853,30 @@
 				$condicion='p.numpedido='.$numpedido;
 			}
 
+			// $sql="
+			// 	SELECT p.*,
+			// 		SUBSTRING_INDEX(u.nombres, ' ', 1) AS nom_usuario,p.referencia, p.subtotales_tachados,
+			// 		concat('P',LPAD(p.correlativo_dia,5,'0')) AS des_pedido,TIMESTAMPDIFF(MINUTE , STR_TO_DATE(concat(p.fecha,' ',p.hora),'%d/%m/%Y %H:%i:%s'), CURRENT_TIMESTAMP() ) AS min_transcurridos
+			// 		, p.tiempo_atencion, p.val_color_despachado, p.total, p.json_datos_delivery
+			// 		, c.idcliente, c.nombres, p.is_from_client_pwa, p.idcliente
+			// 		, r.idrepartidor, r.nombre as nom_repartidor, r.apellido as ap_repartidor, r.telefono as tel_repartidor					
+			// 	FROM pedido AS p
+			// 		left JOIN usuario AS u on p.idusuario = u.idusuario
+			// 		left join cliente as c on p.idcliente = c.idcliente
+			// 		left join repartidor as r on r.idrepartidor = p.idrepartidor
+			// 	WHERE (p.idsede=".$g_idsede." and ".$condicion.") and ".$isQyueryConfirmar;
+
 			$sql="
 				SELECT p.*,
-					SUBSTRING_INDEX(u.nombres, ' ', 1) AS nom_usuario,p.referencia, p.subtotales_tachados,
-					concat('P',LPAD(p.correlativo_dia,5,'0')) AS des_pedido,TIMESTAMPDIFF(MINUTE , STR_TO_DATE(concat(p.fecha,' ',p.hora),'%d/%m/%Y %H:%i:%s'), CURRENT_TIMESTAMP() ) AS min_transcurridos
-					, p.tiempo_atencion, p.val_color_despachado, p.total, p.json_datos_delivery
-					, c.idcliente, c.nombres, p.is_from_client_pwa, p.idcliente
+					SUBSTRING_INDEX(u.nombres, ' ', 1) AS nom_usuario,
+					concat('P',LPAD(p.correlativo_dia,5,'0')) AS des_pedido,TIMESTAMPDIFF(MINUTE , STR_TO_DATE(concat(p.fecha,' ',p.hora),'%d/%m/%Y %H:%i:%s'), CURRENT_TIMESTAMP() ) AS min_transcurridos					
+					, c.idcliente, c.nombres, p.idcliente
 					, r.idrepartidor, r.nombre as nom_repartidor, r.apellido as ap_repartidor, r.telefono as tel_repartidor					
 				FROM pedido AS p
-					left JOIN usuario AS u using(idusuario)
-					left join cliente as c using(idcliente)
+					left JOIN usuario AS u on p.idusuario = u.idusuario
+					left join cliente as c on p.idcliente = c.idcliente
 					left join repartidor as r on r.idrepartidor = p.idrepartidor
-				WHERE ".$condicion." and (p.idorg=".$g_ido." and p.idsede=".$g_idsede.")
-						AND ".$isQyueryConfirmar;
+				WHERE (p.idsede=".$g_idsede." and ".$condicion.") and ".$isQyueryConfirmar;				
 
 				// AND (p.estado IN(0,1) OR (p.confirmar_pago = 1))
 
@@ -2056,7 +2075,8 @@
 			$bd->xConsulta($sql);
 			break;
 		case 601://load clientes
-			$sql="SELECT * FROM cliente where (idorg=".$g_ido.") AND estado=0 order by nombres";
+			// $sql="SELECT * FROM cliente where (idorg=".$g_ido.") AND estado=0 order by nombres";
+			$sql = "select c.* from cliente_sede cs inner join cliente c on cs.idcliente = c.idcliente where cs.idsede = $g_idsede AND estado=0 order by nombres";
 			$bd->xConsulta($sql);
 			break;
 		case 602://buscar cliente		

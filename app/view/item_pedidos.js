@@ -103,7 +103,7 @@ $.map(xArraySumT[idtpc_ad],function(n,z){if(typeof n=="object"&&n!=null){if(n.id
 function xCargarCategoriaActual(responde){var xCategoriaActual;var xdtCat=xm_log_get('categorias');var xCadenaCartegoria='';for(var i=0;i<xdtCat.length;i++){xMenuCategoria={'id':xdtCat[i].idcategoria,'des':xdtCat[i].descripcion};}
 if(xdtCat.length==1){xCategoriaActual=xdtCat[0].idcategoria}
 return responde(xdtCat);}
-function xGeneralLoadItems(xidCategoria,x_rpt){$.ajax({type:'POST',url:'../../bdphp/log.php?op=205',data:{'idcategoria':xidCategoria}}).done(function(dtCarta){var xdt_rpt=$.parseJSON(dtCarta)
+function xGeneralLoadItems(xidCategoria,x_rpt){console.log('pasa cargando log.php205');localStorage.removeItem('::app3_listSubItem');$.ajax({type:'POST',url:'../../bdphp/log.php?op=205',data:{'idcategoria':xidCategoria}}).done(function(dtCarta){var xdt_rpt=$.parseJSON(dtCarta)
 xGeneralDataCarta=xdt_rpt.datos;console.log('xGeneralDataCarta',xGeneralDataCarta);if(x_rpt){return x_rpt(xGeneralDataCarta);}})}
 function xLimpiarItemSeleccionadosSubItems(){xGeneralDataCarta.filter(x=>x.subitems_selected).map(x=>{x.subitems_selected=[];});}
 function xGeneralSeccionMiPedido(xidCategoria,x_rpt){const ultima_categoria_cargada=localStorage.getItem('::app3_sys_last_cat_load');if(ultima_categoria_cargada===xidCategoria&&xGeneralDataSeccion!==undefined){return x_rpt(false);}

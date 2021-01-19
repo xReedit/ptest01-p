@@ -57,11 +57,13 @@
             $bd->xConsulta($sql);
             break;
         case 7://load clientes
-            $sql="SELECT * FROM cliente where (idorg=$g_ido) AND estado=0 order by nombres";
+            // $sql="SELECT * FROM cliente where (idorg=$g_ido) AND estado=0 order by nombres";
+            $sql = "select c.* from cliente_sede cs inner join cliente c on cs.idcliente = c.idcliente where cs.idsede = $g_idsede order by nombres";
             $bd->xConsulta($sql);
             break;
         case 701://load clientes - input autocomplete
-            $sql="SELECT * FROM cliente where (idorg=$g_ido) AND estado=0 order by nombres";
+            // $sql="SELECT * FROM cliente where (idorg=$g_ido) AND estado=0 order by nombres";
+            $sql = "select c.* from cliente_sede cs inner join cliente c on cs.idcliente = c.idcliente where cs.idsede = $g_idsede order by nombres";
             $bd->xConsulta($sql);
             break;
         case 8://load cargos
@@ -83,6 +85,14 @@
         case 12:// load direccion cliente
             $idcliente = $_POST['idcliente'];
             $sql = "SELECT cpd.* from cliente_pwa_direccion cpd where cpd.idcliente =".$idcliente." and cpd.estado=0";
+            $bd->xConsulta($sql);
+            break;
+        case 13: // lista de notificaciones inicio
+            $sql = "call procedure_list_notificaciones_restobar($g_idsede)";
+            $bd->xConsulta($sql);
+            break;
+        case 1301: // check calificaciones vistas
+            $sql = "update sede_calificacion set notificado=1 where idsede = $g_idsede and notificado = 0";
             $bd->xConsulta($sql);
             break;
     }

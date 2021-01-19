@@ -11,7 +11,9 @@
 </select>
 </div>
 </template>
-<script>var xThisComCategoria;function getAllCategoria(){$.ajax({type:'POST',url:'../../bdphp/log_componentes.php?op=3'}).done(function(dtValues){console.log('aaaaaaaaaaaaaaaaa load componente categoria');dtValues=$.parseJSON(dtValues);xThisComCategoria.list=dtValues.datos;xThisComCategoria.categorias=xThisComCategoria.list[0];xThisComCategoria.categorias.index=0
+<script>var xThisComCategoria;function getAllCategoria(){var getListCategoriaStorage=localStorage.getItem('::app3_comp_cat');getListCategoriaStorage=getListCategoriaStorage?JSON.parse(getListCategoriaStorage):null;if(getListCategoriaStorage){xThisComCategoria.list=getListCategoriaStorage;xThisComCategoria.categorias=xThisComCategoria.list[0];xThisComCategoria.categorias.index=0
+xThisComCategoria.getValorIncial(xThisComCategoria.categorias);return;}
+$.ajax({type:'POST',url:'../../bdphp/log_componentes.php?op=3'}).done(function(dtValues){console.log('aaaaaaaaaaaaaaaaa load componente categoria');dtValues=$.parseJSON(dtValues);xThisComCategoria.list=dtValues.datos;localStorage.setItem('::app3_comp_cat',JSON.stringify(xThisComCategoria.list));xThisComCategoria.categorias=xThisComCategoria.list[0];xThisComCategoria.categorias.index=0
 xThisComCategoria.getValorIncial(xThisComCategoria.categorias);});}
 function selectOptionCategoria(){const index=xThisComCategoria.$.compFindListCategoria.value;xThisComCategoria.categorias=xThisComCategoria.list[index];xThisComCategoria.categorias.index=index}
 Polymer({is:'x-comp-find-categoria',properties:{estilo:String,list:[],categorias:{type:Object,reflectToAttribute:true,notify:true,value:function(){return{};},observer:'categoriaNameChanged'},},listeners:{'onchange':'getCategoria'},categoriaNameChanged:function(categoria){return categoria;},getCategoria(){return this.categoria;},attached:function(){xThisComCategoria=this;getAllCategoria();},getValorIncial:function(categoria){this.fire('getValorIncial',{categorias:categoria});}})</script>

@@ -136,34 +136,84 @@
 			$sql="update registro_pago_detalle set pagado=1 where idregistro_pago_detalle in (".$_POST['ids'].")";
 			$bd->xConsulta($sql);
 		case 4:// clientes
+			$isFiltroCumple = isset($_POST['filtro_cumple']) ? $_POST['filtro_cumple'] : '0';
 			$pagination = $_POST['pagination'];						
-            $filtro = $pagination['pageFilter'] === '' ? '' : " and CONCAT(c.nombres,c.ruc, if(LENGTH(c.ruc)>8, 'PJ', 'PN'), c.direccion, c.telefono, c.f_registro) like '%".$pagination['pageFilter']."%'";
+			$filtro = $pagination['pageFilter'] === '' ? '' : " and CONCAT(c.nombres,c.ruc, if(LENGTH(c.ruc)>8, 'PJ', 'PN'), c.direccion, c.telefono, c.f_registro) like '%".$pagination['pageFilter']."%'";
+			$filtrocumple = '';
+
+			if ( $isFiltroCumple == '1' ) {
+				$filtrocumple = " AND TIMESTAMPDIFF(DAY, CURDATE(), STR_TO_DATE(concat(SUBSTRING(f_nac,1,6), YEAR(NOW())), '%d/%m/%Y')) BETWEEN 0 and 6";
+			}
 			// $filtroFecha = $fecha === '' ? ' and cierre=0 ' : " AND SUBSTRING_INDEX(fecha,' ',1) = '".$fecha."' ";
 			// $filtroFechaCount = $fecha === '' ? '' : " and (SUBSTRING_INDEX(c.fecha,' ',1)= '".$fecha."')";
 
+			$sql = "
+				SELECT  c.*, if(LENGTH(c.ruc)>8, 'PJ', 'PN') as tipo 
+					, rp.importe_consumo
+					, TIMESTAMPDIFF(DAY, CURDATE(), STR_TO_DATE(concat(SUBSTRING(f_nac,1,6), YEAR(NOW())), '%d/%m/%Y')) dias_cumple
+				from cliente_sede cs
+					inner join cliente c on cs.idcliente = c.idcliente	
+					left join ( select rp.idcliente, format(sum(rp.total), 2) importe_consumo 
+								from registro_pago rp where rp.idsede = $g_idsede  group by rp.idcliente  ) rp on rp.idcliente = c.idcliente
+				where cs.idsede = $g_idsede$filtrocumple$filtro
+				order by rp.importe_consumo desc, c.nombres asc limit ".$pagination['pageLimit']." OFFSET ".$pagination['pageDesde'];			
+
+				// echo $sql;
 			// $sql = "
 			// 	select c.*, if(LENGTH(c.ruc)>8, 'PJ', 'PN') as tipo from cliente c 
 			// 	LEFT join pedido p on p.idcliente = c.idcliente
 			// 	where (p.idorg=".$g_ido." or c.idorg=".$g_ido.")".$filtro." and c.nombres != '' and c.estado=0
 			// 	order by c.nombres asc limit ".$pagination['pageLimit']." OFFSET ".$pagination['pageDesde'];
 			
-			// $sqlCount="
-			// 	SELECT count(c.idcliente) as d1 from cliente c
-			// 	LEFT join pedido p on p.idcliente = c.idcliente
-			// 	where (p.idorg=".$g_ido." or c.idorg=".$g_ido.")".$filtro." and c.nombres != '' and c.estado=0";            
+			$sqlCount="SELECT count(cs.idcliente) from cliente_sede cs inner join cliente c on cs.idcliente = c.idcliente where cs.idsede = $g_idsede$filtrocumple$filtro and c.nombres != '' and c.estado=0";				
 				
 			// echo $sqlCount;
             
-			// $rowCount = $bd->xDevolverUnDato($sqlCount);
+			$rowCount = $bd->xDevolverUnDato($sqlCount);
 			
-			// $rpt = $bd->xConsulta($sql);            
-			// print $rpt."**".$rowCount;
-			echo 'restaurar';
+			
+			$rpt = $bd->xConsulta($sql);            
+			print $rpt."**".$rowCount;
+			// echo 'restaurar';
 			break;
 		case 401:// historial cliente
-			$sql = "select idcliente, STR_TO_DATE(fecha, '%d/%m/%Y') fecha, fecha as fecha_mostrar, total  from registro_pago where idcliente=".$_POST['i']." and estado=0";
+			$sql = "select idcliente, STR_TO_DATE(fecha, '%d/%m/%Y') fecha, fecha as fecha_mostrar, total  from registro_pago where idcliente=".$_POST['i']." and idsede=$g_idsede and estado=0";
 			$bd->xConsulta($sql);
 			break;
+		case 402: //direccion del cliente
+			$idcliente = $_POST['id'];
+			$sql = "SELECT * from cliente_pwa_direccion cpd where idcliente = ".$idcliente;
+			$bd->xConsulta($sql);
+			break;
+		case 403: //guardar direccion
+			$arrItem=json_encode($_POST['item'], JSON_UNESCAPED_UNICODE);
+			$sql = "CALL procedure_registra_nueva_direccion_cliente(".$g_idsede.",'".$arrItem."')";			
+			$bd->xConsulta($sql);
+			break;
+		case 404: // obtener canales de mensjae
+			$sql = "SELECT * from msj_canal mc where estado = 0";
+			$bd->xConsulta($sql);
+			break;		
+		case 405: // obtener canales de mensjae plantilla
+			$idCanal = $_POST['id'];
+			$sql = "SELECT * from msj_plantilla mp where idmsj_canal = $idCanal and estado = 0";
+			$bd->xConsulta($sql);
+			break;
+		case 406: // obtener las imagenes precargadas para la plantilla
+			$idCanal = $_POST['id'];
+			$sql = "SELECT * from canal_plantilla_imgen mp where estado = 0 order by titulo";
+			$bd->xConsulta($sql);
+			break;
+		case 40601: // obtener datos ingresados logo y link accion			
+			$sql = "SELECT * from sede_datos_msj where idsede = $g_idsede";
+			$bd->xConsulta($sql);
+			break;
+		case 407: // guardar logo correo y datos
+			$urlLogo = $_POST['logo'];
+			$arrItem=json_encode($_POST['item']);
+			$sql = "CALL procedure_guardar_logo_correo($g_idsede, '$urlLogo', '".$arrItem."')";			
+			$bd->xConsulta($sql);
+			break;		
 		case 5: //planilla -cargo
 			$sql = "select *, format(remuneracion, 2) importe from cargo where idorg=".$g_ido." and estado=0 order by descripcion";
 			$bd->xConsulta($sql);
@@ -517,6 +567,28 @@
 			$sql = "update print_server_detalle set impreso = 0, estado = 0 where idprint_server_detalle in ($ids)";
 			$bd->xConsulta($sql);
 			break;
+		case 16062: // cliente calificacion
+			$idsede = $_POST['idsede'];
+			$pagination = $_POST['pagination'];
+			$sql = "
+				SELECT p.fecha_hora, p.idpedido, p.correlativo_dia, tc.descripcion, SUBSTRING_INDEX(c2.nombres, ' ',1) nombre, sc.calificacion, sc.comentario
+					from sede_calificacion sc 
+					inner join cliente c2 on c2.idcliente = sc.idcliente 
+					inner join pedido p on sc.idpedido = p.idpedido
+					inner join tipo_consumo tc on tc.idtipo_consumo = p.idtipo_consumo 
+				where sc.idsede = $idsede order by sc.idsede_calificacion desc limit ".$pagination['pageLimit']." OFFSET ".$pagination['pageDesde'];
+			// $bd->xConsulta($sql);
+
+			$sqlCount = "SELECT count(idsede_calificacion) as d1 from sede_calificacion where idsede = 13";
+
+			$rowCount = $bd->xDevolverUnDato($sqlCount);
+			// echo $sqlCount;
+			$rpt = $bd->xConsulta($sql);            
+            print $rpt."**".$rowCount;			
+			break;
+
+
+
 		case 17: // reimprimir cierre de caja
 			$f = $_POST['f'];			
 			$sql = "INSERT INTO print_server_detalle (idorg, idsede, idprint_server_estructura, descripcion_doc, detalle_json,fecha,hora, idusuario) 
@@ -651,5 +723,6 @@
 			 
 			$bd->xConsulta($sql);
 			break;
+		
 	}
 ?>

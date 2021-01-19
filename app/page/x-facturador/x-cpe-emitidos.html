@@ -33,15 +33,6 @@
 <div class="xEncanezadoCard xFondoRowAmarillo2">
 <h4>Comprobantes electronicos.</h4>
 <span hidden$=[[isContador]]>Estado de los comprobantes electronicos, resumenes diarios y reportes.</span>
-<div hidden$=[[!isContador]] style="max-width:300px">
-<label for="sel_sede" class="xColorRow_Plomo">Seleccione Establecimiento</label>
-<select class="xSelectOptionFlat" id="selectSedeCPC" onchange="selectOptionSedeCPC()">
-<option value="-1">SELECCIONE UN ESTABLECIMIENTO</option>
-<template is="dom-repeat" items="{{listSedeUsContador}}" as="item">
-<option value="[[index]]">[[item.establecimiento]] | [[item.sede]] | [[item.ciudad]] </option>
-</template>
-</select>
-</div>
 </div>
 <div class="xContentCard" style="height:100%">
 <div>
@@ -55,24 +46,20 @@
 <iron-pages selected="{{selected}}">
 <div id="div_comprobantes">
 <div id="div_info_comprobantes" hidden$=[[isContador]]>
-<div class="xDerecha">
-<button class="xBoton2 xAzul xDerecha" onclick="xEnviarResumenBoletas()">Enviar Resumen de boletas</button>
-<br>
-<button class="xBoton2 xVerde xDerecha" onclick="xGenerarReporteExcel()" title="Bajar a excel"><img src="../../../images/excel.png" alt=""></button>
-</div>
 <h4>Comprobantes electronicos emitidos.</h4>
 <p class="xColorRow_Plomo">Al enviar el resumen de boletas, también se procesan y se envían los documentos sin
 registrar, es decir los documentos
 que se emitieron en modo offline ó los que por algún motivo en su momento no se pudo establecer conexión con la
 Sunat.<br>Este proceso es el mismo que se realiza al cierre de caja.</p>
+<div class="d-flexx">
+<button class="xBoton2 xAzul mr-2" onclick="xEnviarResumenBoletas()">Enviar Resumen de boletas</button>
+<button class="xBoton2 xVerde" onclick="xGenerarReporteExcel()" title="Bajar a excel"><img src="../../../images/excel.png" alt=""></button>
+</div>
 <p id="xTituloRpt" class="xColorRow_Rojo"></p>
 </div>
 <div id="div_opciones_contador" hidden$=[[!isContador]]>
-<button class="xBoton2 xAzul" style="display:inline-flex" onclick="xGenerarReporteExcelMesAnterior()" title="Bajar a excel" id="btn_mes_anterior"><img src="../../../images/excel.png" alt="" style="padding-right:3px">
+<button class="xBoton2 xAzul" style="display:none" onclick="xGenerarReporteExcelMesAnterior()" title="Bajar a excel" id="btn_mes_anterior"><img src="../../../images/excel.png" alt="" style="padding-right:3px">
 <span id="txt_btn_mes_anterior"></span>
-</button>
-<button class="xBoton2 xVerde" style="display:inline-flex" onclick="xGenerarReporteExcel()" title="Bajar a excel"><img src="../../../images/excel.png" alt="" style="padding-right:3px">
-<span> Descargar busqueda</span>
 </button>
 </div>
 <br>
@@ -215,7 +202,7 @@ Sunat.<br>Este proceso es el mismo que se realiza al cierre de caja.</p>
 <script rel="preload" type="text/javascript" src="../../view/xSOAPSunat.js"></script>
 <script rel="preload" type="text/javascript" src="../../view/cpe_interno.js"></script>
 <script type="text/javascript" src="../../view/export.excel.js"></script>
-<script>/*<![CDATA[*/var xThisCpe,lastPos=0,xPopupLoad,p_upadate=true,p_rows_re=0,p_rows=0,p_fecha='',p_filter='',p_desde=0,data_pagination={},data_pagination_re={},xdebounce,xe_debounce=false,index_anular;var cpe_mes_anterior='',cpe_yy_actual='',_us_cpe='';function xExportarExcel(){tableToExcel('testTable','Comprobantes')}
+<script>/*<![CDATA[*/var xThisCpe,lastPos=0,xPopupLoad,p_upadate=true,p_rows_re=0,p_rows=0,p_fecha='',p_filter='',p_desde=0,data_pagination={},data_pagination_re={},xdebounce,xe_debounce=false,index_anular;var cpe_mes_anterior='',cpe_yy_actual='',_us_cpe='';function xExportarExcel(){tableToExcel('testTable','Comprobantes');}
 function xIniCpe(){xThisCpe.ListCpe=[];xThisCpe.ListCpeResumen=[];xCPE_getMesYYActual();xCPEValidUs();xLoadCpeEmitidos('6');xIniPagination();setTimeout(()=>{$('body').addClass('loaded');},500);xThisCpe.$.paginator.addEventListener('page-limit-change',(e)=>{data_pagination=e.detail.value;p_desde=data_pagination.pageDesde;lastPos=$(window).scrollTop();xLoadCpeEmitidos('6');});$("#txt_fecha").on('change',function(){var d=$(this).val().split('-');p_fecha=d[1]===undefined?'':d[2]+'/'+d[1]+'/'+d[0];xThisCpe.$.paginator.currentPage=1;xLoadCpeEmitidos('6');});$("#tab_cpe").on('iron-select',function(){switch(xThisCpe.selected){}});xListRe_ini();}
 function xIniPagination(){xThisCpe.$.paginator.currentPage=1;xThisCpe.$.paginator.pageRows=p_rows;xThisCpe.$.paginator.listRows=[10,20,30,40];}
 function xfiltrarDatos(){if(xe_debounce)return;xe_debounce=true;clearTimeout(xdebounce);xdebounce=setTimeout(()=>{xLoadCpeEmitidos('6');xe_debounce=false;xThisCpe.$.paginator.currentPage=1;},900);}

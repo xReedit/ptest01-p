@@ -1,0 +1,581 @@
+<dom-module id="x-cliente-enviar-msj">
+	<template is="dom">
+
+        <paper-dialog class="dialog_redondo" id="dialog_confirmar" entry-animation="scale-up-animation"
+			exit-animation="fade-out-animation" with-backdrop>
+			<div class="xtxtCentro">
+				<img src="../../../images/004_reenviar.png" alt="" >
+			</div>
+			<p>Esta seguro de querer enviar este mensaje<br> a los clientes seleccionados?</p>
+			<br>
+			<div class="buttons">
+				<button class="xBoton2 xPlomo" dialog-dismiss>Cancelar</button>
+				<button class="xBoton2 xVerde" onclick="sendMsjList();">Si, enviar</button>
+			</div>
+		</paper-dialog>
+
+        
+		<div class="xMiCard xradius" style="width:90%; max-width: 1250px;">
+            <div class="xEncanezadoCard" style="background: lavenderblush; color: #424242;">
+                <div class="d-flexx">
+                    <h3 class="pr-2">Enviar mensaje.</h3>				
+                    <img src="../../../images/004_reenviar.png">
+                </div>
+				<p><strong>Envia mensajes ó correo.</strong> Manten a tus clientes informados de todas tus novedades, ofertas ó promociones.</p>
+            </div>
+            <div class="xContentCard border-bottom" style="padding: 20px;">
+
+                <div class="d-flexx">
+                    <div class="mr-2">
+                        <label for="tipo"> Canal</label>
+                        <select name="" id="compSelectCanal" class="selected-template-1" onchange="selectCanal()">
+                            <template is="dom-repeat" items="{{listCanales}}" as="item">
+                                <option value="[[index]]"> {{ item.canal }} </option>                            
+                            </template>
+                        </select>
+                    </div>
+
+                    <div hidden$ = "[[ isBodyCorreoShow ]]">                        
+                        <label for="plantilla"> Plantilla</label>
+                        <select name="" id="compSelectPlantilla" class="selected-template-1" onchange="selectPlantilla()">
+                            <template is="dom-repeat" items="{{listPlantilla}}" as="item">
+                                <option value="[[index]]"> {{ item.titulo }} </option>                            
+                            </template>
+                        </select>
+                    </div>
+                </div>
+                <br>
+                <div class="xLinea2"></div>
+                <br>
+                <div>
+                    <h4>Mensaje de Texto SMS</h4>
+                    <p> {{ canalSelected.descripcion }}  </p>
+                </div>
+
+                <br>
+                <div class="xLinea2"></div>
+                <br>
+
+                <!-- body -->
+                <div hidden$="{{!isBodySMSTextoShow}}">
+                    <textarea name="" id="txt_sms" cols="70" rows="8" class="selected-template-1" placeholder="Escriba el mensaje"></textarea>
+                </div>
+
+                <!-- correo -->
+                <div hidden$="{{!isBodyCorreoShow}}" class="d-flexx">
+                    
+                    <!-- configuracion -->
+                    <div style="min-width: 350px;">
+                        <h4>Encabezado</h4>
+                        <label for="txt_logo">Logo</label>
+                        <input type="file" name="" id="txt_correo_logo" class="selected-template-1 w-100 inputImg" placeholder="Logo" data-id = "correo_img_head"><br>
+                        <input type="text" name="" id="txt_correo_titulo" class="selected-template-1 w-100 mt-2" onkeyup="changePlantillaCorreo(this,'titulo')" placeholder="Titulo" value="Happy Birthday!" espaciar>
+                        <br><br>
+                        <!-- <br><div class="xLinea2"></div><br> -->
+    
+                        <h4>Cuerpo</h4>
+                        <label for="comSelectImgBody">Seleccionar Imagen</label><br>
+                        <select name="" id="comCorreoSelectImgBody" class="selected-template-1 w-100" onchange="selectImgPreloadPlantilla()">
+                            <template is="dom-repeat" items="{{listImgPreLoadPlantilla}}" as="item">
+                                <option value="[[index]]"> {{ item.titulo }} </option>                            
+                            </template>
+                        </select><br><br>
+
+                        <label for="txt_logo">Ó Subir una Imagen</label>
+                        <input type="file" name="" id="txt_correo_img_cuerpo2" class="selected-template-1 w-100 inputImg" placeholder="Logo" data-id="corre_img_body"><br>
+                        <textarea name="" id="txt_correo_descripcion" onkeyup="changePlantillaCorreo(this,'descripcion_body')" cols="70" rows="3" class="selected-template-1 w-100 mt-2" placeholder="Descripcion"></textarea>
+                        <br><br>
+    
+                        <!-- <br><div class="xLinea2"></div><br> -->
+                        <h4>Botón de Acción</h4>  
+                        <input type="text" name="" id="txt_correo_titulo_btn_accion" maxlength="25" onkeyup="changePlantillaCorreo(this,'btn_accion')"  class="selected-template-1 w-100" placeholder="Titulo Boton" espaciar>
+                        <input type="text" name="" id="txt_correo_url_btn_accion" class="selected-template-1 w-100 mt-2" onkeyup="changePlantillaCorreo(this,'btn_accion_enlace')" placeholder="Enlace ej: https://www.facebook.com/el_asador/evento" espaciar>
+                        <br><br><br>
+                    </div>
+
+                    <!-- plantilla -->
+                    <div>
+                        <div id="content_plantilla_correo">
+                            <div>
+
+                                <table class="es-content" cellspacing="0" cellpadding="0" align="center">
+                                    <tbody>
+                                        <tr>
+                                            <td class="esd-stripe" align="center">
+                                                <table class="es-content-body xSinBorde" style="background-color: #ffffff;" width="600" cellspacing="0" cellpadding="0" bgcolor="#ffffff" align="center">
+                                                    <tbody>
+                                                        <tr>
+                                                            <td class="esd-structure es-p30t es-p35b es-p40r es-p40l" align="left">
+                                                                <table width="100%" cellspacing="0" cellpadding="0">
+                                                                    <tbody>
+                                                                        <tr>                                                                            
+                                                                            <td class="esd-container-frame" width="600" valign="top" align="center">
+                                                                                <table width="100%" cellspacing="0" cellpadding="0">
+                                                                                    <tbody>
+                                                                                        <tr>
+                                                                                            <td class="esd-block-image" align="center" style="font-size:0">
+                                                                                                <a target="_blank">
+                                                                                                    <img class="adapt-img" id="correo_img_head" src="../../../images/004_reenviar.png" style="display: block;" alt="Gift2 " title="Gift2 ">
+                                                                                                </a>
+                                                                                            </td>
+                                                                                        </tr>
+                                                                                    </tbody>
+                                                                                </table>
+                                                                            </td>
+                                                                        </tr>
+                                                                        <tr>
+                                                                            <td class="esd-container-frame" width="520" valign="top" align="center">
+                                                                                <table width="100%" cellspacing="0" cellpadding="0">
+                                                                                    <tbody>
+                                                                                        <tr>
+                                                                                            <td class="esd-block-text" align="center">
+                                                                                                <h1 style="color: #666666; font-size: 40px; font-family: lora, georgia, times\ new\ roman, serif;" id="correo_titulo"><em>Happy Birthday!</em></h1>
+                                                                                            </td>
+                                                                                        </tr>
+                                                                                    </tbody>
+                                                                                </table>
+                                                                            </td>
+                                                                        </tr>
+                                                                    </tbody>
+                                                                </table>
+                                                            </td>
+                                                        </tr>
+                                                        <tr>
+                                                            <td class="esd-structure" esd-general-paddings-checked="false" align="left">
+                                                                <table width="100%" cellspacing="0" cellpadding="0">
+                                                                    <tbody>
+                                                                        <tr>
+                                                                            <td class="esd-container-frame" width="600" valign="top" align="center">
+                                                                                <table width="100%" cellspacing="0" cellpadding="0">
+                                                                                    <tbody>
+                                                                                        <tr>
+                                                                                            <td class="esd-block-image" align="center" style="font-size:0">
+                                                                                                <a target="_blank">
+                                                                                                    <img class="adapt-img" id="correo_img_preload_body" src="https://tlr.stripocdn.email/content/guids/CABINET_b54797fc68edcecf4f6b2835e7bcba32/images/36321522405737710.gif" style="display: block;" alt="Gift " title="Gift " width="300">
+                                                                                                </a>
+                                                                                            </td>
+                                                                                        </tr>
+                                                                                    </tbody>
+                                                                                </table>
+                                                                            </td>
+                                                                        </tr>
+                                                                    </tbody>
+                                                                </table>
+                                                            </td>
+                                                        </tr>
+                                                        <tr>
+                                                            <td class="esd-structure es-p30t es-p40b es-p40r es-p40l" align="left">
+                                                                <table width="100%" cellspacing="0" cellpadding="0">
+                                                                    <tbody>
+                                                                        <tr>
+                                                                            <td class="esd-container-frame" width="520" valign="top" align="center">
+                                                                                <table width="100%" cellspacing="0" cellpadding="0">
+                                                                                    <tbody>
+                                                                                        <tr>
+                                                                                            <td class="esd-block-text" align="center">
+                                                                                                <div style="margin-bottom: 10px; margin-top: 10px;">
+                                                                                                    <p style="color: #616161; font-size: 16px;" id="correo_descripcion_body">Especifica los detalles de la promción, oferta o felicitación.<br></p>
+                                                                                                </div>
+                                                                                            </td>
+                                                                                        </tr>                                                                                        
+                                                                                    </tbody>
+                                                                                </table>
+                                                                            </td>
+                                                                        </tr>
+                                                                    </tbody>
+                                                                </table>
+                                                            </td>
+                                                        </tr>
+                                                        <tr>
+                                                            <td>
+                                                                <table width="100%" cellspacing="0" cellpadding="0">
+                                                                    <tbody>
+                                                                        <tr>
+                                                                            <td class="esd-block-button es-p10t es-p10b" style="margin-top: 10px; margin-bottom: 15px;" align="center">
+                                                                                <span class="es-button-border" style="border-radius: 5px; border-width: 0px; border-style: solid; background: #0297f4; border-color: #ffffff; padding: 10px; font-size: 18px;">
+                                                                                    <a href="https://viewstripo.email/" id="correo_btn_accion" class="es-button" target="_blank" style="border-width: 10px 25px; border-radius: 5px; color: #ecf3f4; background: #0297f4; border-color: #0297f4;">Boton Accion</a>
+                                                                                </span>
+                                                                                <br><br><br>
+                                                                            </td>
+                                                                        </tr>                                                                        
+                                                                    </tbody>
+                                                                </table>
+                                                            </td>
+                                                        </tr>
+                                                    </tbody>
+                                                </table>
+                                            </td>
+                                        </tr>
+                                    </tbody>
+                                </table>                
+                
+                
+                            </div>
+                        </div>
+                    </div>
+
+                </div>
+                <br><br>
+                <!-- body -->
+
+
+                <p> {{ countClientesSelected }} Clientes seleccionados.</p>
+                <div hidden$="[[ !isEnvioSuccess ]]">
+                    <p class="text-success fw-600"> Se envio el mensaje con exiteo a todos los clientes seleccioandos.</p>
+                </div>
+
+                <br>
+
+                <div class="d-flexx">
+                    <button class="btn btn-success mr-2" onclick="dialog_confirmar.open()" disabled$="[[ isEnviando ]]">
+                        <i class="fa fa-paper-plane-o" aria-hidden="true"></i>
+                        Listo Enviar
+                    </button>
+    
+                    <button class="btn btn-secondary" onclick="irPageEnviarMsj()" disabled$="[[ isEnviando ]]">
+                        <i class="fa fa-arrow-left" aria-hidden="true"></i>
+                        Regresar
+                    </button>
+                </div>
+                
+
+                <br>
+                <div hidden="[[ !isEnviando ]]" class="mt-2">
+                    <p>Enviando {{ countSendMsj }} de {{ countClientesSelected }}</p>
+                    <paper-progress indeterminate style="width: 100%;">
+                    </paper-progress>
+                </div>
+
+                
+
+                <br><br>
+            </div>
+
+
+
+
+
+            <!--  -->
+
+
+
+
+
+        </div>
+        <br><br>
+    </template>
+</dom-module>
+<script>
+    var xThisClienteSendMsj, dataInfoSede, listClientesSeletected, urlImgLogoEstablecimiento = '';
+
+    
+
+    function xIniClienteSendMs() {
+        dataInfoSede = xm_log_get('datos_org_sede');
+        // console.log('dataInfoSede', dataInfoSede);
+        getCanales();
+        getListaClientesSelected();
+        getImgPreLoadPlantilla();
+
+        $('.inputImg').on('change', (e) => {
+            
+            var eChange = e.target.dataset.id;                 
+
+            inputFileImgToBase64(e, 500, 500).then(res => {
+                console.log(res);
+                switch (eChange) {
+                    case 'correo_img_head':                        
+                        correo_img_head.src = res;
+                        uploadImg(res, eChange, correo_img_head, true);
+                        break;
+                    case 'corre_img_body':
+                        $(correo_img_preload_body).css("width", 'auto'); 
+                        correo_img_preload_body.src = res;
+                        uploadImg(res, eChange, correo_img_preload_body);
+                        break;                
+                }
+
+                
+            });
+        });
+    }
+
+    function uploadImg(imgBase64, nomfile, contentImg, isLogo = false) {
+        $.ajax({
+				type: 'POST',
+				url: 'upload_base64.php?op=4',
+                data: {
+                    nomfile : nomfile,
+                    img : imgBase64
+                }				
+			})
+			.done((res) => {				
+                console.log('res', res);
+                if (isLogo) { // para guardarlo
+                    urlImgLogoEstablecimiento = URL_IMG_CORREO + res;
+                }
+
+				contentImg.src = URL_IMG_CORREO + res;
+			});
+    }
+
+    function getCanales() {
+        $.ajax({
+				type: 'POST',
+				url: '../../bdphp/log_005.php?op=404'				
+			})
+			.done((res) => {				
+				res = JSON.parse(res);	
+                xThisClienteSendMsj.listCanales = JSON.parse(JSON.stringify(res.datos));
+                xThisClienteSendMsj.canalSelected = xThisClienteSendMsj.listCanales[0];
+                getPlantilla(xThisClienteSendMsj.canalSelected.idmsj_canal);
+
+                console.log(xThisClienteSendMsj.listCanales);
+				
+			});
+    }
+    function getListaClientesSelected() {
+        listClientesSeletected = JSON.parse(localStorage.getItem('::app3_list_send'));
+        listClientesSeletected = listClientesSeletected ? listClientesSeletected : [];
+        xThisClienteSendMsj.countClientesSelected = listClientesSeletected.length;
+        // console.log('listClientesSeletected', listClientesSeletected);
+    }
+
+    function getPlantilla(_id) {
+        $.ajax({
+				type: 'POST',
+                url: '../../bdphp/log_005.php?op=405',
+                data: { id: _id}
+			})
+			.done((res) => {				
+				res = JSON.parse(res);	
+                xThisClienteSendMsj.listPlantilla = JSON.parse(JSON.stringify(res.datos));				
+                
+                console.log(xThisClienteSendMsj.listPlantilla);
+			});
+    }
+
+    function getImgPreLoadPlantilla() {
+        $.ajax({
+				type: 'POST',
+                url: '../../bdphp/log_005.php?op=406'
+			})
+			.done((res) => {				
+				res = JSON.parse(res);	
+                xThisClienteSendMsj.listImgPreLoadPlantilla = JSON.parse(JSON.stringify(res.datos));				                                
+            });
+            
+        getDatosSedeAfterRegister();
+    }
+
+    function getDatosSedeAfterRegister() {
+        $.ajax({
+				type: 'POST',
+                url: '../../bdphp/log_005.php?op=40601'
+			})
+			.done((res) => {				
+                var _res = JSON.parse(res).datos;                
+                _res = _res[0] ? _res[0] : null;
+
+                if ( _res ) {
+                    urlImgLogoEstablecimiento = _res.logo;
+                    correo_img_head.src = _res.logo;
+                    correo_btn_accion.href = _res.link_accion;
+                    txt_correo_url_btn_accion.value = _res.link_accion;
+                }                
+			});
+    }
+
+    
+
+    function selectCanal() {
+        const index = xThisClienteSendMsj.$.compSelectCanal.value;
+        xThisClienteSendMsj.canalSelected = xThisClienteSendMsj.listCanales[index];
+        getPlantilla(xThisClienteSendMsj.canalSelected.idmsj_canal);
+
+        getListaClientesSelected();
+
+        xThisClienteSendMsj.isBodySMSTextoShow = false;
+        xThisClienteSendMsj.isBodyCorreoShow = false;
+        switch ( xThisClienteSendMsj.canalSelected.idmsj_canal ) {
+            case "1":
+                xThisClienteSendMsj.isBodySMSTextoShow = true;
+                break;        
+            case "2":
+                xThisClienteSendMsj.isBodyCorreoShow = true;
+                break;
+            default:
+                break;
+        }
+    }
+
+    function selectPlantilla() {
+        const index = xThisClienteSendMsj.$.compSelectPlantilla.value;
+        xThisClienteSendMsj.plantillaSelected = xThisClienteSendMsj.listPlantilla[index];
+        
+        const _contenido = xThisClienteSendMsj.plantillaSelected.contenido + '. Atentamente ' + dataInfoSede[0].sedenombre;
+        txt_sms.value = _contenido
+    }
+
+    function selectImgPreloadPlantilla() {
+        const index = xThisClienteSendMsj.$.comCorreoSelectImgBody.value;
+        var imgPreLoadSelected = xThisClienteSendMsj.listImgPreLoadPlantilla[index];
+        correo_img_preload_body.src = imgPreLoadSelected.url;   
+        $(correo_img_preload_body).css("width", '300');     
+
+    }
+
+    
+
+
+
+    function changePlantillaCorreo(e, eChange) {
+        var _value;
+        switch (eChange) {
+            case 'titulo':
+                _value = e.value;
+                correo_titulo.textContent = _value;
+                break;
+            case 'descripcion_body':
+                _value = e.value;
+                correo_descripcion_body.textContent = _value;
+                break;
+            case 'btn_accion':
+                _value = e.value;
+                correo_btn_accion.textContent = _value;
+                break;
+            case 'btn_accion_enlace':
+                _value = e.value;
+                correo_btn_accion.href = _value;
+                break;
+        
+            default:
+                break;
+        }
+
+    }
+
+    function sendMsjList() {
+        // listClientesSeletected.map(x => {
+
+        //     sendSMSClient(x.telefono, txt_sms.value);
+        // });
+        dialog_confirmar.close();
+
+        saveLogoCorreo();
+
+        var counter = 0;
+        xThisClienteSendMsj.countSendMsj = 0;
+        xThisClienteSendMsj.isEnviando = true;
+        xThisClienteSendMsj.isEnvioSuccess = false;
+
+        setInterval(function(){
+        if(counter < listClientesSeletected.length){
+            const _item = listClientesSeletected[counter];
+
+            if ( xThisClienteSendMsj.isBodySMSTextoShow ) {
+                sendSMSClient(_item.telefono, txt_sms.value);
+            }
+
+            if ( xThisClienteSendMsj.isBodyCorreoShow ) {
+                sendEmailClient(_item);
+            }
+
+
+            counter++;
+            xThisClienteSendMsj.countSendMsj = counter;
+            console.log(counter);
+        }else
+            xThisClienteSendMsj.isEnviando = false;
+            xThisClienteSendMsj.isEnvioSuccess = true;
+            return;
+        }, 1000);
+    }
+
+
+
+    function sendSMSClient(_number, _contenido) {
+        const _url = URL_SERVER +'delivery/send-sms';
+        $.ajax({
+				type: 'POST',
+                url: _url,
+                data: { phone: _number, contenido: _contenido}
+			})
+			.done((res) => {				
+				console.log(res);
+			});
+    }
+
+    function sendEmailClient(_cliente) {
+        console.log('content_plantilla_correo');
+        const _msjSend = {
+            to: _cliente.email,
+            asunto: txt_correo_titulo.value,
+            titulo: txt_correo_titulo.value,
+            htmlContent: content_plantilla_correo.outerHTML
+        }
+        const _url = URL_SERVER +'delivery/send-email';
+        $.ajax({
+				type: 'POST',
+                url: _url,
+                data: { msj: _msjSend}
+			})
+			.done((res) => {				
+				console.log(res);
+			});
+    }
+
+    // guardar logo
+    function saveLogoCorreo() {
+        const cCorreo = xThisClienteSendMsj.isBodySMSTextoShow ? 0 : xThisClienteSendMsj.countClientesSelected;
+        const cSMS = xThisClienteSendMsj.isBodySMSTextoShow ? xThisClienteSendMsj.countClientesSelected : 0;
+        const _dataSend = {
+            count_correo: cCorreo,
+            count_sms: cSMS,
+            link_accion: correo_btn_accion.href
+        }
+         $.ajax({
+				type: 'POST',
+                url: '../../bdphp/log_005.php?op=407',
+                data: { logo: urlImgLogoEstablecimiento, item: _dataSend}
+			})
+			.done((res) => {				
+				console.log(res);
+			});
+    }
+
+
+
+
+    
+
+    Polymer({
+		is: 'x-cliente-enviar-msj',
+		properties: {			
+            listCanales: [],
+            listPlantilla: [],
+            canalSelected: [],
+            listImgPreLoadPlantilla: [],
+            plantillaSelected: {},
+            countClientesSelected: Number,
+            countSendMsj: Number,
+            isEnviando: Boolean,
+            isEnvioSuccess: Boolean,
+            isBodySMSTextoShow: Boolean,
+            isBodyCorreoShow: Boolean
+		},
+		attached: function () {
+            xThisClienteSendMsj = this;
+            this.countClientesSelected = 0;
+            this.countSendMsj = 0;
+            this.isEnviando = false;
+            this.isEnvioSuccess = false;
+            this.isBodySMSTextoShow = true;
+            this.isBodyCorreoShow = false;
+			xIniClienteSendMs();
+		},
+		displayIndex: function (index) {
+			return xCeroIzq(index + 1, 1);
+		},
+	})
+</script>
