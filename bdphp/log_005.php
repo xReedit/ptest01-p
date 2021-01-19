@@ -151,6 +151,7 @@
 				SELECT  c.*, if(LENGTH(c.ruc)>8, 'PJ', 'PN') as tipo 
 					, rp.importe_consumo
 					, TIMESTAMPDIFF(DAY, CURDATE(), STR_TO_DATE(concat(SUBSTRING(f_nac,1,6), YEAR(NOW())), '%d/%m/%Y')) dias_cumple
+					, if ( c.f_nac = 'null', '',  c.f_nac) f_nacimiento
 				from cliente_sede cs
 					inner join cliente c on cs.idcliente = c.idcliente	
 					left join ( select rp.idcliente, format(sum(rp.total_r), 2) importe_consumo 
