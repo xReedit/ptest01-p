@@ -178,7 +178,7 @@
 			break;
 		case 401:// historial cliente
 			// $sql = "select idcliente, STR_TO_DATE(fecha, '%d/%m/%Y') fecha, fecha as fecha_mostrar, total  from registro_pago where idcliente=".$_POST['i']." and idsede=$g_idsede and estado=0";
-			$sql = "select idcliente, STR_TO_DATE(fecha, '%d/%m/%Y') fecha, fecha as fecha_mostrar, total  from pedido where idcliente=".$_POST['i']." and idsede=$g_idsede";
+			$sql = "select idcliente, STR_TO_DATE(fecha, '%d/%m/%Y') fecha, fecha as fecha_mostrar, total_r as total  from pedido where idcliente=".$_POST['i']." and idsede=$g_idsede";
 			$bd->xConsulta($sql);
 			break;
 		case 402: //direccion del cliente
