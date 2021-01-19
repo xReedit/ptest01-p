@@ -1,0 +1,203 @@
+<dom-module id="x-comp-list-notification">
+	<template is="dom">
+        <paper-dialog id="dialog_notificaciones" class="dialog_redondo position-list-notification animate__animated animate__fadeIn animate__faster">
+            <div>                
+                <p class="fw-600">Notificaciones</p>
+                <div class="xLinea2"></div><br>			                
+                <table width="100%">
+                    <template is="dom-repeat" items="{{lisNotificaciones}}" as="item">
+                        <tr>                            
+                            <td class="xCursor" data-id = "[[ index ]]" onclick="goPageListNotification(this)">
+                                <p> {{ item.descripcion }} <i class$="{{ item.icon }}"></i></p>
+                                <span class="text-secondary fs-12"> {{ item.detalle }} </span>
+                            </td>
+                        </tr>
+                    </template>
+                </table>
+                <div>
+                    
+                </div>
+            </div>
+            <br>
+        </paper-dialog>    
+    </template>
+</dom-module>
+
+<style>
+    .position-list-notification {
+        position: relative;
+        float: right;
+        margin-top: 65px;
+        margin-right: 15px;
+        max-width: 400px !important;        
+    }    
+
+</style>
+
+<script>
+    var xThisListNotificacion, resCountNotification, isShowAlertNotification = false, listAddNotification = [];
+    // , divIconNotification;
+
+    // verificar si hay notificaciones
+    function xIniCompListNotificacion(params) {
+
+        // divIconNotification = document.getElementById('divIconNotification');
+        
+        const _url = '../../bdphp/log_componentes.php?op=13'
+        $.ajax({
+					type: 'POST',
+                    url: _url                    
+				})
+				.done(function (res) {
+                    console.log(res);
+                    resCountNotification = JSON.parse(res).datos[0];
+                    verifyShowNotification();                                    
+
+                });
+        
+        
+    }
+
+    function createListNotifications() {
+        var _iteAdd = {}, sPlural = '', countNoticaciones = 0;
+        xThisListNotificacion.lisNotificaciones = [];
+        listAddNotification = [];
+        // stock minimo
+        if ( resCountNotification.stock_minimo > 0 ) {
+            sPlural = resCountNotification.stock_minimo > 1 ? 's' : '';
+            _iteAdd = {
+                key: 'stock_minimo',
+                fecha:'', descripcion: 'Stock Mínimo',
+                detalle: `${resCountNotification.stock_minimo} Producto${sPlural} con stock mínimo.`,
+                idpage: 17,
+                parametro: '?stock_minimo=si',
+                icon: 'fa fa-minus-square text-danger'
+            }
+            listAddNotification.push(_iteAdd);
+            countNoticaciones++;
+        }
+        
+        // cumpleañps
+        if ( resCountNotification.cumple_clientes > 0 ) {
+            const nPlural = resCountNotification.cumple_clientes > 1 ? 'n' : '';
+            sPlural = resCountNotification.cumple_clientes > 1 ? 's' : '';
+            _iteAdd = {
+                key: 'cumple_clientes',
+                fecha:'', descripcion: 'Cumpleaños de Clientes',
+                detalle: `${resCountNotification.cumple_clientes} Cliente${sPlural} cumplira${nPlural} años en los próximos dias, enviale${sPlural} una invitación, descuento o promoción.`,
+                idpage: 35,
+                parametro: '?cumple=si',
+                icon: 'fa fa-smile-o text-success fw-600'
+            }
+            listAddNotification.push(_iteAdd);
+            countNoticaciones++;
+        }
+
+        // comprobantes no enviados
+        if ( resCountNotification.comprobantes_no_enviados > 0 ) {            
+            sPlural = resCountNotification.comprobantes_no_enviados > 1 ? 's' : '';
+            _iteAdd = {
+                key: 'comprobantes_no_enviados',
+                fecha:'', descripcion: 'Comprobantes Electrónicos',
+                detalle: `${resCountNotification.comprobantes_no_enviados} Comprobante${sPlural} electronico${sPlural} no enviado${sPlural}.`,
+                idpage: 26,
+                parametro: '',
+                icon: 'fa fa-sticky-note-o text-info'
+            }
+            listAddNotification.push(_iteAdd);
+            countNoticaciones++;
+        }
+
+        // calificaciones negativas
+        if ( resCountNotification.calificaciones_clientes > 0 ) {
+            const nPlural = resCountNotification.calificaciones_clientes > 1 ? 'aron' : 'ó';
+            sPlural = resCountNotification.calificaciones_clientes > 1 ? 's' : '';
+            _iteAdd = {
+                key: 'calificaciones_clientes',
+                fecha:'', descripcion: 'Calificaciones Negativas',
+                detalle: `${resCountNotification.calificaciones_clientes} Cliente${sPlural} calific${nPlural} su experiencia de forma negativa.`,
+                idpage: 41,
+                parametro: '',
+                icon: 'fa fa-star text-danger'
+            }
+            listAddNotification.push(_iteAdd);
+            countNoticaciones++;
+        }
+        
+        xThisListNotificacion.lisNotificaciones = JSON.parse(JSON.stringify(listAddNotification));
+        
+        // control en el panel
+        $(divIconNotification).removeClass('xInvisible')
+        $(divIconNotification).find('.xbell-count').text(countNoticaciones);
+    }
+
+    function verifyShowNotification() {
+        isShowAlertNotification = parseFloat(resCountNotification.suma) > 0;
+        if ( isShowAlertNotification ) { 
+            isShowNotification(); 
+            createListNotifications(); 
+            return; 
+        }
+
+        // verificar si se marcaron toda la lista
+    }
+
+    function isShowNotification() {
+        // lanza alerta de notificaciones existentes
+        xThisListNotificacion.fire('xShowNotifications', {
+            isShowAlertNotification
+        });
+
+        var pAudioNotificaAlert=document.getElementById('alertaNotificaciones');
+        pAudioNotificaAlert.autobuffer = true;
+        pAudioNotificaAlert.muted = false;
+        
+        setTimeout(() => {
+            pAudioNotificaAlert.load();
+            pAudioNotificaAlert.play();
+            
+        }, 1500);
+                
+    }
+
+    function goPageListNotification(obj) {
+        const i = obj.dataId;
+        const opSelected = xThisListNotificacion.lisNotificaciones[i];
+
+        setLocalSotrage('::app3_sys_route', 0);
+        xOpenPage(opSelected.idpage, opSelected.parametro);
+        dialog_notificaciones.close();
+
+        // si va a notificaciones, coloca como visto, para no volver a notificar lo mismo
+        if (opSelected.idpage === 41) { updateCheckCalificacion(); }        
+    }
+
+    // si va a notificaciones, coloca como visto, para no volver a notificar lo mismo
+    function updateCheckCalificacion() {
+        const _url = '../../bdphp/log_componentes.php?op=1301'
+        $.ajax({
+					type: 'POST',
+                    url: _url                    
+				})
+				.done(function (res) {
+                    console.log(res);                                        
+				});
+    }
+
+    
+
+     Polymer({
+			is: 'x-comp-list-notification',
+			properties: {				
+                lisNotificaciones: [],                
+			},			
+			xopen() {
+				dialog_notificaciones.open();
+			},
+			ready: function () {
+                this.lisNotificaciones = [];
+				xThisListNotificacion = this;				
+				xIniCompListNotificacion();
+            }
+		})
+</script>
