@@ -153,8 +153,8 @@
 					, TIMESTAMPDIFF(DAY, CURDATE(), STR_TO_DATE(concat(SUBSTRING(f_nac,1,6), YEAR(NOW())), '%d/%m/%Y')) dias_cumple
 				from cliente_sede cs
 					inner join cliente c on cs.idcliente = c.idcliente	
-					left join ( select rp.idcliente, format(sum(rp.total), 2) importe_consumo 
-								from registro_pago rp where rp.idsede = $g_idsede  group by rp.idcliente  ) rp on rp.idcliente = c.idcliente
+					left join ( select rp.idcliente, format(sum(rp.total_r), 2) importe_consumo 
+								from pedido rp where rp.idsede = $g_idsede  group by rp.idcliente  ) rp on rp.idcliente = c.idcliente
 				where cs.idsede = $g_idsede$filtrocumple$filtro
 				order by rp.importe_consumo desc, c.nombres asc limit ".$pagination['pageLimit']." OFFSET ".$pagination['pageDesde'];			
 
@@ -177,7 +177,8 @@
 			// echo 'restaurar';
 			break;
 		case 401:// historial cliente
-			$sql = "select idcliente, STR_TO_DATE(fecha, '%d/%m/%Y') fecha, fecha as fecha_mostrar, total  from registro_pago where idcliente=".$_POST['i']." and idsede=$g_idsede and estado=0";
+			// $sql = "select idcliente, STR_TO_DATE(fecha, '%d/%m/%Y') fecha, fecha as fecha_mostrar, total  from registro_pago where idcliente=".$_POST['i']." and idsede=$g_idsede and estado=0";
+			$sql = "select idcliente, STR_TO_DATE(fecha, '%d/%m/%Y') fecha, fecha as fecha_mostrar, total  from pedido where idcliente=".$_POST['i']." and idsede=$g_idsede";
 			$bd->xConsulta($sql);
 			break;
 		case 402: //direccion del cliente
