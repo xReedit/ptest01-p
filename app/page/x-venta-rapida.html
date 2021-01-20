@@ -18,6 +18,31 @@ Nuevo pedido.
 </button>
 </div>
 </paper-dialog>
+<paper-dialog id="dialog_opciones_adcionales" class="xDlgItem_mipedido" modal entry-animation="scale-up-animation" exit-animation="fade-out-animation" with-backdrop>
+<div>
+<h4>Opciones Adicionales</h4>
+</div>
+<br>
+<div>
+<div>
+<paper-toggle-button id="toogleFullscreen" class="x-toogle" onclick="xActivarFullSreen(this)"></paper-toggle-button>
+<span class="fs-13">Fullscreen</span>
+<p class="fs-12 text-secondary">Activar pantalla completa.</p>
+</div><br>
+<div>
+<paper-toggle-button id="toogleShowOpciones" class="x-toogle" onclick="xActivarFirstOptionsItem(this)"></paper-toggle-button>
+<span class="fs-13">Ver opciones primero</span>
+<p class="fs-12 text-secondary">Si el producto tiene opciones por escoger, escoger antes de agregar.</p>
+</div><br>
+<div>
+<paper-toggle-button id="toogleTouch" onclick="xActivarTouch(this)" checked="true"></paper-toggle-button>
+<span class="fs-13">Touch?</span>
+<p class="fs-12 text-secondary">Al tocar el producto o item se agrega sin necesidad de dar clic en el signo "+"</p>
+</div><br><br>
+<button class="btn btn-sm btn-secondary" dialog-dismiss> Cerrar </button>
+</div>
+<br/><br/>
+</paper-dialog>
 <div class="tool-bar-vr">
 <paper-icon-button paper-drawer-toggle icon="menu" onclick="xOpenPanelDeVR()"></paper-icon-button>
 <span class="title xtitulo_bar xfont18">Punto de Venta</span>
@@ -25,13 +50,8 @@ Nuevo pedido.
 <div style="padding-right:20px">
 <x-comp-find-categoria id="compFindCategoria" onchange="_getCategoria(categorias)" estilo="color: wheat;"></x-comp-find-categoria>
 </div>
-<div style="display:grid;text-align:center">
-<paper-toggle-button id="toogleFullscreen" class="x-toogle" onclick="xActivarFullSreen(this)"></paper-toggle-button>
-<span class="xfont8 xColorRow_Plomo2">Fullscreen?</span>
-</div>
-<div style="display:grid;text-align:center">
-<paper-toggle-button id="toogleTouch" class="x-toogle" onclick="xActivarTouch(this)" checked="true"></paper-toggle-button>
-<span class="xfont8 xColorRow_Plomo2">Touch?</span>
+<div style="display:grid;text-align:center;cursor:pointer" onclick="dialog_opciones_adcionales.open()">
+<span class="fs-15" title="Opciones Adicionales"> <i class="fa fa-cog"></i> </span>
 </div>
 </div>
 </div>
@@ -121,7 +141,7 @@ Nuevo pedido
 </div>
 </template>
 </dom-module>
-<style type="text/css">.move a:focus{outline:0}.xdivEnLinea2x{display:flex;flex-direction:row;flex-wrap:nowrap;justify-content:space-between;height:100%}.xdivEnLinea2x>.itemsDivx{width:35%;height:calc(100vh - 120px);border:solid rgba(0,0,0,.25) 1px;border-top:0;overflow-y:auto;-webkit-transition:all .3s ease;-o-transition:all .3s ease;-ms-transition:all .3s ease;-moz-transition:all .3s ease;transition:all .3s ease}.xBtnDatosAdjuntos{background:bisque;padding:2px 5px 2px 5px;right:0;margin-right:-11px;border-radius:3px}.xdivEnLinea2x>.itemsDivx.b{width:40%}.itemsDivx .xtitulo{padding:5px;background:rgba(189,189,189,0.5);border-bottom:1px solid rgba(0,0,0,.25)}ul.list_add_item2 li.divLi{padding:0}.content_li{padding:14px 25px 14px}.content-titulo .stock_item{padding:5px 3px 10px;text-align:center;border-radius:4px;line-height:0;margin-top:-22px;margin-left:-20px;width:15px}.content-titulo .xt-p{font-size:14px}.content-titulo .num-stock{font-size:11px}@media screen and (max-width:920px){.xdivEnLinea2x>.itemsDivx.a{position:absolute;background:lightgrey;z-index:200;width:0}.xdivEnLinea2x>.itemsDivx.a.open{width:300px}.xdivEnLinea2x>.itemsDivx.b{width:50%!important}.xdivEnLinea2x>.itemsDivx.c{width:50%}}.btn-full-screen{float:right;top:-30px;right:-15px;margin:0}.subtotal-tr-row{padding-top:1px;padding-bottom:1px}.tool-bar-vr{background:darkslateblue;padding:8px;color:whitesmoke}.paper-toggle-button-0[checked] .toggle-button.paper-toggle-button{background:yellow}.paper-toggle-button-0[checked] .toggle-button.paper-toggle-button{background:yellow}.paper-toggle-button-0[checked] .toggle-bar.paper-toggle-button{background:#eee}</style>
+<style type="text/css">.move a:focus{outline:0}.xdivEnLinea2x{display:flex;flex-direction:row;flex-wrap:nowrap;justify-content:space-between;height:100%}.xdivEnLinea2x>.itemsDivx{width:35%;height:calc(100vh - 120px);border:solid rgba(0,0,0,.25) 1px;border-top:0;overflow-y:auto;-webkit-transition:all .3s ease;-o-transition:all .3s ease;-ms-transition:all .3s ease;-moz-transition:all .3s ease;transition:all .3s ease}.xBtnDatosAdjuntos{background:bisque;padding:2px 5px 2px 5px;right:0;margin-right:-11px;border-radius:3px}.xdivEnLinea2x>.itemsDivx.b{width:40%}.itemsDivx .xtitulo{padding:5px;background:rgba(189,189,189,0.5);border-bottom:1px solid rgba(0,0,0,.25)}ul.list_add_item2 li.divLi{padding:0}.content_li{padding:14px 25px 14px}.content-titulo .stock_item{padding:5px 3px 10px;text-align:center;border-radius:4px;line-height:0;margin-top:-22px;margin-left:-20px;width:15px}.content-titulo .xt-p{font-size:14px}.content-titulo .num-stock{font-size:11px}@media screen and (max-width:920px){.xdivEnLinea2x>.itemsDivx.a{position:absolute;background:lightgrey;z-index:200;width:0}.xdivEnLinea2x>.itemsDivx.a.open{width:300px}.xdivEnLinea2x>.itemsDivx.b{width:50%!important}.xdivEnLinea2x>.itemsDivx.c{width:50%}}.btn-full-screen{float:right;top:-30px;right:-15px;margin:0}.subtotal-tr-row{padding-top:1px;padding-bottom:1px}.tool-bar-vr{background:darkslateblue;padding:8px;color:whitesmoke}.paper-toggle-button-0[checked] .toggle-button.paper-toggle-button{background:yellow}.paper-toggle-button-0[checked] .toggle-button.paper-toggle-button{background:yellow}.paper-toggle-button-0[checked] .toggle-bar.paper-toggle-button{background:grey}</style>
 <script type="text/javascript" src="../view/config.const.js"></script>
 <script rel="prefetch" type="text/javascript" src="../view/socket.master.service.js"></script>
 <script rel="prefetch" type="text/javascript" src="../view/socket.service.p.js"></script>
@@ -137,7 +157,7 @@ Nuevo pedido
 <script type="text/javascript" src="../view/cliente.service.js"></script>
 <script type="text/javascript" src="../../js/keynavigator-min.js"></script>
 <script type="text/javascript" src="../../js/mifuncion_web.js"></script>
-<script>/*<![CDATA[*/var xThisVentaRapida,$li,$xlist_li,xedit_detalle_item=false,xArrayRegla=[],xDtPrint=[],xDtSubTotales=[],xenviar_cuenta=false,xregistrar_pago=false,xtxt_select=false,xidCategoriaVR,tt_pedido=0,xIdPedido='',xEstadoPedido,xnum_mesa_valido=false,xNumMesasBd,xarr_header=[],xarr_body=[],xarr_footer=[],xarr_tipo_pago=[],xRpt_pago=[],guardando_vr=false,xdelivery=0,xReservar=0,xsolo_llevar=0,xid_cliente_pago=0,xarr_subtotales=[],arrDatosAdjuntoDelivery=[],xIdCliente_pedido='',xClientePedidoFnac='',isSreenFull=false,isTouch=true,xCadenaTC='',xCompSubitems,isSocket=false;function xIniVentaRapida(){xm_log_get('ini_us');$("#Titulo_page").text("Venta Rapida");document.title="Venta Rapida";$('body').addClass('loaded');xPopupLoad=document.getElementById('xLoad');localStorage.removeItem('::app3_woDUS::cxe');xArrayRegla=xm_log_get('reglas_de_carta');xDtPrint=xm_log_get('sede_generales');xNumMesasBd=parseInt(xDtPrint[0].mesas);isSocket=parseInt(xm_log_get('datos_org_sede')[0].pwa)===0?false:true;xLoadArrayPedido();xTraerDtTipoConsumo();xThisVentaRapida.xt_nombre_sede=xDtPrint[0].des_sede;xThisVentaRapida.xt_eslogan=xDtPrint[0].eslogan;$(document.body).on('change','#select_ulTPC',function(e){xdelivery=0;xsolo_llevar=0;if($('#select_ulTPC :selected').text().toLowerCase()==="delivery"){xdelivery=1;}
+<script>/*<![CDATA[*/var xThisVentaRapida,$li,$xlist_li,xedit_detalle_item=false,xArrayRegla=[],xDtPrint=[],xDtSubTotales=[],xenviar_cuenta=false,xregistrar_pago=false,xtxt_select=false,xidCategoriaVR,tt_pedido=0,xIdPedido='',xEstadoPedido,xnum_mesa_valido=false,xNumMesasBd,xarr_header=[],xarr_body=[],xarr_footer=[],xarr_tipo_pago=[],xRpt_pago=[],guardando_vr=false,xdelivery=0,xReservar=0,xsolo_llevar=0,xid_cliente_pago=0,xarr_subtotales=[],arrDatosAdjuntoDelivery=[],xIdCliente_pedido='',xClientePedidoFnac='',isSreenFull=false,isTouch=true,isShowOpcionesPrimero=false,xCadenaTC='',xCompSubitems,isSocket=false;function xIniVentaRapida(){xm_log_get('ini_us');$("#Titulo_page").text("Venta Rapida");document.title="Venta Rapida";$('body').addClass('loaded');xPopupLoad=document.getElementById('xLoad');localStorage.removeItem('::app3_woDUS::cxe');xArrayRegla=xm_log_get('reglas_de_carta');xDtPrint=xm_log_get('sede_generales');xNumMesasBd=parseInt(xDtPrint[0].mesas);isSocket=parseInt(xm_log_get('datos_org_sede')[0].pwa)===0?false:true;xLoadArrayPedido();xTraerDtTipoConsumo();xThisVentaRapida.xt_nombre_sede=xDtPrint[0].des_sede;xThisVentaRapida.xt_eslogan=xDtPrint[0].eslogan;$(document.body).on('change','#select_ulTPC',function(e){xdelivery=0;xsolo_llevar=0;if($('#select_ulTPC :selected').text().toLowerCase()==="delivery"){xdelivery=1;}
 if($('#select_ulTPC :selected').text().toLowerCase().indexOf('llevar')>-1){xsolo_llevar=1;}
 localStorage.removeItem('::app3_woDUS::cxe');xCompDatosDelivery.resetValInit();xSumarTotal();xChangeTipoConsumoItems(e.target.value);});$("#x-main").removeClass('xContent');$("#x-main").removeClass('content');$("#panel_toolbar").addClass('xInvisible');setValuesStorage();xCadenaTC=xArmarTipoConsumo(1);xCount_cant_ico=0;$(document.body).on('change','#check_reserva',function(e){xReservar=e.target.checked?1:0;xenviar_cuenta=true;$("#btn_enviar_cuenta").removeClass('xInvisible');});compFindCategoria=document.getElementById('compFindCategoria');compFindCategoria.addEventListener('getValorIncial',function(e){let valCategoriaLoalStorage;valCategoriaLoalStorage=e.detail.categorias
 if(getLocalStorage('::app3_cat_defualt')){valCategoriaLoalStorage=JSON.parse(getLocalStorage('::app3_cat_defualt'));xidCategoriaVR=valCategoriaLoalStorage.idcategoria;setTimeout(()=>{compFindCategoria.$.compFindListCategoria.value=valCategoriaLoalStorage.index;},500);}else{xidCategoriaVR=e.detail.categorias.idcategoria;}
@@ -246,7 +266,8 @@ function xTraerDtTipoConsumo(){var xCadenaSelectUlTPC='',xDtTpC=xm_log_get('estr
 function _pantallaCompleta(){xThisVentaRapida.xIconScreen=isSreenFull?'icons:fullscreen-exit':'icons:fullscreen';isSreenFull=!isSreenFull;pantallaCompleta();}
 function xActivarFullSreen(obj){isSreenFull=!isSreenFull;pantallaCompleta();const valScreen=isSreenFull?1:0;window.localStorage.setItem('::app3_sys_vr_fullscreen',valScreen);}
 function xActivarTouch(obj){isTouch=!isTouch;const valTouch=isTouch?1:0;window.localStorage.setItem('::app3_sys_vr_touch',valTouch);}
-function setValuesStorage(){const valTouch=window.localStorage.getItem('::app3_sys_vr_touch')?window.localStorage.getItem('::app3_sys_vr_touch'):0;isTouch=parseInt(valTouch)===0?false:true;try{toogleTouch.checked=isTouch;}catch(error){}}
+function xActivarFirstOptionsItem(obj){isShowOpcionesPrimero=!isShowOpcionesPrimero;const valTouch=isShowOpcionesPrimero?1:0;window.localStorage.setItem('::app3_sys_vr_show_opcion',valTouch);}
+function setValuesStorage(){const valTouch=window.localStorage.getItem('::app3_sys_vr_touch')?window.localStorage.getItem('::app3_sys_vr_touch'):0;const valShowOpcionesPrimero=window.localStorage.getItem('::app3_sys_vr_show_opcion')?window.localStorage.getItem('::app3_sys_vr_show_opcion'):0;isTouch=parseInt(valTouch)===0?false:true;isShowOpcionesPrimero=parseInt(valShowOpcionesPrimero)===0?false:true;try{toogleTouch.checked=isTouch;toogleShowOpciones.checked=isShowOpcionesPrimero;}catch(error){}}
 function xOpenDlgItemVR(tpc,idItemRow,elObjRow){const id=elObjRow.dataset.id;xCompSubitems.openDialog(tpc,id);}
 function xLoadItemMiPedidoVR(xid,xidseccion,xprocede){itemPedidos_objItemSelected.idcarta_lista=itemPedidos_objItemSelected.iditem;itemPedidos_objItemSelected.des_item=itemPedidos_objItemSelected.des?itemPedidos_objItemSelected.des:itemPedidos_objItemSelected.des_item;var xdtItem=itemPedidos_objItemSelected;var xClassEstadoStock='',xCadena_foto='',xCadena_des='',xCadenaItem_des_foto='',xCadenaItem_encabezado='',xCadenaItem_Detalle='',xCadenaItem='';var xCantItem=xdtItem.stock_actual;xClassEstadoStock=xClassEstadoItem(xCantItem);xClassEstadoStock=xClassEstadoStock.split("|")[1];xCadenaItem_encabezado='<input class="xcheck_item" type="radio" name="option" value="other">'+'<p class="xprecio_item xEnLinea">'+
 xdtItem.precio+"</p>"+'<div class="xstock_item '+
