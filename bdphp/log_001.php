@@ -224,7 +224,9 @@
 		foreach ( $x_array_subtotales as $sub_total ) {
 			$tachado =  isset($sub_total['tachado']) ? $sub_total['tachado'] === "true" ? 1 : 0 : 0;   
 			$importe_row = $tachado === 1 ? $sub_total['importe_tachado'] : $sub_total['importe'];
-			$importe_total = $sub_total['importe'];
+			// $importe_total = $sub_total['importe'];
+			$importe_total = number_format((float)$sub_total['importe'], 2, '.', '');
+			$importe_row = number_format((float)$importe_row, 2, '.', '');
 			$sql_subtotales = $sql_subtotales."(?,".$_SESSION['ido'].",".$_SESSION['idsede'].",'".$sub_total['descripcion']."','".$importe_row."',".$tachado."),";
 		}
 
@@ -404,7 +406,8 @@
 		foreach ( $x_array_subtotales as $sub_total ) {
 			$tachado = isset($sub_total['tachado']) ? $sub_total['tachado'] === "true" ? 1 : 0 : 0; 
 			$importe_row = $tachado === 1 ? $sub_total['importe_tachado'] : $sub_total['importe'];
-			$importe_total = $sub_total['importe'];
+			$importe_total = number_format((float)$sub_total['importe'], 2, '.', '');
+			$importe_row = number_format((float)$importe_row, 2, '.', '');
 			$sql_subtotales = $sql_subtotales."(?,".$_SESSION['ido'].",".$_SESSION['idsede'].",'".$sub_total['descripcion']."','".$importe_row."',".$tachado."),";			
 		}
 
