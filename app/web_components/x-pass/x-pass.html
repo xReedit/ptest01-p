@@ -23,7 +23,7 @@ $("#pass").on('keyup',function(e){var code=e.which;if(code==13||code==186){xVeri
 e.stopPropagation();e.stopImmediatePropagation();})
 $("#dialog_cotent").on('iron-overlay-opened',function(){us.$.input.focus();})}
 function xVerificarPassUs(){xRpts=new Array();var xrpt;var u=$("#us").val();var p=$("#pass").val();var xValBus=xThisPass.valor;$("#msj_passUs").text('');$.ajax({type:'POST',url:'../../bdphp/log.php?op=-102',data:{u:u,p:p}}).done(function(dt){var xdt=$.parseJSON(dt);if(xdt.datos.length>0){if(xdt.datos[0].per.indexOf(xValBus)==-1){xrpt=0;}
-else{xrpt=1;xRpts.push({'us':xdt.datos[0].idusuario,'p':xrpt,'nomus':us.value});xThisPass.fire('xSend',{xRpts});$("#us").val('');$("#pass").val('');xpass_d.close();}}
+else{xrpt=1;xRpts.push({'us':xdt.datos[0].idusuario,'p':xrpt,'nomus':$("#us").val()});xThisPass.fire('xSend',{xRpts});$("#us").val('');$("#pass").val('');xpass_d.close();}}
 else{xrpt=2;}
 xVerRpt(xrpt);});}
 function xVerRpt(op){var xmsj='';switch(op){case 0:xmsj='El usuario no tiene permiso';break;case 2:xmsj='Usuario o clave incorrecto';break;}

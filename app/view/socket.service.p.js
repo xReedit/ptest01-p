@@ -194,7 +194,7 @@ function _cpSocketRestoreFromPedidoStorage() {
                         item.isalmacen = item.procede.toString() === '0' ? 1 : 0;
                         item.isporcion = item.isporcion != 'SP' ? item.cantidad : item.isporcion;                     
                         item.subitems_view = JSON.parse(JSON.stringify(item.subitems_view));                     
-                        console.log('resetPedido item', JSON.stringify(item));
+                        // console.log('resetPedido item', JSON.stringify(item));
                         pedidoSend.push(item);
                     }
                 });

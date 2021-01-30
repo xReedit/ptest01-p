@@ -333,6 +333,7 @@
 						$_SESSION['idsede']=$idSede;
 						$_SESSION['idusuario']=$obj[0]->idusuario;
 						$_SESSION['acc']=$obj[0]->acc;
+						$_SESSION['per']=$obj[0]->per;
 						$_SESSION['nomU']=$obj[0]->usuario;
 						$_SESSION['nomUs']=$obj[0]->nombres;
 						$_SESSION['cargoU']=$obj[0]->cargo;
@@ -3233,6 +3234,7 @@ function encode_dataUS(){
 				'idsede'=>$_SESSION['idsede'],
 				'idus'=>$_SESSION['idusuario'],
 				'acc'=>$_SESSION['acc'],
+				'per'=>$_SESSION['per'],
 				'nombre'=>$_SESSION['nomU'],
 				'cargo'=>$_SESSION['cargoU'],
 				'nomus'=>$_SESSION['nomUs'],

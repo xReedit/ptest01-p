@@ -1,0 +1,249 @@
+
+<dom-module id="x-comp-descuento">
+	<template>
+        <x-pass id="pass_us_dsct" titulo="Usuario autorizado" valor="Pe5"></x-pass>
+        <div>
+            <!-- boton visible -->
+            <div class="animate__animated animate__fadeIn animate__faster" hidden$="[[ showDetalle ]]">
+                <div class="d-flexx btn-descuento" onclick="xVerificarPermisoDscUsuario()">
+                    <div class="p-2 bg-warning">
+                        <i class="fa fa-sort-numeric-desc"></i>
+                    </div>
+                    <p class="pl-2 fs-13">Aplicar Descuento</p>                
+                </div>
+            </div>
+            <!-- boton visible -->
+
+            <!-- accion -->
+            <div class="animate__animated animate__fadeIn animate__faster" hidden$="[[ !showDetalle ]]">
+                <div class="d-flexx align-content-center justify-content-end">
+                    <div class="pr-1">
+                        <select class="selected-template-1 fs-15" onchange="selectedDsc(this)">
+                            <template is="dom-repeat" items="{{listTipoConceptos}}" as="item">
+                                <option value="{{ item.idtipo_descuento }}">{{ item.descripcion }}</option>
+                            </template>                                                        
+                        </select>
+                    </div>
+
+                    <div class="content-text-improte pr-1">
+                        <input type="text" class="text_importe fs-16" id="txt_imp_dsc" autocomplete="off" onkeyup="xCalcImporteDsc()">
+                    </div>
+
+                    <div class="pl-1">
+                        <button class="btn btn-sm btn-danger" onclick="xShowDetalleDsc()">
+                            <i class="fa fa-times"></i>
+                        </button>
+                    </div>
+                </div>
+            </div>
+
+        </div>
+    </template>
+</dom-module>
+<style>
+    .btn-descuento {
+        border: 1px solid #bdbdbd;
+        border-radius: 3px;
+        align-items: center;
+        width: 160px;
+        display: flex;
+        cursor: pointer;
+    }
+
+    .btn-descuento:hover {
+        background: #eeeeee;
+    }
+
+    .content-text-improte {
+        border: 1px solid #bdbdbd;
+        border-radius: 3px;
+        display: flex;
+        align-items: center;
+        max-width: 100px;
+    }
+
+    .content-text-improte:hover {
+        background: #eeeeee;
+    }
+
+    .text_importe {
+        border: 0px;       
+        text-align: end !important; 
+        max-width: 90px;
+    }
+
+    .text_importe:focus {
+        outline:none;
+    }
+
+</style>
+<script>
+    var xThisCompDesc, datauSPerDsc, paseAccPer = false, keyDscStorage = '::app3_sys_tpdsc', tipoDscSelected, importeInicial = 0, lastValCalc = 0;
+
+    function xShowDetalleDsc() {        
+        xThisCompDesc.showDetalle = !xThisCompDesc.showDetalle;
+
+        if ( xThisCompDesc.showDetalle ) {
+            txt_imp_dsc.value = '';
+            txt_imp_dsc.focus();
+        } else {
+
+            xThisCompDesc.fire('changeDescuento', {
+                'value': 0,
+                'descripcion': '',
+                'isAgregar': false
+            });
+        }
+
+        // console.log('importeventa', xThisCompDesc.importeventa);
+    }
+
+    function xVerificarPermisoDscUsuario() {
+        paseAccPer = datauSPerDsc.per.indexOf('Pe5') > -1;
+        if ( !paseAccPer ) {
+
+            xPSupervisorDesc=document.getElementById('pass_us_dsct');
+            xPSupervisorDesc.setVal('Pe5');
+            xPSupervisorDesc.addEventListener('xSend', function (e) {
+                var p=e.detail.xRpts[0].p;
+                if(p===1){
+                    xPermisoSupervisorDsc=e.detail.xRpts[0].us;                                        
+                    xShowDetalleDsc();
+                    return;
+                    
+                    // e.stopPropagation();
+                    // e.stopImmediatePropagation()
+                }
+            });
+
+            pass_us.open();
+            return;
+        }
+
+        xShowDetalleDsc();
+        
+    }
+
+    function xResetCompDsc() {
+        xThisCompDesc.showDetalle = false;
+        txt_imp_dsc.value = '';
+        lastValCalc = 0;
+        // xCalcImporteDsc();
+    }
+
+    function xLoadTipoDsc() {
+        var paseDsc = false;
+        var _dtDscStorage = localStorage.getItem(keyDscStorage);
+
+        txt_imp_dsc.value === ''
+
+        if ( _dtDscStorage ) {
+            try {                
+                xThisCompDesc.listTipoConceptos = JSON.parse(_dtDscStorage);
+                paseDsc = true;
+                tipoDscSelected = xThisCompDesc.listTipoConceptos[0];
+                console.log('xThisCompDesc.listTipoConceptos desde el storage', xThisCompDesc.listTipoConceptos);
+            } catch (error) {
+                paseDsc = false
+            }
+        }
+
+        if ( paseDsc ) { return; }
+
+
+        $.ajax({
+					type: 'GET',
+					url: '../../bdphp/log_componentes.php?op=14'
+				})
+				.done(function (res) {
+                    res = JSON.parse(res)
+                    if ( !res.success ) { console.log('error', res); return; }
+                    xThisCompDesc.listTipoConceptos = res.datos;
+
+                    tipoDscSelected = xThisCompDesc.listTipoConceptos[0];
+
+                    localStorage.setItem(keyDscStorage, JSON.stringify(res.datos));
+
+                    console.log('xThisCompDesc.listTipoConceptos ', xThisCompDesc.listTipoConceptos );
+                });
+    }
+
+    function selectedDsc(obj) {        
+        tipoDscSelected = xThisCompDesc.listTipoConceptos[obj.selectedIndex];
+        // txt_imp_dsc.value = '';
+        xCalcImporteDsc();
+
+        txt_imp_dsc.focus();
+
+        try {
+            txt_imp_dsc.selected();            
+        } catch (error) {            
+        }
+    }
+
+    function xCalcImporteDsc() {
+        const isDestPorcentaje = tipoDscSelected.idtipo_descuento === '2';
+        var rptCalc = 0, descripcionDesct = '';
+        var importeTotalPedido = xThisCompDesc.importeventa;
+
+        importeInicial = txt_imp_dsc.value === '' ? 0 : importeInicial;
+        if ( importeInicial === 0 ) { importeInicial = importeTotalPedido + lastValCalc; }
+        var limiteCantidadDsc = isDestPorcentaje ? 100 : importeInicial;
+
+        var valtxt = parseFloat(txt_imp_dsc.value) || 0;
+        if ( valtxt ===  lastValCalc) {return; }
+
+        if ( valtxt  >  limiteCantidadDsc ) {
+            valtxt = limiteCantidadDsc;
+            txt_imp_dsc.value = valtxt;
+        }
+
+        if ( isDestPorcentaje ) {
+            rptCalc = Math.round((importeInicial * (valtxt / 100)), 2);        
+            rptCalc = rptCalc > importeInicial ? importeInicial : rptCalc;
+            descripcionDesct = valtxt + '%'; 
+        } else {
+            rptCalc = valtxt;
+        }
+
+        lastValCalc = rptCalc;
+        // rptCalc = rptCalc > importeInicial ? importeTotalPedido : rptCalc;
+
+        // const _dataRpt = {
+        //     'importeDesct': rptCalc,
+        //     'descripcion': descripcionDesct
+        // }
+
+        // console.log('_dataRpt', _dataRpt);
+
+        xThisCompDesc.fire('changeDescuento', {
+			'value': rptCalc,
+            'descripcion': descripcionDesct,
+            'isAgregar': true
+		});
+    }
+
+    Polymer({
+		is: 'x-comp-descuento',
+		properties: {
+            showDetalle: Boolean,
+            listTipoConceptos: [],
+            importeventa: {
+                type: Number,
+				notify: true,
+				reflectToAttribute: true,
+				value: 0
+            }          
+		},
+		attached: function () {
+            this.showDetalle = false;
+            xThisCompDesc = this;
+            datauSPerDsc = xm_log_get('app3_us');
+
+            xLoadTipoDsc();           
+        },
+        reset: () => {
+            xResetCompDsc();
+        }
+	})
+</script>

@@ -95,4 +95,8 @@
             $sql = "update sede_calificacion set notificado=1 where idsede = $g_idsede and notificado = 0";
             $bd->xConsulta($sql);
             break;
+        case 14: // lista de tipos de descuento
+            $sql = "select * from tipo_descuento where estado=0";
+            $bd->xConsulta($sql);
+            break;
     }
