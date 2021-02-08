@@ -249,9 +249,11 @@
 			//numcorrelativo segun fecha
 			// $correlativo_dia=array_key_exists('correlativo_dia', $x_array_pedido_header) ? $x_array_pedido_header['correlativo_dia'] : '';
 						
-			$sql="SELECT count(fecha) AS d1 FROM pedido WHERE (idorg=".$_SESSION['ido']." and idsede=".$_SESSION['idsede'].") and STR_TO_DATE(fecha,'%d/%m/%Y')=curdate()";
-			$correlativo_dia=$bd->xDevolverUnDato($sql);
-			$correlativo_dia++;
+			$sql = "call porcedure_get_correlativo(".$_SESSION['idsede'].")";
+			$correlativo_dia=$bd->xDevolverUnDatoSP($sql);
+
+			
+			// $correlativo_dia++;
 			
 			$arrDeliveryPedido = isset( $x_array_pedido_header['arrDatosDelivery'] ) ? $x_array_pedido_header['arrDatosDelivery'] : null;
 			// si es delivery y si trae datos adjuntos -- json-> direccion telefono forma pago

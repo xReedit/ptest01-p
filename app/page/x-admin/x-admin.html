@@ -1,4 +1,5 @@
 <link rel="import" href="./x-repartidores.html">
+<link rel="import" href="./x-admin-change-sys.html">
 <dom-module id="x-admin">
 <template>
 <paper-dialog id="dialog_add_us_cpc" entry-animation="scale-up-animation" exit-animation="fade-out-animation" class="dialog_redondo" with-backdrop>
@@ -103,6 +104,7 @@ Listado de restaurantes.
 <paper-tab>Establecimientos</paper-tab>
 <paper-tab>Registro de Contadores CPC</paper-tab>
 <paper-tab>Repartidores</paper-tab>
+<paper-tab>Actualizaciones Sistema</paper-tab>
 </paper-tabs>
 <div class="xLinea2"></div>
 <br><br>
@@ -218,6 +220,9 @@ Listado de restaurantes.
 </template>
 </tbody>
 </table>
+</div>
+<div id="div_change_sys">
+<x-admin-change-sys></x-admin-change-sys>
 </div>
 </iron-pages>
 <br><br>

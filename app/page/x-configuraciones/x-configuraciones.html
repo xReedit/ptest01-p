@@ -24,7 +24,7 @@
 <div class="xBoton2 xVerde" onclick="xSubirFileAlmacen()">Listo, subir archivo e ingresar</div>
 </div>
 </paper-dialog>
-<paper-dialog id="dialog_add_sede" style="max-width:300px" entry-animation="scale-up-animation" exit-animation="fade-out-animation" with-backdrop>
+<paper-dialog id="dialog_add_sede" style="max-width:550px;overflow:auto" entry-animation="scale-up-animation" exit-animation="fade-out-animation" with-backdrop>
 <div class="xContent">
 <h4>DATOS DE SEDE</h4>
 <form id="frm_sede">
@@ -42,6 +42,10 @@
 <input type="text" id="idsede" name="idsede">
 <input type="text" id="idorg" name="idorg" value$="[[xt_org]]">
 </div>
+<br><br><br>
+<p class="fw-600">Email donde se enviaran los cierres de caja.</p>
+<p class="text-secondary">Puede separar por comas ej. gerente@gmail.com, admin_local@hotmail.com </p>
+<input type="text" class="xMiInput xPasarEnter2" placeholder="EMAIL" id="email_cierre" name="email_cierre" espaciar>
 </form>
 <br><br>
 <div class="xLinea2"></div>
@@ -126,9 +130,6 @@
 <input type="text" class="xMiInput xPasarEnter2" placeholder="RUC" onChange="conMayusculas(this)" id="ruc" name="ruc" espaciar required>
 <input type="text" class="xMiInput xPasarEnter2" placeholder="TELEFONO" onChange="conMayusculas(this)" id="telefono" name="telefono" espaciar required>
 <input type="email" class="xMiInput xPasarEnter2" placeholder="EMAIL CONTACTO" id="email" name="email" espaciar required>
-<div class="xInvisible">
-<input type="text" id="idorg" name="idorg">
-</div>
 <br><br><br>
 <div class="xBoton2 xAzul" onclick="xGuardarOrg()">Guardar Cambios</div>
 </form>
@@ -736,7 +737,7 @@ xPopupLoad.xopen();$("#frm_regla #idcategoria").val(xidCat);$("#frm_regla #idsec
 function xLoadCategoria(){$.ajax({type:'POST',url:'../../bdphp/log.php?op=1'}).done(function(dtCAct){var xCadenaCat='';var xdtCAct=$.parseJSON(dtCAct);xdtCAct=xdtCAct.datos;for(var i=0;i<xdtCAct.length;i++){xCadenaCat=String(xCadenaCat+'<option value="'+xdtCAct[i].idcategoria+'">'+xdtCAct[i].descripcion+'</option>');};$("#selCategoria").html(xCadenaCat).trigger('create');});$.ajax({type:'POST',url:'../../bdphp/log.php?op=201'}).done(function(dtSec){var xCadenaCat='';var xdtSec=$.parseJSON(dtSec);xdtSec=xdtSec.datos;xThisConfig.dt_seccion=xdtSec;for(var i=0;i<xdtSec.length;i++){xCadenaCat=String(xCadenaCat+'<option value="'+xdtSec[i].value+'">'+xdtSec[i].label+'</option>');};$("#selSeccion").html(xCadenaCat).trigger('create');$("#selSeccion_adicional").html(xCadenaCat).trigger('create');$("#selCon").html(xCadenaCat).trigger('create');});cadenaSelNivel='<option value="0">POR ITEM</option><option value="1">POR PEDIDO</option>';$("#selNivel_adicional").html(cadenaSelNivel).trigger('create');}
 function xLoadReglasCarta(){$("#tb_regla .row").remove();$("#tb_regla").append('<tr class="row"><td colspan="3"><paper-spinner active></paper-spinner></td></tr>');$.ajax({type:'POST',url:'../../bdphp/log.php?op=4'}).done(function(dtRla){var xCadenaRgl='';var xdtRla=$.parseJSON(dtRla);xdtRla=xdtRla.datos;for(var i=0;i<xdtRla.length;i++){xCadenaRgl=String(xCadenaRgl+'<tr class="row" data-t="regla_carta" data-id="'+xdtRla[i].idregla_carta+'"><td>'+xdtRla[i].des_categoria+'</td><td>'+xdtRla[i].des_seccion+'</td><td>'+xdtRla[i].des_con+'</td><td><span class="xDeleteRow" title="Borrar" onclick="xDialogBorrarObj(this);"></span></td></tr>');};$("#tb_regla .row").remove();$("#tb_regla").append(xCadenaRgl).trigger('create');});}
 function xLoadCategoriaCarta(){$("#tb_cat").append('<tr class="row"><td colspan="4"><paper-spinner active></paper-spinner></td></tr>');$.ajax({type:'POST',url:'../../bdphp/log.php?op=405'}).done(function(dtCat){var xcadena_cat='';var xdtCat=$.parseJSON(dtCat);xdtCat=xdtCat.datos;xThisConfig.dt_cat=xdtCat;for(var i=0;i<xdtCat.length;i++){xcadena_cat=String(xcadena_cat+'<tr class="row" data-index='+i+' data-id="'+xdtCat[i].idcategoria+'" data-t="categoria"><td>'+xdtCat[i].descripcion+'</td><td>'+xdtCat[i].hora_ini+'</td><td>'+xdtCat[i].hora_fin+'</td><td title="Modificar" onClick="xModificarCat(this)"><span class="icon xCursor"><img src="../../images/edit.png"></span></td><td><span class="xDeleteRow" title="Borrar" onclick="xDialogBorrarObj(this);"></span></td></tr>')};$("#tb_cat .row").remove();$("#tb_cat").append(xcadena_cat).trigger('create');});}
-function xModificarSede(obj){var xids=$(obj).parents('tr').attr('data-id');$("#frm_sede #idsede").val(xThisConfig.dt_sede[xids].idsede);$("#frm_sede #nombre").val(xThisConfig.dt_sede[xids].nom_sede);$("#frm_sede #ciudad").val(xThisConfig.dt_sede[xids].ciudad);$("#frm_sede #direccion").val(xThisConfig.dt_sede[xids].dir_sede);$("#frm_sede #eslogan").val(xThisConfig.dt_sede[xids].eslogan);$("#frm_sede #mesas").val(xThisConfig.dt_sede[xids].mesas);$("#frm_sede #telefono").val(xThisConfig.dt_sede[xids].sedetelefono);$("#frm_sede #ubigeo").val(xThisConfig.dt_sede[xids].ubigeo);$("#frm_sede #codigo_del_domicilio_fiscal").val(xThisConfig.dt_sede[xids].codigo_del_domicilio_fiscal);dialog_add_sede.open();}
+function xModificarSede(obj){var xids=$(obj).parents('tr').attr('data-id');$("#frm_sede #idsede").val(xThisConfig.dt_sede[xids].idsede);$("#frm_sede #nombre").val(xThisConfig.dt_sede[xids].nom_sede);$("#frm_sede #ciudad").val(xThisConfig.dt_sede[xids].ciudad);$("#frm_sede #direccion").val(xThisConfig.dt_sede[xids].dir_sede);$("#frm_sede #eslogan").val(xThisConfig.dt_sede[xids].eslogan);$("#frm_sede #mesas").val(xThisConfig.dt_sede[xids].mesas);$("#frm_sede #telefono").val(xThisConfig.dt_sede[xids].sedetelefono);$("#frm_sede #ubigeo").val(xThisConfig.dt_sede[xids].ubigeo);$("#frm_sede #codigo_del_domicilio_fiscal").val(xThisConfig.dt_sede[xids].codigo_del_domicilio_fiscal);$("#frm_sede #email_cierre").val(xThisConfig.dt_sede[xids].email_cierre);dialog_add_sede.open();}
 function xModificarCat(obj){var xids=$(obj).parents('tr').attr('data-index');$("#frm_cat #idcategoria").val(xThisConfig.dt_cat[xids].idcategoria);$("#frm_cat #descripcion").val(xThisConfig.dt_cat[xids].descripcion);$("#frm_cat #hora_ini").val(xThisConfig.dt_cat[xids].hora_ini);$("#frm_cat #hora_fin").val(xThisConfig.dt_cat[xids].hora_fin);$("#frm_cat #detalle").val(xThisConfig.dt_cat[xids].detalle);dialog_add_cat.open();}
 function xGuardarOrg(){xvalidateFormInput('frm_org',function(a){if(a===false){return;}
 xPopupLoad.xopen();$.post("../../bdphp/ManejoBD_IUD.php?tb=org",$("#frm_org").serialize(),function(id){xPopupLoad.xclose();})});}
@@ -745,7 +746,7 @@ function xGuardarSede(){xvalidateFormInput('frm_sede',function(a){if(a===false){
 xPopupLoad.xopen();$.post("../../bdphp/ManejoBD_IUD.php?tb=sede",$("#frm_sede").serialize(),function(id){dialog_add_sede.close();xPopupLoad.xclose();$("#frm_sede").reset();xLoadOrg();})});}
 function xGuardarCategoria(){xvalidateFormInput('frm_cat',function(a){if(a===false){return;}
 xPopupLoad.xopen();$.post("../../bdphp/ManejoBD_IUD.php?tb=categoria",$("#frm_cat").serialize(),function(id){dialog_add_cat.close();$("#frm_cat").reset();xPopupLoad.xclose();xLoadCategoriaCarta();})});}
-function xLoadOrg(){$("#tb_org").append('<tr class="row"><td colspan="2"><paper-spinner active></paper-spinner></td></tr>');$.ajax({type:'POST',url:'../../bdphp/log.php?op=404'}).done(function(dtOrg){var xcadena_org='';var xdtOrg=$.parseJSON(dtOrg);xdtOrg=xdtOrg.datos;xThisConfig.dt_sede=xdtOrg;$("#frm_org #idorg").val(xdtOrg[0].idorg);$("#frm_org #nombre").val(xdtOrg[0].nombre);$("#frm_org #direccion").val(xdtOrg[0].direccion);$("#frm_org #ruc").val(xdtOrg[0].ruc);$("#frm_org #telefono").val(xdtOrg[0].telefono);$("#frm_org #email").val(xdtOrg[0].email);for(var i=0;i<xdtOrg.length;i++){xcadena_org=String(xcadena_org+'<tr class="row" data-id='+i+'><td>'+xdtOrg[i].nom_sede+'</td><td>'+xdtOrg[i].ciudad+'</td><td title="Modificar" onClick="xModificarSede(this)"><span class="icon xCursor"><img src="../../images/edit.png"></span></td></tr>')};$("#tb_org .row").remove();$("#tb_org").append(xcadena_org).trigger('create');});}
+function xLoadOrg(){$("#tb_org").append('<tr class="row"><td colspan="2"><paper-spinner active></paper-spinner></td></tr>');$.ajax({type:'POST',url:'../../bdphp/log.php?op=404'}).done(function(dtOrg){var xcadena_org='';var xdtOrg=$.parseJSON(dtOrg);xdtOrg=xdtOrg.datos;xThisConfig.dt_sede=xdtOrg;$("#frm_org #idorg").val(xdtOrg[0].idorg);$("#frm_org #nombre").val(xdtOrg[0].nombre);$("#frm_org #direccion").val(xdtOrg[0].direccion);$("#frm_org #ruc").val(xdtOrg[0].ruc);$("#frm_org #telefono").val(xdtOrg[0].telefono);$("#frm_org #email").val(xdtOrg[0].email);for(var i=0;i<xdtOrg.length;i++){xcadena_org=String(xcadena_org+'<tr class="row xCursor" data-id='+i+'><td onClick="xModificarSede(this)">'+xdtOrg[i].nom_sede+'</td><td onClick="xModificarSede(this)">'+xdtOrg[i].ciudad+'</td><td title="Modificar" onClick="xModificarSede(this)"><span class="icon xCursor"><img src="../../images/edit.png"></span></td></tr>')};$("#tb_org .row").remove();$("#tb_org").append(xcadena_org).trigger('create');});}
 function openImgIconDialog(obj,_opIcon){opIcon=_opIcon;xidSeccionIcon=obj.parentElement.dataset.id
 dialog_img_ico_carta.open();}
 function updateIconSeccion(obj){const _img=obj.dataIndex+'.png';xPopupLoad.xopen();$.ajax({type:'POST',url:'../../bdphp/log_004.php?op=8',data:{i:xidSeccionIcon,img:_img,opIcon:opIcon}}).done(function(a){if(opIcon===0){xLoadSecciones();}else{xLoadSecciones_bodega();}

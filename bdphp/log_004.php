@@ -224,6 +224,18 @@
 			$sql = "SELECT r.*, s.nombre as nom_sede from repartidor r left join sede s on s.idsede = r.idsede_suscrito";
 			$bd->xConsulta($sql);
 			break;
+		
+		// cambios en el sistema
+		case 10:
+			$sql = "SELECT * from notificacion_cambios_sistema where estado=0 order by idnotificacion_cambios_sistema desc";
+			$bd->xConsulta($sql);
+			break;
+		case 1001: // guardar registro actualizacion
+			$item = $_POST['item'];
+			$sql = "insert into notificacion_cambios_sistema (fecha, titulo, descripcion, imagen) values (curdate(), '".$item['titulo']."', '".$item['descripcion']."', '".$item['imagen']."')";			
+			$bd->xConsulta($sql);
+			break;
+		
 	}
 
 ?>

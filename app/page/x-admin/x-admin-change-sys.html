@@ -1,0 +1,149 @@
+<dom-module id="x-admin-change-sys">
+	<template>		
+
+
+        <paper-dialog id="dialog_img_change_sys" entry-animation="scale-up-animation"
+			exit-animation="fade-out-animation" class="dialog_redondo" with-backdrop>
+			<div class="p-3">													
+                <img id="img_gif_sys" style="width: 100%;" src="" alt="">
+                <br>
+                <hr>
+                <button class="xBoton2 xPlomo" dialog-dismiss>Cerrar</button>
+            </div>
+        </paper-dialog>
+
+        <paper-dialog id="dialog_add_change_sys" style="max-width: 420px;" entry-animation="scale-up-animation"
+			exit-animation="fade-out-animation" class="dialog_redondo" with-backdrop>
+			<div class="xContent">													
+				<h3>Actualizacion</h3>
+				<hr>
+				<br>
+				<div>                    
+                    <input type="text" class="xMiInput xPasarEnter2" value$="{{usuarioReparidor.nombre}}" placeholder="TITULO" id="titulo_gif" name="titulo" espaciar required>
+                    <input type="text" class="xMiInput xPasarEnter2" value$="{{usuarioReparidor.nombre}}" placeholder="DESCRIPCION" id="descripcion_gif" name="descripcion" espaciar required>                    
+
+                    <br>
+                    <label for="txt_logo">Imagen Gif</label>
+                    <input type="file" name="" id="txt_img_gif" class="selected-template-1 w-100 inputImg" placeholder="Img Gif"><br>                    
+
+                    <hr>
+                    
+                    <button class="xBoton2 xVerde" onclick="addActualizacionSys();">Si, enviar</button>
+                    <button class="xBoton2 xPlomo" dialog-dismiss>Cancelar</button>
+
+                </div>
+			</div>
+		</paper-dialog>
+
+        <div class="x_div_linea">
+            <h3>Registro de cambios, actualizacion del sistema</h3>    
+            <button class="xBoton2 xAzul xDerecha" onclick="dialog_add_change_sys.open();"> + Nuevo </button>
+        </div>		
+        <hr>        
+        <div>
+            <table width="100%">
+                <thead>
+                    <th>#</th>
+                    <th>Fecha</th>
+                    <th>Descripcion</th>
+                    <th>Gif</th>                    
+                </thead>
+                <tbody>
+                    <template is="dom-repeat" items="{{listChangesSys}}" as="item">
+                        <tr data-id="{{index}}">
+                            <td>{{displayIndex(index)}}</td>
+                            <td>{{ item.fecha }}</td>
+                            <td>
+                                <p class="fw-600">{{ item.titulo }}</p>
+                                <p class="text-secondary"> {{ item.descripcion }} </p>
+                            </td>
+                            <td>
+                                <span class="xCursor text-info fw-600" data-id="{{index}}" onclick="verImgGifSys(this)">{{ item.imagen }}</span>                                
+                            </td>                            
+                        </tr>
+                    </template>
+                </tbody>
+            </table>
+        </div>
+
+    </template>
+<script>         
+    var xThisChangeSys;
+
+    function xLoadInitChgangeSys() {
+
+        $.ajax({ url: '../../bdphp/log_004.php?op=10' })
+                    .done((res) => {                        
+                        const _res = JSON.parse(res);
+                        xThisChangeSys.listChangesSys = _res.datos.map(x => { return {...x}; });
+                    });
+    }
+
+    function addActualizacionSys() {
+        xItemGuardarFotoGifUpdate();
+    }
+
+    function xItemGuardarFotoGifUpdate(){	
+        $(".inputImg").each(function(index, element) {		
+            if($(this).val()==''){return}
+            file=this.files[0]; name = file.name; size = file.size; type = file.type;
+            xhr = new XMLHttpRequest();
+            xhr.upload.addEventListener ('load', transferenciaCompleta(name), false);
+
+            xhr.open('POST','upload.php?op=5',true);
+
+            xhr.setRequestHeader("Cache-Control", "no-cache");
+            xhr.setRequestHeader("X-Requested-With", "XMLHttpRequest");
+            xhr.setRequestHeader("X-File-Name", file.name);
+            xhr.send(file);
+        })
+    }
+
+    function transferenciaCompleta(xfile){
+        
+        xfile='11'+xfile;
+        const _datsend = {
+            titulo: titulo_gif.value,
+            descripcion: descripcion_gif.value,
+            imagen: xfile
+        }
+
+        $.ajax({ type: 'POST', url: '../../bdphp/log_004.php?op=1001', data:{item: _datsend}})
+        .done( function (res) {
+            console.log(res);        
+            dialog_add_change_sys.close();    
+            xLoadInitChgangeSys();
+        });
+    }
+
+    function verImgGifSys(obj) {
+        xPopupLoad.xopen();
+        const indexSelected = obj.dataId;
+        
+
+        img_gif_sys.src  = URL_IMG_GIF_UPDATE + xThisChangeSys.listChangesSys[indexSelected].imagen;
+        
+        setTimeout(() => {
+            xPopupLoad.xclose();
+            dialog_img_change_sys.open();
+        }, 1000);
+
+
+    }
+
+        Polymer({
+                is: 'x-admin-change-sys',
+                properties: {
+                    listChangesSys: []                    
+                },                
+                attached: function () {		
+                    xThisChangeSys = this;   
+                    this.listChangesSys = [];                 
+                    xLoadInitChgangeSys();
+                },
+                displayIndex: function (index) {
+				    return xCeroIzq(index + 1, 1);
+			    },
+            })
+    </script>
+</dom-module>

@@ -1625,7 +1625,7 @@
 			break;
 		case 404:// organizacion
 			$sql="
-				SELECT o.*, s.telefono sedetelefono, s.idsede, s.nombre AS nom_sede, s.direccion as dir_sede, s.ciudad,s.eslogan,s.mesas, s.ubigeo, s.codigo_del_domicilio_fiscal
+				SELECT o.*, s.telefono sedetelefono, s.idsede, s.nombre AS nom_sede, s.direccion as dir_sede, s.ciudad,s.eslogan,s.mesas, s.ubigeo, s.codigo_del_domicilio_fiscal, s.email_cierre
 				FROM org AS o
 					INNER JOIN sede AS s using(idorg)
 				WHERE (o.idorg=".$g_ido.") and s.estado=0
@@ -1771,8 +1771,10 @@
 			// 	WHERE (p.idorg=".$g_ido." AND p.idsede=".$g_idsede.") and (p.estado=0) and p.nummesa=0
 			// 	GROUP BY p.idpedido
 			// ";
+			$arrItemPedido = $_POST['objPedido'];	
+			$arrItemPedido = isset($arrItemPedido) ? $arrItemPedido == 0 ? 'null' : "'".json_encode($arrItemPedido)."'" : 'null';
 
-			$sql="CALL procedure_refresh_mesas_501(".$g_ido.",".$g_idsede.");";
+			$sql="CALL procedure_refresh_mesas_501(".$g_ido.",".$g_idsede.", ".$arrItemPedido.");";
 			$bd->xConsulta($sql);
 			break;
 		case 50101://count cantidad de pedidos para actualizar
@@ -3349,6 +3351,7 @@ function xDtUS($op_us){
 		case 3012: // load datos del org sede 
 			$sql_us = "SELECT s.idorg, se.idsede, s.nombre, s.direccion,s.ruc, s.telefono , se.nombre as sedenombre , se.direccion as sededireccion, se.ciudad as sedeciudad, se.telefono as sedetelefono, se.eslogan, se.authorization_api_comprobante, se.id_api_comprobante, se.facturacion_e_activo, '' as logo64, se.ubigeo, se.codigo_del_domicilio_fiscal
 							,se.sys_local, se.ip_server_local, se.pwa, se.url_api_fac
+							,se.email_cierre
 					from org as s 
 					inner JOIN sede as se on s.idorg = se.idorg 
 					where se.idorg = ".$g_ido." and se.idsede = ".$g_idsede;

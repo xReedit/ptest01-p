@@ -1,0 +1,108 @@
+<dom-module id="x-comp-show-updates-sytem">    
+	<template is="dom-bind">       
+        <paper-dialog id="dialog_show_change_sys" modal  entry-animation="scale-up-animation"	exit-animation="fade-out-animation" class="dialog_redondo" with-backdrop>
+            <div class="d-flexx justify-content-between align-items-center">
+                <p class="fs-18">Cambios y/o actualizaciones</p>
+                <button class="btn btn-sm btn-secondary" dialog-dismiss> <i class="fa fa-close"></i> </button>
+            </div>
+            <div class="pr-3 pl-3 pb-2">
+                <div>
+                    <div style="padding: 5px; background: grey;">
+                        <img style="width: 100%; max-width: 500px;" id="img_gif_show" src="{{ gifSeleted.img }}" alt="">                        
+                    </div>
+                    <div class="d-flexx align-items-lg-center justify-content-between">
+                        <div>
+                            <button class="btn btn-sm btn-dark" onclick="previusGifNotification()"> <i class="fa fa-arrow-circle-left"></i> </button>
+                        </div>
+                        <div class="text-center mt-3">                        
+                            <p class="fs-12 text-info fw-600"> {{ gifIndexSelectedShow }} de {{ counTotalGif }} </p>
+                            <p class="fw-600 fs-17" id="titulo_gif">{{ gifSeleted.titulo }}</p>
+                            <p id="descripcion_gif"> {{ gifSeleted.descripcion }} </p>
+                        </div>
+                        <div>
+                            <button class="btn btn-sm btn-dark" onclick="nextGifNotification()"> <i class="fa fa-arrow-circle-right"></i> </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+
+
+        </paper-dialog>
+    </template>
+</dom-module>
+
+
+<script>
+    var xThisShowUpdatesSys;
+
+    function xCompShowUpdatesIni() {
+        const _url = '../../bdphp/log_componentes.php?op=15'
+        $.ajax({
+					type: 'POST',
+                    url: _url                    
+				})
+        .done((res) => {                                    
+            const _res = JSON.parse(res);
+            // console.log(_res);            
+                if (_res.datos.length === 0  ) { return; }
+
+                xThisShowUpdatesSys.counTotalGif = _res.datos.length
+                xThisShowUpdatesSys.listUpdatesSys = _res.datos.map(x => { return {...x, img: URL_IMG_GIF_UPDATE + x.imagen}; });
+                xThisShowUpdatesSys.gifIndexSelected = -1;
+                nextGifNotification();
+
+                setTimeout(() => {                    
+                    dialog_show_change_sys.open();
+                    updateDateusGif();
+                    // xThisShowUpdatesSys.gifSeleted = xThisShowUpdatesSys.listUpdatesSys[0];
+                }, 1500);
+            });
+            
+    }
+
+    function nextGifNotification() {
+        xThisShowUpdatesSys.gifIndexSelected++;
+        setGifNotification();
+    }
+
+    function previusGifNotification() {
+        xThisShowUpdatesSys.gifIndexSelected--;
+        setGifNotification();
+    }
+
+    function setGifNotification() {
+        xThisShowUpdatesSys.gifIndexSelected = xThisShowUpdatesSys.gifIndexSelected < 0 ? 0 : xThisShowUpdatesSys.gifIndexSelected;
+        xThisShowUpdatesSys.gifIndexSelected = xThisShowUpdatesSys.gifIndexSelected >= xThisShowUpdatesSys.listUpdatesSys.length  ? xThisShowUpdatesSys.gifIndexSelected - 1 : xThisShowUpdatesSys.gifIndexSelected;
+        xThisShowUpdatesSys.gifSeleted = xThisShowUpdatesSys.listUpdatesSys[xThisShowUpdatesSys.gifIndexSelected];
+        xThisShowUpdatesSys.gifIndexSelectedShow = xThisShowUpdatesSys.gifIndexSelected + 1;
+    }
+
+    function updateDateusGif() {
+        $.ajax({
+			type: 'POST',
+            url: '../../bdphp/log_componentes.php?op=1501'
+		}).done((res) => {
+            // console.log(res);
+        });
+    }
+
+
+
+    
+
+    Polymer({
+        is: 'x-comp-show-updates-sytem',
+        properties: {
+            listUpdatesSys: [],            
+            gifSeleted: {},
+            gifIndexSelected: Number,
+            counTotalGif: Number,
+            gifIndexSelectedShow: Number,
+		}, 
+		attached: function() {
+			xThisShowUpdatesSys=this;
+			xCompShowUpdatesIni();
+        }
+    })
+</script>

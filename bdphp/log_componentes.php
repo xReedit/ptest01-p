@@ -99,4 +99,16 @@
             $sql = "select * from tipo_descuento where estado=0";
             $bd->xConsulta($sql);
             break;
+        case 15: // notificacion de cambios
+            $sql = "select COALESCE(last_notificacion_change_sys, 0) as d1 from usuario where idusuario = ".$_SESSION['idusuario'];
+            $fechaUs = $bd->xDevolverUnDato($sql);
+
+            $sql = "SELECT * from notificacion_cambios_sistema where fecha >= '".$fechaUs."' and estado = 0  order by idnotificacion_cambios_sistema desc";
+            $bd->xConsulta($sql);
+
+            break;
+        case 1501: // guarda fecha de notificacion
+            $sql = "update usuario set last_notificacion_change_sys = curdate() where idusuario = ".$_SESSION['idusuario'];
+            $bd->xConsulta($sql);
+            break;
     }

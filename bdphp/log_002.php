@@ -168,6 +168,11 @@
             $bd->xConsulta($sql);
             break;
         case '301': // lista documentos no registrados - documnentos que no fueron enviados al servicio api por algun error de conexion
+            
+            // 050221 // actualiza las boletas o facturas no enviados > 15, para que no siga notificando            
+            $sql = "update ce set estado_api = 0 where idsede = ".$_SESSION['idsede']." and str_to_date(fecha, '%d/%m/%Y') < DATE_SUB( CURDATE() , INTERVAL 15 DAY ) and estado_api = 1 and anulado=0";
+            $bd->xConsulta($sql);
+
             // $sql = "SELECT * from ce where (idorg=".$_SESSION['ido']." and idsede=".$_SESSION['idsede'].") and estado_api = 1 and anulado=0";
             $sql = "SELECT * from ce where idsede = ".$_SESSION['idsede']." and str_to_date(fecha, '%d/%m/%Y') between DATE_SUB( CURDATE() , INTERVAL 20 DAY ) AND CURDATE() and estado_api = 1 and anulado=0";
             $bd->xConsulta($sql);
