@@ -66,13 +66,13 @@ class xManejoBD extends mysqli //extends SQLite3
 		}
 
 	function xConsultaSucess($Consulta){
-		//$error="";
+		//$error="";		
 		$results = $this->bd->query($Consulta);
 		if ($results) {$this->bd->commit(); return true;}else{return 'error_'.$this->bd->error;}		
 		}
 
 	function xConsulta_NoReturn($Consulta){
-		//$error="";
+		//$error="";		
 		$results = $this->bd->query($Consulta);
 		}
 
@@ -131,7 +131,20 @@ class xManejoBD extends mysqli //extends SQLite3
 		}
 		}
 
-		//para graficos // json con nombre ej. .cantidad .nombres .edad
+	function xDevolverUnDatoSP($Consulta){
+		$results = $this->bd->query($Consulta);
+		$fila = $results->fetch_row();
+		$results->free_result();
+		$this->bd->next_result();
+		// $results->next_result();
+		// $result->close();
+		return $fila[0]; // la fila a devolver es d1
+
+		// while ($fila = $results->fetch_row()) {
+		// }
+		}
+	
+	//para graficos // json con nombre ej. .cantidad .nombres .edad
 	function xListaDatosJSONGrafico($Consulta){
 		$result = $this->bd->query($Consulta);
 		//$i=0;
@@ -180,7 +193,8 @@ class xManejoBD extends mysqli //extends SQLite3
 
 
 	function loguear_us($user,$password,&$result){
-		$Consulta="SELECT s.idsede, s.nombre AS nom_sede, s.ciudad, u.* FROM usuario as u INNER JOIN sede AS s using(idsede) WHERE u.estado=0 and u.usuario = '".$user."' and u.pass = '".$password."'";
+		// $Consulta="SELECT s.idsede, s.nombre AS nom_sede, s.ciudad, u.* FROM usuario as u INNER JOIN sede AS s using(idsede) WHERE u.estado=0 and u.usuario = '".$user."' and u.pass = '".$password."'";
+		$Consulta="SELECT s.idsede, if(s.nombre, s.nombre, 'CONTADORES') AS nom_sede, s.ciudad, u.* FROM usuario as u left JOIN sede AS s using(idsede) WHERE u.estado=0 and u.usuario = '".$user."' and u.pass = '".$password."'";
 		$count=1;
 		$result = $this->bd->query($Consulta);
         $count = 0;

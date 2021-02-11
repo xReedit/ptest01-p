@@ -26,15 +26,19 @@
 <br>
 <div class="xInvisible" id="contentClie">
 <div style="width:260px">
-<div class="w-100 d-flexx justify-content-end">
+<div class="w-100 d-flexx">
+<div class="pr-2">
 <input autofocus type="number" class="xMiInput" placeholder="RUC Cliente" pattern="[0-9]*" required id="txt_ruc" onkeyup="validarDocumentoCliente(this.value,event)" espaciar>
-<button class="btn btn-sm btn-success" onclick="validarDocumentoCliente(null,null,true)">Buscar</button>
-</div>
 <div class="xInvisible" id="progress_cliente">
 <paper-progress indeterminate style="width:100%;float:left;margin-top:-6px"></paper-progress>
 </div>
 <div>
 <span class="xColorRow_Rojo xInvisible" id="txt_msj" style="padding-left:7px;float:left;margin-top:-3px"></span>
+</div>
+</div>
+<paper-icon-button hidden$="[[!isShowSearchSunat]]" icon="icons:refresh" title="Obtner datos actualizados" onclick="validarDocumentoCliente(null,null,true,true)" style="position:relative;right:2px;float:right;background:springgreen;border-radius:5px">
+</paper-icon-button>
+<button class="btn btn-sm btn-success" onclick="validarDocumentoCliente(null,null,true)">Buscar</button>
 </div>
 </div>
 <input type="text" class="xMiInput xPasarEnter2" style="width:98%" placeholder="Cliente" onChange="conMayusculas(this)" id="txt_nombres" espaciar required$="[[!modificarCliente]]" readonly$="[[!modificarCliente]]">
@@ -120,9 +124,9 @@ return false;}});$(".punitario").on('keyup',function(e){var code=e.which;xCalcTo
 function xSeeFechaManual(){xThisFacturador.fecha_manual=!xThisFacturador.fecha_manual;}
 function _getComprobante($event){cnf_ComprobanteSel=$event;xNuevoCliente();if(cnf_ComprobanteSel.codsunat==='0'){$("#contentClie").addClass('xInvisible');}else{$("#contentClie").removeClass('xInvisible');}
 xThisFacturador.modificarCliente=cnf_ComprobanteSel.codsunat==='01'?false:true;}
-function validarDocumentoCliente(valor,e,btnBuscar=false){if(!btnBuscar){if(e.keyCode!==13)return;}
-valor=valor?valor:txt_ruc.value;xNuevoCliente();$("#txt_msj").addClass('xInvisible');const tipoDoc=cnf_ComprobanteSel;const rpt=validarNumDoc_ValidarDNIRUC(tipoDoc,valor);if(!rpt.valid){NumDocNoValid(rpt);return;};$("#progress_cliente").removeClass("xInvisible");xGetFindCliente(rpt.numdoc,rpt.servicio,(new_rpt)=>{if(new_rpt.success){if(new_rpt.nombres===""){rpt.valid=false;rpt.msj="No se encontraron registros. Verifique el numero de documento.";$("#progress_cliente").addClass("xInvisible");NumDocNoValid(rpt);return;}
-rpt.valid=true;rpt.msj="ok";rpt.cliente={idcliente:new_rpt.idcliente,nombres:new_rpt.nombres,direccion:new_rpt.direccion,num_doc:rpt.numdoc,f_nac:new_rpt.f_nac};_arrCliente=rpt.cliente;_formValid=rpt.valid;xThisFacturador.modificarCliente=false;xValidarBtnProcesar();xIdCliente_pago=new_rpt.idcliente;$("#txt_nombres").val(new_rpt.nombres);$("#txt_direccion").val(new_rpt.direccion);}else{rpt.valid=false;rpt.msj=new_rpt.msg;xThisFacturador.modificarCliente=true;NumDocNoValid(rpt);xNuevoCliente();}
+function validarDocumentoCliente(valor,e,btnBuscar=false,buscarSoloSunat=false){if(!btnBuscar){if(e.keyCode!==13)return;}
+valor=valor?valor:txt_ruc.value;xNuevoCliente();$("#txt_msj").addClass('xInvisible');const tipoDoc=cnf_ComprobanteSel;const rpt=validarNumDoc_ValidarDNIRUC(tipoDoc,valor);if(!rpt.valid){NumDocNoValid(rpt);return;};$("#progress_cliente").removeClass("xInvisible");xGetFindCliente(rpt.numdoc,rpt.servicio,buscarSoloSunat,(new_rpt)=>{if(new_rpt.success){if(new_rpt.nombres===""){rpt.valid=false;rpt.msj="No se encontraron registros. Verifique el numero de documento.";$("#progress_cliente").addClass("xInvisible");NumDocNoValid(rpt);return;}
+xThisFacturador.isShowSearchSunat=new_rpt.buscarSunat;rpt.valid=true;rpt.msj="ok";rpt.cliente={idcliente:new_rpt.idcliente,nombres:new_rpt.nombres,direccion:new_rpt.direccion,num_doc:rpt.numdoc,f_nac:new_rpt.f_nac};_arrCliente=rpt.cliente;_formValid=rpt.valid;xThisFacturador.modificarCliente=false;xValidarBtnProcesar();xIdCliente_pago=new_rpt.idcliente;$("#txt_nombres").val(new_rpt.nombres);$("#txt_direccion").val(new_rpt.direccion);}else{rpt.valid=false;rpt.msj=new_rpt.msg;xThisFacturador.modificarCliente=true;NumDocNoValid(rpt);xNuevoCliente();}
 $("#progress_cliente").addClass("xInvisible");});}
 function NumDocNoValid(rpt){_formValid=rpt.valid;xValidarBtnProcesar();$("#txt_msj").text(rpt.msj)
 $("#txt_msj").removeClass('xInvisible');$("#txt_ruc").select();$("#txt_ruc").focus();}
@@ -152,4 +156,4 @@ function fact_selectOptionCategoria(){const index=xThisFacturador.$.listPrint.va
 function fact_getAllImpresoras(){$.ajax({type:'POST',url:'../../bdphp/log_002.php',data:{op:'5'}}).done(function(dtValues){var _arrPrint=[]
 dtValues=$.parseJSON(dtValues);_arrPrint.push({idimpresora:-1,descripcion:'MOSTRAR EN PDF'})
 dtValues.datos.map(x=>_arrPrint.push(x));xThisFacturador.listImpresoras=JSON.parse(JSON.stringify(_arrPrint));impresoraSelect=_arrPrint[0];console.log(xThisFacturador.listImpresoras);});}
-Polymer({is:'x-facturador',properties:{arrItems:[],arrTotales:[],listImpresoras:[],formValid:boolean=false,modificarCliente:boolean=false,cpe_show:boolean=false,fecha_manual:boolean=false,},attached:function(){xThisFacturador=this;xIniFacturador();_cpSocketOpen();}})/*]]>*/</script>
+Polymer({is:'x-facturador',properties:{arrItems:[],arrTotales:[],listImpresoras:[],formValid:boolean=false,modificarCliente:boolean=false,cpe_show:boolean=false,fecha_manual:boolean=false,isShowSearchSunat:Boolean},attached:function(){this.isShowSearchSunat=false;xThisFacturador=this;xIniFacturador();_cpSocketOpen();}})/*]]>*/</script>
