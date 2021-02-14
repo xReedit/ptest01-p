@@ -567,6 +567,10 @@
 		case 16061: // mandar imprimir cierre
 			$ids = $_POST['ids'];
 			$sql = "update print_server_detalle set impreso = 0, estado = 0 where idprint_server_detalle in ($ids)";
+			$bd->xConsulta_NoReturn($sql);
+
+			// para enviarlo por socket
+			$sql = "select * from print_server_detalle where idprint_server_detalle in ($ids)";
 			$bd->xConsulta($sql);
 			break;
 		case 16062: // cliente calificacion
