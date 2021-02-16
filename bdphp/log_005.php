@@ -710,7 +710,8 @@
 				 inner join tipo_pago tp on rpd.idtipo_pago = tp.idtipo_pago 
 				 left join tipo_comprobante_serie tcs on rp.idtipo_comprobante_serie = tcs.idtipo_comprobante_serie
 				 LEFT join tipo_comprobante tc on tcs.idtipo_comprobante = tc.idtipo_comprobante 
-			 where rp.idsede = $idsede and (rp.cierre = 0 or STR_TO_DATE(fecha_cierre, '%d/%m/%Y') =  DATE_ADD(CURDATE(), INTERVAL -1 DAY) )";
+				 where rp.idsede = $idsede and (rp.cierre = 0 or  STR_TO_DATE(fecha_cierre, '%d/%m/%Y') =  DATE_ADD(CURDATE(), INTERVAL -1 DAY) )
+			 order by rpd.idregistro_pago desc";
 			 
 			$bd->xConsulta($sql);
 			break;
