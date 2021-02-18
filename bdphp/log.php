@@ -1662,7 +1662,7 @@
 			$bd->xConsulta($sql);
 			break;
 		case 408://load conf print adicionales
-			$sql="select cpa.*, tp.descripcion as des_tipo_consumo,s.descripcion as des_seccion from conf_print_adicionales as cpa inner join tipo_consumo as tp using(idtipo_consumo) inner join seccion as s on cpa.idseccion=s.idseccion where cpa.idconf_print=".$_POST['i']." and estado = 0";
+			$sql="select cpa.*, tp.descripcion as des_tipo_consumo,s.descripcion as des_seccion from conf_print_adicionales as cpa inner join tipo_consumo as tp using(idtipo_consumo) inner join seccion as s on cpa.idseccion=s.idseccion where cpa.idconf_print=".$_POST['i']." and cpa.estado = 0";
 			$bd->xConsulta($sql);
 			break;
 		case 409:// load secciones con impresoras

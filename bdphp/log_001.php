@@ -26,13 +26,14 @@
 	if ( strrpos($x_from, "re-suma") !== false ) { $x_from = str_replace('re-suma','',$x_from); restauraStockItemsPedido(); return;} // reserva stock desde mipedio
 
 	if ( strrpos($x_from, "a") !== false ) { $x_from = str_replace('a','',$x_from); cocinar_pedido(); }
-	if ( strrpos($x_from, "d") !== false ) { $x_from = str_replace('d','',$x_from); cocinar_registro_cliente(); }
+	if ( strrpos($x_from, "d") !== false ) { $x_from = str_replace('d','',$x_from); cocinar_registro_cliente(); }	
 	
 	if ( strrpos($x_from, "b") !== false ) { $x_from = str_replace('b','',$x_from); cocinar_pago_total(); }
 	if ( strrpos($x_from, "c") !== false ) { $x_from = str_replace('c','',$x_from); cocinar_pago_parcial(); }
 	
 	if ( strrpos($x_from, "f") !== false ) { $x_from = str_replace('f','',$x_from); getCorrelativoComprobante(); }
 	if ( strrpos($x_from, "e") !== false ) { $x_from = str_replace('e','',$x_from); setComprobantePagoARegistroPago(); }
+	// if ( strrpos($x_from, "h") !== false ) { $x_from = str_replace('h','',$x_from); cocinar_registro_cliente_sede(); }
 
 	if ( strrpos($x_from, "z") !== false ) { $x_from = str_replace('z','',$x_from); getFechaServer(); }
 	if ( strrpos($x_from, "y") !== false ) { $x_from = str_replace('y','',$x_from); setidExternalComprobanteElectronico(); }
@@ -287,9 +288,10 @@
 
 				// solo guarda los encabezados si es solo delivery y no este habilitado en el app express
 				$json_body = addslashes($x_array_pedido_body);				
+				$json_body = str_replace("\\n", "", $json_body); // eliminar los saltos de pagina
 				$json_body = json_decode(stripslashes($json_body), JSON_UNESCAPED_UNICODE);
 
-				$json_datos_delivery = json_encode(array('p_body' => $json_body, 'p_header' => $x_array_pedido_header,'p_subtotales' => $x_array_subtotales)); // , 'p_body' => $x_array_pedido_body, 'p_subtotales' => $x_array_subtotales
+				$json_datos_delivery = json_encode(array('p_body' => $json_body, 'p_header' => $x_array_pedido_header,'p_subtotales' => $x_array_subtotales), JSON_UNESCAPED_UNICODE); // , 'p_body' => $x_array_pedido_body, 'p_subtotales' => $x_array_subtotales
 			}
 				// solo para pruebas
 				// $json_body = addslashes($x_array_pedido_body);				
@@ -492,6 +494,8 @@
 		// $x_respuesta = ['correlativo_comprobante' => $correlativo_comprobante];
 		$x_respuesta = json_encode(array('correlativo_comprobante' => $correlativo_comprobante, 'idregistro_pago' => $idregistro_pago));
 		print $x_respuesta.'|';
+
+		
 		//+++++ info+++++++++ el update pedido idregistropago es un triggers en la tabla registro_pago_pedido
 
 	}
@@ -674,6 +678,11 @@
 			}else{
 				$sql="insert into cliente (idorg,nombres,direccion,ruc,f_nac, f_registro,telefono)values(".$_SESSION['ido'].",'".$nomclie."','".$direccion."','".$num_doc."','".$f_nac."',DATE_FORMAT(now(),'%d/%m/%Y'),'".$telefono."')";
 				$idclie=$bd->xConsulta_UltimoId($sql);
+
+				// insertar en cliente_sede
+				$sql = "call procedure_registrar_cliente_sede(".$_SESSION['idsede'].",".$idclie.")";				
+				$bd->xConsulta_NoReturn($sql);
+				
 			}
 		} else {
 			// update cliente
@@ -697,6 +706,14 @@
 		// $GLOBALS['x_idcliente'] = $idclie;
 		// return $x_idcliente;
 		// echo $idclie;
+	}
+
+	// registra el cliente en la sede
+	function cocinar_registro_cliente_sede() {
+		$idclie = $_POST['idcliente'];
+		$sql = "call procedure_registrar_cliente_sede(".$_SESSION['idsede'].",".$idclie.")";				
+		$bd->xConsulta_NoReturn($sql);
+		// echo $sql;
 	}
 
 	// devuelve el correlativo del comprobante
