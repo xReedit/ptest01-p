@@ -18,7 +18,8 @@
 			$this->_trabs = $cantidad_trabajadores;
 			
 			$this->cc = new \Sunat\cURL();
-			$this->cc->setReferer( "http://e-consultaruc.sunat.gob.pe/cl-ti-itmrconsruc/frameCriterioBusqueda.jsp" );
+			// $this->cc->setReferer( "http://e-consultaruc.sunat.gob.pe/cl-ti-itmrconsruc/frameCriterioBusqueda.jsp" );
+			$this->cc->setReferer( "https://e-consultaruc.sunat.gob.pe/cl-ti-itmrconsruc/FrameCriterioBusquedaMovil.jsp" );
 			$this->cc->useCookie( true );
 			$this->cc->setCookiFileLocation( __DIR__ . "/cookie.txt" );
 
@@ -76,10 +77,18 @@
 					"numRnd" => $numRand
 				);
 
-				$url = "http://e-consultaruc.sunat.gob.pe/cl-ti-itmrconsruc/jcrS00Alias";
+				$url = "https://e-consultaruc.sunat.gob.pe/cl-ti-itmrconsruc/jcrS03Alias";
+				
+				// $html = grab_page($url, $data);
+
+				// echo $html;
+				
+				
+				
 				$Page = $this->cc->send( $url, $data );
 
 				//RazonSocial
+				// $patron='/<input type="hidden" name="desRuc" value="(.*)">/';
 				$patron='/<input type="hidden" name="desRuc" value="(.*)">/';
 				$output = preg_match_all($patron, $Page, $matches, PREG_SET_ORDER);
 				// if(isset($matches[0]))
@@ -168,7 +177,7 @@
 		}
 		function numTrabajadores( $ruc )
 		{
-			$url = "http://e-consultaruc.sunat.gob.pe/cl-ti-itmrconsruc/jcrS00Alias";
+			$url = "https://e-consultaruc.sunat.gob.pe/cl-ti-itmrconsruc/jcrS00Alias";
 			$data = array(
 				"accion" 	=> "getCantTrab",
 				"nroRuc" 	=> $ruc,
