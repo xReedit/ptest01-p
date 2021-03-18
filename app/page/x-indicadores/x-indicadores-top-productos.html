@@ -1,0 +1,292 @@
+<dom-module id="x-indicadores-top-productos">
+    <template is="dom">
+        <h3 class="text-secondary">Top de Productos {{ ragoTitulo }} </h3><br>
+
+        <div>
+            <div class="xContentCard border-bottom p-0">     
+                <div class="div-content-grid">
+                    <div >
+                        <p class="fs-18 text-secondary fw-600">Secciones</p><br>
+
+                        <table width="100%">
+                            <thead>
+                                <th>#</th>
+                                <th>Seccion</th>
+                                <th>Cant</th>
+                                <th align="right">Importe</th>
+                            </thead>
+                            <tbody>
+                                <template is="dom-repeat" items="{{listDataTopSeccion}}" as="seccion">
+                                    <tr>
+                                        <td>{{displayIndex(index)}}</td>
+                                        <td>{{ seccion.key }}</td>
+                                        <td>{{ seccion.value.count_show }}</td>
+                                        <td align="right">{{ seccion.value.importe_show }}</td>
+                                    </tr>
+                                </template>
+                            </tbody>
+                        </table>
+                    </div>
+
+                    <div >
+                        <p class="fs-18 text-secondary fw-600">Productos Carta</p><br>
+
+                        <table width="100%">
+                            <thead>
+                                <th>#</th>
+                                <th>Producto</th>
+                                <th>Cant</th>
+                                <th align="right">Importe</th>
+                            </thead>
+                            <tbody>
+                                <template is="dom-repeat" items="{{listDataTopProductos}}" as="item">
+                                    <tr>
+                                        <td>{{displayIndex(index)}}</td>
+                                        <td>{{ item.key }}</td>
+                                        <td>{{ item.value.count_show }}</td>
+                                        <td align="right">{{ item.value.importe_show }}</td>
+                                    </tr>
+                                </template>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>       
+            </div>
+
+
+            <div class="xContentCard border-bottom p-0">   
+                <br><br>  
+                <div class="div-content-grid">
+                    <div >
+                        <p class="fs-18 text-secondary fw-600">Productos Bodega</p><br>
+
+                        <table width="100%">
+                            <thead>
+                                <th>#</th>
+                                <th>Producto</th>
+                                <th>Cant</th>
+                                <th align="right">Importe</th>
+                            </thead>
+                            <tbody>
+                                <template is="dom-repeat" items="{{listDataTopBodega}}" as="item">
+                                    <tr>
+                                        <td>{{displayIndex(index)}}</td>
+                                        <td>{{ item.key }}</td>
+                                        <td>{{ item.value.count_show }}</td>
+                                        <td align="right">{{ item.value.importe_show }}</td>
+                                    </tr>
+                                </template>
+                            </tbody>
+                        </table>
+                    </div>
+
+                    <div >
+                        <p class="fs-18 text-secondary fw-600">Porciones</p><br>
+
+                        <table width="100%">
+                            <thead>
+                                <th>#</th>
+                                <th>Producto</th>
+                                <th>Cant</th>
+                                <th align="right">Importe</th>
+                            </thead>
+                            <tbody>
+                                <template is="dom-repeat" items="{{listDataTopPorciones}}" as="item">
+                                    <tr>
+                                        <td>{{displayIndex(index)}}</td>
+                                        <td>{{ item.key }}</td>
+                                        <td>{{ item.value.count_show }}</td>
+                                        <td align="right">{{ item.value.importe_show }}</td>
+                                    </tr>
+                                </template>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>       
+            </div>
+
+
+        </div>
+    </template>
+</dom-module>
+
+<script>
+
+    var xThisI2TopProductos, dataIETopProductos, crosTopProductos;
+
+    function loadDataTopProductos() {
+        xPopupLoad.xopen();
+        $.ajax({
+				type: 'POST',
+				url: '../../bdphp/log_005.php?op=4004',
+				data: xThisI2TopProductos.rango
+			})
+			.done(function (res) {
+                dataIETopProductos = JSON.parse(res).datos;  
+                crosTopProductos = crossfilter(dataIETopProductos);                              
+
+                // console.log('dataIETopP', dataIETopProductos);
+
+                topSecciones();
+                topProductos();
+                topProductosBodega();
+
+                loadDataTopPorciones();
+			});
+    }
+
+    function loadDataTopPorciones() {
+        $.ajax({
+				type: 'POST',
+				url: '../../bdphp/log_005.php?op=4005',
+				data: xThisI2TopProductos.rango
+			})
+			.done(function (res) {
+                var crosTopPorcion = JSON.parse(res).datos;  
+                crosTopPorcion = crossfilter(crosTopPorcion);                              
+
+                topPorciones(crosTopPorcion);
+                xPopupLoad.xclose();
+			});
+    }
+
+    function topSecciones() {
+        var ddSeccion = crosTopProductos.dimension( d => d.des_seccion);
+        var ddSeccionTalbe = ddSeccion.group().reduce(
+            (p, v) => { 
+                p.count += parseFloat(v.cantidad);
+                p.importe += parseFloat(v.total);
+                p.descripcion = v.des_seccion;
+                p.count_show = xCeroIzq(p.count, 2);
+                p.importe_show = numeroConComas(p.importe.toFixed(2));
+                return p;
+            },
+            (p, v) => { 
+                p.count -= parseFloat(v.cantidad);
+                p.importe -= parseFloat(v.total);
+                p.descripcion = v.des_seccion;
+                return p;
+            },
+            () => { return { count: 0, descripcion: '', importe: 0, count_show:'', importe_show: '' }; }
+        );
+
+        xThisI2TopProductos.listDataTopSeccion = ddSeccionTalbe.order(p => p.importe).top(Number.POSITIVE_INFINITY);
+        // console.log('ddSeccionTalbe', xThisI2TopProductos.listDataTopSeccion);
+
+    }
+
+    function topProductos() {
+        var ddSeccion = crosTopProductos.dimension( d => d.des_item);
+        var ddSeccionTalbe = ddSeccion.group().reduce(
+            (p, v) => { 
+                p.count += parseFloat(v.cantidad);
+                p.importe += parseFloat(v.total);
+                p.procede = v.procede;
+                p.descripcion = v.des_seccion;
+                p.count_show = xCeroIzq(p.count, 2);
+                p.importe_show = numeroConComas(p.importe.toFixed(2));
+                return p;
+            },
+            (p, v) => { 
+                p.count -= parseFloat(v.cantidad);
+                p.importe -= parseFloat(v.total);
+                p.procede = v.procede;
+                p.descripcion = v.des_seccion;
+                return p;
+            },
+            () => { return { count: 0, descripcion: '', importe: 0, count_show:'', importe_show: '', procede : 0 }; }
+        );
+
+        xThisI2TopProductos.listDataTopProductos = ddSeccionTalbe.order(p => p.importe).top(Number.POSITIVE_INFINITY);
+        xThisI2TopProductos.listDataTopProductos = xThisI2TopProductos.listDataTopProductos.filter(x => x.value.procede === "0").map(x => x);
+        // console.log('ddSeccionTalbe', xThisI2TopProductos.listDataTopSeccion);
+    }
+
+    function topProductosBodega() {
+        var ddSeccion = crosTopProductos.dimension( d => d.des_item);
+        var ddSeccionTalbe = ddSeccion.group().reduce(
+            (p, v) => { 
+                p.count += parseFloat(v.cantidad);
+                p.importe += parseFloat(v.total);
+                p.procede = v.procede;
+                p.descripcion = v.des_seccion;
+                p.count_show = xCeroIzq(p.count, 2);
+                p.importe_show = numeroConComas(p.importe.toFixed(2));
+                return p;
+            },
+            (p, v) => { 
+                p.count -= parseFloat(v.cantidad);
+                p.importe -= parseFloat(v.total);
+                p.procede = v.procede;
+                p.descripcion = v.des_seccion;
+                return p;
+            },
+            () => { return { count: 0, descripcion: '', importe: 0, count_show:'', importe_show: '', procede: 0 }; }
+        );
+
+        xThisI2TopProductos.listDataTopBodega = ddSeccionTalbe.order(p => p.importe).top(Number.POSITIVE_INFINITY);
+        xThisI2TopProductos.listDataTopBodega = xThisI2TopProductos.listDataTopBodega.filter(x => x.value.procede === "1").map(x => x);
+        // console.log('ddSeccionTalbe', xThisI2TopProductos.listDataTopSeccion);
+    }
+
+
+    // porciones
+    function topPorciones(crossPorciones) {
+        var ddSeccion = crossPorciones.dimension( d => d.des_item);
+        var ddSeccionTalbe = ddSeccion.group().reduce(
+            (p, v) => { 
+                p.count += parseFloat(v.cantidad);
+                p.importe += parseFloat(v.total);
+                p.procede = v.procede;
+                p.descripcion = v.des_seccion;
+                p.count_show = xCeroIzq(p.count, 2);
+                p.importe_show = numeroConComas(p.importe.toFixed(2));
+                return p;
+            },
+            (p, v) => { 
+                p.count -= parseFloat(v.cantidad);
+                p.importe -= parseFloat(v.total);
+                p.procede = v.procede;
+                p.descripcion = v.des_seccion;
+                return p;
+            },
+            () => { return { count: 0, descripcion: '', importe: 0, count_show:'', importe_show: '', procede : 0 }; }
+        );
+
+        xThisI2TopProductos.listDataTopPorciones = ddSeccionTalbe.order(p => p.importe).top(Number.POSITIVE_INFINITY);
+        // xThisI2TopProductos.listDataTopProductos = xThisI2TopProductos.listDataTopProductos.filter(x => x.value.procede === "0").map(x => x);
+        // console.log('ddSeccionTalbe', xThisI2TopProductos.listDataTopSeccion);
+    }
+
+    Polymer({
+		is: 'x-indicadores-top-productos',
+		properties: {            
+            ragoSubTitulo: String,
+            ragoTitulo: String,
+            rango:{type : [], notify: true, reflectToAttribute: true, observer: 'changeRango'},            
+            listDataTopSeccion: Object,
+            listDataTopProductos: Object,
+            listDataTopBodega: Object,
+            listDataTopPorciones: Object,
+		},
+		attached: function () {
+			// this.selected = 0,
+            // this.ragoSubTitulo = 'Dia ';
+            // this.ragoTitulo = 'Hoy';
+			xThisI2TopProductos = this;
+			// initIndicadores2Caja();
+		},
+        changeRango: (val) => {
+            // console.log('change rango', val);
+        },
+        showData: () => {
+            loadDataTopProductos();
+        },
+		detached:function(){
+			// grafico_meta_diaria = null;			
+		},
+        displayIndex: function(index) {
+            return xCeroIzq(index + 1,1);
+        }
+	})
+</script>

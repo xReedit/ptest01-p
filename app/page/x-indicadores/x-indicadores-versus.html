@@ -1,0 +1,430 @@
+<dom-module id="x-indicadores-versus">
+    <template is="dom">
+        <div class="p-4">
+            <h3 class="text-secondary">Ventas todos los locales {{ ragoTitulo }}</h3><br>
+            <br>
+            <div class="xContentCard border-bottom p-0">     
+                <canvas id="chartVentaAll"></canvas>
+                <br><br>
+            </div>
+        </div>
+
+        <br><br>
+    </template>
+</dom-module>
+
+<script>
+    var xThisI2Versus, crosVentaVersus, ctxCharVentasAll, myBarChartPrincipalAll, configParamsChart;    
+
+    
+    function loadDatoVentasVersus() {   
+        xPopupLoad.xopen();     
+        ctxCharVentasAll = document.getElementById('chartVentaAll').getContext('2d');
+
+        $.ajax({
+				type: 'POST',
+				url: '../../bdphp/log_005.php?op=4008',
+				data: dataFiltro
+			})
+			.done(function (res) {				
+                // console.log(res);
+                var dataVentaVersus = JSON.parse(res).datos;		
+                xPopupLoad.xclose();
+                // crosVentaVersus = crossfilter(dataMetdataVentasDia);
+
+                switch (dataFiltro.rango) {
+                    case 'fecha': graficoVentasHoraHoyAll(dataVentaVersus);; break;        
+                    case 'semana': graficoVentasSemanaAll(dataVentaVersus); break;
+                    case 'mes': graficoVentasMesAll(dataVentaVersus); break;
+                }  
+                
+			});
+    }
+
+
+    function graficoVentasMesAll(dataMetdataVentasDia) {
+
+        // grafico por horas
+        var crosVentaSemanaAll = crossfilter(dataMetdataVentasDia);
+        var ddSedes = crosVentaSemanaAll.dimension(d => d.nomsede);
+        var ddHoraSemanaAll = crosVentaSemanaAll.dimension(d => d.num_mes + '-' + d.nomsede);
+        // var byHora = ddHoraHoy.group().reduceSum(item => parseFloat(item.importe));
+        // var dtGraficoHora = byHora.all(); 
+
+        var etiquetaMes = [];
+        var _res = ddHoraSemanaAll.group().reduce(
+            (p, v) => {;
+                p.num_mes = v.num_mes;                        
+                p.nom_mes = v.nom_mes;                               
+                p.importe += parseFloat(v.importe);
+                p.nomsede = v.nomsede;
+                p.idsede = v.idsede;
+
+                const mesLabel = v.num_mes;
+                // p.hora = horaLabel;
+                if (!etiquetaMes.filter(h => h?.m === mesLabel)[0]) {
+                    etiquetaMes.push({m: mesLabel, msort: mesLabel + v.num_yy, mshow: v.nom_mes});
+                }
+
+
+                return p;
+            },
+            (p, v) => {
+                p.num_mes = v.num_mes;                        
+                p.nom_mes = v.nom_mes;                               
+                p.importe -= parseFloat(v.importe);
+                p.nomsede = v.nomsede;
+                p.idsede = v.idsede;
+                return p;
+            },
+            () => { return {num_mes: 0, nom_mes: '', importe: 0, nomsede: '', idsede: 0}; }
+        )
+
+        _res = _res.all();   
+        
+        etiquetaMes = etiquetaMes.sort((a,b)=>a.m-b.m)
+    
+
+        var listDiaMesToGraficoAll = [], itemMes;
+
+        ddSedes.group().all().map( s => {
+            var arrDayWeek = _res.filter(r => r.value.nomsede === s.key)
+            etiquetaMes.map(h => {
+                itemMes = arrDayWeek.filter(x => x.value.nom_mes === h.mshow)[0];
+                if ( !itemMes ) {
+                    itemMes = {
+                        importe: 0, nomsede: s.key, num_mes: h
+                    }
+                } else {
+                    itemMes = itemMes.value;
+                }
+
+                listDiaMesToGraficoAll.push(itemMes);
+            })
+        });
+        
+        configParamsChart = {
+            type: 'line',
+            data: {
+                labels: etiquetaMes.map(x => primeraConMayusculas(xDesMes(parseInt(x.m)-1).toLowerCase())),
+                datasets: 
+                    ddSedes.group().all().map( (s, i) => {
+                        return {
+                            label: s.key,
+                            data: listDiaMesToGraficoAll.filter(r => r.nomsede === s.key).map(x => x.importe),
+                            borderColor: [getColorChar(i)],
+                            backgroundColor: getColorGradianChar(i),
+                            borderWidth: 2,
+                            pointRadius: 5
+                        }
+                    })
+                ,
+            },			
+            options: {				
+                legend: {
+                    display: true,					
+                    position: 'top'
+                },
+                scales: {
+                        xAxes: [{
+                            gridLines: {
+                                display: true,
+                                drawBorder: true,
+                                drawOnChartArea: false,                                
+                            }
+                        }],
+                        yAxes: [{
+                            gridLines: {
+                                display: true,
+                                drawBorder: true,
+                                drawOnChartArea: false,
+                            }
+                        }]
+                }
+            }			
+        };
+
+
+        myBarChartPrincipalAll = null;
+        myBarChartPrincipalAll = new Chart(ctxCharVentasAll, configParamsChart);         
+        
+    }
+
+    function graficoVentasSemanaAll(dataMetdataVentasDia) {
+
+        // grafico por horas
+        var crosVentaSemanaAll = crossfilter(dataMetdataVentasDia);
+        var ddSedes = crosVentaSemanaAll.dimension(d => d.nomsede);
+        var ddHoraSemanaAll = crosVentaSemanaAll.dimension(d => d.num_semana +'.'+ d.num_dia);
+        // var byHora = ddHoraHoy.group().reduceSum(item => parseFloat(item.importe));
+        // var dtGraficoHora = byHora.all(); 
+
+        var etiquetaHora = [];
+        var _res = ddHoraSemanaAll.group().reduce(
+            (p, v) => {
+                // ++p.count;
+                // p.importe += parseFloat(v.importe);
+                p.semana_actual = v.hoy;
+                p.num_dia = v.num_dia
+                p.nom_dia = v.nom_dia;
+                p.num_semana = v.num_semana;
+                p.importe += parseFloat(v.importe);
+                
+                p.nomsede = v.nomsede;
+                p.idsede = v.idsede;
+                // const horaLabel = v.hora.split(' ')[0];
+                // p.hora = horaLabel;
+                // if (!etiquetaHora.filter(h => h?.h === horaLabel)[0]) {
+                //     etiquetaHora.push({h: horaLabel, hshow: v.hora});
+                // }
+
+
+                return p;
+            },
+            (p, v) => {
+                p.semana_actual = v.hoy;
+                p.num_dia = v.num_dia
+                p.nom_dia = v.nom_dia;
+                p.num_semana = v.num_semana;
+                p.importe += parseFloat(v.importe);
+                return p;
+            },
+            () => { return {nom_dia: '', num_dia: 0, num_semana: 0, semana_actual: 0, importe: 0, nomsede: '', idsede: 0}; }
+        )
+
+        _res = _res.all();
+
+        dias = ["Lunes", "Martes", "Miercoles", "Jueves", "Viernes", "Sabado", "Domingo"];
+        numdias = [2, 3, 4, 5, 6, 7, 1];
+
+    
+
+        var listDiaSemanaToGraficoAll = [], itemDayWeek;
+
+        ddSedes.group().all().map( s => {
+            var arrDayWeek = _res.filter(r => r.value.nomsede === s.key)
+            numdias.map(h => {
+                itemDayWeek = arrDayWeek.filter(x => x.value.num_dia.toString() === h.toString())[0];
+                if ( !itemDayWeek ) {
+                    itemDayWeek = {
+                        importe: 0, nomsede: s.key, num_dia: h
+                    }
+                } else {
+                    itemDayWeek = itemDayWeek.value;
+                }
+
+                listDiaSemanaToGraficoAll.push(itemDayWeek);
+            })
+        });
+        
+        configParamsChart = {
+            type: 'line',
+            data: {
+                labels: dias,
+                datasets: 
+                    ddSedes.group().all().map( (s, i) => {
+                        return {
+                            label: s.key,
+                            data: listDiaSemanaToGraficoAll.filter(r => r.nomsede === s.key).map(x => x.importe),
+                            borderColor: [getColorChar(i)],
+                            backgroundColor: getColorGradianChar(i),
+                            borderWidth: 2,
+                            pointRadius: 5
+                        }
+                    })
+                ,
+            },			
+            options: {				
+                legend: {
+                    display: true,					
+                    position: 'top'
+                },
+                scales: {
+                        xAxes: [{
+                            gridLines: {
+                                display: true,
+                                drawBorder: true,
+                                drawOnChartArea: false,                                
+                            }
+                        }],
+                        yAxes: [{
+                            gridLines: {
+                                display: true,
+                                drawBorder: true,
+                                drawOnChartArea: false,
+                            }
+                        }]
+                }
+            }			
+        };
+
+
+        myBarChartPrincipalAll = null;
+        myBarChartPrincipalAll = new Chart(ctxCharVentasAll, configParamsChart);         
+        
+    }
+
+    function graficoVentasHoraHoyAll(dataMetdataVentasDia) {
+
+        // grafico por horas
+        var crosVentaHoyAll = crossfilter(dataMetdataVentasDia);
+        var ddSedes = crosVentaHoyAll.dimension(d => d.nomsede);
+        var ddHoraHoyAll = crosVentaHoyAll.dimension(d => d.nomsede + '-' +d.hora);
+        // var byHora = ddHoraHoy.group().reduceSum(item => parseFloat(item.importe));
+        // var dtGraficoHora = byHora.all(); 
+
+        var etiquetaHora = [];
+        var _res = ddHoraHoyAll.group().reduce(
+            (p, v) => {
+                ++p.count;
+                p.importe += parseFloat(v.importe);
+                p.nomsede = v.nomsede;
+                p.idsede = v.idsede;
+                
+                const horaLabel = v.hora.split(' ')[0];
+                p.hora = horaLabel;
+                if (!etiquetaHora.filter(h => h?.h === horaLabel)[0]) {
+                    etiquetaHora.push({h: horaLabel, hshow: v.hora});
+                }
+
+
+                return p;
+            },
+            (p, v) => {
+                --p.count;
+                p.importe -= parseFloat(v.importe);
+                p.nomsede = v.nomsede;
+                p.idsede = v.idsede;
+                p.hora = v.hora;
+                return p;
+            },
+            () => { return {count: 0, importe: 0, nomsede: '', hora: '', idsede: 0}; }
+        )
+
+        _res = _res.all();
+
+        // console.log('_res', _res);
+
+        etiquetaHora = etiquetaHora.sort((a,b)=>a.h-b.h)
+
+        listChartHora = [];
+
+        ddSedes.group().all().map( s => {
+            var arrHora = _res.filter(r => r.value.nomsede === s.key)
+            etiquetaHora.map(h => {
+                var rowHora = arrHora.filter(x => x.value.hora === h.h)[0];
+                if ( !rowHora ) {
+                    rowHora = {
+                        importe: 0, nomsede: s.key, hora: h
+                    }
+                } else {
+                    rowHora = rowHora.value;
+                }
+
+                listChartHora.push(rowHora);
+            })
+        });
+        
+        configParamsChart = {
+            type: 'line',
+            data: {
+                labels: etiquetaHora.map(h => h.hshow),
+                datasets: 
+                    ddSedes.group().all().map( (s, i) => {
+                        return {
+                            label: s.key,
+                            data: listChartHora.filter(r => r.nomsede === s.key).map(x => x.importe),
+                            borderColor: [getColorChar(i)],
+                            backgroundColor: getColorGradianChar(i),
+                            borderWidth: 2,
+                            pointRadius: 5
+                        }
+                    })
+                ,
+            },			
+            options: {				
+                legend: {
+                    display: true,					
+                    position: 'top'
+                },
+                scales: {
+                        xAxes: [{
+                            gridLines: {
+                                display: true,
+                                drawBorder: true,
+                                drawOnChartArea: false,                                
+                            }
+                        }],
+                        yAxes: [{
+                            gridLines: {
+                                display: true,
+                                drawBorder: true,
+                                drawOnChartArea: false,
+                            }
+                        }]
+                }
+            }			
+        };
+
+        // console.log('configParamsChart', configParamsChart);
+
+        myBarChartPrincipalAll = null;
+        myBarChartPrincipalAll = new Chart(ctxCharVentasAll, configParamsChart);         
+    }
+
+    
+    function getColorChar(indexColor) {        
+        var color_res = ["rgba(33,150,243,1)", "rgba(156,39,176,1)", "rgba(105,240,174,1)", "rgba(255,214,0,1)", "rgba(161,136,127,1)"];
+        var color_res_2 = ["rgba(33,150,243,0)", "rgba(156,39,176,0)", "rgba(105,240,174,0)", "rgba(255,214,0,0)", "rgba(161,136,127,0)"];
+        // const resColor = op === 0 ? color_res[index] : color_res_2[index];
+        return color_res[indexColor];
+    }
+
+    function getColorGradianChar(index) {    
+        var color_res = ["rgba(33,150,243,1)", "rgba(156,39,176,1)", "rgba(105,240,174,1)", "rgba(255,214,0,1)", "rgba(161,136,127,1)"];
+        var color_res_2 = ["rgba(33,150,243,0)", "rgba(156,39,176,0)", "rgba(105,240,174,0)", "rgba(255,214,0,0)", "rgba(161,136,127,0)"];            
+        
+        const colorSelected = color_res[index];   
+        const colorSelected2 = color_res_2[index];   
+
+        var gradient = ctxCharVentasAll.createLinearGradient(0, 0, 0, 500);
+        gradient.addColorStop(0, colorSelected);     
+        gradient.addColorStop(1, colorSelected2);
+
+        return gradient;
+    }
+
+    function updateChartPrincipalAll() {
+        myBarChartPrincipalAll.config = configParamsChart;
+        myBarChartPrincipalAll.legend.options.display = configParamsChart.options.legend.display;
+        myBarChartPrincipalAll.legend.options.position = configParamsChart.options.legend.position;
+        myBarChartPrincipalAll.update(); 
+    }
+
+
+
+    Polymer({
+		is: 'x-indicadores-versus',
+		properties: {            
+            ragoSubTitulo: String,
+            ragoTitulo: String,
+            rango:{type : [], notify: true, reflectToAttribute: true, observer: 'changeRango'},            
+            
+		},
+		attached: function () {			
+			xThisI2Versus = this;
+		},
+        changeRango: (val) => {
+            console.log('change rango', val);
+        },
+        showData: () => {
+            loadDatoVentasVersus();
+        },
+		detached:function(){
+			// grafico_meta_diaria = null;			
+		},
+        displayIndex: function(index) {
+            return xCeroIzq(index + 1,1);
+        }
+	})
+</script>

@@ -575,6 +575,7 @@
 			break;
 		case 16062: // cliente calificacion
 			$idsede = $_POST['idsede'];
+			$idsede = $idsede == 0 ? $g_idsede : $idsede;
 			$pagination = $_POST['pagination'];
 			$sql = "
 				SELECT p.fecha_hora, p.idpedido, p.correlativo_dia, tc.descripcion, SUBSTRING_INDEX(c2.nombres, ' ',1) nombre, sc.calificacion, sc.comentario
@@ -699,18 +700,67 @@
 
 		// estadisticas
 		case 40:
-			$idsede = $_POST['idsede'];
+			$idsede = $_POST['idsede'];			
+			$fecha = $_POST['fecha'];
+			$hoy = "if (rp.fecha_cierre = '', 1, 0 )";
+			$columm_add = '';
+			$rango = $_POST['rango'];
+			
+
+			switch ($rango) {
+				case 'fecha':
+						
+					if ( $fecha == 0 ) {
+						$fecha = " and (rp.cierre = 0 or STR_TO_DATE(fecha_cierre, '%d/%m/%Y') =  DATE_ADD(CURDATE(), INTERVAL -1 DAY))";
+						$hoy = "if (rp.fecha_cierre = '', 1, 0 )";
+					} else {
+						$hoy = "if (STR_TO_DATE(rp.fecha, '%d/%m/%Y') = STR_TO_DATE('$fecha', '%d/%m/%Y'), 1, 0 )";				
+						$fecha = " and (STR_TO_DATE(rp.fecha, '%d/%m/%Y') BETWEEN  DATE_ADD(STR_TO_DATE('$fecha', '%d/%m/%Y'), INTERVAL -1 DAY) and STR_TO_DATE('$fecha', '%d/%m/%Y'))";
+					}
+
+					$columm_add = '';
+					break;
+				case 'semana':
+						$hoy = "if(WEEK(STR_TO_DATE(rp.fecha, '%d/%m/%Y')) = WEEK(now()), 1 ,0)";
+						$fecha = " and STR_TO_DATE(rp.fecha, '%d/%m/%Y') between date_sub(now(),INTERVAL 2 WEEK) and now()";					
+						$columm_add = ", WEEK(STR_TO_DATE(rp.fecha, '%d/%m/%Y')) num_semana, if(WEEK(STR_TO_DATE(rp.fecha, '%d/%m/%Y')) = WEEK(now()), 1 ,0) semana_actual
+						, DAYNAME(STR_TO_DATE(rp.fecha, '%d/%m/%Y')) nom_dia
+						, DAYOFWEEK(STR_TO_DATE(rp.fecha, '%d/%m/%Y')) num_dia";
+					break;
+				case 'mes':
+					$columm_add = ", MONTHNAME(STR_TO_DATE(rp.fecha, '%d/%m/%Y')) nom_mes
+					, MONTH(STR_TO_DATE(rp.fecha, '%d/%m/%Y')) num_mes";
+					
+					$fecha = $fecha == 0 ? 'now()' : "STR_TO_DATE('$fecha', '%d/%m/%Y')";
+					$hoy = "if(MONTH(STR_TO_DATE(rp.fecha, '%d/%m/%Y')) = MONTH($fecha), 1 ,if(MONTH(STR_TO_DATE(rp.fecha, '%d/%m/%Y')) < MONTH($fecha) - 1, 2, 0 ))";
+					$fecha = " and STR_TO_DATE(rp.fecha, '%d/%m/%Y') between date_sub($fecha,INTERVAL 2 MONTH) and $fecha";					
+					break;
+			}
+			
+			// $idsede = $idsede == 0 ? $g_idsede : $idsede;
+			// $sql="SELECT p.idpedido, p.fecha, CURDATE() f_registro, if (p.is_from_client_pwa = 1, 'APP', tpc.descripcion) destpc, s.descripcion dessec, i.descripcion ides, u.usuario usuario
+			// 		,pd.ptotal_r importe, pd.cantidad_r cantidad
+			// 	from pedido p
+			// 		inner join pedido_detalle pd on pd.idpedido = p.idpedido
+			// 		inner join tipo_consumo tpc on tpc.idtipo_consumo = p.idtipo_consumo	
+			// 		inner join item i on i.iditem = pd.iditem
+			// 		inner join seccion s on s.idseccion = pd.idseccion
+			// 		left join usuario u on u.idusuario = p.idusuario
+			// 	where p.idsede= $idsede and p.estado!=3 and pd.estado = 0 and STR_TO_DATE(p.fecha, '%d/%m/%Y') = $fecha";
+			// $bd->xConsulta($sql);
 
 			$idsede = $idsede == 0 ? $g_idsede : $idsede;
 
 			$sql = "SELECT rpd.*, STR_TO_DATE(rp.fecha, '%d/%m/%Y') fecha, DATE_FORMAT(STR_TO_DATE(rp.fecha, '%d/%m/%Y %H:%i:%s %p'), '%H %p') hora, rp.estado, rp.fecha_cierre, tp.descripcion des_tp, tc.idtipo_comprobante, tc.descripcion comprobante, rp.correlativo 
-				, if (rp.fecha_cierre = '', 1, 0 ) hoy, tp.img
+				, $hoy hoy, tp.img, tpc.descripcion destpc
+				$columm_add
 			from registro_pago_detalle rpd 
 				 inner join registro_pago rp on rp.idregistro_pago = rpd.idregistro_pago 
 				 inner join tipo_pago tp on rpd.idtipo_pago = tp.idtipo_pago 
+				 inner join tipo_consumo tpc on tpc.idtipo_consumo = rp.idtipo_consumo
 				 left join tipo_comprobante_serie tcs on rp.idtipo_comprobante_serie = tcs.idtipo_comprobante_serie
 				 LEFT join tipo_comprobante tc on tcs.idtipo_comprobante = tc.idtipo_comprobante 
-				 where rp.idsede = $idsede and (rp.cierre = 0 or  STR_TO_DATE(fecha_cierre, '%d/%m/%Y') =  DATE_ADD(CURDATE(), INTERVAL -1 DAY) )
+				 where rp.idsede = $idsede $fecha
 			 order by rpd.idregistro_pago desc";
 			 
 			$bd->xConsulta($sql);
@@ -719,17 +769,323 @@
 		// estadisticas // pedidos
 		case 4001:
 			$idsede = $_POST['idsede'];
+			$fecha = $_POST['fecha'];
+			$rango = $_POST['rango'];
+			$hoy = "if (p.cierre = '', 1, 0 )";
+
+			switch ($rango) {
+				case 'fecha':
+						if ( $fecha == 0 ) { 				
+							$hoy = "if (p.cierre = '', 1, 0 )";
+							$fecha = " and STR_TO_DATE(p.fecha , '%d/%m/%Y') BETWEEN DATE_ADD(CURDATE(), INTERVAL -1 DAY) and CURDATE()";
+						} else {
+							$hoy = "if (STR_TO_DATE(p.fecha, '%d/%m/%Y') = STR_TO_DATE('$fecha', '%d/%m/%Y'), 1, 0 )";
+							$fecha = " and (STR_TO_DATE(p.fecha, '%d/%m/%Y') BETWEEN  DATE_ADD(STR_TO_DATE('$fecha', '%d/%m/%Y'), INTERVAL -1 DAY) and STR_TO_DATE('$fecha', '%d/%m/%Y'))";
+						}
+					break;
+				case 'semana':
+						$hoy = "if(WEEK(STR_TO_DATE(p.fecha, '%d/%m/%Y')) = WEEK(now()), 1 ,0)";
+						$fecha = " and STR_TO_DATE(p.fecha, '%d/%m/%Y') between date_sub(now(),INTERVAL 2 WEEK) and now()";					
+					break;
+				case 'mes':
+						$fecha = $fecha == 0 ? 'now()' : "STR_TO_DATE('$fecha', '%d/%m/%Y')";
+						$hoy = "if(MONTH(STR_TO_DATE(p.fecha, '%d/%m/%Y')) = MONTH($fecha), 1 ,if(MONTH(STR_TO_DATE(p.fecha, '%d/%m/%Y')) < MONTH($fecha) - 1, 2, 0 ))";
+						$fecha = " and STR_TO_DATE(p.fecha, '%d/%m/%Y') between date_sub($fecha,INTERVAL 2 MONTH) and $fecha";					
+					break;
+			}
 
 			$idsede = $idsede == 0 ? $g_idsede : $idsede;
 
 			$sql = "select p.idpedido, p.estado, p.fecha_hora, p.total_r importe, pd.estado anulado 
-				, if (p.cierre = '', 1, 0 ) hoy, pd.ptotal_r importe_item
+				, $hoy hoy, pd.ptotal_r importe_item
+				, WEEK(STR_TO_DATE(p.fecha, '%d/%m/%Y')) num_semana, if(WEEK(STR_TO_DATE(p.fecha, '%d/%m/%Y')) = WEEK(now()), 1 ,0) semana_actual
+				, tc.descripcion destpc
+				, p.is_from_client_pwa
 			from pedido p
 				inner join pedido_detalle pd on p.idpedido = pd.idpedido 
-			where p.idsede = $idsede and (p.cierre = 0 or STR_TO_DATE(p.fecha , '%d/%m/%Y') =  DATE_ADD(CURDATE(), INTERVAL -1 DAY) )";
+				inner join tipo_consumo tc on tc.idtipo_consumo = p.idtipo_consumo
+			where p.idsede = $idsede $fecha";
 			 
 			$bd->xConsulta($sql);
 			break;
 		
+		case 4002: // pedidos borrados de pedidos_borrados
+			$idsede = $_POST['idsede'];
+			$fecha = $_POST['fecha'];
+			$rango = $_POST['rango'];
+			// $fecha = $fecha == 0 ? " pb.fecha_cierre = ''" : " STR_TO_DATE(pb.fecha_cierre, '%Y-%m-%d') = STR_TO_DATE('$fecha', '%d/%m/%Y')";
+
+			$idsede = $idsede == 0 ? $g_idsede : $idsede;
+
+			switch ($rango) {
+				case 'fecha':
+					$fecha = $fecha == 0 ? " pb.fecha_cierre = ''" : " STR_TO_DATE(pb.fecha_cierre, '%Y-%m-%d') = STR_TO_DATE('$fecha', '%d/%m/%Y')";
+					break;
+				
+				case 'semana':
+					$fecha = "STR_TO_DATE(pb.fecha, '%d/%m/%Y') between date_sub(now(),INTERVAL 1 WEEK) and now()";
+					break;
+				case 'mes':
+					$fecha = $fecha == 0 ? 'now()' : "STR_TO_DATE('$fecha', '%d/%m/%Y')";
+					$fecha = " and STR_TO_DATE(pb.fecha, '%d/%m/%Y') between date_sub($fecha,INTERVAL 1 MONTH) and $fecha";
+					break;
+			}
+
+			$sql="select pb.*, u.usuario, i.descripcion 
+				, WEEK(STR_TO_DATE(pb.fecha_cierre, '%d/%m/%Y')) num_semana, if(WEEK(STR_TO_DATE(pb.fecha_cierre, '%d/%m/%Y')) = WEEK(now()), 1 ,0) semana_actual
+				from pedido_borrados pb 
+				inner join usuario u on u.idusuario = pb.idusuario_permiso
+				inner join item i on i.iditem = pb.iditem
+				where u.idsede = $idsede 
+				and $fecha GROUP by pb.idpedido_borrados";
+			$bd->xConsulta($sql);
+			break;
+		
+		case 4003: // iecaja
+			$idsede = $_POST['idsede'];
+			$fecha = $_POST['fecha'];
+			$rango = $_POST['rango'];
+
+			$idsede = $idsede == 0 ? $g_idsede : $idsede;			
+
+			switch ($rango) {
+				case 'fecha':
+					$fecha = $fecha == 0 ? " ic.cierre = 0" : " STR_TO_DATE(ic.fecha, '%d/%m/%Y') = STR_TO_DATE('$fecha', '%d/%m/%Y')";
+					break;
+				
+				case 'semana':
+					$fecha = "STR_TO_DATE(ic.fecha, '%d/%m/%Y') between date_sub(now(),INTERVAL 1 WEEK) and now()";
+					break;
+				case 'mes':
+					$fecha = $fecha == 0 ? 'now()' : "STR_TO_DATE('$fecha', '%d/%m/%Y')";
+					$fecha = "STR_TO_DATE(ic.fecha, '%d/%m/%Y') between date_sub($fecha,INTERVAL 1 MONTH) and $fecha";
+					break;
+			}
+
+			
+
+			$sql = "SELECT ic.fecha, ic.motivo, ic.monto, ic.tipo numtipo, if(ic.tipo = 1, 'INGRESO', 'SALIDA') tipo, u.usuario, u.nombres nomusuario from ie_caja ic 
+					inner join usuario u on u.idusuario = ic.idusuario
+				where ic.idsede = $idsede and $fecha
+				order by ic.idie_caja desc";
+
+			$bd->xConsulta($sql);
+			break;
+
+
+		case 4004: // top productos
+			$idsede = $_POST['idsede'];
+			$fecha = $_POST['fecha'];
+			$rango = $_POST['rango'];
+
+			$idsede = $idsede == 0 ? $g_idsede : $idsede;			
+
+			switch ($rango) {
+				case 'fecha':
+					$fecha = $fecha == 0 ? " p.cierre = 0" : " STR_TO_DATE(p.fecha, '%d/%m/%Y') = STR_TO_DATE('$fecha', '%d/%m/%Y')";
+					break;
+				
+				case 'semana':
+					$fecha = "STR_TO_DATE(p.fecha, '%d/%m/%Y') between date_sub(now(),INTERVAL 1 WEEK) and now()";
+					break;
+				case 'mes':
+					$fecha = $fecha == 0 ? 'now()' : "STR_TO_DATE('$fecha', '%d/%m/%Y')";
+					$fecha = "STR_TO_DATE(p.fecha, '%d/%m/%Y') between date_sub($fecha,INTERVAL 1 MONTH) and $fecha";
+					break;
+			}
+
+			$sql = "SELECT pd.cantidad_r cantidad, pd.punitario, pd.ptotal_r total, 0 procede, i.descripcion des_item
+					,'CARTA' des_procede
+					, s.descripcion des_seccion
+					, u.usuario, u.nombres 
+				from pedido_detalle pd 
+					inner join pedido p on p.idpedido = pd.idpedido 
+					INNER join seccion s on s.idseccion = pd.idseccion 
+					inner join item i on i.iditem = pd.iditem 
+					left join usuario u on u.idusuario  = p.idusuario 
+				where p.idsede = $idsede and pd.estado = 0 and $fecha
+				UNION ALL
+				SELECT pd.cantidad_r cantidad, pd.punitario, pd.ptotal_r total, 1 procede, i.descripcion des_item
+					,'BODEGA' des_procede
+					, s.descripcion des_seccion
+					, u.usuario, u.nombres 
+				from pedido_detalle pd 
+					inner join pedido p on p.idpedido = pd.idpedido 
+					inner join producto_familia s on s.idproducto_familia = pd.idseccion 
+					inner join producto i on i.idproducto = pd.iditem 
+					left join usuario u on u.idusuario  = p.idusuario 
+				where p.idsede = $idsede and pd.estado = 0 and $fecha ";
+
+			$bd->xConsulta($sql);
+			break;
+
+		case 4005: // prociones
+
+			$idsede = $_POST['idsede'];
+			$fecha = $_POST['fecha'];
+			$rango = $_POST['rango'];
+
+			$idsede = $idsede == 0 ? $g_idsede : $idsede;			
+
+			switch ($rango) {
+				case 'fecha':
+					$fecha = $fecha == 0 ? " p.cierre = 0" : " STR_TO_DATE(p.fecha, '%d/%m/%Y') = STR_TO_DATE('$fecha', '%d/%m/%Y')";
+					break;
+				
+				case 'semana':
+					$fecha = "STR_TO_DATE(p.fecha, '%d/%m/%Y') between date_sub(now(),INTERVAL 1 WEEK) and now()";
+					break;
+				case 'mes':
+					$fecha = $fecha == 0 ? 'now()' : "STR_TO_DATE('$fecha', '%d/%m/%Y')";
+					$fecha = "STR_TO_DATE(p.fecha, '%d/%m/%Y') between date_sub($fecha,INTERVAL 1 MONTH) and $fecha";
+					break;
+			}
+
+			$sql = "SELECT (pd.cantidad_r * ii.cantidad) cantidad, pd.punitario, pd.ptotal_r total, 2 procede
+					,'PORCION' des_procede
+					, s.descripcion des_seccion
+					, po.descripcion des_item
+				from pedido_detalle pd 
+					inner join pedido p on p.idpedido = pd.idpedido 
+					INNER join seccion s on s.idseccion = pd.idseccion
+					inner join item i on i.iditem = pd.iditem
+					inner join item_ingrediente ii on ii.iditem = i.iditem 
+					inner join porcion po on po.idporcion = ii.idporcion 
+					where p.idsede = $idsede and pd.estado = 0 and $fecha ";
+
+			$bd->xConsulta($sql);					
+			break;
+		
+		case 4006:// top colaborador caja
+			$idsede = $_POST['idsede'];
+			$fecha = $_POST['fecha'];
+			$rango = $_POST['rango'];
+
+			$idsede = $idsede == 0 ? $g_idsede : $idsede;			
+
+			switch ($rango) {
+				case 'fecha':
+					$fecha = $fecha == 0 ? " rp.cierre = 0" : " STR_TO_DATE(rp.fecha, '%d/%m/%Y') = STR_TO_DATE('$fecha', '%d/%m/%Y')";
+					break;
+				
+				case 'semana':
+					$fecha = "STR_TO_DATE(rp.fecha, '%d/%m/%Y') between date_sub(now(),INTERVAL 1 WEEK) and now()";
+					break;
+				case 'mes':
+					$fecha = $fecha == 0 ? 'now()' : "STR_TO_DATE('$fecha', '%d/%m/%Y')";
+					$fecha = "STR_TO_DATE(rp.fecha, '%d/%m/%Y') between date_sub($fecha,INTERVAL 1 MONTH) and $fecha";
+					break;
+			}
+
+			$sql = "SELECT u.idusuario, u.usuario, u.nombres , rp.total from registro_pago rp 
+			inner join usuario u on u.idusuario = rp.idusuario 
+			where rp.idsede = $idsede and rp.estado = 0 and $fecha";
+
+			$bd->xConsulta($sql);	
+
+			break;
+
+		case 40061:// top colaborador caja - si tiene cierre de caja
+				$idsede = $_POST['idsede'];
+				$fecha = $_POST['fecha'];
+				$rango = $_POST['rango'];
+	
+				$idsede = $idsede == 0 ? $g_idsede : $idsede;			
+	
+				if ($rango == 'fecha') {
+					$fecha = $fecha == 0 ? " STR_TO_DATE(fecha, '%d/%m/%Y') = CURDATE()" : " STR_TO_DATE(fecha, '%d/%m/%Y') = STR_TO_DATE('$fecha', '%d/%m/%Y')";
+					$sql = "SELECT * from print_server_detalle where idsede = $idsede and idprint_server_estructura = 4 and $fecha";
+					$bd->xConsulta($sql);	
+				} else {
+					echo false;
+				}
+				
+
+	
+			break;
+
+		case 4007: // comprobantes de pago
+			$idsede = $_POST['idsede'];
+			$fecha = $_POST['fecha'];
+			$rango = $_POST['rango'];
+
+			$idsede = $idsede == 0 ? $g_idsede : $idsede;			
+
+			switch ($rango) {
+				case 'fecha':
+					$fecha = $fecha == 0 ? " STR_TO_DATE(ce.fecha, '%d/%m/%Y') = CURDATE()" : " STR_TO_DATE(ce.fecha, '%d/%m/%Y') = STR_TO_DATE('$fecha', '%d/%m/%Y')";
+					break;				
+				case 'semana':
+					$fecha = "STR_TO_DATE(ce.fecha, '%d/%m/%Y') between date_sub(now(),INTERVAL 1 WEEK) and now()";
+					break;
+					case 'mes':
+					$fecha = $fecha == 0 ? 'now()' : "STR_TO_DATE('$fecha', '%d/%m/%Y')";
+					$fecha = "STR_TO_DATE(ce.fecha, '%d/%m/%Y') between date_sub($fecha,INTERVAL 1 MONTH) and $fecha";
+					break;
+			}
+
+			$sql = "select count(ce.idce) cantidad, tc.descripcion, format(sum(ce.total), 2) total from ce
+				inner join tipo_comprobante_serie tcs on tcs.idtipo_comprobante_serie = ce.idtipo_comprobante_serie 
+				inner join tipo_comprobante tc on tc.idtipo_comprobante = tcs.idtipo_comprobante 
+			where ce.idsede = $idsede and $fecha 
+			GROUP by tc.idtipo_comprobante ";
+
+			$bd->xConsulta($sql);
+			break;
+		
+		// vesus sedes
+		case 4008:
+				$idsede = $_POST['idsede'];			
+				$fecha = $_POST['fecha'];
+				$hoy = "if (rp.fecha_cierre = '', 1, 0 )";
+				$columm_add = '';
+				$rango = $_POST['rango'];
+				
+	
+				switch ($rango) {
+					case 'fecha':
+							
+						if ( $fecha == 0 ) {
+							$fecha = " and (rp.cierre = 0 or STR_TO_DATE(fecha_cierre, '%d/%m/%Y') =  DATE_ADD(CURDATE(), INTERVAL -1 DAY))";
+							$hoy = "if (rp.fecha_cierre = '', 1, 0 )";
+						} else {
+							$hoy = "if (STR_TO_DATE(rp.fecha, '%d/%m/%Y') = STR_TO_DATE('$fecha', '%d/%m/%Y'), 1, 0 )";				
+							$fecha = " and (STR_TO_DATE(rp.fecha, '%d/%m/%Y') BETWEEN  DATE_ADD(STR_TO_DATE('$fecha', '%d/%m/%Y'), INTERVAL -1 DAY) and STR_TO_DATE('$fecha', '%d/%m/%Y'))";
+						}
+	
+						$columm_add = '';
+						break;
+					case 'semana':
+							$hoy = "if(WEEK(STR_TO_DATE(rp.fecha, '%d/%m/%Y')) = WEEK(now()), 1 ,0)";
+							$fecha = " and STR_TO_DATE(rp.fecha, '%d/%m/%Y') between date_sub(now(),INTERVAL 1 WEEK) and now()";					
+							$columm_add = ", WEEK(STR_TO_DATE(rp.fecha, '%d/%m/%Y')) num_semana, if(WEEK(STR_TO_DATE(rp.fecha, '%d/%m/%Y')) = WEEK(now()), 1 ,0) semana_actual
+							, DAYNAME(STR_TO_DATE(rp.fecha, '%d/%m/%Y')) nom_dia
+							, DAYOFWEEK(STR_TO_DATE(rp.fecha, '%d/%m/%Y')) num_dia";
+						break;
+					case 'mes':
+						$columm_add = ", MONTHNAME(STR_TO_DATE(rp.fecha, '%d/%m/%Y')) nom_mes
+						, MONTH(STR_TO_DATE(rp.fecha, '%d/%m/%Y')) num_mes, YEAR(STR_TO_DATE(rp.fecha, '%d/%m/%Y')) num_yy";
+						
+						$fecha = $fecha == 0 ? 'now()' : "STR_TO_DATE('$fecha', '%d/%m/%Y')";
+						$hoy = "if(MONTH(STR_TO_DATE(rp.fecha, '%d/%m/%Y')) = MONTH($fecha), 1 ,if(MONTH(STR_TO_DATE(rp.fecha, '%d/%m/%Y')) < MONTH($fecha) - 1, 2, 0 ))";
+						$fecha = " and STR_TO_DATE(rp.fecha, '%d/%m/%Y') between date_sub($fecha,INTERVAL 6 MONTH) and $fecha";					
+						break;
+				}
+				
+	
+				$idsede = $idsede == 0 ? $g_idsede : $idsede;
+
+				$sql = "SELECT s.idsede, s.nombre nomsede, rpd.importe, STR_TO_DATE(rp.fecha, '%d/%m/%Y') fecha, DATE_FORMAT(STR_TO_DATE(rp.fecha, '%d/%m/%Y %H:%i:%s %p'), '%H %p') hora, rp.estado
+						, rp.fecha_cierre, tp.descripcion des_tp 
+						, $hoy hoy, tp.img $columm_add				
+					from registro_pago_detalle rpd 
+						 inner join registro_pago rp on rp.idregistro_pago = rpd.idregistro_pago 
+						 inner join tipo_pago tp on rpd.idtipo_pago = tp.idtipo_pago
+						 inner join sede s on s.idsede = rp.idsede 
+						 where rp.idorg = $g_ido  $fecha
+					 order by rpd.idregistro_pago desc";
+				 
+				$bd->xConsulta($sql);
+				break;
 	}
 ?>

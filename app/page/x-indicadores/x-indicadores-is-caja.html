@@ -1,0 +1,108 @@
+<dom-module id="x-indicadores-is-caja">
+    <template is="dom">
+        <h3 class="text-secondary">Ingresos / Salidas de Caja {{ ragoTitulo }}</h3><br>
+
+        <div>
+            <div class="content-dato" verde = "true">
+                <div>
+                    <p class="fs-15 pb-3">Total de Ingresos</p>
+                    <p class="fs-25"> S/. {{ dataTotalesCaja.sumImporteIngresosShow }}</p>
+                </div>
+            </div>
+
+            <div class="content-dato ml-2" rojo = "true">
+                <div>
+                    <p class="fs-15 pb-3">Total de Salidas</p>
+                    <p class="fs-25"> S/. {{ dataTotalesCaja.sumImporteSalidasShow }}</p>
+                </div>
+            </div>
+        </div>
+
+        <br><br>
+        <table width="100%">
+            <thead>
+                <th>Fecha</th>
+                <th>Tipo</th>
+                <th>Usuario</th>
+                <th>Concepto</th>
+                <th align="right">Importe</th>
+            </thead>
+            <tbody>
+                <template is="dom-repeat" items="{{listDataCaja}}" as="item">
+                    <tr>
+                        <td>{{ item.fecha }}</td>
+                        <td><span class$="[[ item.class_row ]]"> {{ item.tipo }} </span></td>
+                        <td>{{ item.usuario }}</td>
+                        <td>{{ item.motivo }}</td>
+                        <td align="right">{{ item.monto }}</td>                        
+                    </tr>
+                </template>
+            </tbody>
+        </table>
+    </template>
+</dom-module>
+
+<script>
+    var xThisI2caja, dataIECaja, _dataTotalesCaja = {};
+    function loadDataI2Caja() {
+
+        _dataTotalesCaja = {
+            sumImporteIngresosShow: 0,
+            sumImporteSalidasShow: 0
+        }
+
+        xPopupLoad.xopen();
+        $.ajax({
+				type: 'POST',
+				url: '../../bdphp/log_005.php?op=4003',
+				data: dataFiltro
+			})
+			.done(function (res) {
+                dataIECaja = JSON.parse(res).datos;		
+                
+                dataIECaja.map(x => {
+                    x.class_row = x.numtipo === '2' ? 'fw-600 text-danger' : 'fw-600 text-success';
+                });
+                // console.log(dataIECaja);
+                xThisI2caja.listDataCaja = dataIECaja;
+
+                const sumImporteTotalIngresos = (dataIECaja.filter(x => x.numtipo.toString() === "1").map(x => parseFloat(x.monto)).reduce((a, b) => a + b, 0));        
+                const sumImporteTotalSalidas = (dataIECaja.filter(x => x.numtipo.toString() === "2").map(x => parseFloat(x.monto)).reduce((a, b) => a + b, 0));        
+                
+                _dataTotalesCaja.sumImporteIngresosShow = numeroConComas(xMoneda(sumImporteTotalIngresos));
+                _dataTotalesCaja.sumImporteSalidasShow = numeroConComas(xMoneda(sumImporteTotalSalidas));
+                xThisI2caja.dataTotalesCaja = JSON.parse( JSON.stringify(_dataTotalesCaja) );;
+                
+                xPopupLoad.xclose();
+
+			});
+    }
+
+    Polymer({
+		is: 'x-indicadores-is-caja',
+		properties: {            
+            ragoSubTitulo: String,
+            ragoTitulo: String,
+            rango:{type : [], notify: true, reflectToAttribute: true, observer: 'changeRango'},
+            loadata:{type : Boolean, notify: true, reflectToAttribute: true, observer: 'showData'},
+            listDataCaja: [],
+            dataTotalesCaja: {}
+		},
+		attached: function () {
+			// this.selected = 0,
+            // this.ragoSubTitulo = 'Dia ';
+            // this.ragoTitulo = 'Hoy';
+			xThisI2caja = this;
+			// initIndicadores2Caja();
+		},
+        changeRango: (val) => {
+            // console.log('change rango', val);
+        },
+        showData: () => {
+            loadDataI2Caja();
+        },
+		detached:function(){
+			// grafico_meta_diaria = null;			
+		}
+	})
+</script>

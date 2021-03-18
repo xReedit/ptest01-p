@@ -26,6 +26,10 @@
 <p class="fs-9 text-secondary" style="padding-bottom:6px">Sede</p>
 <x-comp-find-sede id="compSedeIndicador" onchange="changeSede(sedes)"></x-comp-find-sede>
 </div>
+<div onclick="pageIndicadores2()" class="text-secondary xCursor text-center">
+<span><i class="fa fa-arrow-circle-up text-secondary"></i></span>
+<p class="fs-10">Nueva Version</p>
+</div>
 <div>
 <span class="fs-9 text-secondary">Fecha</span>
 <input type="date" class="xMiInput" onchange="changeFecha(event)">
@@ -288,4 +292,5 @@ function graficoCanalesConsumo(){var ctx=document.getElementById('myChart').getC
 function graficoVentasSemana(){var ctx=document.getElementById('myChartVentasSemana').getContext('2d');var myBarChart=new Chart(ctx,{type:'line',data:{labels:xThisI.listSemana.map(x=>x.key.split('|')[1]),datasets:[{label:'Importe',data:xThisI.listSemana.map(x=>x.value),backgroundColor:["#DBF2F2"],borderColor:["#87D5D5"],borderWidth:2}],},options:{legend:{display:false,position:'bottom'}}});}
 function xGuardarMeta(){var meta=txt_new_meta.value;dataFiltro.meta=meta
 dataFiltro.new=dataMeta?0:1;$.ajax({type:'POST',url:'../../bdphp/log_005.php?op=1605',data:dataFiltro}).done(function(res){dialog_meta.close();porcentajeMedaDia=((sumImporteTotal/meta)*100).toFixed(1);if(dataMeta){graficoMetaDiaria(porcentajeMedaDia);}else{iniLoaddata();}});}
+function pageIndicadores2(){xOpenPage(46);}
 Polymer({is:'x-indicadores',properties:{listTipoPago:[],listCanalConsumo:[],listSeccion:[],listProducto:[],listCaja:[],listSemana:[],listPedidosAnulados:[],listPedidosItemAnulados:[],listMozoVirtual:[],listPagosApp:[],listCalificacionCliente:[],showBtnCierreCaja:Boolean,metaD:Number,xt_org:Number,xt_idsede:Number,},attached:function(){xThisI=this;initIndicadores();setTimeout(()=>{_cpSocketOpen();},1000);},detached:function(){grafico_meta_diaria=null;}})/*]]>*/</script>

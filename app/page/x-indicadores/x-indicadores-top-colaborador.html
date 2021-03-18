@@ -1,0 +1,483 @@
+<dom-module id="x-indicadores-top-colaborador">
+    <template is="dom">
+        <h3 class="text-secondary">Top Colaboradores {{ ragoTitulo }}</h3><br>
+
+        <div>
+            <div class="xContentCard border-bottom p-0">     
+                <div class="div-content-grid">
+                    <div >
+                        <p class="fs-18 text-secondary fw-600">Cajeros</p><br>
+
+                        <table width="100%">
+                            <thead>
+                                <th>#</th>
+                                <th>Colaborador</th>
+                                <th>Transacciones</th>
+                                <th align="right">Importe</th>
+                            </thead>
+                            <tbody>
+                                <template is="dom-repeat" items="{{listDataTopCaja}}" as="item">
+                                    <tr>
+                                        <td>{{displayIndex(index)}}</td>
+                                        <td>{{ item.key }}</td>
+                                        <td>
+                                            {{ item.value.count_show }}  
+                                            <span data-id = "[[ item.value.idprint_cierre ]]" class="pl-2 text-success xCursor fw-600" onclick="reImprimirCierre(this)">{{ item.value.cierre_caja }}</span>
+                                        </td>
+                                        <td align="right">{{ item.value.importe_show }}</td>
+                                    </tr>
+                                </template>
+                            </tbody>
+                        </table>
+                    </div>
+
+                    <div >
+                        <p class="fs-18 text-secondary fw-600">Mozos <span class="fs-13 fw-100 text-info">Seleccione para filtrar.</span> </p><br>
+
+                        <table width="100%" class="table-mozo">
+                            <thead>
+                                <th>#</th>
+                                <th>Colaborador</th>
+                                <th>Pedidos</th>
+                                <th align="right">Importe</th>
+                            </thead>
+                            <tbody>
+                                <template is="dom-repeat" items="{{listDataTopMozosOedido}}" as="item">
+                                    <tr onclick="changeMozo(this)" data-index="[[ index ]]" class="xCursor">
+                                        <td>{{displayIndex(index)}}</td>
+                                        <td>{{ item.key }}</td>
+                                        <td>{{ item.value.count_show }}</td>
+                                        <td align="right">{{ item.value.importe_show }}</td>
+                                    </tr>
+                                </template>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>       
+                <br><br>
+            </div>
+
+            <br>
+            <h3 class="text-secondary">Productos vendidos por: <span class="color-text-principal">[[ nomColaborador ]]</span></h3><br>
+            <br>
+
+            <div class="xContentCard border-bottom p-0">     
+                <div class="div-content-grid">
+                    <div >
+                        <p class="fs-18 text-secondary fw-600">Secciones</p><br>
+
+                        <table width="100%">
+                            <thead>
+                                <th>#</th>
+                                <th>Seccion</th>
+                                <th>Cant</th>
+                                <th align="right">Importe</th>
+                            </thead>
+                            <tbody>
+                                <template is="dom-repeat" items="{{listDataTopMozoSecciones}}" as="seccion">
+                                    <tr>
+                                        <td>{{displayIndex(index)}}</td>
+                                        <td>{{ seccion.key }}</td>
+                                        <td>{{ seccion.value.count_show }}</td>
+                                        <td align="right">{{ seccion.value.importe_show }}</td>
+                                    </tr>
+                                </template>
+                            </tbody>
+                        </table>
+                    </div>
+
+                    <div >
+                        <p class="fs-18 text-secondary fw-600">Productos Carta</p><br>
+
+                        <table width="100%">
+                            <thead>
+                                <th>#</th>
+                                <th>Producto</th>
+                                <th>Cant</th>
+                                <th align="right">Importe</th>
+                            </thead>
+                            <tbody>
+                                <template is="dom-repeat" items="{{listDataTopMozoProductos}}" as="item">
+                                    <tr>
+                                        <td>{{displayIndex(index)}}</td>
+                                        <td>{{ item.key }}</td>
+                                        <td>{{ item.value.count_show }}</td>
+                                        <td align="right">{{ item.value.importe_show }}</td>
+                                    </tr>
+                                </template>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>       
+            </div>
+
+            <br><br>
+            <div class="xContentCard border-bottom p-0">     
+                <div class="div-content-grid">
+                    <div >
+                        <p class="fs-18 text-secondary fw-600">Productos de Bodega</p><br>
+
+                        <table width="100%">
+                            <thead>
+                                <th>#</th>
+                                <th>Seccion</th>
+                                <th>Cant</th>
+                                <th align="right">Importe</th>
+                            </thead>
+                            <tbody>
+                                <template is="dom-repeat" items="{{listDataTopMoozoBodega}}" as="seccion">
+                                    <tr>
+                                        <td>{{displayIndex(index)}}</td>
+                                        <td>{{ seccion.key }}</td>
+                                        <td>{{ seccion.value.count_show }}</td>
+                                        <td align="right">{{ seccion.value.importe_show }}</td>
+                                    </tr>
+                                </template>
+                            </tbody>
+                        </table>
+                    </div>
+
+                    <div >
+                        <!-- <p class="fs-18 text-secondary fw-600">Productos Carta</p><br>
+
+                        <table width="100%">
+                            <thead>
+                                <th>#</th>
+                                <th>Producto</th>
+                                <th>Cant</th>
+                                <th align="right">Importe</th>
+                            </thead>
+                            <tbody>
+                                <template is="dom-repeat" items="{{listDataTopMozoProductos}}" as="item">
+                                    <tr>
+                                        <td>{{displayIndex(index)}}</td>
+                                        <td>{{ item.key }}</td>
+                                        <td>{{ item.value.count_show }}</td>
+                                        <td align="right">{{ item.value.importe_show }}</td>
+                                    </tr>
+                                </template>
+                            </tbody>
+                        </table> -->
+                    </div>
+                </div>       
+            </div>
+
+
+        </div>        
+    </template>
+</dom-module>
+
+<script>
+
+    var xThisI2TopColaborador, dataTopPedidosByMozo = [], crosTopProductosMozos;
+
+    function loadDataTopColaborador() {
+        xPopupLoad.xopen();
+        $.ajax({
+				type: 'POST',
+				url: '../../bdphp/log_005.php?op=4006',
+				data: xThisI2TopProductos.rango
+			})
+			.done(function (res) {
+                var dataIETopCaja = JSON.parse(res).datos;  
+                var crossDataCaja = crossfilter(dataIETopCaja);                              
+
+                // console.log('dataIETopCaja', dataIETopCaja);
+                
+                topCajeros(crossDataCaja);
+
+
+                loadDataMozosPedidos();
+
+			});
+    }
+
+    
+
+    function topCajeros(crossDataCaja) {
+        var ddCajero = crossDataCaja.dimension( d => d.usuario);
+        var ddCajeroTable = ddCajero.group().reduce(
+            (p, v) => { 
+                ++p.count;
+                p.importe += parseFloat(v.total);
+                p.count_show = xCeroIzq(p.count, 2);
+                p.importe_show = numeroConComas(p.importe.toFixed(2));
+                p.idusuario = v.idusuario;
+                return p;
+            },
+            (p, v) => { 
+                --p.count;
+                p.importe -= parseFloat(v.total);
+                p.count_show = xCeroIzq(p.count, 2);
+                p.importe_show = numeroConComas(p.importe.toFixed(2));
+                p.idusuario = v.idusuario;
+                return p;
+            },
+            () => { return { count: 0, importe: 0, count_show:'', importe_show: '', idusuario: 0 }; }
+        );
+
+        var dataCajeroTop = ddCajeroTable.order(p => p.importe).top(Number.POSITIVE_INFINITY);
+
+        topCajerosCierre(dataCajeroTop);
+    }
+
+    function topCajerosCierre(dataCajeroTop) {
+        $.ajax({
+				type: 'POST',
+				url: '../../bdphp/log_005.php?op=40061',
+				data: xThisI2TopProductos.rango
+			})
+			.done(function (res) {                
+                // console.log('res', res);
+                var dataIECierreCaja = [];
+                if ( res === '' ) { 
+                    dataIECierreCaja = [];
+                } else {
+                    dataIECierreCaja = JSON.parse(res).datos;  
+                }
+                
+                dataCajeroTop.map(c => {
+                    var colaboradorCaja = dataIECierreCaja.filter(x => x.idusuario === c.value.idusuario)[0];
+                    if ( colaboradorCaja ) {
+                        c.value.cierre_caja = 'Reimprimir Cierre';
+                        c.value.idprint_cierre = colaboradorCaja.idprint_server_detalle;
+                    } else {
+                        c.value.cierre_caja = '';
+                        c.value.idprint_cierre = 0;
+                    }
+                });
+
+
+                xThisI2TopColaborador.listDataTopCaja = JSON.parse(JSON.stringify(dataCajeroTop));
+                                
+			});
+    }
+
+    
+
+
+
+    function loadDataMozosPedidos() {
+        $.ajax({
+				type: 'POST',
+				url: '../../bdphp/log_005.php?op=4004',
+				data: xThisI2TopProductos.rango
+			})
+			.done(function (res) {
+                var dataIETopMozo = JSON.parse(res).datos;  
+                dataTopPedidosByMozo = dataIETopMozo;
+                var crosTopMozos = crossfilter(dataIETopMozo);                              
+
+                topMozos(crosTopMozos);    
+                
+                xPopupLoad.xclose();
+			});
+    }
+
+    function topMozos(crosTopMozos) {
+        var ddMozo = crosTopMozos.dimension( d => d.usuario);
+        var ddMozoTable = ddMozo.group().reduce(
+            (p, v) => { 
+                ++p.count;
+                p.importe += parseFloat(v.total);
+                p.count_show = xCeroIzq(p.count, 2);
+                p.importe_show = numeroConComas(p.importe.toFixed(2));
+                p.nom_mozo = v.nombres;
+                return p;
+            },
+            (p, v) => { 
+                --p.count;
+                p.importe -= parseFloat(v.total);
+                p.count_show = xCeroIzq(p.count, 2);
+                p.importe_show = numeroConComas(p.importe.toFixed(2));
+                p.nom_mozo = v.nombres;
+                return p;
+            },
+            () => { return { count: 0, importe: 0, count_show:'', importe_show: '', nom_mozo: '' }; }
+        );
+
+        xThisI2TopColaborador.listDataTopMozosOedido = ddMozoTable.order(p => p.importe).top(Number.POSITIVE_INFINITY);
+
+        changeMozo(0);
+
+        setTimeout(() => {            
+            $('.table-mozo tbody tr').each((i, e) => {
+                if (i === 0) { $(e).addClass("selected").siblings().removeClass("selected"); }
+            });
+        }, 500);
+    }
+
+    function changeMozo(obj) {
+        // console.log('params', obj);
+        const indexMozo = typeof obj === 'object' ? obj.dataIndex : obj;
+        const filtroMozo = xThisI2TopColaborador.listDataTopMozosOedido[indexMozo];
+
+        
+        var _dataTopPedidosByMozo = dataTopPedidosByMozo.filter(x => x.usuario === filtroMozo.key);
+        crosTopProductosMozos = crossfilter(_dataTopPedidosByMozo); 
+        
+        xThisI2TopColaborador.nomColaborador = primeraConMayusculas(filtroMozo.value.nom_mozo.toLowerCase());
+
+        topMozoSecciones();
+        topMozoProductos();
+        topMozoProductosBodega();
+
+        $(obj).addClass("selected").siblings().removeClass("selected");
+
+    }
+
+
+
+
+
+    function topMozoSecciones() {
+        var ddSeccion = crosTopProductosMozos.dimension( d => d.des_seccion);
+        var ddSeccionTalbe = ddSeccion.group().reduce(
+            (p, v) => { 
+                p.count += parseFloat(v.cantidad);
+                p.importe += parseFloat(v.total);
+                p.descripcion = v.des_seccion;
+                p.count_show = xCeroIzq(p.count, 2);
+                p.importe_show = numeroConComas(p.importe.toFixed(2));
+                return p;
+            },
+            (p, v) => { 
+                p.count -= parseFloat(v.cantidad);
+                p.importe -= parseFloat(v.total);
+                p.descripcion = v.des_seccion;
+                return p;
+            },
+            () => { return { count: 0, descripcion: '', importe: 0, count_show:'', importe_show: '' }; }
+        );
+
+        xThisI2TopColaborador.listDataTopMozoSecciones = ddSeccionTalbe.order(p => p.importe).top(Number.POSITIVE_INFINITY);
+        // console.log('ddSeccionTalbe', xThisI2TopProductos.listDataTopSeccion);
+
+    }
+
+    function topMozoProductos() {
+        var ddSeccion = crosTopProductosMozos.dimension( d => d.des_item);
+        var ddSeccionTalbe = ddSeccion.group().reduce(
+            (p, v) => { 
+                p.count += parseFloat(v.cantidad);
+                p.importe += parseFloat(v.total);
+                p.procede = v.procede;
+                p.descripcion = v.des_seccion;
+                p.count_show = xCeroIzq(p.count, 2);
+                p.importe_show = numeroConComas(p.importe.toFixed(2));
+                return p;
+            },
+            (p, v) => { 
+                p.count -= parseFloat(v.cantidad);
+                p.importe -= parseFloat(v.total);
+                p.procede = v.procede;
+                p.descripcion = v.des_seccion;
+                return p;
+            },
+            () => { return { count: 0, descripcion: '', importe: 0, count_show:'', importe_show: '', procede : 0 }; }
+        );
+
+        xThisI2TopColaborador.listDataTopMozoProductos = ddSeccionTalbe.order(p => p.importe).top(Number.POSITIVE_INFINITY);
+        xThisI2TopColaborador.listDataTopMozoProductos = xThisI2TopColaborador.listDataTopMozoProductos.filter(x => x.value.procede === "0").map(x => x);
+        // console.log('ddSeccionTalbe', xThisI2TopProductos.listDataTopSeccion);
+    }
+
+    function topMozoProductosBodega() {
+        var ddSeccion = crosTopProductosMozos.dimension( d => d.des_item);
+        var ddSeccionTalbe = ddSeccion.group().reduce(
+            (p, v) => { 
+                p.count += parseFloat(v.cantidad);
+                p.importe += parseFloat(v.total);
+                p.procede = v.procede;
+                p.descripcion = v.des_seccion;
+                p.count_show = xCeroIzq(p.count, 2);
+                p.importe_show = numeroConComas(p.importe.toFixed(2));
+                return p;
+            },
+            (p, v) => { 
+                p.count -= parseFloat(v.cantidad);
+                p.importe -= parseFloat(v.total);
+                p.procede = v.procede;
+                p.descripcion = v.des_seccion;
+                return p;
+            },
+            () => { return { count: 0, descripcion: '', importe: 0, count_show:'', importe_show: '', procede: 0 }; }
+        );
+
+        xThisI2TopColaborador.listDataTopMoozoBodega = ddSeccionTalbe.order(p => p.importe).top(Number.POSITIVE_INFINITY);
+        xThisI2TopColaborador.listDataTopMoozoBodega = xThisI2TopColaborador.listDataTopMoozoBodega.filter(x => x.value.procede === "1").map(x => x);
+        // console.log('ddSeccionTalbe', xThisI2TopProductos.listDataTopSeccion);
+    }
+
+
+    function reImprimirCierre(obj) {
+		var _ids = obj.dataId;
+		
+		xPopupLoad.xopen();
+		setTimeout(() => {
+			xPopupLoad.xclose();
+		}, 600);
+
+		$.ajax({
+				type: 'POST',
+				url: '../../bdphp/log_005.php?op=16061',
+				data: {
+					ids: _ids
+				}
+			})
+			.done(function (res) {					
+				var countRes = JSON.parse(res).datos;
+				
+				countRes.map(x => {
+					var jsonPrinterCierre = {
+						descripcion_doc: "cuadre-caja",
+						detalle_json: x.detalle_json,
+						hora: x.hora,
+						idprint_server_detalle: x.idprint_server_detalle,
+						idprint_server_estructura: 4,
+						nom_documento: "cuadre-caja",
+						tipo: "cuadre-caja",
+					}
+
+					_cpSocketEmitPrinterOnly(jsonPrinterCierre);
+				});
+			});
+	}
+
+
+
+
+    Polymer({
+		is: 'x-indicadores-top-colaborador',
+		properties: {            
+            ragoSubTitulo: String,
+            ragoTitulo: String,
+            rango:{type : [], notify: true, reflectToAttribute: true, observer: 'changeRango'},            
+            listDataTopCaja: Object,    
+            listDataTopMozosOedido: [],
+            listDataTopMoozoBodega: [],
+            listDataTopMozoSecciones: [],
+            listDataTopMozoProductos: [],
+            nomColaborador: String,
+		},
+		attached: function () {
+			// this.selected = 0,
+            // this.ragoSubTitulo = 'Dia ';
+            // this.ragoTitulo = 'Hoy';
+			xThisI2TopColaborador = this;
+			// initIndicadores2Caja();
+		},
+        changeRango: (val) => {
+            // console.log('change rango', val);
+        },
+        showData: () => {
+            loadDataTopColaborador();
+        },
+		detached:function(){
+			// grafico_meta_diaria = null;			
+		},
+        displayIndex: function(index) {
+            return xCeroIzq(index + 1,1);
+        }
+	})
+</script>
