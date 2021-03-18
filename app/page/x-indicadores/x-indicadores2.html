@@ -1048,8 +1048,9 @@
         // canal de comsumo        
         var dataVentasHoyApp = crossfilter(data.filter(x => x.hoy.toString() === "1" && x.is_from_client_pwa.toString() === "1"));
         var ddCanalTituloApp = dataVentasHoyApp.dimension(item => item.idpedido );        
-        var ddCanalImporte = ddCanalTituloApp.group().reduceSum(item => parseFloat(item.importe));
-        var itemTpc = { "key": 'APP', "value": ddCanalTituloApp.group().all().length, "importe": ddCanalImporte.value() }
+        var ddCanalImporte = ddCanalTituloApp.groupAll().reduceSum(item => parseFloat(item.importe));
+        var ddCanalCount = ddCanalTituloApp.groupAll().reduceCount();
+        var itemTpc = { "key": 'APP', "value": ddCanalCount.value(), "importe": ddCanalImporte.value() }
 
         _listTipoConsumo.push(itemTpc);
 
