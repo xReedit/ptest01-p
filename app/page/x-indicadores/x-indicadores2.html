@@ -1047,7 +1047,7 @@
     function cocinarCanalConsumoHoyFromAPP(data) {
         // canal de comsumo        
         var dataVentasHoyApp = crossfilter(data.filter(x => x.hoy.toString() === "1" && x.is_from_client_pwa.toString() === "1"));
-        var ddCanalTituloApp = dataVentasHoyApp.dimension(item => item.is_from_client_pwa );        
+        var ddCanalTituloApp = dataVentasHoyApp.dimension(item => item.idpedido );        
         var ddCanalImporte = ddCanalTituloApp.groupAll().reduceSum(item => parseFloat(item.importe));
         var itemTpc = { "key": 'APP', "value": ddCanalTituloApp.groupAll().value(), "importe": ddCanalImporte.value() }
 
