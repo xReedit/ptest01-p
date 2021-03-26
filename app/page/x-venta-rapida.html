@@ -226,7 +226,8 @@ xPopupLoad.xopen();xarr_body=xarr_body.filter(x=>x).map(x=>x);const _p_body_homo
 if(xVerificarImprimirComanda==true){guardando_vr=true;xLLamarPrintVR();}else{xPopupLoad.xclose();if(isSocket){_cpSocketClearStorage();}
 xNuevoPedidoVR();}
 _cpSocketprinterOnly(xArrayEnca);responde(true)}).fail(guardando_vr=false);}
-function xMandarCocinarImpresionComprobante(correlativo,idregistro_pago){if(xRpt_pago.length>0){var arr_cliente=xRpt_pago[0].cliente;var arr_comprobante=xRpt_pago[0].comprobante;arr_comprobante.correlativo=xReturnCorrelativoComprobante(arr_comprobante);xCocinarImprimirComprobante(xArrayPedidoObj,xarr_subtotales,arr_comprobante,arr_cliente,idregistro_pago,-2);}}
+function xMandarCocinarImpresionComprobante(correlativo,idregistro_pago){if(xRpt_pago.length>0){var arr_cliente=xRpt_pago[0].cliente;var arr_comprobante=xRpt_pago[0].comprobante;if(xRpt_pago[0].idcliente===''&&xdelivery===1){arr_cliente={"idcliente":0,"num_doc":"","nombres":xarr_cliente.cliente.nombre,"direccion":xarr_cliente.cliente.direccion,"telefono":xarr_cliente.cliente.telefono,"referencia":xarr_cliente.cliente.referencia}}
+arr_comprobante.correlativo=xReturnCorrelativoComprobante(arr_comprobante);xCocinarImprimirComprobante(xArrayPedidoObj,xarr_subtotales,arr_comprobante,arr_cliente,idregistro_pago,-2);}}
 function xLLamarPrintVR(){xCocinarImprimirComanda(xArrayEnca,xArrayPedidoObj,xarr_subtotales,(res)=>{if(res==false){xPopupLoad.xclose();if(isSocket){_cpSocketClearStorage();}
 xNuevoPedidoVR();}else{dialog_erro_print.open();}});}
 function xReImprimir(){dialog_erro_print.close();xPopupLoad.titulo="Enviando...";xPopupLoad.xopen();xLLamarPrintVR();}

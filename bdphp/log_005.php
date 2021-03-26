@@ -497,7 +497,7 @@
 			$fecha = $_POST['fecha'];
 			$fecha = $fecha == 0 ? 'CURDATE()' : "STR_TO_DATE('$fecha', '%d/%m/%Y')";
 			$idsede = $idsede == 0 ? $g_idsede : $idsede;
-			$sql="SELECT p.idpedido, p.fecha, CURDATE() f_registro, if (p.is_from_client_pwa = 1, 'APP', tpc.descripcion) destpc, s.descripcion dessec, i.descripcion ides, u.usuario usuario
+			$sql="SELECT p.idpedido, p.fecha, CURDATE() f_registro, if (p.flag_is_cliente = 1, 'APP', tpc.descripcion) destpc, s.descripcion dessec, i.descripcion ides, u.usuario usuario
 					,pd.ptotal_r importe, pd.cantidad_r cantidad
 				from pedido p
 					inner join pedido_detalle pd on pd.idpedido = p.idpedido
@@ -800,7 +800,7 @@
 				, $hoy hoy, pd.ptotal_r importe_item
 				, WEEK(STR_TO_DATE(p.fecha, '%d/%m/%Y')) num_semana, if(WEEK(STR_TO_DATE(p.fecha, '%d/%m/%Y')) = WEEK(now()), 1 ,0) semana_actual
 				, tc.descripcion destpc
-				, p.is_from_client_pwa
+				, p.flag_is_cliente as is_from_client_pwa
 			from pedido p
 				inner join pedido_detalle pd on p.idpedido = pd.idpedido 
 				inner join tipo_consumo tc on tc.idtipo_consumo = p.idtipo_consumo

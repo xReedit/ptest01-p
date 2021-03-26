@@ -267,6 +267,9 @@
 				$arrD = $x_array_pedido_header['arrDatosDelivery'];
 				$isComercioAppDeliveryMapa = isset($x_array_pedido_header['isComercioAppDeliveryMapa']) ? $x_array_pedido_header['isComercioAppDeliveryMapa'] : 0;
 
+				// quitar logo64 de establecimiento
+				$arrD['establecimiento']['logo64'] = "";
+
 				//071220 a la referencia le quitamos los caracteres especiales
 				$ref_cocinada = addslashes($arrD['referencia']);
 				$x_array_pedido_header['arrDatosDelivery']['referencia'] = $ref_cocinada;
