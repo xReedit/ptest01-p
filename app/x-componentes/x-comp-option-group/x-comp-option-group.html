@@ -1,0 +1,99 @@
+<!-- <link rel="import" href="../../web_components/polymer/polymer.html"> -->
+<dom-module id="x-comp-option-group">
+	<template is="dom">
+
+        <div class="options-btn-content noselect">
+            <template is="dom-repeat" items="{{listop}}" as="item">
+               <div class="options-btn-btn" onclick="activeOtion(this)" activo$="{{item.activo}}" data-idoption="[[index]]">
+                    <span>{{item.descripcion}}</span>
+               </div>
+            </template>                        
+        </div>
+
+
+    </template>
+</dom-module>
+<style>
+    .border-header-e {
+        border-radius: 5px;
+        border: 1px solid #e0e0e0;
+        background: aliceblue;
+        margin-top: 15px;
+    }
+
+    .options-btn-content {
+        display: inline-flex;
+        background: white;
+        border-radius: 5px;
+        border: 1px solid lightgray;
+        transition: all 0.5s;
+    }
+
+    .options-btn-btn {
+        padding: 5px 10px 5px 10px;
+        cursor: pointer;
+        border-right: 1px solid lightgrey;
+    }
+
+    .options-btn-btn[activo] {
+        background: dodgerblue;
+        color: white;        
+    }
+
+    .options-btn-btn:last-child {
+        border-right: 0px;
+    }
+
+</style>
+<script>
+
+    var xThisComGroup, _listOp;
+
+    function xIniCompOption() {
+
+        _listOp = xThisComGroup.listop;
+
+        xThisComGroup.optionselected = xThisComGroup.optionselected ? xThisComGroup.optionselected : 0;
+
+        _listOp[xThisComGroup.optionselected].activo = true;
+
+    }
+
+    function activeOtion(objOption) {
+        const idIndex = objOption.dataIdoption;
+        
+        _listOp.map(x => x.activo = false);
+        _listOp[idIndex].activo = true;
+        
+        xThisComGroup.optionselected = idIndex;
+
+        xThisComGroup.listop = JSON.parse(JSON.stringify(_listOp));    
+
+        xThisComGroup.getoptionGroupSelected();
+    }
+
+    Polymer({
+			is: 'x-comp-option-group',
+			properties: {				
+                listop: [],                
+                optionselected: {
+                    type: Number,
+                    value : 0,
+                    reflectToAttribute: true,
+                    notify: true, 
+                    value: function() { return 0; },
+                    observer: 'getoptionGroupSelected'
+                }							
+			},
+			listeners: {
+				'onclick': 'getoptionGroupSelected'
+			},
+			getoptionGroupSelected() {
+				return xThisComGroup?.optionselected || 0;
+			},
+			attached: function () {
+				xThisComGroup = this;				
+				xIniCompOption();
+			}
+		})
+</script>
