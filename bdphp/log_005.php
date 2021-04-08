@@ -711,7 +711,8 @@
 				case 'fecha':
 						
 					if ( $fecha == 0 ) {
-						$fecha = " and (rp.cierre = 0 or STR_TO_DATE(fecha_cierre, '%d/%m/%Y') =  DATE_ADD(CURDATE(), INTERVAL -1 DAY))";
+						// $fecha = " and (STR_TO_DATE(rp.fecha_cierre, '%d/%m/%Y') =  DATE_ADD(CURDATE(), INTERVAL -1 DAY))";
+						$fecha = " and (rp.cierre = 0 and STR_TO_DATE(rp.fecha_cierre, '%d/%m/%Y') BETWEEN DATE_SUB(NOW(), INTERVAL 2 DAY) AND NOW()";
 						$hoy = "if (rp.fecha_cierre = '', 1, 0 )";
 					} else {
 						$hoy = "if (STR_TO_DATE(rp.fecha, '%d/%m/%Y') = STR_TO_DATE('$fecha', '%d/%m/%Y'), 1, 0 )";				
@@ -850,7 +851,7 @@
 
 			switch ($rango) {
 				case 'fecha':
-					$fecha = $fecha == 0 ? " ic.cierre = 0" : " STR_TO_DATE(ic.fecha, '%d/%m/%Y') = STR_TO_DATE('$fecha', '%d/%m/%Y')";
+					$fecha = $fecha == 0 ? " ic.cierre = 0 and STR_TO_DATE(ic.fecha, '%d/%m/%Y') BETWEEN DATE_SUB(NOW(), INTERVAL 2 DAY) AND NOW()" : " STR_TO_DATE(ic.fecha, '%d/%m/%Y') = STR_TO_DATE('$fecha', '%d/%m/%Y')";
 					break;
 				
 				case 'semana':
@@ -882,7 +883,8 @@
 
 			switch ($rango) {
 				case 'fecha':
-					$fecha = $fecha == 0 ? " p.cierre = 0" : " STR_TO_DATE(p.fecha, '%d/%m/%Y') = STR_TO_DATE('$fecha', '%d/%m/%Y')";
+					// se agrega que solo muestre los pedidos que no fueron cerrados en los 2 ultimos dias
+					$fecha = $fecha == 0 ? " p.cierre = 0 and STR_TO_DATE(p.fecha, '%d/%m/%Y') BETWEEN DATE_SUB(NOW(), INTERVAL 2 DAY) AND NOW() " : " STR_TO_DATE(p.fecha, '%d/%m/%Y') = STR_TO_DATE('$fecha', '%d/%m/%Y')";
 					break;
 				
 				case 'semana':
@@ -929,7 +931,7 @@
 
 			switch ($rango) {
 				case 'fecha':
-					$fecha = $fecha == 0 ? " p.cierre = 0" : " STR_TO_DATE(p.fecha, '%d/%m/%Y') = STR_TO_DATE('$fecha', '%d/%m/%Y')";
+					$fecha = $fecha == 0 ? " p.cierre = 0 and STR_TO_DATE(p.fecha, '%d/%m/%Y') BETWEEN DATE_SUB(NOW(), INTERVAL 2 DAY) AND NOW()" : " STR_TO_DATE(p.fecha, '%d/%m/%Y') = STR_TO_DATE('$fecha', '%d/%m/%Y')";
 					break;
 				
 				case 'semana':
@@ -965,7 +967,7 @@
 
 			switch ($rango) {
 				case 'fecha':
-					$fecha = $fecha == 0 ? " rp.cierre = 0" : " STR_TO_DATE(rp.fecha, '%d/%m/%Y') = STR_TO_DATE('$fecha', '%d/%m/%Y')";
+					$fecha = $fecha == 0 ? " rp.cierre = 0 and STR_TO_DATE(p.fecha, '%d/%m/%Y') BETWEEN DATE_SUB(NOW(), INTERVAL 2 DAY) AND NOW()" : " STR_TO_DATE(rp.fecha, '%d/%m/%Y') = STR_TO_DATE('$fecha', '%d/%m/%Y')";
 					break;
 				
 				case 'semana':
@@ -1046,7 +1048,7 @@
 					case 'fecha':
 							
 						if ( $fecha == 0 ) {
-							$fecha = " and (rp.cierre = 0 or STR_TO_DATE(fecha_cierre, '%d/%m/%Y') =  DATE_ADD(CURDATE(), INTERVAL -1 DAY))";
+							$fecha = " and (rp.cierre = 0 and STR_TO_DATE(rp.fecha_cierre, '%d/%m/%Y') BETWEEN DATE_SUB(NOW(), INTERVAL 2 DAY) AND NOW()";
 							$hoy = "if (rp.fecha_cierre = '', 1, 0 )";
 						} else {
 							$hoy = "if (STR_TO_DATE(rp.fecha, '%d/%m/%Y') = STR_TO_DATE('$fecha', '%d/%m/%Y'), 1, 0 )";				
