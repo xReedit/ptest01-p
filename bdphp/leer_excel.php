@@ -20,6 +20,7 @@ $excel = new PhpExcelReader;
 */
 
 // echo "lego";
+// return;
 
  $filexls="../file/".$_POST['f'];
     $excel->read($filexls);    
@@ -39,27 +40,33 @@ function sheetDataProductos($sheet) {
   $sqlProductoDetalleUpdate="";
   $sqlProductoUpdateRow='';
   $sqlProductoDetalle='';
+  $sqlProductoDetalleNew='';
 
   $idorg = $_SESSION['ido'];
   $idsede = $_SESSION['idsede'];
+  
 
   while($x <= $sheet['numRows']) {      
     $y = 1;
     $re='';
     $xrow="";    
     $row_cant_almacem="";
-    $xrow_producto_new=0;        
+    $xrow_producto_new=0;     
+       
     while($y <= $sheet['numCols']) {    
       //descripcion
       $cell = isset($sheet['cells'][$x][$y]) ? $sheet['cells'][$x][$y] : '';                  
-      $cell=trim(strtoupper($cell));
+      $cell=trim(strtoupper($cell));      
+
+      // echo $cell;
+
       if($cell!=''){        
         $cell=utf8_decode($cell);
         $cell=str_replace('?','N',$cell);        
       }      
       //verificar producto si existe actualiza, en almacen central
       if($y==1){
-        $sql="select idproducto as d1 from producto where descripcion='".$cell."' and estado=0 and (idorg=".$idorg." and idsede=".$idsede.")";        
+        $sql="select idproducto as d1 from producto where descripcion='".$cell."' and estado=0 and (idsede=".$idsede.");";        
         $idProNewUp=$bdP->xDevolverUnDato($sql);  
         //echo $y.' | '.$idProNewUp;        
         //nuevo
@@ -67,8 +74,9 @@ function sheetDataProductos($sheet) {
           $xrow_producto_new=0;
         }else{
           $xrow_producto_new=1;
-          $sql="select idproducto as d1 from producto where idproducto=".$idProNewUp;
-          $idProDtNewUp=$bdP->xDevolverUnDato($sql);
+          // $sql="select idproducto as d1 from producto where idproducto=".$idProNewUp;
+          // $idProDtNewUp=$bdP->xDevolverUnDato($sql);
+          $idProDtNewUp = $idProNewUp;
         }
 
           //echo $cell.' | '.$idProNewUp.' | '.$xrow_producto_new;
@@ -151,8 +159,10 @@ function sheetDataProductos($sheet) {
       // echo ' | sql:'.$sqlProducto;
       //echo 'add producto '.$sqlProducto;
       $idProducto=$bdP->xConsulta_UltimoId($sqlProducto);
-      $reDP=$reDP.'('.$IdAlmacen.','.$idProducto.','.$row_cant_almacem.','.$fecha_actual.'),';        
-      $sqlProductoDetalle=$sqlProductoDetalle."INSERT INTO producto_stock (idproducto, idalmacen, stock ) VALUES (".$idProducto.",".$IdAlmacen.",".$row_cant_almacem."); ";
+
+      // $reDP=$reDP.'('.$IdAlmacen.','.$idProducto.','.$row_cant_almacem.','.$fecha_actual.'),';        
+      // $sqlProductoDetalle=$sqlProductoDetalle."INSERT INTO producto_stock (idproducto, idalmacen, stock ) VALUES (".$idProducto.",".$IdAlmacen.",".$row_cant_almacem."); ";
+      $sqlProductoDetalleNew = $sqlProductoDetalleNew. "(".$idProducto.",".$IdAlmacen.",".$row_cant_almacem."),";
     }else{
       $sqlProductoUpdate=$sqlProductoUpdate."update producto set ".$sqlProductoUpdateRow." where idproducto=".$idProNewUp."; ";
       //if($idProDtNewUp==''){//si no existe en el alamcen indicado ingresa nuevo        
@@ -166,8 +176,10 @@ function sheetDataProductos($sheet) {
             
     $x++;
   }  
+
   //$re=substr($re, 0, -1);   
-  $reDP=substr($reDP, 0, -1); 
+  // $reDP=substr($reDP, 0, -1); 
+
   //$sqlProducto="insert into producto (descripcion,idproducto_categoria,stock_min,costo,pventa,idorg,idsede) values ".$re;  
   //$sqlProductoDetalle='';
   /*if($reDP!=''){
@@ -175,8 +187,18 @@ function sheetDataProductos($sheet) {
     //$sql=$sql."INSERT INTO producto_stock (idproducto_stock,idproducto, idalmacen, stock ) VALUES ((SELECT ps.idproducto_stock FROM producto_stock AS ps WHERE ps.idproducto = ".$item['idproducto']." AND ps.idalmacen = ".$item['idalmacen_a']."),".$item['idproducto'].",".$item['idalmacen_a'].",".$item['cantidad'].") ON DUPLICATE KEY UPDATE stock=stock+".$item['cantidad']."; ";
   } */
 
-  $bdP->xMultiConsulta($sqlProductoUpdate.' '.$sqlProductoDetalle);  
-  echo $sqlProductoUpdate.' | '.$sqlProductoDetalle;
+  if ( $sqlProductoDetalleNew != "") {
+    $sqlProductoDetalleNew = substr($sqlProductoDetalleNew, 0, -1); 
+    $sqlProductoDetalleNew = "INSERT INTO producto_stock (idproducto, idalmacen, stock ) VALUES ".$sqlProductoDetalleNew.";";
+  }
+
+
+
+  // echo $sqlProductoUpdate;
+  // return;
+
+  $bdP->xMultiConsulta($sqlProductoUpdate.' '.$sqlProductoDetalleNew);  
+  echo $sqlProductoUpdate.' | '.$sqlProductoDetalleNew;
 }
 
 ?>
