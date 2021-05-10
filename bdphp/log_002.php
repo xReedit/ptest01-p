@@ -164,7 +164,7 @@
             }
             break;
         case '3': // consulta de boletas que fueron registradas pero no aceptadas(por cualquier motivo), devuelve fechas no aceptadas
-            $sql = "SELECT * from ce where (idorg=".$_SESSION['ido']." and idsede=".$_SESSION['idsede'].") and str_to_date(fecha, '%d/%m/%Y') between DATE_SUB( CURDATE() , INTERVAL 20 DAY ) AND CURDATE() and estado_api=0 and estado_sunat = 1 and anulado=0";            
+            $sql = "SELECT * from ce where (idorg=".$_SESSION['ido']." and idsede=".$_SESSION['idsede'].") and str_to_date(fecha, '%d/%m/%Y') between DATE_SUB( CURDATE() , INTERVAL 20 DAY ) AND CURDATE() and estado_api=0 and estado_sunat != 0 and anulado=0";            
             $bd->xConsulta($sql);
             break;
         case '301': // lista documentos no registrados - documnentos que no fueron enviados al servicio api por algun error de conexion
@@ -178,11 +178,11 @@
             $bd->xConsulta($sql);
             break;
         case '3011': // facturas// lista documentos no registrados en suant - documnentos que no fueron enviados a sunat por algun error de conexion
-            $sql = "SELECT * from ce where (idorg=".$_SESSION['ido']." and idsede=".$_SESSION['idsede'].") and str_to_date(fecha, '%d/%m/%Y') between DATE_SUB( CURDATE() , INTERVAL 20 DAY ) AND CURDATE() and estado_api = 0 and estado_sunat = 1 and anulado=0";
+            $sql = "SELECT * from ce where (idsede=".$_SESSION['idsede'].") and str_to_date(fecha, '%d/%m/%Y') between DATE_SUB( CURDATE() , INTERVAL 20 DAY ) AND CURDATE() and estado_api = 0 and estado_sunat != 0 and anulado=0";
             $bd->xConsulta($sql);
             break;
         case '302':// resumen de boletas: consulta fecha de boletas no enviadas 
-            $sql="SELECT fecha from ce where (idorg=".$_SESSION['ido']." and idsede=".$_SESSION['idsede'].") and str_to_date(fecha, '%d/%m/%Y') between DATE_SUB( CURDATE() , INTERVAL 20 DAY ) AND CURDATE() and estado_sunat=1 and (estado=0 and anulado=0) GROUP BY fecha";
+            $sql="SELECT fecha from ce where (idorg=".$_SESSION['ido']." and idsede=".$_SESSION['idsede'].") and str_to_date(fecha, '%d/%m/%Y') between DATE_SUB( CURDATE() , INTERVAL 20 DAY ) AND CURDATE() and estado_sunat != 0 and (estado=0 and anulado=0) GROUP BY fecha";
             $bd->xConsulta($sql);
             break;
         case '303': // lista de tickets de resumen boleta por confitmar aceptacion // que se generaron un dia anterior
@@ -225,9 +225,9 @@
                 if (c.anulado=1,'Anulado',
                         CASE
                             WHEN c.estado_api = 0 and c.estado_sunat = 0 THEN 'Aceptado'
-                            WHEN (c.estado_api = 1 and c.estado_sunat = 1) THEN 'Sin registrar'
-                            WHEN (tp.codsunat='03' and  c.estado_api = 0 and c.estado_sunat = 1) THEN 'Boleta registrada'
-                            WHEN (tp.codsunat!='03' and c.estado_api = 0 and c.estado_sunat = 1) THEN 'Boleta no aceptada'
+                            WHEN (c.estado_api = 1 and c.estado_sunat != 0) THEN 'Sin registrar'
+                            WHEN (tp.codsunat='03' and  c.estado_api = 0 and c.estado_sunat != 0) THEN 'Boleta registrada'
+                            WHEN (tp.codsunat!='03' and c.estado_api = 0 and c.estado_sunat != 0) THEN 'Boleta no aceptada'
                         END)
             )) LIKE '%".$pagination['pageFilter']."%' ";
 
@@ -258,9 +258,9 @@
                 if (c.anulado=1,'Anulado',
                         CASE
                             WHEN c.estado_api = 0 and c.estado_sunat = 0 THEN 'Aceptado'
-                            WHEN (c.estado_api = 1 and c.estado_sunat = 1) THEN 'Sin registrar'
-                            WHEN (tp.codsunat='03' and  c.estado_api = 0 and c.estado_sunat = 1) THEN 'Boleta registrada'
-                            WHEN (tp.codsunat!='03' and c.estado_api = 0 and c.estado_sunat = 1) THEN 'Boleta no aceptada'
+                            WHEN (c.estado_api = 1 and c.estado_sunat != 0) THEN 'Sin registrar'
+                            WHEN (tp.codsunat='03' and  c.estado_api = 0 and c.estado_sunat != 0) THEN 'Boleta registrada'
+                            WHEN (tp.codsunat!='03' and c.estado_api = 0 and c.estado_sunat != 0) THEN 'Boleta no aceptada'
                         END)
             )) LIKE '%".$pagination['pageFilter']."%' ";
 

@@ -623,6 +623,11 @@
 			where idprint_server_estructura = 2 and CONCAT(detalle_json->>'$.ArrayComprobante.inicial',detalle_json->>'$.ArrayComprobante.serie','-', detalle_json->>'$.ArrayComprobante.correlativo') = '$c'";
 			$bd->xConsulta($sql);
 			break;
+		case 1702: // reimprimir comprobante
+			$c = $_POST['comprobante'];			
+			$sql = "select idprint_server_detalle, detalle_json from print_server_detalle where CONCAT(detalle_json->>'$.ArrayComprobante.inicial',detalle_json->>'$.ArrayComprobante.serie','-', detalle_json->>'$.ArrayComprobante.correlativo') = '$c'";
+			$bd->xConsulta($sql);
+			break;
 		case 18: // contenido dinamico
 			echo '<hr>';
 			break;

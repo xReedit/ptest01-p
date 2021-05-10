@@ -1675,7 +1675,9 @@
 			break;
 		case 409:// load secciones con impresoras
 			$sql="
-				SELECT s.idseccion, s.img, s.descripcion AS plato,ifnull(i.idimpresora,0)AS idimpresora, ifnull(i.descripcion,'Ninguno') as descripcion FROM seccion AS s
+				SELECT s.idseccion, s.img, s.descripcion AS plato,ifnull(i.idimpresora,0)AS idimpresora, ifnull(i.descripcion,'Ninguno') as descripcion 
+					, s.idimpresora_otro
+				FROM seccion AS s
 				left JOIN impresora AS i using(idimpresora)
 				WHERE (s.idorg=".$g_ido." AND s.idsede=".$g_idsede.") and s.estado=0
 				ORDER BY s.idseccion
@@ -1698,6 +1700,10 @@
 			break;
 		case 4010://guardar seccion impresora
 			$sql="update seccion set idimpresora=".$_POST['idp']." where idseccion=".$_POST['ids'];
+			$bd->xConsulta($sql);
+			break;
+		case 40100://guardar seccion otra impresora 
+			$sql="update seccion set idimpresora_otro=".$_POST['idp']." where idseccion=".$_POST['ids'];
 			$bd->xConsulta($sql);
 			break;
 		case 40101://guardar seccion impresora bodega
@@ -2517,6 +2523,16 @@
 					WHERE (rp.idorg=".$g_ido." AND rp.idsede=".$g_idsede.") AND pd.procede_tabla=0 AND rp.cierre=0 AND rp.idusuario=".$_SESSION['idusuario']."
 					GROUP BY pd.idseccion
 					ORDER BY sum(rpp.total) DESC) b
+				union all
+				select * from (
+					select upper(rps.descripcion) as descripcion, '' t1, COUNT(rps.idregistro_pago_subtotal) t2, format(SUM(rps.importe), 2) t3 from registro_pago_subtotal rps
+						inner join registro_pago rp on rps.idregistro_pago  = rp.idregistro_pago
+					where rp.idusuario  = 103 and rps.cierre = 0 and rps.tachado = 0	
+						AND UPPER(rps.descripcion)!= 'SUB TOTAL' 
+						AND UPPER(rps.descripcion)!= 'TOTAL'
+						AND UPPER(rps.descripcion)!= 'I.G.V'
+					GROUP by rps.descripcion
+				) c
 			";
 			$bd->xConsulta($sql);
 			break;
@@ -2930,23 +2946,48 @@
 		case 20001:// historial de ventas
 			$pagination = $_POST['pagination'];
 			$fecha = $pagination['pageFecha'];
-			$filtroFecha = $fecha === '' ? ' and cierre=0 ' : " AND SUBSTRING_INDEX(fecha,' ',1) = '".$fecha."' ";
-			$filtroFechaCount = $fecha === '' ? '' : " and (SUBSTRING_INDEX(c.fecha,' ',1)= '".$fecha."')";
+			// $filtroFecha = $fecha === '' ? ' and cierre=0 ' : " AND SUBSTRING_INDEX(fecha,' ',1) = '".$fecha."' ";
+			// $filtroFechaCount = $fecha === '' ? '' : " and (SUBSTRING_INDEX(c.fecha,' ',1)= '".$fecha."')";
 
-			$sql = "
-				select idregistro_pago, SUBSTRING_INDEX(fecha,' ',-1) AS hora, total, estado, cierre, idce
-				from registro_pago
-				where (idorg=".$g_ido." and idsede=".$g_idsede.") ".$filtroFecha."
-				order by idregistro_pago desc limit ".$pagination['pageLimit']." OFFSET ".$pagination['pageDesde'];				
+			// $sql = "
+			// 	select idregistro_pago, SUBSTRING_INDEX(fecha,' ',-1) AS hora, total, estado, cierre, idce
+			// 	from registro_pago
+			// 	where (idorg=".$g_ido." and idsede=".$g_idsede.") ".$filtroFecha."
+			// 	order by idregistro_pago desc limit ".$pagination['pageLimit']." OFFSET ".$pagination['pageDesde'];				
+
+			$sql="
+				select rp.idregistro_pago, rp.fecha, rp.total, rp.estado, rp.cierre, rp.idce, rp.estado 
+				, tc.descripcion des_consumo, u.nombres us_caja, COALESCE(c.nombres, '') nom_cliente
+				, COALESCE(left(ce.numero,1), '') comprobante
+				, GROUP_CONCAT(DISTINCT tp.img) icon_pago, GROUP_CONCAT(DISTINCT tp.descripcion) des_pago, GROUP_CONCAT(LPAD(p.correlativo_dia, 4, '0')) correlativo_dia
+				, p.flag_is_cliente app
+				, if( p.flag_is_cliente = 1, 'CLIENTE', u2.nombres) nom_usuario
+				, p.referencia referencia_pedido
+				, COALESCE(p.idregistra_scan_qr, 0) scan_qr
+				from registro_pago rp
+					inner join tipo_consumo tc on tc.idtipo_consumo = rp.idtipo_consumo 
+					inner join usuario u on u.idusuario = rp.idusuario 
+					inner join registro_pago_detalle rpd on rpd.idregistro_pago = rp.idregistro_pago
+					inner join tipo_pago tp on rpd.idtipo_pago = tp.idtipo_pago 	
+					inner join pedido p on p.idregistro_pago = rp.idregistro_pago
+					left join usuario u2 on u2.idusuario = p.idusuario 
+					left join ce on ce.idce = rp.idce 		
+					left join cliente c on c.idcliente = p.idcliente 
+				where (rp.idsede=".$g_idsede.") and SUBSTRING_INDEX(rp.fecha,' ',1) = '".$fecha."'
+				group by rp.idregistro_pago
+				order by rp.idregistro_pago desc";
+				
+				// .$pagination['pageLimit']." OFFSET ".$pagination['pageDesde'];			
 			
-			$sqlCount="
-                SELECT count(c.idregistro_pago) as d1 from registro_pago as c                    
-                where (c.idorg=".$g_ido." and c.idsede=".$g_idsede.")".$filtroFechaCount;            
+			// $sqlCount="
+            //     SELECT count(c.idregistro_pago) as d1 from registro_pago as c                    
+            //     where (c.idorg=".$g_ido." and c.idsede=".$g_idsede.")".$filtroFechaCount;            
             
-			$rowCount = $bd->xDevolverUnDato($sqlCount);
-			// echo $sql;
-			$rpt = $bd->xConsulta($sql);            
-            print $rpt."**".$rowCount;
+			// $rowCount = $bd->xDevolverUnDato($sqlCount);
+			// $rpt = $bd->xConsulta($sql);            
+            // print $rpt."**".$rowCount;
+
+			$bd->xConsulta($sql);
 			break;
 		case 20002: // detalles
 			$sql = "

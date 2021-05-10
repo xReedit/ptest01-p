@@ -90,7 +90,19 @@ Sunat.<br>Este proceso es el mismo que se realiza al cierre de caja.</p>
 <td class="xNoVisibleMenos720">{{item.nom_comprobante}} - {{ item.numero }}</td>
 <td>{{item.nomcliente}}</td>
 <td align="right" class="ximporte_row">{{item.total}}</td>
-<td><span class$={{item.class_estado}}>{{item.nom_estado}}</span></td>
+<td>
+<div id="rowitem">
+<div id="row_estado">
+<span class$={{item.class_estado}}>{{item.nom_estado}}</span>
+<template is="dom-if" if="{{_isEqualTo(item)}}">
+<button class="xBoton_flat_2 xCursor" data-id="{{index}}" onclick="reenviarComprobante(this)"> Reenviar</button>
+</template>
+</div>
+<div id="row_loading" class="xInvisible">
+<i class="fa fa-circle-o-notch fa-spin"></i>
+</div>
+</div>
+</td>
 <td>
 <div data-id="{{index}}">
 <img class="xzoom-1 xCursor" hidden$="{{!item.ico_pdf}}" onclick="verDocuemnto('pdf',this)" src="../../../images/001-pdf.png" width="16px" alt="">
@@ -210,7 +222,7 @@ function xLoadCpeEmitidos(op){p_filter=xThisCpe.$.txt_buscar.value;data_paginati
 switch(parseInt(estado_cpe)){case 0:msj_estado='Aceptado';class_estado='xColorRow_verde';btn_anular=true;style_reporte='color: green';break;case 1:msj_estado='Sin Registrar';class_estado='xColorRow_Amarillo';btn_enviar=true;style_reporte='color: yellow';break;case 2:msj_estado='Registrado';class_estado='xColorRow_Azul';style_reporte='color: blue';break;case 3:msj_estado='Registrado';class_estado='xColorRow_Azul';style_reporte='color: blue';break;case 4:msj_estado='Anulado';class_estado='xFondoRowRojo';style_reporte='color: red';break;}
 if(x.totales_json!==''&&x.totales_json!==null){const _totales_json=JSON.parse(x.totales_json.replace('"{','{').replace('}"','}'))
 x.subtotal=_totales_json.total_valor;x.igv=_totales_json.total_igv;}else{x.subtotal=x.total;x.igv='0.00';}
-class_estado+=' xBold xfont11';x.ico_pdf=x.pdf==='1'?true:false;x.ico_xml=x.xml==='1'?true:false;x.ico_cdr=x.cdr==='1'?true:false;x.class_estado=class_estado;x.nom_estado=msj_estado;x.btn_enviar=btn_enviar;x.btn_anular=btn_anular;x.style_reporte=style_reporte;})
+class_estado+=' xBold xfont11';x.ico_pdf=x.pdf==='1'?true:false;x.ico_xml=x.xml==='1'?true:false;x.ico_cdr=x.cdr==='1'?true:false;x.class_estado=class_estado;x.nom_estado=msj_estado;x.btn_enviar=btn_enviar;x.btn_anular=btn_anular;x.style_reporte=style_reporte;x.isReenviandoLoading=false;})
 p_upadate=false;xThisCpe.$.paginator.pageRows=p_rows;if(op==='6'){xThisCpe.ListCpe=[];xThisCpe.ListCpe=xDataRes;setTimeout(()=>{$(window).scrollTop(lastPos);},5);}else{xThisCpe.ListCpeResumen=[];xThisCpe.ListReporte=xDataRes;setTimeout(()=>{xExportarExcel();},100);}});}
 function xEnviarResumenBoletas(){xPopupLoad.xclose();dialog_enviando_sunat.open();setTimeout(()=>{const rpt=xCocinarResumenBoletas();if(rpt===''){xLoadCpeEmitidos('6');}},1000);}
 function verDocuemnto(tipo,obj){const index=obj.parentElement.dataId;const external_id=xThisCpe.ListCpe[index].external_id;xSoapSunat_DownloadFile(tipo,external_id)}
@@ -226,4 +238,7 @@ function xCPEValidUs(){_us_cpe=xm_log_get('app3_us');if(xThisCpe.isContador){xTh
 function xGetIdCpc(){$.ajax({type:'POST',url:'../../bdphp/log_004.php?op=40101',data:{id:_us_cpe.idus}}).done((res)=>{_us_cpe.idus_cpc=res;xLoadCpeListEstablecimientosCPC();});}
 function xLoadCpeListEstablecimientosCPC(){$.ajax({type:'POST',url:'../../bdphp/log_004.php?op=401',data:{id:_us_cpe.idus_cpc}}).done((res)=>{const _res=$.parseJSON(res);xThisCpe.listSedeUsContador=_res.datos;});}
 function selectOptionSedeCPC(){const index=xThisCpe.$.selectSedeCPC.value;if(index===-1)return;const sedeSelect=xThisCpe.listSedeUsContador[index];$.ajax({type:'POST',url:'../../bdphp/log_004.php?op=40102',data:{ido:sedeSelect.idorg,ids:sedeSelect.idsede}}).done((res)=>{updateapp3_woDUS_changeSede(sedeSelect.idorg,sedeSelect.idsede);xIniCpe();});}
-Polymer({is:'x-cpe-emitidos',properties:{ListCpe:[],ListCpeResumen:[],ListReporte:[],listSedeUsContador:[],nom_sede:'',isContador:false,},attached:function(){this.selected=0,xThisCpe=this;xIniCpe();},displayIndex:function(index){return xCeroIzq(parseInt(p_desde)+(index+1),1);},})/*]]>*/</script>
+async function reenviarComprobante(obj){const _idIndex=obj.dataId;const objRow=obj.parentElement.parentElement;const rowEstado=$(obj.parentElement.parentElement).find('#row_estado');const rowLoading=$(obj.parentElement.parentElement).find('#row_loading');var _rowCpe=xThisCpe.ListCpe[_idIndex];_rowCpe.isReenviandoLoading=true;rowEstado.addClass('xInvisible');rowLoading.removeClass('xInvisible');console.log('_rowCpe',_rowCpe);const rpt=await xSoapSunat_SendSunat(_rowCpe.external_id,_rowCpe.idce)
+if(rpt.ok){xLoadCpeEmitidos('6');}else{alert(rpt.msj_error);}
+_rowCpe.isReenviandoLoading=false;rowLoading.addClass('xInvisible');rowEstado.removeClass('xInvisible');console.log('rpt',rpt);}
+Polymer({is:'x-cpe-emitidos',properties:{ListCpe:[],ListCpeResumen:[],ListReporte:[],listSedeUsContador:[],nom_sede:'',isContador:false,isReenviandoLoading:false},attached:function(){this.selected=0,this.isReenviandoLoading=false;xThisCpe=this;xIniCpe();},displayIndex:function(index){return xCeroIzq(parseInt(p_desde)+(index+1),1);},_isEqualTo:(item)=>{return item.nom_estado==='Registrado'&&item?.json_xml?.length>1;},_isEqualToLoading:(item)=>{return item.isReenviandoLoading;},})/*]]>*/</script>

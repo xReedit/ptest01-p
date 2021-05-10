@@ -24,48 +24,22 @@
 <x-pago id="component_pago"></x-pago>
 </div>
 </paper-dialog>
-<br>
-<div class="xMiCard xradius" style="width:85%">
-<div class="xEncanezadoCard xFondoRowAmarillo2">
-<p>El Registro de pago muestra todos los pedidos que fueron cancelados o pagaddos por dia y solo es informativo. Seleccione o escriba una fecha.</p>
-<div class="d-flexx">
-<input type="date" class="xMiInput" style="width:200px" id="txt_fecha">
-</div>
-</div>
-<div class="xContentCard" style="height:100%">
-<div class="xdivEnLinea2">
-<div class="itemsDiv">
-<br>
-<table width="100%" id="tb_historial">
-<thead>
-<th>#</th>
-<th width="40px">Hora</th>
-<th align="right">Importe</th>
-</thead>
-</table>
-<br>
+<paper-dialog id="dialog_registro_detalle" class="dialog_redondo" style="overflow:auto;overscroll-behavior:auto;min-width:50%;max-width:700px" entry-animation="scale-up-animation" exit-animation="fade-out-animation" with-backdrop>
+<div class="mb-2">
 <div>
-<pagination-input id="paginator" current-page="1" page-count="5" current-page-changed="onChangePagination($event)"></pagination-input>
-</div>
-<br>
-</div>
-<br>
-<div class="itemsDiv xpadingLateralDe xpadingLateralIz" style="width:75%">
-<br><br>
-<div class="xDerecha">
+<div class="d-flexx justify-content-between" style="align-items:end">
+<div style="zoom:.9">
 <paper-button><div class="xMiBoton_icon_lateral2" style="margin-top:-15px;width:90px" onclick="xOpenAnularPedidoHistorial()" id="btn_anular_pedido"><img src="../../images/_delete_pedido.png"><p>Anular pedido</p></div></paper-button>
 <paper-button><div class="xMiBoton_icon_lateral2" style="margin-top:-15px;width:100px" onclick="xImprimirPrecuentaHistorial()"><img src="../../images/_pre_cuenta.png"><p>Imprimir pre-cuenta</p></div></paper-button>
 <paper-button disabled="[[xYaTieneComprobante]]"><div class="xMiBoton_icon_lateral2" style="margin-top:-15px;width:50px" onclick="xAbrirDialogComprobante()"><img src="../../images/_comprobante.png"><p>Emitir Comprobante</p></div></paper-button>
 <paper-button hidden$="[[!xIsPuedeReimprimirCPE]]"><div class="xMiBoton_icon_lateral2" style="margin-top:-15px;width:50px" onclick="reImprimirComprobante()"><img src="../../images/_print_vr.png"><p>Reimprimir Comprobante</p></div></paper-button>
 </div>
-<br><br>
-<br>
+<button class="btn btn-sm btn-secondary ml-2" dialog-dismiss>X</button>
+</div>
 <hr>
-<br>
 <label for="txt_comprobante" class="xfont10">Comprobante Emitido:</label>
 <p><span id="txt_comprobante" class="xfont20">- </span><span id="txt_ref" class="xfont16 xColorRow_Morado xpadingLateralIz"></span></p>
-<div class="xLinea2"></div><br>
-<br>
+<div class="xLinea2"></div>
 <label for="txt_cliente" class="xfont10">Cliente:</label>
 <p><span id="txt_cliente" class="xfont20">- </span><span id="txt_ref" class="xfont16 xColorRow_Morado xpadingLateralIz"></span></p>
 <div class="xLinea2"></div><br>
@@ -95,11 +69,113 @@
 <div id="xBody"></div>
 </div>
 </div>
+</paper-dialog>
 <br>
+<div class="xMiCard xradius" style="width:90%;max-width:1450px">
+<div class="xEncanezadoCard" style="background:lavenderblush;color:#424242">
+<div class="div-content-head-op d-flexx justify-content-between">
+<div>
+<p class="fs-12 text-secondary">Fecha</p>
+<div class="d-flexx">
+<input type="date" class="xMiInput" style="width:200px" id="txt_fecha">
+</div>
+</div>
+<div class="d-flexx">
+<div class="div-dato-registro">
+<p class="fw-600 text-secondary fs-12">Metodos de Pago</p>
+<div class="d-flexx justify-content-center">
+<template is="dom-repeat" items="{{listCantidadPagos}}" as="item">
+<div>
+<p class="fs-11 pr-2 m-0">{{item.id}}: <span class="fw-600">{{item.cantidad}} </span></p>
+</div>
+</template>
+</div>
+</div>
+<div class="div-dato-registro">
+<p class="fw-600 text-secondary fs-12">Comprobantes Emitos</p>
+<p class="fw-600 text-secondary fs-20">{{ numComprobantesEmitidos }}</p>
+</div>
+<div class="div-dato-registro">
+<p class="fw-600 text-secondary fs-12">Importe Total</p>
+<p class="fw-600 text-secondary fs-20"> S/. {{ importeTotalRegistrado }}</p>
+</div>
+</div>
+</div>
+</div>
+<div class="xContentCard border-bottom" style="padding:20px">
+<div class="div-content-grid">
+<div>
+<div>
+<input type="text" class="xMiInput" width="100%" placeholder="Buscar ..." onkeyup="buscarEnLista(this.value)">
+</div>
+</div>
+<br>
+<table width="100%">
+<thead>
+<th>#</th>
+<th>Fecha</th>
+<th>U. Caja</th>
+<th>Canal</th>
+<th>Correlativo</th>
+<th>Cliente</th>
+<th width="15px"></th>
+<th>T. Pago</th>
+<th align="right" style="min-width:100px">importe</th>
+<th></th>
+</thead>
+<tbody>
+<template is="dom-repeat" items="[[listRegistro]]" as="item">
+<tr>
+<td>
+<span class="fw-600 mr-1">
+{{item.num}}
+</span>
+<i class="fa fa-lock" hidden$="[[!item.isCierre]]"></i>
+</td>
+<td>
+<p>{{ item.fecha_des }}</p>
+<p>{{ item.hora }}</p>
+</td>
+<td>
+<p class="fs-12">{{ item.us_caja }}</p>
+</td>
+<td>
+<p class="fs-12">{{ item.des_consumo }}</p>
+<p class="badge badge-success" hidden$="[[ !item.isScanCodigo ]]">App</p>
+</td>
+<td>
+<p>{{ item.correlativo_dia }}</p>
+</td>
+<td>
+<p class="fs-11">{{ item.nom_cliente }}</p>
+<p class="fs-10 text-secondary">{{ item.referencia_pedido }}</p>
+</td>
+<td>
+<span class="badge badge-today">{{ item.des_comprobante }}</span>
+</td>
+<td>
+<div class="d-flexx">
+<template is="dom-repeat" items="[[item.listIconsPago]]" as="icon">
+<img width="18px" class="mr-1" src$="{{ icon.icon }}" alt="">
+</template>
+</div>
+</td>
+<td align="right">
+<p class="fw-600 text-info fs-15">S/. {{ item.total }}</p>
+</td>
+<td>
+<button class="xBoton_flat_2 xCursor" onclick="xloadDetallePago(this)" data-id="{{index}}">Ver</button>
+</td>
+</tr>
+</template>
+</tbody>
+</table>
+</div>
 </div>
 </div>
 <br><br>
 </template>
+<style>.div-dato-registro{border-radius:8px;background:white;padding:5px 15px 5px 15px;text-align:center;border:1px solid #bdbdbd;margin-left:10px}</style>
 <script type="text/javascript" src="../view/xJsonSunat.js"></script>
 <script type="text/javascript" src="../view/deNumALetras.js"></script>
 <script type="text/javascript" src="../view/item_pedido_estructura.js"></script>
@@ -107,9 +183,8 @@
 <script type="text/javascript" src="../view/cpe_interno.js"></script>
 <script type="text/javascript" src="../view/item_pedido_subtotales.js"></script>
 <style>.verIconFacturado img{visibility:hidden}</style>
-<script>/*<![CDATA[*/var xThisHistVenta;var xfecha_historial='';var xArrayTpC=[];var xArraySeccion_r=[];var xArrayDtOrdenFiltro=[];var xTotalItemSel;var xidregistro_pago_sel;var xDtPrint,xPSupervisor,xEstado_registro_pago=0,xhtml_anulado='',xdt_h=[],arrSumSubtTotales=[],xRpt_pago=[],index_historial,x_icon_facturado,xdt_pdE;var data_pagination={},p_rows=0,p_fecha='';function xIniPagination(){xThisHistVenta.$.paginator.currentPage=1;xThisHistVenta.$.paginator.pageRows=p_rows;xThisHistVenta.$.paginator.listRows=[30,60,90,120];}
-function xIniHistVenta(){xPopupLoad=document.getElementById('xLoad');x_icon_facturado='<img src="../../images/_comprobante.png" title="se emitio comprobante" width="16px">';xm_LogChequea(function(){xm_log_get('ini_us');$("#Titulo_page").text("Registro de pagos");$('body').addClass('loaded');xDtPrint=xm_log_get('sede_generales');xloadHistorial();})
-xIniPagination();xThisHistVenta.$.paginator.addEventListener('page-limit-change',(e)=>{data_pagination=e.detail.value;p_desde=data_pagination.pageDesde;xloadHistorial();});$("#txt_fecha").on('change',function(){var d=$(this).val().split('-');xfecha_historial=d[2]+'/'+d[1]+'/'+d[0];p_fecha=xfecha_historial;xThisHistVenta.$.paginator.currentPage=1;xloadHistorial();})
+<script>/*<![CDATA[*/var xThisHistVenta;var xfecha_historial='';var xArrayTpC=[];var xArraySeccion_r=[];var xArrayDtOrdenFiltro=[];var xTotalItemSel;var xidregistro_pago_sel;var xDtPrint,xPSupervisor,xEstado_registro_pago=0,xhtml_anulado='',xdt_h=[],arrSumSubtTotales=[],xRpt_pago=[],index_historial,x_icon_facturado,xdt_pdE,listRegistroMaster;var data_pagination={},p_rows=0,p_fecha='';function xIniHistVenta(){xPopupLoad=document.getElementById('xLoad');x_icon_facturado='<img src="../../images/_comprobante.png" title="se emitio comprobante" width="16px">';xm_LogChequea(function(){xm_log_get('ini_us');$("#Titulo_page").text("Registro de pagos");$('body').addClass('loaded');xDtPrint=xm_log_get('sede_generales');xloadHistorial();})
+$("#txt_fecha").on('change',function(){var d=$(this).val().split('-');xfecha_historial=d[2]+'/'+d[1]+'/'+d[0];p_fecha=xfecha_historial;xloadHistorial();})
 $("#dialog_motivo_anular_historial").on('iron-overlay-closed',function(){$("#txt_motivo_anular").focus();})
 $("#dialog_motivo_anular_historial #txt_motivo_anular").keyup(function(e){if(e.keyCode==13){dialog_motivo_anular_historial.close();pass_us.open();}})
 xPSupervisor=document.getElementById('pass_us');xPSupervisor.setVal('Pe1');xPSupervisor.addEventListener('xSend',function(e){var p=e.detail.xRpts[0].p;if(p===1){xPermisoSupervisor=e.detail.xRpts[0].us;xCronometro_us=30;xRefreshPermiso=setInterval(function(){xcronometro_permiso()},1000);xAnularPedidoHistorial();}});xValPago=document.getElementById('component_pago');xValPago.addEventListener('xSend',function(e){xRpt_pago=e.detail.xRpts;var p=e.detail.xRpts[0].ok;if(p!=0){if(e.detail.xRpts[0].paseEnterTxt==1){xRegistrarClientePagoCP();}}});xValPago.addEventListener('xCancelarCerrar',function(e){xThisHistVenta.$.dialog_comprobante.close()});xValPago.addEventListener('xListoRegistraPago',function(e){xMandarCocinarImpresionComprobante_historial();});}
@@ -117,13 +192,11 @@ function xAbrirDialogComprobante(){xThisHistVenta.$.dialog_comprobante.open();}
 function xOpenAnularPedidoHistorial(){dialog_motivo_anular_historial.open();}
 function xAnularPedidoHistorial(){var xArrayAnularItems=[];$("#tb_det_pedidos .row").each(function(index,element){xidpedid_txt_change=xidpedid_txt_change+','+$(element).attr('data-idpedido');;})
 xidpedid_txt_change=xidpedid_txt_change.slice(1);xPopupLoad.xopen();$.ajax({type:'POST',url:'../../bdphp/log.php?op=5011',data:{ArrayPeAnular:'',xPedidos:xidpedid_txt_change,xMotivo:$("#txt_motivo_anular").val(),'u':xPermisoSupervisor,'viene_historial':xidregistro_pago_sel}}).done(function(dt_xx){xPopupLoad.xclose();$(".xMiBoton_icon_lateral").attr('disabled',true);xloadHistorial();})}
-function xloadHistorial(){xPopupLoad.titulo='Cargando...';xPopupLoad.xopen();data_pagination.pageFecha=p_fecha;let xDataRes=[];$.ajax({type:'POST',url:'../../bdphp/log.php?op=20001',data:{pagination:data_pagination}}).done(function(res){res=res.split('**');p_rows=res[1];res=$.parseJSON(res[0]);xdt_h=res;var xcadena_h='',ximg_estado,xclass_anulado,xget_icon_facturado,isFacturaEmitido=false;if(!xdt_h.success){xPopupLoad.xclose();alert(xdt_h.error);return;}
-xdt_h=xdt_h.datos;var xcount_row=0;xThisHistVenta.isCierreCaja=false;for(var i=0;i<xdt_h.length;i++){xcount_row++;ximg_estado='';xclass_anulado='';if(xdt_h[i].cierre==="1"){ximg_estado='<img src="../../images/candado.png" style="width:10px; heigh:10px; padding-right:2px; padding-top:4px;" class="xIzquierda EnLinea">';xThisHistVenta.isCierreCaja=true;}
-if(xdt_h[i].estado==="1"){xclass_anulado='xrow_anulado';}
-isFacturaEmitido=xdt_h[i].idce===null?false:true;xget_icon_facturado=xdt_h[i].idce===null?'':x_icon_facturado;xdt_h[i].isFacturaEmitido=isFacturaEmitido;xdt_h[i].isCerrado=xdt_h[i].cierre==="1";xcadena_h=String(xcadena_h+'<tr class="row xCursor  '+xclass_anulado+'" data-index='+i+' data-id="'+xdt_h[i].idregistro_pago+'" data-idpedidos='+xdt_h[i].idpedido+' data-estado="'+xdt_h[i].estado+'" data-motivoa="'+xdt_h[i].motivo_anular+'" onclick="xloadDetallePago(this);">'+'<td id="row_historial'+i+'">'+ximg_estado+xCeroIzq(xcount_row,3)+xget_icon_facturado+'</td>'+'<td>'+xdt_h[i].hora+'</td><td align="right" class="td_total">'+xdt_h[i].total+'</td>'+'</tr>');};p_upadate=false;xThisHistVenta.$.paginator.pageRows=p_rows;$("#tb_historial .row").remove();$("#tb_historial").append(xcadena_h).trigger('create');xPopupLoad.xclose();});}
-function xloadDetallePago(obj){$("#tb_historial tr").removeClass('xitem_seleccionado_li');$(obj).addClass('xitem_seleccionado_li');index_historial=$(obj).attr('data-index');xidregistro_pago_sel=$(obj).attr('data-id');xEstado_registro_pago=parseInt($(obj).attr('data-estado'));xTotalItemSel=$(obj).find('.td_total').text();xThisHistVenta.$.component_pago.setVal(xMoneda(xTotalItemSel));xValPago.setModoSoloComprobante();xhtml_anulado='';$(".xMiBoton_icon_lateral").attr('disabled',false);if(xEstado_registro_pago===1){xhtml_anulado='<h3 class="xColorRow_Rojo xBold">ANULADO</h3><div class="xLinea"></div><br><h4><strong>'+xmotio_anular.toUpperCase()+'</strong></h4>';$(".xMiBoton_icon_lateral").attr('disabled',true);}
+function xloadHistorial(){xPopupLoad.titulo='Cargando...';xPopupLoad.xopen();data_pagination.pageFecha=p_fecha!==''?p_fecha:xDevolverFecha();let xDataRes=[];$.ajax({type:'POST',url:'../../bdphp/log.php?op=20001',data:{pagination:data_pagination}}).done(function(res){res=JSON.parse(res);xdt_h=res.datos;var xNumRegistro=xdt_h.length+1||0;var listTipoPago=[],importeTotalRegistrado=0,numTotalComprobantes=0;xdt_h.map((x,index)=>{const _fecha=x.fecha.split(' ');var _listIconsPago=[];x.isFacturaEmitido=x.idce!==null;x.isPedidoApp=parseInt(x.app)===1;x.isScanCodigo=parseInt(x.scan_qr)!==0;x.isCierre=parseInt(x.cierre)!==0;x.icon_pago.split(',').map(i=>{_listIconsPago.push({icon:`../../images/${i}`})});x.listIconsPago=_listIconsPago;x.referencia_pedido=x.referencia_pedido===x.nom_cliente?'':x.referencia_pedido;x.fecha_des=_fecha[0];x.hora=_fecha[1];x.des_comprobante=x.comprobante===''?'':x.comprobante==='B'?'Boleta':'Factura';x.charbusqueda=`${x.us_caja}${x.correlativo_dia}${x.des_pago}${x.des_consumo}${x.nom_usuario}${x.referencia_pedido}${x.total}${x.des_comprobante}`;x.charbusqueda=x.charbusqueda.toLowerCase();x.des_pago.split(',').map(t=>{const ishayTP=listTipoPago.length===0?null:listTipoPago.filter(x=>x.id.toLowerCase()===t.toLowerCase())[0];if(ishayTP){ishayTP.cantidad++;}else{const _rowTPC={id:primeraConMayusculas(t.toLowerCase()),cantidad:1};listTipoPago.push(_rowTPC);}});importeTotalRegistrado=importeTotalRegistrado+parseFloat(x.total);numTotalComprobantes+=x.comprobante!==''?1:0;xNumRegistro--;x.num=xCeroIzq(xNumRegistro);});listRegistroMaster=xdt_h;xThisHistVenta.listRegistro=listRegistroMaster;xThisHistVenta.listCantidadPagos=listTipoPago;xThisHistVenta.importeTotalRegistrado=numeroConComas(importeTotalRegistrado.toFixed(2));xThisHistVenta.numComprobantesEmitidos=xCeroIzq(numTotalComprobantes,5);xPopupLoad.xclose();});}
+function xloadDetallePago(obj){xPopupLoad.xopen();$("#tb_historial tr").removeClass('xitem_seleccionado_li');const _indexRow=obj.dataId;const rowItem=xThisHistVenta.listRegistro[_indexRow];index_historial=_indexRow;xidregistro_pago_sel=rowItem.idregistro_pago;xEstado_registro_pago=rowItem.estado;xTotalItemSel=rowItem.total;xThisHistVenta.$.component_pago.setVal(xMoneda(xTotalItemSel));xValPago.setModoSoloComprobante();xhtml_anulado='';$(".xMiBoton_icon_lateral").attr('disabled',false);if(xEstado_registro_pago===1){xhtml_anulado='<h3 class="xColorRow_Rojo xBold">ANULADO</h3><div class="xLinea"></div><br><h4><strong>'+xmotio_anular.toUpperCase()+'</strong></h4>';$(".xMiBoton_icon_lateral").attr('disabled',true);}
 $.ajax({type:'POST',url:'../../bdphp/log.php?op=20002',data:{i:xidregistro_pago_sel}}).done(function(dt_pdE){xdt_pdE=$.parseJSON(dt_pdE);if(!xdt_pdE.success){xPopupLoad.xclose();alert(xdt_pdE.error);return;}
-xdt_pdE=xdt_pdE.datos[0];console.log('datos pedido ',xdt_pdE);var comprobanteEmitido=xdt_pdE.num_comprobante;$("#txt_comprobante").text(comprobanteEmitido);xThisHistVenta.xYaTieneComprobante=xdt_pdE.idce===null?false:true;xThisHistVenta.xYaPedidoCerrado=xdt_pdE.cerrado==='1';xThisHistVenta.xIsPuedeReimprimirCPE=!xThisHistVenta.xYaPedidoCerrado&&xThisHistVenta.xYaTieneComprobante;$("#txt_cliente").text(xdt_pdE.cliente);$("#txt_mesa").text(xdt_pdE.nummesa);$("#txt_mozo").text(xdt_pdE.usuario);$("#txt_correlativo").text(xdt_pdE.correlativo_dia);$("#xBody div").remove();$("#xBody").append('<div><paper-spinner active class="xCentradoVerticalHorizontal"></paper-spinner></div>').trigger('create');$.ajax({type:'POST',url:'../../bdphp/log.php?op=2003',data:{i:xidregistro_pago_sel}}).done(function(dtPbdet){var xdtPbdet=$.parseJSON(dtPbdet);xArrayDtOrdenFiltro=xdtPbdet.datos;xThisHistVenta.xdtPedDet=xArrayDtOrdenFiltro;xLoadMipedidoBDHistorial(xArrayDtOrdenFiltro)})})}
+xdt_pdE=xdt_pdE.datos[0];var comprobanteEmitido=xdt_pdE.num_comprobante;$("#txt_comprobante").text(comprobanteEmitido);xThisHistVenta.xYaTieneComprobante=xdt_pdE.idce===null?false:true;xThisHistVenta.xYaPedidoCerrado=xdt_pdE.cerrado==='1';xThisHistVenta.xIsPuedeReimprimirCPE=!xThisHistVenta.xYaPedidoCerrado&&xThisHistVenta.xYaTieneComprobante;$("#txt_cliente").text(xdt_pdE.cliente);$("#txt_mesa").text(xdt_pdE.nummesa);$("#txt_mozo").text(xdt_pdE.usuario);$("#txt_correlativo").text(xdt_pdE.correlativo_dia);$("#xBody div").remove();$("#xBody").append('<div><paper-spinner active class="xCentradoVerticalHorizontal"></paper-spinner></div>').trigger('create');$.ajax({type:'POST',url:'../../bdphp/log.php?op=2003',data:{i:xidregistro_pago_sel}}).done(function(dtPbdet){var xdtPbdet=$.parseJSON(dtPbdet);xArrayDtOrdenFiltro=xdtPbdet.datos;xThisHistVenta.xdtPedDet=xArrayDtOrdenFiltro;xLoadMipedidoBDHistorial(xArrayDtOrdenFiltro)})
+setTimeout(()=>{xPopupLoad.xclose();dialog_registro_detalle.open();},500);})}
 function xLoadMipedidoBDHistorial(dt){var xTpConsumo='';var xCadenaItemArray_h='';var xEncabezadoCollapse='';var xCadenaCollapse='';xArrayTpC=new Array();xArraySeccion_r=new Array();var xIdColapse='';var xCadenaGrupo_r='';var xIndicacionItem='';var xNom_seccion;var xDtBd=dt;var xdisabled_btn_cambiar='';var xdisabled_procede='';for(a in xDtBd){if(xArrayTpC[xDtBd[a].idtipo_consumo]==null){xArrayTpC[xDtBd[a].idtipo_consumo]={'id':xDtBd[a].idtipo_consumo,'des':xDtBd[a].des_tp}}}
 var xNom_seccion_b='';for(b in xArrayTpC){xCadenaItemArray_h='';xEncabezadoCollapse='';xCadenaCollapse='';xIndicacionItem='';xArraySeccion_r=new Array();for(i in xDtBd){if(xArrayTpC[b].id==xDtBd[i].idtipo_consumo){xNom_seccion=xDtBd[i].des_seccion;if(xArraySeccion_r[xDtBd[i].idseccion_index]==null){xArraySeccion_r[xDtBd[i].idseccion_index]='<tr><td colspan="5" class="xBold">'+xNom_seccion+'</td></tr>';}
 xCadenaItemArray_h=String('<tr class="row" data-i="'+i+'" data-idpedidodetalle="'+xDtBd[i].idpedido_detalle+'" data-idpedido="'+xDtBd[i].idpedido+'" data-idtipoconsumo="'+xDtBd[i].idtipo_consumo+'">'+'<td width="7px" class="click_row_dt_p" id="td_cant">'+xCeroIzq(xDtBd[i].cantidad,2)+'</td>'+'<td class="click_row_dt_p" width="50%">'+xDtBd[i].descripcion+'</td>'+'<td class="click_row_dt_p" align="right" id="td_importe">'+xMoneda(xDtBd[i].ptotal)+'</td>'+'</tr>');xArraySeccion_r[xDtBd[i].idseccion_index]=xArraySeccion_r[xDtBd[i].idseccion_index]+xCadenaItemArray_h;}}
@@ -133,7 +206,7 @@ function xSumarTotalesHis(){var xcadena_total='';$.ajax({type:'POST',url:'../../
 xdt_subt=xdt_subt.datos
 arrSumSubtTotales=xdt_subt;for(var i=0;i<xdt_subt.length;i++){const classTachado=parseInt(xdt_subt[i].tachado)===1?'xTachar':'';xcadena_total=String(xcadena_total+'<tr class="'+classTachado+'"><td>'+xdt_subt[i].descripcion.toUpperCase()+'</td><td align="right">'+xdt_subt[i].importe+'</td></tr>');}
 xcadena_total=String(xcadena_total+'<tr><td colspan="2" align="left"><h4>FORMA DE PAGO</h4></td></tr>');$.ajax({type:'POST',url:'../../bdphp/log.php?op=2004',data:{i:xidregistro_pago_sel}}).done(function(dt_tpp){var xdt_tpp=$.parseJSON(dt_tpp);if(!xdt_tpp.success){xPopupLoad.xclose();alert(xdt_tpp.error);return;}
-xdt_tpp=xdt_tpp.datos;for(var i=0;i<xdt_tpp.length;i++){xcadena_total=String(xcadena_total+'<tr><td>'+xdt_tpp[i].tipo_pago+'</td><td align="right">'+xdt_tpp[i].importe+'</td></tr>');};xcadena_total='<div><table width="30%" id="tb_totales" class="xRowPading4 xDerecha">'+xcadena_total+'</table></div><br>'+xhtml_anulado;$("#xBody").append(xcadena_total).trigger('create');})})}
+xdt_tpp=xdt_tpp.datos;for(var i=0;i<xdt_tpp.length;i++){xcadena_total=String(xcadena_total+'<tr><td>'+xdt_tpp[i].tipo_pago+'</td><td align="right">'+xdt_tpp[i].importe+'</td></tr>');};xcadena_total='<div class="d-flexx justify-content-end mb-2"><table width="30%" id="tb_totales" class="xRowPading4">'+xcadena_total+'</table></div><br>'+xhtml_anulado;$("#xBody").append(xcadena_total).trigger('create');})})}
 function xMandarCocinarImpresionComprobante_historial(){var arr_cliente=xRpt_pago[0].cliente;var arr_comprobante=xRpt_pago[0].comprobante;const arrayItems=xCargarDatosAEstructuraImpresion(xThisHistVenta.xdtPedDet);xPopupLoad.xopen();$.ajax({type:'POST',url:'../../bdphp/log_001.php',data:{p_from:'fe',p_comprobante:arr_comprobante,idregistro_pago:xidregistro_pago_sel}}).done(function(xrpt_correlativo){const _arrRpt=xm_all_SetResponseLog_001(xrpt_correlativo);arr_comprobante.correlativo=xCeroIzqNumComprobante(_arrRpt.correlativo_comprobante);xCocinarImprimirComprobante(arrayItems,arrSumSubtTotales,arr_comprobante,arr_cliente,xidregistro_pago_sel,-2);xThisHistVenta.xYaTieneComprobante=true;xdt_h[index_historial].idtipo_comprobante=arr_comprobante.idtipo_comprobante;$("#row_historial"+index_historial).append(x_icon_facturado);xThisHistVenta.$.dialog_comprobante.close();xPopupLoad.xclose();})}
 function xImprimirPrecuentaHistorial(){var xArrayItemPreCuenta=[];var xDtBd=xArrayDtOrdenFiltro;xArrayItemPreCuenta=xArrayTpC.slice();xArrayItemPreCuenta=JSON.parse(JSON.stringify(xArrayItemPreCuenta));for(b in xArrayTpC){for(var i in xDtBd){if(xArrayTpC[b].id==xDtBd[i].idtipo_consumo){if(xDtBd[i].visible==1){continue;}
 if(xArrayTpC[b]==null){continue}
@@ -141,6 +214,10 @@ xDtBd[i].precio_print=xDtBd[i].ptotal;xDtBd[i].des=xDtBd[i].descripcion;xArrayIt
 function reImprimirCierre(){xPopupLoad.xopen()
 fecha=xDevolverFechaFormatInputDate(txt_fecha.value);$.ajax({type:'POST',url:'../../bdphp/log_005.php?op=17',data:{f:fecha}}).done(function(res){setTimeout(()=>{xPopupLoad.xclose()},1500);});}
 function reImprimirComprobante(){xPopupLoad.xopen()
-const _cpe=xdt_pdE.num_comprobante;$.ajax({type:'POST',url:'../../bdphp/log_005.php?op=1701',data:{comprobante:_cpe}}).done(function(res){setTimeout(()=>{xPopupLoad.xclose()},1500);});}
-Polymer({is:'x-historial_venta',properties:{xdtPedDet:Object,isCierreCaja:Boolean,xYaTieneComprobante:boolean=true,xYaPedidoCerrado:boolean=true,xIsPuedeReimprimirCPE:boolean=false},attached:function(){this.xIsPuedeReimprimirCPE=false;this.xYaTieneComprobante=true;this.xYaPedidoCerrado=true;this.isCierreCaja=false;xThisHistVenta=this;xIniHistVenta();setTimeout(()=>{_cpSocketOpen();},1000);},detached:function(){_cpSocketClose();}})/*]]>*/</script>
+const _cpe=xdt_pdE.num_comprobante;$.ajax({type:'POST',url:'../../bdphp/log_005.php?op=1702',data:{comprobante:_cpe}}).done(function(res){var _detalle_json=JSON.parse(res).datos;_detalle_json=_detalle_json.length>0?_detalle_json[0]:_detalle_json;const rowItem=xThisHistVenta.listRegistro[index_historial];const _dataPrint={detalle_json:_detalle_json.detalle_json,idprint_server_detalle:_detalle_json.idprint_server_detalle+new Date().getMilliseconds(),hora:xDevolverHora(),nomUs:rowItem.nom_usuario,nom_documento:"comprobante"}
+_cpSocketprinterOnly(_dataPrint);setTimeout(()=>{xPopupLoad.xclose()},1500);});}
+function buscarEnLista(val){val=val.toLowerCase();const _listBusqueda=listRegistroMaster.filter(x=>x.charbusqueda.indexOf(val)>-1)
+var _numRegisterBusqueda=_listBusqueda.length+1||0;var importeTotalRegistrado=0,numTotalComprobantes=0,listTipoPago=[];_listBusqueda.map(x=>{_numRegisterBusqueda--;x.num=xCeroIzq(_numRegisterBusqueda);x.des_pago.split(',').map(t=>{const ishayTP=listTipoPago.length===0?null:listTipoPago.filter(x=>x.id.toLowerCase()===t.toLowerCase())[0];if(ishayTP){ishayTP.cantidad++;}else{const _rowTPC={id:primeraConMayusculas(t.toLowerCase()),cantidad:1};listTipoPago.push(_rowTPC);}});importeTotalRegistrado=importeTotalRegistrado+parseFloat(x.total);numTotalComprobantes+=x.comprobante!==''?1:0;})
+xThisHistVenta.listRegistro=_listBusqueda;xThisHistVenta.listCantidadPagos=listTipoPago;xThisHistVenta.importeTotalRegistrado=numeroConComas(importeTotalRegistrado.toFixed(2));xThisHistVenta.numComprobantesEmitidos=xCeroIzq(numTotalComprobantes,5);}
+Polymer({is:'x-historial_venta',properties:{xdtPedDet:Object,isCierreCaja:Boolean,xYaTieneComprobante:boolean=true,xYaPedidoCerrado:boolean=true,xIsPuedeReimprimirCPE:boolean=false,listRegistro:[],importeTotalRegistrado:Number,numComprobantesEmitidos:Number,listCantidadPagos:[]},attached:function(){this.xIsPuedeReimprimirCPE=false;this.xYaTieneComprobante=true;this.xYaPedidoCerrado=true;this.isCierreCaja=false;xThisHistVenta=this;xIniHistVenta();setTimeout(()=>{_cpSocketOpen();},1000);},detached:function(){_cpSocketClose();},displayIndex:function(index){return xCeroIzq(index+1,1);}})/*]]>*/</script>
 </dom-module>

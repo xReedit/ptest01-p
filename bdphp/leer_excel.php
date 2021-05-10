@@ -41,6 +41,7 @@ function sheetDataProductos($sheet) {
   $sqlProductoUpdateRow='';
   $sqlProductoDetalle='';
   $sqlProductoDetalleNew='';
+  $rowInsertProductoSock='';
 
   $idorg = $_SESSION['ido'];
   $idsede = $_SESSION['idsede'];
@@ -162,6 +163,7 @@ function sheetDataProductos($sheet) {
 
       // $reDP=$reDP.'('.$IdAlmacen.','.$idProducto.','.$row_cant_almacem.','.$fecha_actual.'),';        
       // $sqlProductoDetalle=$sqlProductoDetalle."INSERT INTO producto_stock (idproducto, idalmacen, stock ) VALUES (".$idProducto.",".$IdAlmacen.",".$row_cant_almacem."); ";
+      // $rowInsertProductoSock = $rowInsertProductoSock."(".$idProducto.",".$IdAlmacen.",".$row_cant_almacem."),"
       $sqlProductoDetalleNew = $sqlProductoDetalleNew. "(".$idProducto.",".$IdAlmacen.",".$row_cant_almacem."),";
     }else{
       $sqlProductoUpdate=$sqlProductoUpdate."update producto set ".$sqlProductoUpdateRow." where idproducto=".$idProNewUp."; ";
@@ -182,10 +184,11 @@ function sheetDataProductos($sheet) {
 
   //$sqlProducto="insert into producto (descripcion,idproducto_categoria,stock_min,costo,pventa,idorg,idsede) values ".$re;  
   //$sqlProductoDetalle='';
-  /*if($reDP!=''){
-    //$sqlProductoDetalle="insert into almacen_items (idalmacen,idproducto,stock,f_ingreso) values ".$reDP;
+  // if($reDP!=''){
+  //   $reDP=substr($reDP, 0, -1); 
+    // $sqlProductoDetalle="insert into almacen_items (idalmacen,idproducto,stock,f_ingreso) values ".$reDP;
     //$sql=$sql."INSERT INTO producto_stock (idproducto_stock,idproducto, idalmacen, stock ) VALUES ((SELECT ps.idproducto_stock FROM producto_stock AS ps WHERE ps.idproducto = ".$item['idproducto']." AND ps.idalmacen = ".$item['idalmacen_a']."),".$item['idproducto'].",".$item['idalmacen_a'].",".$item['cantidad'].") ON DUPLICATE KEY UPDATE stock=stock+".$item['cantidad']."; ";
-  } */
+  // }
 
   if ( $sqlProductoDetalleNew != "") {
     $sqlProductoDetalleNew = substr($sqlProductoDetalleNew, 0, -1); 
