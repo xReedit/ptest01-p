@@ -1522,8 +1522,17 @@
 			$nummesa=$_POST['m'];
 			$numpedido=$_POST['p'];
 			$isConfirmarPago= isset($_POST['confirmar_pago']) ? $_POST['confirmar_pago'] : 0;
+
+			$lastIdPedido = $_POST['lastIdPedido'];
+
+
+			if ( !isset($lastIdPedido)  ) {
+				$sql = "call lastIdPedidoSede($g_idsede, 1)";
+				$lastIdPedido = $bd->xDevolverUnDatoSP($sql);
+			}
+
 			// 0 idpedido
-			$sql="CALL procedure_bus_pedido_bd_3051(".$nummesa.",'".$numpedido."', 0,".$g_ido.",".$g_idsede.",".$isConfirmarPago.");";
+			$sql="CALL procedure_bus_pedido_bd_3051(".$nummesa.",'".$numpedido."', 0,".$g_ido.",".$g_idsede.",".$isConfirmarPago.",".$lastIdPedido.");";
 			
 			// $condicion='p.nummesa='.$nummesa;
 			// if($nummesa==0){
@@ -1851,9 +1860,23 @@
 			";
 			$bd->xConsulta($sql);
 			break;
+		case 50701:// ultimo id peiddo cobrado
+			$sql = "call lastIdPedidoSede($g_idsede, 1)";
+			echo $bd->xDevolverUnDatoSP($sql);
+			break;
 		case 507:// load detalle del pedido
 			$nummesa=$_POST['m'];
 			$numpedido=$_POST['p'];
+			$lastIdPedido = $_POST['lastIdPedido'];
+
+
+			if ( !isset($lastIdPedido)  ) {
+				$sql = "call lastIdPedidoSede($g_idsede, 1)";
+				$lastIdPedido = $bd->xDevolverUnDatoSP($sql);
+			}
+
+			
+
 			$isConfirmarPago= isset($_POST['confirmar_pago']) ? $_POST['confirmar_pago'] : 0;
 			$isQyueryConfirmar = '';
 			
@@ -1893,7 +1916,7 @@
 					left JOIN usuario AS u on p.idusuario = u.idusuario
 					left join cliente as c on p.idcliente = c.idcliente
 					left join repartidor as r on r.idrepartidor = p.idrepartidor
-				WHERE (p.idsede=".$g_idsede." and ".$condicion.") and ".$isQyueryConfirmar;				
+				WHERE p.idpedido > $lastIdPedido and (p.idsede=".$g_idsede." and ".$condicion.") and ".$isQyueryConfirmar;				
 
 				// AND (p.estado IN(0,1) OR (p.confirmar_pago = 1))
 
