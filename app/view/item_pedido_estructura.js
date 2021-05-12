@@ -8,7 +8,7 @@ rv[grupo].cantidad=parseFloat(rv[grupo].cantidad)+parseFloat(x.cantidad);rv[grup
 if(x.id===0){return;}
 if(x.tachado===true){return;}
 if(x.esImpuesto.toString()==="1"){return;}
-const seccion=x.id.toString().indexOf('a')>=0?'ADICIONALES':'SERVICIOS';const _pUnitario=x.punitario?parseFloat(x.punitario):parseFloat(x.importe);const cantidad=parseInt(parseFloat(x.importe)/_pUnitario);const index=group.length+1;cantAddSubtotal=x.importe;group.push({id:index.toString(),cantidad:cantidad,des:x.descripcion,punitario:x.punitario,precio_total:x.importe,seccion:seccion});});if(cpe){cantAddSubtotal=parseFloat(xArraySubTotales[0].importe)+parseFloat(cantAddSubtotal);xArraySubTotales[0].importe=xMoneda(cantAddSubtotal);}
+const seccion=x.id.toString().indexOf('a')>=0?'ADICIONALES':'SERVICIOS';const _pUnitario=x.punitario?parseFloat(x.punitario):parseFloat(x.importe);const cantidad=parseInt(parseFloat(x.importe)/_pUnitario);const index=group.length+1;cantAddSubtotal=x.importe;group.push({id:index.toString(),cantidad:cantidad,des:x.descripcion.toUpperCase(),punitario:x.punitario,precio_total:x.importe,seccion:seccion});});if(cpe){cantAddSubtotal=parseFloat(xArraySubTotales[0].importe)+parseFloat(cantAddSubtotal);xArraySubTotales[0].importe=xMoneda(cantAddSubtotal);}
 return group;}
 function xEstructuraItemsAgruparPrintJsonComprobante(items){return xEstructuraItemsGroupFormatoImpresion(items,"seccion");}
 function xEstructuraItemsGroupFormatoImpresion(xs,key){const arr_rpt_json=xs;arr_rpt_json.des='**';let rpt={}
