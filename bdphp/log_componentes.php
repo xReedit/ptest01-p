@@ -56,6 +56,10 @@
             $sql="SELECT * FROM tipo_pago WHERE estado=0 and idtipo_pago = 4";
             $bd->xConsulta($sql);
             break;
+        case 602:// load tipo pago from app todos
+            $sql="SELECT * FROM tipo_pago WHERE estado=0 ";
+            $bd->xConsulta($sql);
+            break;
         case 7://load clientes
             // $sql="SELECT * FROM cliente where (idorg=$g_ido) AND estado=0 order by nombres";
             $sql = "select c.* from cliente_sede cs inner join cliente c on cs.idcliente = c.idcliente where cs.idsede = $g_idsede order by nombres";

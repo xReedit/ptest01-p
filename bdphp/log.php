@@ -3276,12 +3276,21 @@
 			break;
 		case 2200: //recuperar stock pedidos borrados	
 			$sql = "
-			SELECT pb.*, u.usuario, IFNULL(i.descripcion, '') as dscitem FROM pedido_borrados pb
-				inner join usuario as u using(idusuario)
-				inner join pedido as p using(idpedido)
-				left join item as i on pb.iditem = i.iditem
-			where (p.idorg=".$g_ido." and p.idsede=".$g_idsede.") and pb.estado=0 and pb.fecha_cierre=''
-			order by pb.idpedido_borrados desc		
+			select * from				
+				(SELECT pb.*, u.usuario, IFNULL(i.descripcion, '') as dscitem FROM pedido_borrados pb
+								inner join usuario as u using(idusuario)
+								inner join pedido as p using(idpedido)
+								left join item as i on pb.iditem = i.iditem
+							where (p.idsede=$g_idsede) and pb.estado=0 and pb.procede_tabla != 0 and pb.fecha_cierre=''
+							order by pb.idpedido_borrados desc) a
+				union all
+				select * from (
+				SELECT pb.*, u.usuario, IFNULL(i.descripcion, '') as dscitem FROM pedido_borrados pb
+								inner join usuario as u using(idusuario)
+								inner join pedido as p using(idpedido)
+								inner join producto as i on pb.iditem = i.idproducto 
+							where (p.idsede=$g_idsede) and pb.estado=0 and pb.procede_tabla = 0 and pb.fecha_cierre=''
+							order by pb.idpedido_borrados desc) b		
 			";
 			$bd->xConsulta($sql);
 			break;

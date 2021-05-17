@@ -37,7 +37,7 @@ function xVerificarPermisoDscUsuario(){paseAccPer=datauSPerDsc.per.indexOf('Pe5'
 xShowDetalleDsc();}
 function xResetCompDsc(){xThisCompDesc.showDetalle=false;txt_imp_dsc.value='';lastValCalc=0;}
 function xLoadTipoDsc(){var paseDsc=false;var _dtDscStorage=localStorage.getItem(keyDscStorage);txt_imp_dsc.value===''
-if(_dtDscStorage){try{xThisCompDesc.listTipoConceptos=JSON.parse(_dtDscStorage);paseDsc=true;tipoDscSelected=xThisCompDesc.listTipoConceptos[0];console.log('xThisCompDesc.listTipoConceptos desde el storage',xThisCompDesc.listTipoConceptos);}catch(error){paseDsc=false}}
+if(_dtDscStorage){try{xThisCompDesc.listTipoConceptos=JSON.parse(_dtDscStorage);paseDsc=true;tipoDscSelected=xThisCompDesc.listTipoConceptos[0];}catch(error){paseDsc=false}}
 if(paseDsc){return;}
 $.ajax({type:'GET',url:'../../bdphp/log_componentes.php?op=14'}).done(function(res){res=JSON.parse(res)
 if(!res.success){console.log('error',res);return;}
