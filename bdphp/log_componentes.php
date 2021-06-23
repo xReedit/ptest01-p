@@ -62,12 +62,14 @@
             break;
         case 7://load clientes
             // $sql="SELECT * FROM cliente where (idorg=$g_ido) AND estado=0 order by nombres";
-            $sql = "select c.* from cliente_sede cs inner join cliente c on cs.idcliente = c.idcliente where cs.idsede = $g_idsede order by nombres";
+            // $sql = "select c.* from cliente_sede cs inner join cliente c on cs.idcliente = c.idcliente where cs.idsede = $g_idsede and nombres != '' order by nombres";
+            $sql = "select c.idcliente, c.idorg, c.nombres, c.f_nac, c.ruc, c.direccion, c.telefono, c.credito, c.estado, c.pwa_id, c.email, c.calificacion, c.dni_num_verificador from cliente_sede cs inner join cliente c on cs.idcliente = c.idcliente where cs.idsede = $g_idsede and nombres != '' order by nombres";
             $bd->xConsulta($sql);
             break;
         case 701://load clientes - input autocomplete
             // $sql="SELECT * FROM cliente where (idorg=$g_ido) AND estado=0 order by nombres";
-            $sql = "select c.* from cliente_sede cs inner join cliente c on cs.idcliente = c.idcliente where cs.idsede = $g_idsede order by nombres";
+            // $sql = "select c.* from cliente_sede cs inner join cliente c on cs.idcliente = c.idcliente where cs.idsede = $g_idsede and nombres != '' order by nombres";
+            $sql = "select c.idcliente, c.idorg, c.nombres, c.f_nac, c.ruc, c.direccion, c.telefono, c.credito, c.estado, c.pwa_id, c.email, c.calificacion, c.dni_num_verificador from cliente_sede cs inner join cliente c on cs.idcliente = c.idcliente where cs.idsede = $g_idsede and nombres != '' order by nombres";
             $bd->xConsulta($sql);
             break;
         case 8://load cargos
