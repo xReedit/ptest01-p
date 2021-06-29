@@ -3247,7 +3247,7 @@
 					FROM pedido AS p
 						INNER JOIN pedido_detalle AS pd using(idpedido)
 						INNER JOIN tipo_consumo AS tp ON tp.idtipo_consumo=pd.idtipo_consumo
-						JOIN (SELECT idproducto_familia,descripcion,idimpresora FROM producto_familia WHERE idorg=1 AND idsede=1) AS pf ON pd.idseccion=pf.idproducto_familia
+						JOIN (SELECT idproducto_familia,descripcion,idimpresora FROM producto_familia WHERE idsede=".$g_idsede.") AS pf ON pd.idseccion=pf.idproducto_familia
 					WHERE (p.idorg=".$g_ido." AND p.idsede=".$g_idsede.") and p.idpedido=".$_POST['id']." AND pd.procede_tabla=0 AND pd.despachado=1
 					ORDER BY p.idpedido,pf.idproducto_familia ,pd.descripcion
 				) b

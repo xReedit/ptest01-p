@@ -2,9 +2,12 @@
 <link rel="import" href="../../web_components/paper-input-autocomplete/paper-input-autocomplete.html">
 <dom-module id="x-comp-find-input-cliente">
 <template>
-<paper-input-autocomplete id="input_clie_nombres_auto" label="{{label}}" value="{{inputValue}}" search-property="nombres" on-autocomplete-selected="xchangeCliente" autocomplete-search-length="2" disable-show-clear="true"></paper-input-autocomplete>
+<paper-input-autocomplete id="input_clie_nombres_auto" label="{{label}}" value="{{inputValue}}" search-property="nombres" onkeyup="searchClienteInput(this)" on-autocomplete-selected="xchangeCliente" autocomplete-search-length="2" disable-show-clear="true"></paper-input-autocomplete>
 </template>
 </dom-module>
-<script>var xThisComInputCliente,_autocompleteComp;function getAllClientesInit(){getAllClientes();}
-function getAllClientes(){$.ajax({type:'POST',url:'../../bdphp/log_componentes.php?op=701'}).done(function(DtProv){var xDtProv=JSON.parse(DtProv);xThisComInputCliente.list_cliente=xDtProv.datos;const listElementInput=input_clie_nombres_auto;if(listElementInput.length){for(let item of listElementInput){item.source=xDtProv.datos;}}else{listElementInput.source=xDtProv.datos;}});}
-Polymer({is:'x-comp-find-input-cliente',properties:{_autocompleteComp:Object,label:String,inputValue:{type:String,notify:true},cliente:{},list_cliente:{type:Object,reflectToAttribute:true,notify:true,value:function(){return{};},observer:'clienteNameChanged'},valIdInt:{type:Object,notify:true,reflectToAttribute:true},},listeners:{'onchange':'getCliente'},clienteNameChanged:function(){return this.list_cliente;},getCliente(e){return e;},attached:function(){xThisComInputCliente=this;getAllClientesInit();},reloadllClientes:function(){getAllClientes();},xchangeCliente:()=>{const cliente=event.target.value;event.target.fire('input-autocomplete-selected',cliente);}})</script>
+<script>/*<![CDATA[*/var xThisComInputCliente,_autocompleteComp;function getAllClientesInit(){getAllClientes();}
+function getAllClientes(val_input=''){if(val_input.length<3){return;}
+$.ajax({type:'POST',url:'../../bdphp/log_componentes.php?op=70101',data:{val:val_input}}).done(function(DtProv){var xDtProv=JSON.parse(DtProv);xThisComInputCliente.list_cliente=xDtProv.datos;const listElementInput=input_clie_nombres_auto;if(listElementInput.length){for(let item of listElementInput){item.source=xDtProv.datos;}}else{listElementInput.source=xDtProv.datos;}});}
+function searchClienteInput(){const valInput=event.target.value;console.log('valInput',valInput);if(valInput.length<3){return;}
+getAllClientes(valInput);}
+Polymer({is:'x-comp-find-input-cliente',properties:{_autocompleteComp:Object,label:String,inputValue:{type:String,notify:true},cliente:{},list_cliente:{type:Object,reflectToAttribute:true,notify:true,value:function(){return{};},observer:'clienteNameChanged'},valIdInt:{type:Object,notify:true,reflectToAttribute:true},},listeners:{'onchange':'getCliente'},clienteNameChanged:function(){return this.list_cliente;},getCliente(e){return e;},attached:function(){xThisComInputCliente=this;getAllClientesInit();},reloadllClientes:function(){getAllClientes();},xchangeCliente:()=>{const cliente=event.target.value;console.log('aaaaaaaaaaaaaaa');event.target.fire('input-autocomplete-selected',cliente);}})/*]]>*/</script>
