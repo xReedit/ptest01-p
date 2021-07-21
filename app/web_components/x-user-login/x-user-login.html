@@ -10,7 +10,7 @@
 <p>{{xDialogDetalle}}</p>
 </paper-dialog>
 <div class="xContentLogin xSombraDiv xCentradoVerticalHorizontal xTransicion3s">
-<div class="xrunalogo size1 xCentradoVertical"><span class="xIndicadorVr xDerecha" style="margin-right:-25px">2c</span></div>
+<div class="xrunalogo size1 xCentradoVertical"><span class="xIndicadorVr xDerecha" style="margin-right:-25px">2e</span></div>
 <div class="xOlvideClaveUser xTransicion3s xInvisible" id="div1">
 <div class="xCentrado">
 <h2 class="xTituloUser">Se te olvido tu clave</h2>
@@ -29,6 +29,10 @@
 <div class="xCentrado">
 <h2 class="xTituloUser">{{xtitulo}}</h2>
 <p>Logueese</p>
+<div hidden$="[[!xisNotificaPagar]]">
+<hr>
+<h3 style="color:#cc3737;font-weight:600">Recuerde pagar el servivcio.</h3>
+</div>
 </div><br>
 <paper-input label="Usuario" required auto-validate id="usuarioIngresar"></paper-input>
 <paper-input label="Clave" type="password" required auto-validate id="passIngresar"></paper-input>
@@ -39,7 +43,7 @@
 <a href="#" onclick="xPasarA(1,this)" class="Btn_div1">Olvide mi clave</a>
 <a href="#" class="aIzq Btn_div3" onclick="xPasarA(3,this)">Registrarme</a>
 </div>
-<br><br><br>
+<br>
 </div>
 <div class="xRegistrarUser xInvisible xTransicion3s" id="div3">
 <div class="xCentrado">
@@ -58,21 +62,21 @@
 </div>
 </div>
 </div>
-<style type="text/css">paper-button[raised].colorful{background:#ff4081;color:#fff}paper-button.colorful{color:#ff4081;width:100%;margin:0;font-size:18px}.xContentLogin{width:260px;background:#fafafa;padding:25px;padding-top:90px;border-radius:4px;overflow:hidden;height:355px}.xBorderContentLogin{border:1px solid #bdbdbd}.aIzq{float:right}.xInvisible{visibility:hidden}.xVisible{opacity:1}.xTransicion3s{-webkit-transition:all .3s ease;-o-transition:all .3s ease;-ms-transition:all .3s ease;-moz-transition:all .3s ease;transition:all .3s ease}.xTituloUser{font-weight:500}a{color:#2979ff;font-weight:600;text-decoration:none}a:hover{color:#F0C}</style>
+<style type="text/css">paper-button[raised].colorful{background:#ff4081;color:#fff}paper-button.colorful{color:#ff4081;width:100%;margin:0;font-size:18px}.xContentLogin{width:260px;background:#fafafa;padding:25px;padding-top:90px;border-radius:4px;overflow:hidden;height:auto}.xBorderContentLogin{border:1px solid #bdbdbd}.aIzq{float:right}.xInvisible{visibility:hidden}.xVisible{opacity:1}.xTransicion3s{-webkit-transition:all .3s ease;-o-transition:all .3s ease;-ms-transition:all .3s ease;-moz-transition:all .3s ease;transition:all .3s ease}.xTituloUser{font-weight:500}a{color:#2979ff;font-weight:600;text-decoration:none}a:hover{color:#F0C}</style>
 </template>
 </dom-module>
-<script>/*<![CDATA[*/var xThis;var xRpts;function xPasarA(op,xObjOrigen){var xDiv;xThis.xop=op;switch(op){case 1:xDiv='#div1';xAlto='290px';break;case 2:xDiv='#div2';xAlto='352px';break;case 3:xDiv='#div3';xAlto='472px';break;}
+<script>/*<![CDATA[*/var xThis;var xRpts;function xPasarA(op,xObjOrigen){var xDiv;xThis.xop=op;switch(op){case 1:xDiv='#div1';xAlto='290px';break;case 2:xDiv='#div2';xAlto='auto';break;case 3:xDiv='#div3';xAlto='472px';break;}
 $(xObjOrigen).parent().parent().fadeOut(900,function(){$(xDiv).removeClass('xInvisible');$(".xContentLogin").css('height',xAlto);$(xDiv).fadeIn(500);});}
 function xvalidateFormLogin(des,responde){var obj=$('#'+des);var a=true;obj.find('paper-input').each(function(e,element){if(!element.validate()){a=false;}});responde(a);}
 function xEnviar(xfrm){xRpts=new Array();var us='';var p='';var p2='';var correo='';xvalidateFormLogin(xfrm,function(a){if(a===false){return;}
 switch(xThis.xop){case 1:correo=$('#div1 #correo').val();break;case 2:us=$('#div2 #UsuarioIngresar').val();p=$('#div2 #passIngresar').val();break;case 3:correo=$('#div3 #correo').val();us=$('#div3 #usuario').val();p=$('#div3 #pass').val();p2=$('#div3 #pass2').val();if(p!=p2){p2='';$('#div3 #pass2').val('');return}
 break;}
 xRpts.push({'us':us,'p':p,'co':correo});xThis.fire('xSend',{xRpts});});}
-Polymer({is:'x-user-login',properties:{xdiv_visibles:{type:Array,value:[1,1,1]},xDialogTitulo:{type:String,value:'Incorrecto'},xDialogDetalle:{type:String,value:'Usuario o clave incorrecto'},xop:2,xtitulo:{type:String,value:'...'}},ready:function(){this.xop=2;var xDivValVisible;$("#dialogMSj")
+Polymer({is:'x-user-login',properties:{xdiv_visibles:{type:Array,value:[1,1,1]},xDialogTitulo:{type:String,value:'Incorrecto'},xDialogDetalle:{type:String,value:'Usuario o clave incorrecto'},xop:2,xisNotificaPagar:{type:Boolean,notify:true},xtitulo:{type:String,value:'...'}},ready:function(){this.xop=2;this.xisNotificaPagar=false;var xDivValVisible;$("#dialogMSj")
 $("#dialogMSj").on('iron-overlay-closed',function(){passIngresar.$.input.focus()})
 $("#div2 #UsuarioIngresar").focus();$("#div2 #UsuarioIngresar").on('keyup',function(e){var code=e.which;if(code==13||code==186){passIngresar.$.input.focus()}})
 $('#div2 #passIngresar').on('keyup',function(e){var code=e.which;var code=e.which;if(code==13||code==186){xEnviar('div2')}})
 for(var i=0;i<this.xdiv_visibles.length;i++){xDivValVisible=this.xdiv_visibles[i];switch(i){case 0:if(xDivValVisible===0){$("#div1").remove();$('.Btn_div1').remove();}
 break;case 1:if(xDivValVisible===0){$("#div2").remove();$('.Btn_div2').remove();}
 break;case 2:if(xDivValVisible===0){$("#div3").remove();$('.Btn_div3').remove();}
-break;}};xThis=this;},xocurrencia:function(op){var dialogMSj=document.getElementById('dialogMSj');switch(op){case 0:$("#div2 #passIngresar").val('');$("#div2 #passIngresar").focus();this.xDialogTitulo='Incorrecto';this.xDialogDetalle='Usuario o clave incorrecto';dialogMSj.open();break;case 1:var xUsuNodisponible=$("#div3 #usuario").val();$("#div3 #usuario").val('');$("#div3 #usuario").focus();this.xDialogTitulo='No Disponible';this.xDialogDetalle='El usuario '+xUsuNodisponible+' no se encuentra disponible.';dialogMSj.open();break;}}});/*]]>*/</script>
+break;}};xThis=this;xThis.viewSedePay();},xocurrencia:function(op){var dialogMSj=document.getElementById('dialogMSj');switch(op){case 0:$("#div2 #passIngresar").val('');$("#div2 #passIngresar").focus();this.xDialogTitulo='Incorrecto';this.xDialogDetalle='Usuario o clave incorrecto';dialogMSj.open();break;case 1:var xUsuNodisponible=$("#div3 #usuario").val();$("#div3 #usuario").val('');$("#div3 #usuario").focus();this.xDialogTitulo='No Disponible';this.xDialogDetalle='El usuario '+xUsuNodisponible+' no se encuentra disponible.';dialogMSj.open();break;}},viewSedePay:function(){const i=atob(localStorage.getItem('::app3_sys_last_s'));$.ajax({type:'POST',url:'bdphp/log_005.php?op=5000',data:{i:i}}).done(function(dt){const _dt=JSON.parse(dt).datos[0];xThis.xisNotificaPagar=parseInt(_dt.notifica)===1;console.log('dt',_dt);console.log('xThis.xisNotificaPagar',xThis.xisNotificaPagar);});}});/*]]>*/</script>

@@ -18,7 +18,7 @@ for(var i=0;i<xper_bd.length;i++){xCharFind=xper_bd[i];if(xper_bd.length===2){co
 for(var z=0;z<xArray_us_home.length;z++){if(xArray_us_home[z].codigo==xCharFind){xidGrupoBd=xArray_us_home[z].idgrupo
 if(xOpView[xidGrupoBd]==undefined){switch(xidGrupoBd){case'0':xTituloSeccion='Operatividad';break;case'1':xTituloSeccion='Logistica';break;case'2':xTituloSeccion='Contable';break;case'3':xTituloSeccion='Administracion';break;}
 xOpView[xidGrupoBd]={'titulo':xTituloSeccion};}
-xOpView[xidGrupoBd][i]={op:'<div class="xMiBoton_icon" data-id="'+xCharFind+'" data-op="'+xArray_us_home[z].num_opcion+'"><img src="../../images/'+xArray_us_home[z].img+'"><p>'+xArray_us_home[z].titulo+'</p></div>'};}};};var xHtmlOpView='';for(i in xOpView){xHtmlOpView=String(xHtmlOpView+'<div><h3>'+xOpView[i].titulo+'</h3><div class="xLinea2"></div><br>')
+xOpView[xidGrupoBd][i]={op:'<div class="xMiBoton_icon" data-id="'+xCharFind+'" data-op="'+xArray_us_home[z].num_opcion+'"><img src="../../images/'+xArray_us_home[z].img+'"><p>'+xArray_us_home[z].titulo+'</p></div>'};}};};var xHtmlOpView='';xOpView[xOpView.length-1][-1]={op:'<div class=\"xMiBoton_icon\" data-id=\"F1\" data-op=\"47\"><img src=\"../../images/_e_facturacion.png\"><p>Facturación</p></div>'};for(i in xOpView){xHtmlOpView=String(xHtmlOpView+'<div><h3>'+xOpView[i].titulo+'</h3><div class="xLinea2"></div><br>')
 $.map(xOpView[i],function(n,z){if(typeof n=="object"){xHtmlOpView=String(xHtmlOpView+xOpView[i][z].op);}})
 xHtmlOpView=String(xHtmlOpView+'</div><br>');};$("#xBodyOp").html(xHtmlOpView).trigger('create');}
 function abrirToast(){toast=document.getElementById('toast');toast.text="aaaaaaaaaaa";toast.show();}

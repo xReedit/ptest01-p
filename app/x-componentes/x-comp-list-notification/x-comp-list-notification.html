@@ -32,8 +32,7 @@ if(resCountNotification.comprobantes_no_enviados>0){sPlural=resCountNotification
 listAddNotification.push(_iteAdd);countNoticaciones++;}
 if(resCountNotification.calificaciones_clientes>0){const nPlural=resCountNotification.calificaciones_clientes>1?'aron':'ó';sPlural=resCountNotification.calificaciones_clientes>1?'s':'';_iteAdd={key:'calificaciones_clientes',fecha:'',descripcion:'Calificaciones Negativas',detalle:`${resCountNotification.calificaciones_clientes}\r Cliente${sPlural}\r calific${nPlural}\r su experiencia de forma negativa.`,idpage:41,parametro:'',icon:'fa fa-star text-danger'}
 listAddNotification.push(_iteAdd);countNoticaciones++;}
-xThisListNotificacion.lisNotificaciones=JSON.parse(JSON.stringify(listAddNotification));$(divIconNotification).removeClass('xInvisible')
-$(divIconNotification).find('.xbell-count').text(countNoticaciones);}
+xThisListNotificacion.lisNotificaciones=JSON.parse(JSON.stringify(listAddNotification));$(divIconNotification).removeClass('xInvisible');$(divIconNotification).find('.xbell-count').text(countNoticaciones);}
 function verifyShowNotification(){isShowAlertNotification=parseFloat(resCountNotification.suma)>0;if(isShowAlertNotification){isShowNotification();createListNotifications();return;}}
 function isShowNotification(){xThisListNotificacion.fire('xShowNotifications',{isShowAlertNotification});var pAudioNotificaAlert=document.getElementById('alertaNotificaciones');pAudioNotificaAlert.autobuffer=true;pAudioNotificaAlert.muted=false;setTimeout(()=>{pAudioNotificaAlert.load();pAudioNotificaAlert.play();setTimeout(()=>{pAudioNotificaAlert.load();pAudioNotificaAlert.play();},1000);},1500);}
 function goPageListNotification(obj){const i=obj.dataId;const opSelected=xThisListNotificacion.lisNotificaciones[i];setLocalSotrage('::app3_sys_route',0);xOpenPage(opSelected.idpage,opSelected.parametro);dialog_notificaciones.close();if(opSelected.idpage===41){updateCheckCalificacion();}}

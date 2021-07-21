@@ -1,0 +1,115 @@
+<dom-module id="x-comp-dialog-alert-pago-servicio">
+	<template is="dom">
+        <paper-dialog id="dialog_alert_pago_servicio" style="max-width: 400px;" class="dialog_redondo animate__animated animate__fadeIn animate__faster" modal="true" entry-animation="scale-up-animation" exit-animation="fade-out-animation" modal>
+            <div class="text-center">                
+                <img src="../../../images/logo_papaya.PNG" alt="logo_papaya">
+                <p class="fw-600">Facturación Pendiente</p> 
+                <div class="xLinea2"></div><br>	
+                
+                <div>
+                    <p>
+                        Estimado cliente, tiene cargos pendientes por el pago del servicio.
+                        Recuerde pagar a tiempo y evite la interrupción del mismo.
+                    </p>
+                    <br>
+                    
+                    <p class="fw-600">{{ msjadicional }}</p>
+                    <br>
+                </div>
+                
+                <div class="xLinea2"></div><br>	
+
+
+                <div>
+                    <button class="btn btn-success mr-2" onclick="irFacturacionServicio()">Ver Facturación</button>
+                    <button class="btn btn-danger" onclick="cerrarDialogPago()" disabled$="[[ !isshowclose ]]"> {{ titlebtncerra }} </button>
+                </div>
+                
+           
+                <div>
+                    
+                </div>
+            </div>
+            <br>
+        </paper-dialog>    
+    </template>
+</dom-module>
+
+<script>
+    var xThisCompAlertPago, secondsAviso = 3;
+
+    function xIniCompAlertPago() {
+        const i = atob(localStorage.getItem('::app3_sys_last_s'));
+        $.ajax({ type: 'POST', url: '../../bdphp/log_005.php?op=5000', data:{i:i}})
+		.done( function (dt) {
+			const _dt  = JSON.parse(dt).datos[0];
+			xThisCompAlertPago.xisNotificaPagar = parseInt(_dt.notifica) === 1;
+
+            if ( !xThisCompAlertPago.xisNotificaPagar ) {
+                $(divIconNotificationPago).addClass('xInvisible');
+                return;
+            }
+            $(divIconNotificationPago).removeClass('xInvisible');
+            
+            xThisCompAlertPago.msjadicional = _dt.msj_adicional !== '' ? _dt.msj_adicional : '';            
+
+            var ss_inactive = parseInt(_dt.ss_inactivo_btn);            
+
+            const _timeSecondHabilitado = setInterval(() => {
+                ss_inactive--;
+                xThisCompAlertPago.numsecondst = ss_inactive;
+                xThisCompAlertPago.titlebtncerra = `Cerrar (${ss_inactive})`;            
+                // console.log('ss_inactive', ss_inactive)
+                if ( ss_inactive === 0 ) {
+                    xThisCompAlertPago.titlebtncerra = `Cerrar`;                    
+                    xThisCompAlertPago.isshowclose = _dt.is_disabled_acc === '1';                    
+                    clearInterval(_timeSecondHabilitado);
+                }
+            }, 1000);
+
+            dialog_alert_pago_servicio.open();
+
+			// console.log('dt', _dt);
+			// console.log('xThis.xisNotificaPagar', xThisCompAlertPago.xisNotificaPagar);
+		});
+    }
+
+    function cerrarDialogPago() {
+        dialog_alert_pago_servicio.close();
+    }
+
+    function irFacturacionServicio() {
+        xOpenPage(47, '');
+        setTimeout(() => {
+            xOpenPage(47, '');
+            dialog_alert_pago_servicio.close();
+        }, 300);
+        
+    }
+
+
+    Polymer({
+			is: 'x-comp-dialog-alert-pago-servicio',
+			properties: {				
+                xisNotificaPagar: {
+				    type: Boolean,				
+				    notify: true
+			        },
+                isshowclose: {
+				    type: Boolean,				
+				    notify: true
+			        },
+                numsecondst: Number,
+                msjadicional: String,
+                titlebtncerra: String,          
+			},
+			ready: function () { 
+                this.isshowclose = false;           
+                this.numsecondst = 3;
+                this.msjadicional = '';
+                this.titlebtncerra = '';
+				xThisCompAlertPago = this;				                
+				xIniCompAlertPago();
+            }
+		})
+</script>

@@ -1,0 +1,295 @@
+<script src="../../view/xSOAPSunat.js" defer></script>
+<script src="../../view/socket.master.service.js" defer></script>
+<link rel="import" href="../../x-componentes/x-comp-pago-tarjeta/x-comp-pago-tarjeta.html">
+
+<dom-module id="x-pago-servicio-facturacion">
+	<template is="dom">
+
+        <x-comp-pago-tarjeta id="compPagoTarjeta"></x-comp-pago-tarjeta>
+
+        <div class="p-3">            
+            <div class="xMiCard xradius" style="width:80%; max-width: 950px;">
+                <div class="xEncanezadoCard" style="background: lavenderblush; color: #424242;">
+                    <h3>Facturación</h3>
+                </div>            
+                <div class="xContentCard border-bottom" style="padding: 40px;"> 
+                    <div>
+                        <h4>Meses pendientes</h4>
+                        <table width="100%">
+                            <thead>
+                                <th align="left">Mes</th>
+                                <th align="left">Plan Contratado</th>
+                                <th align="right">Importe</th>                                
+                            </thead>
+                            <tbody>
+                                <template is="dom-repeat" items="{{listPagoMeses}}" as="item">
+                                    <tr>
+                                        <td align="left">{{ item.nom_mes }}</td>
+                                        <td align="left">{{ item.plan }}</td>
+                                        <td align="right">{{ item.importe_plan }}</td>                                        
+                                    </tr>
+                                </template>
+                                <tr class="xSinBorde">                                    
+                                    <td colspan="3" align="right"><p class="fw-600">S/. {{ importeMesPlan }}</p></td>                                    
+                                </tr>
+                            </tbody>
+                        </table>
+
+                       
+                        
+                        <br>
+                        <hr>
+                        <br>
+
+                        <h4>Dias transcurridos</h4>                        
+                        <table width="100%">
+                            <thead>
+                                <th align="left">Descripcion</th>
+                                <th align="center">Dias</th>
+                                <th align="right">Importe</th>                                
+                            </thead>
+                            <tbody>                                
+                                    <tr class="xSinBorde">
+                                        <td align="left">Impago</td>
+                                        <td align="center">{{ diasTranscurridos }}</td>
+                                        <td align="right"><p class="fw-600"> S/. {{ importeMora }} </p></td>                                        
+                                    </tr>                                
+                            </tbody>
+                        </table>
+
+                        <br>
+                        <hr>
+                        <br>
+
+                        <h4>Pago desde la aplicación</h4>                        
+                        <table width="100%">
+                            <thead>
+                                <th align="left">Descripcion</th>
+                                <th align="center">Transacciones</th>
+                                <th align="right">Importe</th>                                
+                            </thead>
+                            <tbody>
+                                <template is="dom-repeat" items="{{listTarjetas}}" as="item">
+                                    <tr class="xSinBorde">
+                                        <td align="left">Pagos con tarjeta <span class="text-secondary fs-10">Pendientes de abono</span></td>
+                                        <td align="center">{{ item.cantidad }}</td>
+                                        <td align="right"><p class="fw-600"> S/. {{ item.importe_debitar }} </p></td>                                        
+                                    </tr>
+                                </template>                                
+                            </tbody>
+                        </table>
+
+                        <br>
+                        <hr>
+                        <br>
+
+                        <div class="div-content-grid">
+                            <div>
+                                <p class="fw-600">Descargar Comprobante</p>
+                                <br>
+                                <p class="text-secondary fs-10">Periodo:</p>
+                                <select id="compFindComprobantePago" class="selected-template-1 xCursor" onchange="selectOptionComprobantes()">
+                                    <template is="dom-repeat" items="{{listComprobantes}}" as="item">
+                                        <option value="[[index]]">{{item.mes}}</option>
+                                    </template>
+                                </select>
+                                <br><br>
+                                <button hidden$="[[!isComprobanteSelected]]" class="btn btn-info" onclick="xDescargarComprobante()">Descargar Comprobante</button>
+                            </div>
+                            <div>
+                                <table width="100%">
+                                    <tr align="right">
+                                        <td>Total Plan</td>
+                                        <td><p class="fw-600">S/. {{ importeMesPlan }}</p></td>
+                                    </tr>
+                                    <tr align="right">
+                                        <td>Total Dias Impagos</td>
+                                        <td><p class="fw-600">S/. {{ importeMora }}</p></td>
+                                    </tr>
+                                    <tr align="right">
+                                        <td>Reconexion</td>
+                                        <td><p class="fw-600">S/. {{ importeReconexion }}</p></td>
+                                    </tr>
+                                    <tr align="right">
+                                        <td>Total Pagos por Aplicacion <span class="fw-600 text-danger">(-)<span></td>
+                                        <td><p class="fw-600">S/. {{ importeTarjeta }}</p></td>
+                                    </tr>
+                                    <tr align="right">
+                                        <td>Total a pagar</td>
+                                        <td><p class="fw-600 fs-18">S/. {{ importeTotalPagar }}</p></td>
+                                    </tr>
+                                    
+                                </table>
+
+                                <br>
+                                <div class="d-flexx justify-content-end">
+                                    <button class="btn btn-success" hidden$="[[isviewGoCero]]" onclick="goDialogCompPagar()">Pagar</button>
+                                    <p class="text-success fw-600 text-right" hidden$="[[!isviewGoCero]]">
+                                        Importe tarjetas es mayor que el importe pendiete. Se envio confirmacion de pago.
+                                    </p>
+                                </div>
+                                <br><br>
+                                
+                            </div>
+                        </div>
+                    </div>                    
+                </div>
+            </div>
+        </div>
+    </template>
+</dom-module>
+
+<style>
+    .div-content-grid {
+        display: grid;    
+        grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
+        grid-gap: 1rem;
+    }
+</style>
+
+<script>
+    var xThisPageCobranzaFacturcion, xCompPagoTarjeta, dtTotales = [], comprobanteSelected, xSocketPagoServicio;
+
+
+    
+
+    function xIniPageCobranzaFacturacion() {
+
+        xPopupLoad=document.getElementById('xLoad');        
+        $('body').addClass('loaded');
+
+        xThisPageCobranzaFacturcion.isviewGoCero = false;
+        xThisPageCobranzaFacturcion.isComprobanteSelected = false;
+
+        xCompPagoTarjeta = document.getElementById('compPagoTarjeta');  
+
+        xCompPagoTarjeta.addEventListener('onSuccessT', (e) => {
+            xSetConfirmation(xThisPageCobranzaFacturcion.importeTotalPagar, true)
+        });
+
+        xCompPagoTarjeta.addEventListener('onSuccessA', (e) => {
+            xSetConfirmation(xThisPageCobranzaFacturcion.importeTotalPagar, false, e.detail);
+        });
+        
+
+        loadPagoSedeServicio();
+
+        xLoadComprobantesConfirmado();
+
+        conectarSocket();
+        
+    }
+
+    function conectarSocket() {
+        xSocketPagoServicio = new socketService();
+        xSocketPagoServicio.connectSocket();
+    }
+
+    function notificarPagoServicio() {
+        xSocketPagoServicio.emit('restobar-pago-servicio-on', true);        
+    }
+
+    function loadPagoSedeServicio() {
+        dtTotales = [];
+        // xPopupLoad.xopen();
+        $.ajax({ type: 'POST', url: '../../bdphp/log_005.php?op=5001'})
+        .done( function (dtRes) {
+            // xPopupLoad.xclose();
+            
+            dtRes = JSON.parse(dtRes).datos[0];
+            
+            xThisPageCobranzaFacturcion.listPagoMeses = JSON.parse(dtRes.objres) || [];
+            const countMeses = xThisPageCobranzaFacturcion.listPagoMeses?.length || 0;
+            dtTotales.push({'des' : `Importe Plan meses(${countMeses})`, 'importe': dtRes.importe_mes_plan});
+
+            xThisPageCobranzaFacturcion.listTarjetas = JSON.parse(dtRes.objTarjetas);
+            xThisPageCobranzaFacturcion.diasTranscurridos = dtRes.dias_transcurridos;            
+
+            xThisPageCobranzaFacturcion.importeMora = dtRes.importe_mora;
+            if ( parseFloat(dtRes.importe_mora) > 0 ) {dtTotales.push({'des' : `Mora dias(${dtRes.dias_transcurridos})`, 'importe': dtRes.importe_mora});}            
+                                    
+            xThisPageCobranzaFacturcion.importeReconexion = dtRes.importe_reconexion;
+            if ( parseFloat(dtRes.importe_reconexion) > 0 ) { dtTotales.push({'des' : 'Reconexion', 'importe': dtRes.importe_reconexion}); }
+
+            xThisPageCobranzaFacturcion.importeTarjeta = dtRes.importe_tarjeta;
+            if ( parseFloat(dtRes.importe_tarjeta) > 0 ) { dtTotales.push({'des' : 'Tarjetas pendientes abonar', 'importe': dtRes.importe_tarjeta}); }            
+            
+            xThisPageCobranzaFacturcion.importeTotalPagar = dtRes.importe_pagar;
+            dtTotales.push({'des' : 'Total a pagar', 'importe': dtRes.importe_pagar});
+
+            xThisPageCobranzaFacturcion.listPagoMeses.map(m => m.nom_mes = xDesMes(parseInt(m.mes) - 1));
+
+            xThisPageCobranzaFacturcion.importeMesPlan = dtRes.importe_mes_plan;
+
+            xThisPageCobranzaFacturcion.importeTotalFacturar = dtRes.importe_facturar;
+            
+
+            if ( parseFloat(xThisPageCobranzaFacturcion.importeTotalPagar) < 0) {
+                xSetConfirmation();                
+            }
+            
+        });
+    }
+
+    function xSetConfirmation(_i = -1, isCard = false, drOtros = null) {
+        const _isCard = isCard ? 1 : 0;
+        $.ajax({ type: 'POST', url: '../../bdphp/log_005.php?op=5006', data : {data: {iscard: _isCard, i:_i, st: dtTotales, impf: xThisPageCobranzaFacturcion.importeTotalFacturar, dtOtros: drOtros} }})
+        .done( function (dtRes) {            
+            xThisPageCobranzaFacturcion.isviewGoCero = true;
+            notificarPagoServicio();
+        });
+    }
+
+    function goDialogCompPagar() {
+        xCompPagoTarjeta = document.getElementById('compPagoTarjeta');              
+        xCompPagoTarjeta.xopen(xThisPageCobranzaFacturcion.importeTotalPagar);        
+    }
+
+    function xLoadComprobantesConfirmado() {
+        $.ajax({ type: 'POST', url: '../../bdphp/log_005.php?op=5007'})
+        .done( function (dtComp) {
+
+            xThisPageCobranzaFacturcion.listComprobantes = JSON.parse(dtComp).datos;
+            if (xThisPageCobranzaFacturcion.listComprobantes.length > 0) {
+                comprobanteSelected = xThisPageCobranzaFacturcion.listComprobantes[0];
+                xThisPageCobranzaFacturcion.isComprobanteSelected = true;
+            }
+        });
+    }
+
+    function selectOptionComprobantes() {
+        const index = xThisPageCobranzaFacturcion.$.compFindComprobantePago.value;
+        comprobanteSelected = xThisPageCobranzaFacturcion.listComprobantes[index];
+
+        xThisPageCobranzaFacturcion.isComprobanteSelected = true;
+    }
+
+    function xDescargarComprobante() {        
+        xSoapSunat_DownloadFile('pdf', comprobanteSelected.external_id);
+    }
+
+    Polymer({
+			is: 'x-pago-servicio-facturacion',
+			properties: {				
+                listPagoMeses: [],
+                listTarjetas: [],
+                listComprobantes: [],
+                importeMesPlan: Number,
+                importeTarjeta: Number,
+                diasTranscurridos: Number,
+                importeMora: Number,
+                importeReconexion: Number,
+                importeTotalPagar: Number,
+                importeTotalFacturar: Number,
+                isviewGoCero: Boolean,
+                isComprobanteSelected: Boolean,
+			},						
+			attached: function () {                
+                this.isviewGoCero = false;
+                this.isComprobanteSelected = false;
+				xThisPageCobranzaFacturcion = this;				
+				xIniPageCobranzaFacturacion();
+            }
+		})
+</script>
+

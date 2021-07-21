@@ -1,0 +1,285 @@
+<dom-module id="x-comp-pago-tarjeta">   
+	<template is="dom">
+        <paper-dialog id="dialog_pago_servicio_tarjeta" style="min-width: 310px; max-width: 400px;" class="dialog_redondo animate__animated animate__fadeIn animate__faster" modal="true" entry-animation="scale-up-animation" exit-animation="fade-out-animation" modal>
+            <div style="float: right; margin-top: 0px; margin-right: -20px;">
+                <button class="btn btn-sm btn-secondary" dialog-dismiss>X</button>
+            </div>
+            <div class="text-center">                                
+                <p class="fw-600 text-secondary">Importe a Pagar</p> <br>
+                
+                <div class="xLinea2"></div><br>	
+                <p class="fw-600 fs-30">S/. {{ importepagar }}</p>
+                <br>
+                <div class="xLinea2"></div><br>	
+
+                <div class="text-left" hidden$="[[showConfirmOperacion]]" id="div_tipo_pago">
+                    <p class="fs-15 fw-600  text-secondary">Selecciona la forma de pago:</p>
+                    <p class="fw-600">Abono en cuenta</p>                    
+                    <!-- deposito cuenta -->
+                    <template is="dom-repeat" items="{{listCuentaAbonoServicio}}" as="item">
+                        <div data-id="[[ item.idcuenta_papaya ]]" style="display: flex; flex-direction: row; align-items: center;" class="p-1 border-bottom xCursor" onclick="bancoSelected(this)">
+                            <div class="pr-2">
+                                <img src="../../images/{{item.logo_banco}}" alt="">
+                            </div>
+                            <div class="pl-2 text-left">
+                                <p class="fw-600">{{ item.banco }}</p>
+                                <p>{{ item.numero }}</p>
+                            </div>
+                        </div>                        
+                    </template>
+
+                    <!-- pago con tarjeta                     -->
+                    <div hidden$="[[ !isshowpagotarjeta ]]">
+                        <br>
+                        <p class="fw-600">Pago con cualquier tarjeta</p>                    
+                        <p class="text-secondary fs-11">Visa, Mastercard, Diners, Amex, etc...</p>
+
+                        <div class="text-center">
+                            <br>
+                            <div hidden="[[showProcessT]]">                            
+                                <paper-spinner active id="loader_btn_pago"></paper-spinner> 
+                                <div id="btn_pago"></div>
+                                <a href="http://papaya.com.pe/terminos-condiciones.html" target="_blank">Terminos y condiciones</a>
+                            </div>
+                            
+                            <div hidden$ ="[[!showProcessT]]">
+                                <paper-spinner active></paper-spinner> 
+                            </div>
+                        </div>
+                        <br>
+                    </div>
+                </div>
+
+                <!-- msj pago tarjeta -->
+                <div class="text-center xInvisible" id="div_res_tarjeta">
+                    <!-- error -->
+                    <div id="div_t_error">
+                        <p class="fw-600 text-danger fs-15">Ocurrio un error</p>
+                        <br>
+                        <p class="fw-600 text-danger fs-15">
+                            {{ msjT }}
+                        </p>     
+                        <br>
+                        <p>
+                            Intentelo nuevamente.
+                        </p>      
+                        <br>      
+                        <button class="btn btn-secondary" dialog-dismiss onclick="location.reload()">Cerrar</button>  
+                    </div>
+
+                    <!-- success -->
+                    <div id="div_t_success">
+                        <p class="fw-600 text-success fs-15">Transaccion Exitosa</p>
+                        <br>
+                        <p>
+                            {{ msjT }}
+                        </p>
+                        <br>
+                        <p>
+                            Muchas grcias. Podrá descargar la factura del servicio luego de la confirmación.
+                        </p>
+                        <br>
+                        <button class="btn btn-secondary" dialog-dismiss>Cerrar</button>
+                    </div>                    
+                    
+
+                    <br><br>                    
+                </div>
+
+                <!-- insertar numero de operacion bancaria para confirmar -->
+                <div class="text-center" hidden$="[[!showConfirmOperacion]]">
+                    <p>Ingresa el número de operacion bancaria (deposito)</p>
+                    <input type="text" class="xMiInput xPasarEnter2 text-center" placeholder="# Operacion" id="text_noperacion" espaciar>
+                    <input type="text" class="xMiInput text-center" placeholder="Comentario" id="text_comentario">
+
+                    <br>
+                    <div class="xLinea2"></div><br><br>	
+
+                    <div hidden$ = "[[showConfirmOperacionMsj]]">
+                        <button class="btn btn-success" onclick="enviarParaValidar()">Enviar para validar</button>
+                    </div>
+                    <div hidden$ = "[[!showConfirmOperacionMsj]]">
+                        <p class="fw-600 text-info">Muchas gracias. La confirmación del pago se realizara en breve.</p>
+                    </div>
+                    <br>
+                </div>
+
+                
+            </div>
+            <br>
+        </paper-dialog>        
+
+    </template>
+    <script src="../../../js/boton-pago.js"></script>
+</dom-module>
+
+<script>
+    var xThisCompPagoTajeta, xDataClientePagoTarjeta, xidBancoSelected;
+
+    function xIniCompPagoTarjeta(importe) {        
+        xThisCompPagoTajeta.showConfirmOperacion = false;
+        xThisCompPagoTajeta.showConfirmOperacionMsj = false;        
+        xThisCompPagoTajeta.showProcessT = false;
+        xPopupLoad=document.getElementById('xLoad');  
+    }
+
+    function callPurchaseNumber(importe){
+        xThisCompPagoTajeta.showConfirmOperacion = false;
+        xThisCompPagoTajeta.isshowpagotarjeta = importe > 0;
+        xThisCompPagoTajeta.importepagar = importe;
+
+        xloadCuentasAbonoServicio();
+
+        if ( !xThisCompPagoTajeta.isshowpagotarjeta ) {
+            dialog_pago_servicio_tarjeta.open();                    
+            return;
+        }
+
+        xPopupLoad.xopen();
+        $.ajax({ type: 'POST', url: '../../bdphp/log_005.php?op=5003'})
+		.done( function (dt) {            
+			const _dt  = JSON.parse(dt).datos[0];			
+            console.log('callPurchaseNumber', _dt);
+            xDataClientePagoTarjeta = _dt;
+
+            // ip
+            $.ajax({ type: 'GET', url: 'https://api.ipify.org?format=json'})
+            .done((resIp) => {
+                console.log('res ip', resIp);
+                xDataClientePagoTarjeta.ip = resIp.ip;
+
+                $.ajax({ type: 'POST', url: '../../bdphp/log_005.php?op=5002'})
+		        .done((dtPurchase) => {
+                    const _dtPurchase  = JSON.parse(dtPurchase).datos[0];	
+                    const _purchasenumber = _dtPurchase.purchasenumber
+
+                    xDataClientePagoTarjeta.nombre = '';
+                    xDataClientePagoTarjeta.apellido = '';
+                    
+                    pagar(importe, _purchasenumber, xDataClientePagoTarjeta);
+                                       
+                    xPopupLoad.xclose();
+                    dialog_pago_servicio_tarjeta.open();                    
+
+                });
+            });
+
+            // pagar(this.estadoPedido.importe, _purchasenumber, this.dataClientePago);
+		});
+    }
+
+    function xloadCuentasAbonoServicio() {
+        $.ajax({ type: 'POST', url: '../../bdphp/log_005.php?op=5004'})
+		.done( function (dtCuenta) {
+            xThisCompPagoTajeta.listCuentaAbonoServicio = JSON.parse(dtCuenta).datos;
+        });
+    }
+
+    function bancoSelected(obj) {
+        // xItemBancoSelected = item;
+        xThisCompPagoTajeta.showConfirmOperacion = true;
+        xidBancoSelected = obj.dataId;
+        console.log('xItemBancoSelected', obj);
+    }
+
+    function enviarParaValidar() {
+        const _dataSend = {
+            idcuenta_papaya: xidBancoSelected,
+            noperacion: text_noperacion.value,
+            comentario: text_comentario.value,
+        }
+
+        xThisCompPagoTajeta.fire('onSuccessA', _dataSend);
+
+        setTimeout(() => {            
+            xThisCompPagoTajeta.showConfirmOperacionMsj = true;
+        }, 1000);
+
+        // $.ajax({ type: 'POST', url: '../../bdphp/log_005.php?op=5005', data : {data: _dataSend}})
+		// .done( function (res) {
+        //     console.log('res confirmacion', res);
+        // });
+    }
+
+    function loaderTransaction(val) {
+        xThisCompPagoTajeta.showProcessT = val;
+    }
+
+    function loaderTransactionResponseOut(res, isError) {
+
+        $(div_res_tarjeta).removeClass('xInvisible');
+        $(div_tipo_pago).addClass('xInvisible');
+
+        xThisCompPagoTajeta.showSuccessT = isError;
+        if ( isError ) {
+            $(div_t_error).removeClass('xInvisible');
+            $(div_t_success).addClass('xInvisible');
+        }else {
+            $(div_t_success).removeClass('xInvisible');
+            $(div_t_error).addClass('xInvisible');
+            
+            xThisCompPagoTajeta.fire('onSuccessT');
+        }
+
+        xThisCompPagoTajeta.msjT = res?.data?.ACTION_DESCRIPTION;
+
+        
+
+        // reloadTimePagoT();
+
+        console.log('loaderTransactionResponse', res);
+        console.log('loaderTransactionResponse error?', isError);
+    }
+
+    // function reloadTimePagoT() {
+    //     xThisCompPagoTajeta.numcountsucces = 5
+    //     const timeReload = setInterval(() => {
+    //         if ( xThisCompPagoTajeta.numcountsucces <= 0 ) {
+    //             clearInterval(timeReload);
+    //             location.reload();
+    //         }
+    //         xThisCompPagoTajeta.numcountsucces --;
+    //     }, 1000);
+    // }
+
+    // function cerrarDialogPago() {
+    //     dialog_alert_pago_servicio.close();
+    // }
+
+    // function irFacturacionServicio() {
+    //     xOpenPage(47, '');
+    //     setTimeout(() => {
+    //         xOpenPage(47, '');
+    //         dialog_alert_pago_servicio.close();
+    //     }, 300);
+        
+    // }
+
+
+    Polymer({
+			is: 'x-comp-pago-tarjeta',
+			properties: {				
+                importepagar: Number,
+                isshowpagotarjeta: Boolean,
+                listCuentaAbonoServicio: [],
+                showConfirmOperacion: Boolean,
+                showConfirmOperacionMsj: Boolean,
+                showSuccessT: Boolean,
+                showProcessT: Boolean,
+                msjT: String,                
+			},
+			attached: function () {            
+                this.numcountsucces=5;
+                this.showSuccessT = false;
+                this.showProcessT = false;     
+                this.isshowpagotarjeta = false;
+                this.showConfirmOperacion = false;
+                this.showConfirmOperacionMsj = false;
+				xThisCompPagoTajeta = this;				                
+				xIniCompPagoTarjeta();
+            },
+            xopen(importe) {				
+                callPurchaseNumber(importe);
+			}
+		})
+</script>

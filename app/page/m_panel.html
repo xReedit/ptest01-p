@@ -18,7 +18,7 @@
 <script type=text/javascript src=../../js/rxjs.umd.js></script>
 <script type=text/javascript src=../view/socket.master.service.js></script>
 <script src=../view/xm_all.js></script>
-<script type=text/javascript src="https://maps.googleapis.com/maps/api/js?key=AIzaSyAknWQFyVH1RpR2OAL0vRTHTapaIpfKSqo&libraries=places"></script>
+<script defer type=text/javascript src="https://maps.googleapis.com/maps/api/js?key=AIzaSyAknWQFyVH1RpR2OAL0vRTHTapaIpfKSqo&libraries=places"></script>
 <link rel=stylesheet href=../../css/mibootstra.css>
 <link rel=stylesheet href=../../css/font-awesome-4.7.0/css/font-awesome.min.css>
 <link rel=stylesheet href="https://cdnjs.cloudflare.com/ajax/libs/animate.css/4.1.1/animate.min.css"/>
@@ -66,6 +66,8 @@
 <link rel=import href=../web_components/x-pass/x-pass.html>
 <link rel=import href=../web_components/x-pago/x-pago.html>
 <link rel=import href=../x-componentes/x-comp-list-notification/x-comp-list-notification.html>
+<link rel=import href=../x-componentes/x-comp-dialog-alert-pago-servicio/x-comp-dialog-alert-pago-servicio.html>
+<link rel=import href=../x-componentes/x-comp-show-updates-sytem/x-comp-show-updates-sytem.html>
 </div>
 <div class=xInvisible>
 <audio id=sonido_notifica_despacho autobuffer>
@@ -77,7 +79,9 @@
 </audio>
 </div>
 <x-dialog id=xLoad></x-dialog>
+<x-comp-dialog-alert-pago-servicio></x-comp-dialog-alert-pago-servicio>
 <x-comp-list-notification id=dialogListNotification></x-comp-list-notification>
+<x-comp-show-updates-sytem></x-comp-show-updates-sytem>
 <paper-dialog id=dialog_us entry-animation=scale-up-animation exit-animation=fade-out-animation>
 <div class=xContent>
 <div id=datosGeneralesUs>
@@ -127,6 +131,12 @@
 <div class="d-flexx align-items-center">
 <div class=pr-2>
 <h2 class="xboldEncabezado xNoVisibleMenos920 text_puntos_2" id=Titulo_page></h2>
+</div>
+<div id=divIconNotificationPago class="xInvisible d-flexx align-items-start animate__animated animate__heartBeat animate__delay-3s animate__repeat-3" onclick=showNotificationPago() style=margin-right:5px>
+<div class=xbell-notifica-pago>
+<i class="fa fa-credit-card animate__animated animate__flash animate__infinite"></i>
+</div>
+<span class="badge badge-danger xbell-count">1</span>
 </div>
 <div id=divIconNotification class="xInvisible d-flexx align-items-start animate__animated animate__heartBeat animate__delay-3s animate__repeat-3" onclick=showNotificationList()>
 <div class=xbell-notifica>

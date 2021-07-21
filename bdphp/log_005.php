@@ -1105,5 +1105,101 @@
 				 
 				$bd->xConsulta($sql);
 				break;
+			
+			// verificar si sede debe
+			case 5000:				
+				$id = isset($_POST['i']) ? $_POST['i'] : $g_idsede;
+				$sql = "call procedure_sede_pago_notifica($id)";
+				$bd->xConsulta($sql);
+				break;
+			case 5001: // cuenta a pagar
+				$sql = "call procedure_sede_calc_pago_pendiente($g_idsede)";
+				$bd->xConsulta($sql);
+				break;
+			case 5002: //
+				$sql= "call procedure_pwa_purchasenumber()";
+				$bd->xConsulta($sql);
+				break;
+			case 5003:
+				$sql = "SELECT o.idorg, CONCAT('PUTCS', o.idorg) as idcliente_card, '' nombres, o.email as correo, 
+						DATEDIFF(curdate(), STR_TO_DATE(s.finicio,'%d/%m/%Y')) as dias_registrado 
+						from org o
+							inner join sede s on s.idorg = o.idorg 
+						where o.idorg = $g_ido LIMIT 1";
+				$bd->xConsulta($sql);
+				break;
+			case 5004: // cuentas de abono
+				$sql= "select* from cuenta_papaya where estado=0";
+				$bd->xConsulta($sql);
+				break;
+			case 5005: // registrar confirmacion
+				$dt = $_POST['data'];
+				$sql= "insert into sede_pago_confirmacion (idsede, idcuenta_papaya, fecha, n_operacion, comentario)
+						value ($g_idsede, ".$dt['idcuenta'].", now(),'". $dt['n']."', '".$dt['comentario']."')";
+				$bd->xConsulta($sql);
+				break;
+			case 5006: // registrar confirmacion
+				$dt = $_POST['data'];	
+				$subtotales = $dt['st'];
+				$importe = $dt['i'];	
+				$importe_facturar = $dt['impf'];
+				$iscard = $dt['iscard'];
+				if ($importe < 0) {
+					$dtSend = array(
+						"noperacion" => "0",
+						"comentario" => "Importe tarjeta supera o iguala al importe pendiente.",
+						"idcuenta_papaya" => 3,
+						"idconfirmacion" => -1,
+						"ispago_tarjeta" => 0,
+						"data_pago_tarjeta" => "[]",
+						"importe" => 0,
+						"importe_facturar" => $importe_facturar,
+						"subtotales" => $subtotales
+					);
+				}
+
+				if ($iscard == "1") {
+					$dtSend = array(
+						"noperacion" => "Pago con tarjeta",
+						"comentario" => "Pago con tarjeta desde Restobar.",
+						"idcuenta_papaya" => 3,
+						"idconfirmacion" => -1,
+						"ispago_tarjeta" => 1,
+						"data_pago_tarjeta" => "[]",
+						"importe" => $importe,
+						"importe_facturar" => $importe_facturar,						
+						"subtotales" => $subtotales
+					);
+				} else {
+					// abono en cuenta
+					$dtOtros = $dt['dtOtros'];
+					$dtSend = array(
+						"noperacion" => $dtOtros['noperacion'],
+						"comentario" => $dtOtros['comentario'],
+						"idcuenta_papaya" => $dtOtros['idcuenta_papaya'],
+						"idconfirmacion" => -1,
+						"ispago_tarjeta" => 0,
+						"data_pago_tarjeta" => "[]",
+						"importe" => $importe,
+						"importe_facturar" => $importe_facturar,						
+						"subtotales" => $subtotales
+					);
+				}
+
+				
+
+				$dtSend = json_encode($dtSend, true);
+				$sql= "call procedure_sede_confirmacion_pago_servicio($g_idsede, '$dtSend')";
+				$bd->xConsulta($sql);
+				break;
+			
+			case 5007: // descargar comprobantes
+				$sql = "SELECT concat(MONTHNAME(fecha), ' ', YEAR(fecha)) mes, external_id 
+					from sede_pago_confirmacion spc 
+					where idsede = $g_idsede and confirmado = 1 AND external_id IS NOT NULL 
+					order by idsede_pago_confirmacion desc";
+				$bd->xConsulta($sql);
+				break;
+
 	}
 ?>

@@ -12,6 +12,7 @@ function _cpSocketComercioLLamaRepartidorPapaya(){this.socketCP.emit('set-solici
 function _cpSocketEmitPedidoPagoCliente(listIdCliente){this.socketCP.emit('pedido-pagado-cliente',listIdCliente);}
 function _cpSocketSavePedidoStorage(pedido){if(!isSocket){return;}
 localStorage.setItem('::app3_sys_dta_pe_sk',JSON.stringify(pedido));}
+function _cpSocketComprobanteWhatApp(payload){console.log('restobar-send-comprobante-url-ws',payload);this.socketCP.emit('restobar-send-comprobante-url-ws',payload);}
 function _cpSocketRestoreFromPedidoStorage(){if(!isSocket){return;}
 var pedido=localStorage.getItem('::app3_sys_dta_pe_sk')?JSON.parse(localStorage.getItem('::app3_sys_dta_pe_sk')):null;var pedidoSend=[],_subItemView=[];if(pedido){pedido.filter(x=>x!==null).map(x=>{_subItemView=[];Object.values(x).filter(a=>typeof a==='object').map(item=>{if(item.isporcion!='ND'){item.idcarta_lista=item.iditem;item.cantidad_seleccionada=item.cantidad;item.isalmacen=item.procede.toString()==='0'?1:0;item.isporcion=item.isporcion!='SP'?item.cantidad:item.isporcion;item.subitems_view=JSON.parse(JSON.stringify(item.subitems_view));pedidoSend.push(item);}});});}
 if(pedidoSend.length>0){this.socketCP.emit('resetPedido',pedidoSend);}
