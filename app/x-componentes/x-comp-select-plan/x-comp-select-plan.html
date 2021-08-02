@@ -1,0 +1,100 @@
+<link rel="import" href="../../web_components/polymer/polymer.html">
+<link rel="import" href="../../web_components/paper-dropdown-menu/paper-dropdown-menu.html">
+<link rel="import" href="../../web_components/iron-dropdown/iron-dropdown.html">
+
+
+<dom-module id="x-comp-select-plan">
+    <template>        
+        <div>       
+          <select id="compFindlistPlan" class$="[[clasecss]]" onchange="selectOptionPlan()">
+            <template is="dom-repeat" items="{{listPlan}}" as="sede">
+              <option value="[[index]]">[[sede.descripcion]] </option>
+            </template>
+          </select>
+        </div>
+
+    </template>
+    <style>
+        .comp-sede-template-1 {
+            border: 1px solid lightgray;
+            border-radius: 5px;
+            padding: 5px;
+            color: #616161;
+        }
+
+        .comp-sede-template-1:hover{background: lavenderblush;}
+        .comp-sede-template-1.beige:hover{background: beige;}
+
+        .comp-sede-template-2 {
+            border: none;
+            border-bottom: 1px solid lightgray;
+            padding: 0px 5px 5px 0px;
+        }
+    </style>
+    <script>
+        var xThisComPlan;
+
+        function getAllplanes() {
+            var addRowLast = {};
+            xThisComPlan.clasecss = xThisComPlan.clasecss === '' ? 'xTextRow2 xCursor' : xThisComPlan.clasecss;
+
+            $.ajax({ type: 'POST', url: '../../bdphp/log_componentes.php?op=17'})
+	        .done( function (dtSede) {
+                dtSede=JSON.parse(dtSede);	
+                                            
+                // xThisComPlan.planes = xThisComPlan.listPlan[0];
+                xThisComPlan.planes = dtSede.datos;
+                
+                xThisComPlan.listPlan=dtSede.datos;
+
+                xThisComPlan.getValorIncial(xThisComPlan.planes);
+            });
+        }
+
+        function selectOptionPlan() {
+            const index = xThisComPlan.$.compFindlistPlan.value;
+            xThisComPlan.planes = xThisComPlan.listPlan[index];
+            // return  xThisComPlan.planes;
+        }
+
+        
+        
+
+        Polymer({
+        is: 'x-comp-select-plan',
+        properties: {
+            listPlan: [],
+            clasecss: String,
+            addrowlast: String, // si agrega row al final de otra opcion como all planes
+            planes: {
+                type: Object,
+                // value : {},
+                reflectToAttribute: true,
+                notify: true, 
+                value: function() { return {}; },
+                observer: 'planNameChanged'
+            },
+        },
+        listeners: {
+            'onchange': 'getPlan'
+        },
+        planNameChanged: function(plan) {
+            return plan;
+        }, 
+        getPlan() {
+            return this.planes;
+        },
+        setPlan(val) {
+            xThisComPlan.$.compFindlistPlan.value = val;
+        },
+        attached: function() {
+            xThisComPlan=this;	
+            getAllplanes();
+        },
+        getValorIncial: function(plan) {
+            this.fire('getValorIncial', {planes: plan});
+        }
+    })
+    </script>
+
+</dom-module>

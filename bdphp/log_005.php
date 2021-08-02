@@ -484,7 +484,7 @@
 		
 		// conectar sede
 		case 14: 
-			$soketId = $_POST['socketId'];
+			$soketId = isset($_POST['socketId']);
 			$sql = "insert into sede_socketid (idsede, socketid, conectado) values (".$g_idsede.", '".$soketId."',  '1')  ON DUPLICATE KEY UPDATE socketid = '".$soketId."', conectado='1'";
 			$bd->xConsulta($sql);
 			break;

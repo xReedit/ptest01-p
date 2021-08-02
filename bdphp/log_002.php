@@ -72,9 +72,10 @@
         case '102': // registrar en cpe_facturador emitido desde facturador
             $objRegistro = $_POST['data'];
             $arrItems = $_POST['arrItems'];
+            $subTotal = isset($objRegistro['jsonsubtotalXml']) ? $objRegistro['jsonsubtotalXml'] : '';
             $sqlCpe="insert into cpe_facturador (idorg, idsede, idusuario, idcliente, idcomprobante, num_comprobante, fecha, subtotal, igv, total) 
                     values (".$_SESSION['ido'].",".$_SESSION['idsede'].",".$_SESSION['idusuario'].",".$objRegistro['idcliente'].",'".$objRegistro['idcomprobante']."',
-                    '".$objRegistro['num_comprobante']."',now(),'".$objRegistro['jsonsubtotalXml']."','".$objRegistro['igv']."','".$objRegistro['total']."')";
+                    '".$objRegistro['num_comprobante']."',now(),'".$subTotal."','".$objRegistro['igv']."','".$objRegistro['total']."')";
             
             // echo $sqlCpe;
             $idcpe_facturador = $bd->xConsulta_UltimoId($sqlCpe);
@@ -93,6 +94,11 @@
         case '103': // sumar +1 correlativo otros comprobante no declarados como: tickets, entradas etc
             $sql = "update tipo_comprobante_serie set correlativo = correlativo + 1 where idtipo_comprobante_serie = ".$_POST['i'];
             $bd->xConsulta_NoReturn($sql);
+            break;
+        case '103001': // obtener correlativo comprobante
+            $id = $_POST['i'];
+            $sql = "call procedure_get_num_comprobante($id)";
+            $bd->xConsulta($sql);
             break;
         case '2': // actualiza el estado de comprabantes reenviados (desde cierre caja): si fue aceptada = 1 o fue anulada = 1
             $obj = $_POST['data'];

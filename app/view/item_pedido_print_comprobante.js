@@ -3,7 +3,7 @@ if(xArrayComprobante&&xArrayComprobante.idtipo_comprobante==="0"){rptPrint.impri
 if(showPrint){if(!xgetComprobanteImpresora(xidDoc)){rptPrint.imprime=false;}}
 if(xArrayCuerpo.length==0){rptPrint.imprime=false;rptPrint.ok=false;rptPrint.msj='Los datos del comprobante no son correctos.';return rptPrint;}
 var xArrayEncabezado=xm_log_get('datos_org_sede');xArraySubTotales=darFormatoSubTotalesParaFacturacion(xArraySubTotales,false);const index_total=xArraySubTotales.length-1;const total_pagar=parseFloat(xArraySubTotales[index_total].importe);xArraySubTotales[index_total].importe_letras=numeroALetras(total_pagar);if(showPrint){xArrayComprobante.pie_pagina_comprobante=xImpresoraPrint[0].pie_pagina_comprobante;}
-rptPrint=await xJsonSunatCocinarDatos(xArrayCuerpo,xArraySubTotales,xArrayComprobante,xArrayCliente,idregistro_pago);if(!rptPrint.ok){alert(rptPrint.msj_error+". Mande a imprimir el comprobante desde Registro de pagos");xPopupLoad.close;return rptPrint;}
+const numComprobante=await xGetCorrelativoComprobante(xArrayComprobante);xArrayComprobante.correlativo=numComprobante;rptPrint=await xJsonSunatCocinarDatos(xArrayCuerpo,xArraySubTotales,xArrayComprobante,xArrayCliente,idregistro_pago);if(!rptPrint.ok){alert(rptPrint.msj_error+". Mande a imprimir el comprobante desde Registro de pagos");xPopupLoad.close;return rptPrint;}
 console.log(rptPrint);xArrayEncabezado[0].hash=rptPrint.hash;xArrayEncabezado[0].external_id=rptPrint.external_id;xArrayComprobante.correlativo=rptPrint.correlativo_comprobante||xArrayComprobante.correlativo;xArrayComprobante.facturacion_correlativo_api=rptPrint.facturacion_correlativo_api||xArrayComprobante.facturacion_correlativo_api;if(!showPrint){return xArrayEncabezado;}
 let _isPrinterCpeVal=parseInt(localStorage.getItem('::app3_sys_print_cpe'));_isPrinterCpeVal=isNaN(_isPrinterCpeVal)?1:_isPrinterCpeVal;if(_isPrinterCpeVal===0){return xArrayEncabezado;}
 xImprimirComprobanteAhora(xArrayEncabezado,xArrayCuerpo,xArraySubTotales,xArrayComprobante,xArrayCliente,function(rpt_print){if(rpt_print==false){return false;}
@@ -45,3 +45,6 @@ _cpSocketEmitPrinterOnly(dataSend);}).fail(function(e){alert("error",e);console.
 function xReturnCorrelativoComprobante(_obj){let _rpt;if(_obj.codsunat==='0'){_rpt=parseInt(_obj.correlativo)+1;_rpt=xCeroIzq(_rpt,7);$.ajax({type:'POST',url:'../../bdphp/log_002.php',data:{op:'103',i:_obj.idtipo_comprobante_serie}});}else{const tomaDelApi=parseInt(_obj.facturacion_correlativo_api)===0?false:true;_rpt=tomaDelApi?'#':parseInt(_obj.correlativo)+1;if(!tomaDelApi){_obj.facturacion_correlativo_api=1;}}
 return _rpt;}
 function xUpdatePrintPrecuentaPedido(_id){$.ajax({url:'../../bdphp/log_003.php?op=6',type:'POST',data:{id:_id}});}
+async function xGetCorrelativoComprobante(_obj){const result=await $.ajax({type:'POST',url:'../../bdphp/log_002.php',data:{op:'103001',i:_obj.idtipo_comprobante_serie}})
+const rpt=JSON.parse(result)
+if(rpt.success){return rpt.datos[0].num;}else{return'#';}}

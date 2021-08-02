@@ -40,5 +40,5 @@ if(p1.length<6){msj_pass_clave.textContent="Debe tener minimo 6 caracteres.";ret
 if(p1==="123456"){msj_pass_clave.textContent="La clave no puede ser la que pusiste.";return;}
 $.ajax({type:'POST',url:'../../bdphp/log.php?op=-3041',data:{pn:p2}}).done(function(dtC){msj_pass_clave.textContent='';dialog_requiere_cambio_pas.close();localStorage.setItem('::app3_woUSN',1);xPasarAMenuAcc();});}
 function xNewUs(){if(!localStorage.getItem('::app3_woUSN')){const xNuevo=parseInt(xm_log_get('app3_us').nuevo);if(xNuevo===0){xNuevoUs=true;$('body').addClass('loaded');dialog_requiere_cambio_pas.open();}else{xPasarAMenuAcc();}}else{xPasarAMenuAcc();}}
-function xPasarAMenuAcc(){xLiberarRouter();if(xUsAc_Ini=='A2,'){window.localStorage.setItem('::app3_woUOn',1);xOpenPage(3);}else{xOpenPage(1);}}
+function xPasarAMenuAcc(){xLiberarRouter();if(xUsAc_Ini=='A2,'){window.localStorage.setItem('::app3_woUOn',1);xOpenPage(3);}else{setLocalSotrage('::app3_sys_route',0);xOpenPage(1);}}
 function showNotificationPago(){xOpenPage(47);}

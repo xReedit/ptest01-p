@@ -117,7 +117,10 @@
 			break;
 		case -108://verificar si tiene acceso a esta pagina //si no encuentra regresa a la pagina anterior
 			//verifica si el usuario tiene permiso para acceder a esta pagina
-				if(!isset($_SESSION['u_pas_rl'])){
+
+				$_u_pas_rl = isset($_SESSION['u_pas_rl']) ? isset($_SESSION['u_pas_rl']) : '';
+				// if(!isset($_SESSION['u_pas_rl'])){
+				if($_u_pas_rl == ''){
 					$sql="SELECT GROUP_CONCAT(url_pas) AS d1 FROM us_home_opciones WHERE estado=0";
 					$_SESSION['u_pas_rl']=$bd->xDevolverUnDato($sql);
 				}
@@ -129,7 +132,7 @@
 				$u_per=explode('?', $u_per);
 				$u_per= isset($u_per[0]) ? $u_per[0] : null;
 
-				$pos = isset($_SESSION['u_pas_rl']) ? strpos($_SESSION['u_pas_rl'],$u_per) : false;
+				$pos = isset($_SESSION['u_pas_rl']) ? strpos($_u_pas_rl, $u_per) : false;
 				if ($pos=== false) {
 					print 0;
 				}else{//si existe en tabla verifica permiso
@@ -302,8 +305,9 @@
 			//if(($_SESSION['uid']==''))
 			//{			
 				// echo file_get_contents( 'php://input' );
+				$_utemp = isset($_POST['u']) ? $_POST['u'] : null;
 				$reconex = false;
-				if (!empty($_u = $_POST['u'])) {
+				if (!empty($_u = $_utemp)) {
 					$_u = $_POST['u'];
 					$_p = $_POST['p'];
 				} else { // reconectar
@@ -325,6 +329,11 @@
 
 					$idOrg = $_sys_id[3];
 					$idSede = $_sys_id[4];
+
+					//230721
+					$_SESSION['ido']=$idOrg;
+					$_SESSION['idsede']=$idSede;
+
 				}
 				
 				// print $_u." -> ".$_p;
@@ -1521,6 +1530,7 @@
 		case 3051:	//load pedido control de pedidos /load pedido desde mi pedido
 			$nummesa=$_POST['m'];
 			$numpedido=$_POST['p'];
+			$idpedido=isset($_POST['idpedido']) ? $_POST['idpedido'] : 0; // lo envia al agregar desdes control de pedidos / actualiza solo el ultimo(s) item agregado
 			$isConfirmarPago= isset($_POST['confirmar_pago']) ? $_POST['confirmar_pago'] : 0;
 
 			$lastIdPedido = $_POST['lastIdPedido'];
@@ -1532,7 +1542,7 @@
 			}
 
 			// 0 idpedido
-			$sql="CALL procedure_bus_pedido_bd_3051(".$nummesa.",'".$numpedido."', 0,".$g_ido.",".$g_idsede.",".$isConfirmarPago.",".$lastIdPedido.");";
+			$sql="CALL procedure_bus_pedido_bd_3051(".$nummesa.",'".$numpedido."', $idpedido,".$g_ido.",".$g_idsede.",".$isConfirmarPago.",".$lastIdPedido.");";
 			
 			// $condicion='p.nummesa='.$nummesa;
 			// if($nummesa==0){
@@ -3449,9 +3459,16 @@ function xDtUS($op_us){
 	}
 	$rows = [];
 	$results=$bd->xConsulta2($sql_us);
-	while($row = $results->fetch_object()){
-		$rows[]=$row;
-		}
+
+	// 230721
+	if ( strrpos($results, 'error') === false ) {
+
+		while($row = $results->fetch_object()){
+			$rows[]=$row;
+			}
+
+	}
+
 	return $rows;
 }
 

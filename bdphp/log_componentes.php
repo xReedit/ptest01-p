@@ -126,5 +126,10 @@
         case 16: // componente alert pago servicio
             $sql = "update usuario set last_notificacion_change_sys = curdate() where idusuario = ".$_SESSION['idusuario'];
             $bd->xConsulta($sql);
-            break;            
+            break;    
+            
+        case 17: // select planilla 
+            $sql = "select * from sede_plan_contratado where estado = 0";
+            $bd->xConsulta($sql);
+            break; 
     }

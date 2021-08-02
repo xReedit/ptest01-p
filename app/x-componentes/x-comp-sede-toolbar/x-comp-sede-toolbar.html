@@ -32,6 +32,6 @@ function xCompSedeToll_getAllSedes(){const _infoSede=xm_log_get('app3_us');const
 function xCompSedeToll_rol(rol){var tool_title='';_opSelectSede=false
 if(parseInt(rol)===1&&xThisComToolSede.listSede.length>1){tool_title='Click para cambiar sede';$("#txt_sede").addClass('clickSelToolSede xCursor');_opSelectSede=true;}
 $("#txt_sede").attr('title',tool_title);}
-function xCompSedeToll_buscarSede(idbuscar){const _arrSede=xThisComToolSede.listSede.filter(x=>x.idsede===idbuscar).map(x=>x)[0];$("#txt_sede").text(_arrSede.nombre+' | '+_arrSede.ciudad);}
-Polymer({is:'x-comp-sede-toolbar',properties:{listSede:[],sedes:{type:Object,reflectToAttribute:true,notify:true,value:function(){return{};},observer:'sedeNameChanged'},},listeners:{'onchange':'getSede'},sedeNameChanged:function(sede){return sede;},getSede(){return this.sedes;},attached:function(){xThisComToolSede=this;xCompSedeToll_getAllSedes();},getValorIncial:function(sede){this.fire('getValorIncial',{sedes:sede});}})/*]]>*/</script>
+function xCompSedeToll_buscarSede(idbuscar){let _arrSede=xThisComToolSede.listSede.filter(x=>x.idsede===idbuscar).map(x=>x)[0];$("#txt_sede").text(_arrSede.nombre+' | '+_arrSede.ciudad);}
+Polymer({is:'x-comp-sede-toolbar',properties:{listSede:[],sedes:{type:Object,reflectToAttribute:true,notify:true,value:function(){return{};},observer:'sedeNameChanged'},},listeners:{'onchange':'getSede'},sedeNameChanged:function(sede){return sede;},getSede(){return this.sedes;},attached:function(){xThisComToolSede=this;},init:()=>{xCompSedeToll_getAllSedes();},getValorIncial:function(sede){this.fire('getValorIncial',{sedes:sede});}})/*]]>*/</script>
 </dom-module>

@@ -28,8 +28,13 @@
 	if ( strrpos($x_from, "a") !== false ) { $x_from = str_replace('a','',$x_from); cocinar_pedido(); }
 	if ( strrpos($x_from, "d") !== false ) { $x_from = str_replace('d','',$x_from); cocinar_registro_cliente(); }	
 	
-	if ( strrpos($x_from, "b") !== false ) { $x_from = str_replace('b','',$x_from); cocinar_pago_total(); }
-	if ( strrpos($x_from, "c") !== false ) { $x_from = str_replace('c','',$x_from); cocinar_pago_parcial(); }
+	// if ( strrpos($x_from, "b") !== false ) { $x_from = str_replace('b','',$x_from); cocinar_pago_total(); }
+	// if ( strrpos($x_from, "c") !== false ) { $x_from = str_replace('c','',$x_from); cocinar_pago_parcial(); }
+
+	if ( strrpos($x_from, "b") !== false ) { $x_from = str_replace('b','',$x_from); cocinar_pago_sp(); }
+	if ( strrpos($x_from, "c") !== false ) { $x_from = str_replace('c','',$x_from); cocinar_pago_sp(); }
+
+	
 	
 	if ( strrpos($x_from, "f") !== false ) { $x_from = str_replace('f','',$x_from); getCorrelativoComprobante(); }
 	if ( strrpos($x_from, "e") !== false ) { $x_from = str_replace('e','',$x_from); setComprobantePagoARegistroPago(); }
@@ -49,7 +54,7 @@
 		
 		$x_array_pedido_header = $_POST['p_header'];
 		$x_array_pedido_body = $_POST['p_body'];
-		$x_array_pedido_body_homologacion = $_POST['p_body_h']; // 151020 homologacion con papaya express
+		$x_array_pedido_body_homologacion = isset($_POST['p_body_h']) ? $_POST['p_body_h'] : ''; // 151020 homologacion con papaya express
 		$x_array_subtotales = $_POST['p_subtotales'];
 		
 		$x_array_pedido_header = is_object($x_array_pedido_header) || is_array($x_array_pedido_header) ? $x_array_pedido_header : json_decode($x_array_pedido_header, true);
@@ -256,13 +261,13 @@
 			
 			// $correlativo_dia++;
 			
-			$arrDeliveryPedido = isset( $x_array_pedido_header['arrDatosDelivery'] ) ? $x_array_pedido_header['arrDatosDelivery'] : null;
+			$arrDeliveryPedido = isset( $x_array_pedido_header['arrDatosDelivery'] ) ? $x_array_pedido_header['arrDatosDelivery'] : [];
 			// si es delivery y si trae datos adjuntos -- json-> direccion telefono forma pago
 			$json_datos_delivery='';
 			$is_delivery = 0;
 			
 			// if ( array_key_exists('arrDatosDelivery', $x_array_pedido_header) ) {
-				
+			
 			if ( count($arrDeliveryPedido) > 0 ) {
 				$arrD = $x_array_pedido_header['arrDatosDelivery'];
 				$isComercioAppDeliveryMapa = isset($x_array_pedido_header['isComercioAppDeliveryMapa']) ? $x_array_pedido_header['isComercioAppDeliveryMapa'] : 0;
@@ -348,7 +353,8 @@
 		$x_idpedido = $id_pedido;
 
 		// SI ES PAGO TOTAL
-		if ( strrpos($x_from, "b") !== false ) { $x_from = str_replace('b','',$x_from); cocinar_pago_total(); }
+		// if ( strrpos($x_from, "b") !== false ) { $x_from = str_replace('b','',$x_from); cocinar_pago_total(); }
+		if ( strrpos($x_from, "b") !== false ) { $x_from = str_replace('b','',$x_from); cocinar_pago_sp(); }
 
 		
 		// $x_respuesta->idpedido = $id_pedido; 
@@ -384,6 +390,8 @@
 	// REGISTRO DE PAGO, REGISTRO_DETALLE , REGISTRO_PAGO_PEDIDO
 	// registro, detalle, tipo de pago total
 	function cocinar_pago_total() {
+
+
 		global $bd;
 		global $x_idpedido;
 		global $x_idcliente;
@@ -403,7 +411,7 @@
 
 		$tipo_consumo = $x_array_pedido_header['tipo_consumo'];
 		$idc=$x_array_pedido_header['idclie'] == ''? ($x_idcliente == '' ? 0 : $x_idcliente) : $x_array_pedido_header['idclie'];
-		// $tt=$x_array_pedido_header['ImporteTotal'];
+		// $tt=$x_array_pedido_header['ImporteTotal'];		
 		
 
 		// subtotales
@@ -495,6 +503,9 @@
 
 		// $x_respuesta->b = $correlativo_comprobante;
 		// $x_respuesta = ['correlativo_comprobante' => $correlativo_comprobante];
+
+		
+
 		$x_respuesta = json_encode(array('correlativo_comprobante' => $correlativo_comprobante, 'idregistro_pago' => $idregistro_pago));
 		print $x_respuesta.'|';
 
@@ -503,7 +514,110 @@
 
 	}
 
+	function cocinar_pago_sp() {
+		global $bd;
+		global $x_idpedido;
+		global $x_idcliente;
+
+		$x_array_pedido_header = $_POST['p_header'];
+		$x_array_tipo_pago = $_POST['p_tipo_pago'];
+		$x_array_subtotales=$_POST['p_subtotales'];
+		$x_array_comprobante=$_POST['p_comprobante'];
+		$array_items=isset($_POST['p_items_seleccionados']) ? $_POST['p_items_seleccionados'] : -1;
+		$is_hay_array_items=isset($_POST['p_items_seleccionados']) ? 1 : 0;
+
+		$x_array_pedido_header = is_object($x_array_pedido_header) || is_array($x_array_pedido_header) ? $x_array_pedido_header : json_decode($x_array_pedido_header, true);
+		$x_array_tipo_pago = is_object($x_array_tipo_pago) || is_array($x_array_tipo_pago) ? $x_array_tipo_pago : json_decode($x_array_tipo_pago, true);
+		$x_array_subtotales = is_object($x_array_subtotales) || is_array($x_array_subtotales) ? $x_array_subtotales : json_decode($x_array_subtotales, true);
+		$x_array_comprobante = is_object($x_array_comprobante) || is_array($x_array_comprobante) ? $x_array_comprobante : json_decode($x_array_comprobante, true);
+		$array_items = is_object($array_items) || is_array($array_items) ? $array_items : json_decode($array_items, true);
+		
+		$id_pedido = $x_idpedido ? $x_idpedido : $x_array_pedido_header['idPedidoSeleccionados'];
+
+		$tipo_consumo = $x_array_pedido_header['tipo_consumo'];
+		$idc=$x_array_pedido_header['idclie'] == ''? ($x_idcliente == '' ? 0 : $x_idcliente) : $x_array_pedido_header['idclie'];
+		// $tt=$x_array_pedido_header['ImporteTotal'];
+
+		if ( count($x_array_tipo_pago) == 1 ) {
+			$x_array_tipo_pago[0]['id'] = isset($x_array_tipo_pago[0]['id']) ? $x_array_tipo_pago[0]['id'] : 1;			
+		}
+
+
+		$arrayItemSeleccionados = array();
+		if ( $is_hay_array_items == 1 ) {
+			foreach ($array_items as $sub_item){
+				//$sql_pago_pedido=$sql_pago_pedido."(".$idregistro_pago.",".$sub_item['idpedido'].",".$sub_item['idpedido_detalle'].",'".$sub_item['cantidad']."','".$sub_item['total']."'),";
+				$idp_d=$sub_item['idpedido_detalle'];
+				$pos = strpos($idp_d, ',');
+				if($pos===false){
+					$idp_d=explode('|',$idp_d);
+					$idp_d=$idp_d[0];
+					$sub_item['idpedido_detalle_cocinar'] = $idp_d;
+
+					$row_item = array(
+						"idpedido" => $sub_item['idpedido'],
+						"idpedido_detalle" => $idp_d,
+						"cantidad" => $sub_item['cantidad'],
+						"ptotal" => $sub_item['total'],
+					);
+
+					$arrayItemSeleccionados[] = $row_item;
+					// $sql_pago_pedido=$sql_pago_pedido."(".$idregistro_pago.",".$sub_item['idpedido'].",".$idp_d.",'".$sub_item['cantidad']."','".$sub_item['total']."'),";
+				}else{ // vienen varios item agrupados
+					$idp_d=explode(",",$idp_d);
+					$cantp_d=explode(",",$sub_item['cantidad']);
+					$totalp_d=explode(",",$sub_item['total']);
+					//foreach($idp_d as $i){
+					foreach ($idp_d as $i => $clave) {
+						$idp_d_idp=explode('|',$idp_d[$i]);
+						// $sql_pago_pedido=$sql_pago_pedido."(".$idregistro_pago.",".$idp_d_idp[1].",".$idp_d_idp[0].",'".$cantp_d[$i]."','".$totalp_d[$i]."'),";
+
+						$row_item = array(
+							"idpedido" => $idp_d_idp[1],
+							"idpedido_detalle" => $idp_d_idp[0],
+							"cantidad" => $cantp_d[$i],
+							"ptotal" => $totalp_d[$i],
+						);
+
+						$arrayItemSeleccionados[] = $row_item;
+
+						}
+				}
+
+				// array_push($arrayItemSeleccionados, $row_item);
+				
+			}
+		}
+
+		// enviar datos a procedure
+		$dtSend = array(
+			"p_header" => $x_array_pedido_header,
+			"p_subtotales" => $x_array_subtotales,
+			"p_tipo_pago" => $x_array_tipo_pago,
+			"p_comprobante" => $x_array_comprobante,
+			"id_pedido" => $id_pedido,
+			"idorg" => $_SESSION['ido'],
+			"idsede" => $_SESSION['idsede'],
+			"idusuario" => $_SESSION['idusuario'],
+			"idcliente" => $idc,
+			"is_pago_parcial" => $is_hay_array_items,
+			"p_item_seleccionados" => $arrayItemSeleccionados
+		);
+
+
+		$dtSend = json_encode($dtSend, true);
+		$sql = "call procedure_registrar_pago_restobar('$dtSend')";
+		// echo $sql;
+		
+		// echo $resSP;
+		
+		$res = $bd->xDevolverUnDatoSP($sql);
+		$x_respuesta = $res;
+		print $x_respuesta.'|';
+	}
+
 	function cocinar_pago_parcial() {
+		
 		global $bd;
 		global $x_idpedido;
 		global $x_idcliente;

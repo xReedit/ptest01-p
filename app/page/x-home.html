@@ -6,8 +6,7 @@
 </div>
 </template>
 </dom-module>
-<script>/*<![CDATA[*/var xThisHome;var xArray_us_home;function xUs(){$.ajax({type:'POST',url:'../../bdphp/log.php?op=-1111'}).done(function(dt){window.localStorage.setItem("::app3_woDUS",dt);})}
-function xUsExtraer(){XX=window.localStorage.getItem("::app3_woDUS")
+<script>/*<![CDATA[*/var xThisHome;var xArray_us_home;function xUsExtraer(){XX=window.localStorage.getItem("::app3_woDUS")
 AA=window.atob(XX);xaa=JSON.parse(AA)
 alert(xaa)}
 function xIniHome(){xLoadAcc();$("#panel_toolbar").show();$('body').addClass('loaded');$("#Titulo_page").text("Inicio");xm_log_get('ini_us');xThisHome.xt_org=xIdOrg;xThisHome.xt_idsede=xIdSede;xThisHome.xt_idus=xIdUsuario;$(document).on('click','.xMiBoton_icon',function(e){var xop=$(this).attr('data-op');xOpenPage(xop);e.stopPropagation();e.stopImmediatePropagation()
