@@ -352,9 +352,7 @@
 		// $x_array_pedido_header['id_pedido'] = $id_pedido; // si viene sin id pedido
 		$x_idpedido = $id_pedido;
 
-		// SI ES PAGO TOTAL
-		// if ( strrpos($x_from, "b") !== false ) { $x_from = str_replace('b','',$x_from); cocinar_pago_total(); }
-		if ( strrpos($x_from, "b") !== false ) { $x_from = str_replace('b','',$x_from); cocinar_pago_sp(); }
+		
 
 		
 		// $x_respuesta->idpedido = $id_pedido; 
@@ -362,6 +360,12 @@
 		// $x_respuesta->correlativo_dia = $correlativo_dia; 
 		
 		$x_respuesta = json_encode(array('idpedido' => $id_pedido, 'numpedido' => $numpedido, 'correlativo_dia' => $correlativo_dia));
+
+
+		// SI ES PAGO TOTAL
+		// if ( strrpos($x_from, "b") !== false ) { $x_from = str_replace('b','',$x_from); cocinar_pago_total(); }
+		if ( strrpos($x_from, "b") !== false ) { $x_from = str_replace('b','',$x_from); cocinar_pago_sp($x_respuesta); return;}
+
 		print $x_respuesta.'|';
 		// $x_respuesta = ['idpedido' => $idpedido];
 		// print $id_pedido.'|'.$numpedido.'|'.$correlativo_dia;
@@ -514,7 +518,7 @@
 
 	}
 
-	function cocinar_pago_sp() {
+	function cocinar_pago_sp($rpt_cocina_pedido = '') {
 		global $bd;
 		global $x_idpedido;
 		global $x_idcliente;
@@ -607,13 +611,13 @@
 
 		$dtSend = json_encode($dtSend, true);
 		$sql = "call procedure_registrar_pago_restobar('$dtSend')";
-		// echo $sql;
+		// print $dtSend;
 		
 		// echo $resSP;
 		
 		$res = $bd->xDevolverUnDatoSP($sql);
 		$x_respuesta = $res;
-		print $x_respuesta.'|';
+		print $x_respuesta.'|'.$rpt_cocina_pedido;
 	}
 
 	function cocinar_pago_parcial() {
