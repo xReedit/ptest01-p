@@ -1,5 +1,5 @@
 var xImpresoraPrint;async function xCocinarImprimirComprobante(xArrayCuerpo,xArraySubTotales,xArrayComprobante,xArrayCliente,idregistro_pago,xidDoc,showPrint=true){let rptPrint={}
-if(xArrayComprobante&&xArrayComprobante.idtipo_comprobante==="0"){rptPrint.imprime=false;return rptPrint;}
+if(!!xArrayComprobante){if(xArrayComprobante.idtipo_comprobante==="0"){rptPrint.imprime=false;return rptPrint;}}else{rptPrint.imprime=false;return rptPrint;}
 if(showPrint){if(!xgetComprobanteImpresora(xidDoc)){rptPrint.imprime=false;}}
 if(xArrayCuerpo.length==0){rptPrint.imprime=false;rptPrint.ok=false;rptPrint.msj='Los datos del comprobante no son correctos.';return rptPrint;}
 var xArrayEncabezado=xm_log_get('datos_org_sede');xArraySubTotales=darFormatoSubTotalesParaFacturacion(xArraySubTotales,false);const index_total=xArraySubTotales.length-1;const total_pagar=parseFloat(xArraySubTotales[index_total].importe);xArraySubTotales[index_total].importe_letras=numeroALetras(total_pagar);if(showPrint){xArrayComprobante.pie_pagina_comprobante=xImpresoraPrint[0].pie_pagina_comprobante;}
