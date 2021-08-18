@@ -1,10 +1,10 @@
 <dom-module id="x-comp-dialog-alert-pago-servicio">
-	<template is="dom">
+    <template is="dom">
         <paper-dialog id="dialog_alert_pago_servicio" style="max-width: 400px;" class="dialog_redondo animate__animated animate__fadeIn animate__faster" modal="true" entry-animation="scale-up-animation" exit-animation="fade-out-animation" modal>
             <div class="text-center">                
                 <img src="../../../images/logo_papaya.PNG" alt="logo_papaya">
                 <p class="fw-600">Facturación Pendiente</p> 
-                <div class="xLinea2"></div><br>	
+                <div class="xLinea2"></div><br> 
                 
                 <div>
                     <p>
@@ -17,7 +17,7 @@
                     <br>
                 </div>
                 
-                <div class="xLinea2"></div><br>	
+                <div class="xLinea2"></div><br> 
 
 
                 <div>
@@ -40,10 +40,11 @@
 
     function xIniCompAlertPago() {
         const i = atob(localStorage.getItem('::app3_sys_last_s'));
+        if ( !i ) { return; }
         $.ajax({ type: 'POST', url: '../../bdphp/log_005.php?op=5000', data:{i:i}})
-		.done( function (dt) {
-			const _dt  = JSON.parse(dt).datos[0];
-			xThisCompAlertPago.xisNotificaPagar = parseInt(_dt.notifica) === 1;
+        .done( function (dt) {
+            const _dt  = JSON.parse(dt).datos[0];
+            xThisCompAlertPago.xisNotificaPagar = parseInt(_dt.notifica) === 1;
 
             if ( !xThisCompAlertPago.xisNotificaPagar ) {
                 $(divIconNotificationPago).addClass('xInvisible');
@@ -69,9 +70,9 @@
 
             dialog_alert_pago_servicio.open();
 
-			// console.log('dt', _dt);
-			// console.log('xThis.xisNotificaPagar', xThisCompAlertPago.xisNotificaPagar);
-		});
+            // console.log('dt', _dt);
+            // console.log('xThis.xisNotificaPagar', xThisCompAlertPago.xisNotificaPagar);
+        });
     }
 
     function cerrarDialogPago() {
@@ -89,27 +90,27 @@
 
 
     Polymer({
-			is: 'x-comp-dialog-alert-pago-servicio',
-			properties: {				
+            is: 'x-comp-dialog-alert-pago-servicio',
+            properties: {               
                 xisNotificaPagar: {
-				    type: Boolean,				
-				    notify: true
-			        },
+                    type: Boolean,              
+                    notify: true
+                    },
                 isshowclose: {
-				    type: Boolean,				
-				    notify: true
-			        },
+                    type: Boolean,              
+                    notify: true
+                    },
                 numsecondst: Number,
                 msjadicional: String,
                 titlebtncerra: String,          
-			},
-			ready: function () { 
+            },
+            ready: function () { 
                 this.isshowclose = false;           
                 this.numsecondst = 3;
                 this.msjadicional = '';
                 this.titlebtncerra = '';
-				xThisCompAlertPago = this;				                
-				xIniCompAlertPago();
+                xThisCompAlertPago = this;                              
+                xIniCompAlertPago();
             }
-		})
+        })
 </script>

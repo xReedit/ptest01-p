@@ -74,6 +74,7 @@ function xm_all_xToastOpen(msj,duracion=0,loading=true){msj=msj===null?'Cargando
 toast=document.getElementById("toast");toast.duration=duracion;toast.text=msj;toast.show();}
 function xm_all_xToastClose(){toast=document.getElementById("toast");toast.hide();}
 function delay(callback,ms){var timer=0;return function(){var context=this,args=arguments;clearTimeout(timer);timer=setTimeout(function(){callback.apply(context,args);},ms||0);};}
+function xDelay(delayInms){return new Promise(resolve=>{setTimeout(()=>{resolve(2);},delayInms);});}
 function setImportHTML(_linkImport){_linkImport=_linkImport.trim().split(',');let link=document.createElement('link');link.rel='import';_linkImport.map(x=>{link.href=x;link.onload=onload;document.head.appendChild(link);})}
 function objectifyForm(formArray){var returnArray={};for(var i=0;i<formArray.length;i++){returnArray[formArray[i]['name']]=formArray[i]['value'];}
 return returnArray;}

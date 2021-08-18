@@ -7,7 +7,7 @@
 <br>
 <table class$="{{_class}}" style="width:100%" id="table_op_fp">
 <thead>
-<th width="70%" align="left">Forma de pago</th>
+<th align="left">Forma de pago</th>
 <th align="left">Monto</th>
 </thead>
 <tbody>
@@ -24,7 +24,7 @@
 </div>
 </td>
 <td>
-<input type="number" min="1" id$="{{item.idText}}" pattern="[0-9]+([\.,][0-9]+)?" step="any" class="xMiInput xfont16 xtxtCentro xmonto" onblur="xRetornaMoneda(this)" onkeyup="xCalcImporte()" disabled="{{item.deshabilitado}}" onclick="this.select()" value$="{{item.importe}}" anchofull autofocus>
+<input type="number" min="1" id$="{{item.idText}}" pattern="[0-9]+([\.,][0-9]+)?" step="any" class="xMiInput xfont16 xtxtCentro xmonto" onblur="xRetornaMoneda(this)" onkeyup="xCalcImporte()" disabled="{{item.deshabilitado}}" onclick="this.select()" value$="{{item.importe}}" anchofull>
 </td>
 </tr>
 </template>
@@ -34,7 +34,7 @@
 </template>
 <script>/*<![CDATA[*/var xThisComTableFP,maxRow=3,_noVisibles='',listIni=[],_valImporteRestante=0,xCompOptionPago,itemOptionTpSelected;function xIniCompTableOption(){xThisComTableFP.listTabla=[];listIni=[];_noVisibles='';_valImporteRestante=0;_addRow();xCompOptionPago=document.getElementById('comp-pago-option');try{$(document).on('getValorIncial','.tpf_option',function(e){itemOptionTpSelected=e.detail.values;xCalcImporte();e.stopPropagation();e.stopImmediatePropagation()});}catch(error){}}
 function _addRow(){const _rows=listIni?listIni.length:0;if(_rows>=maxRow)return;var _hiddenIconBorrar=true;xSetNoVisibles();if(_rows>0){listIni.map((x,i)=>{x.deshabilitado=true;});xCalcImporte();_hiddenIconBorrar=false;}else{importeSave=xThisComTableFP.importetotal;}
-if(_valImporteRestante<=0&&_rows>0)return;listIni.push({idText:'tpf_option'+_rows,index:_rows,importe:_valImporteRestante.toFixed(2),deshabilitado:false,novisibles:_noVisibles,hiddenIconBorrar:_hiddenIconBorrar});xThisComTableFP.listTabla=JSON.parse(JSON.stringify(listIni));setTimeout(()=>{xCalcImporte();xThisComTableFP.focus();$('table input.xmonto').last().focus();$('table input.xmonto').last().select();},200);}
+if(_valImporteRestante<=0&&_rows>0)return;listIni.push({idText:'tpf_option'+_rows,index:_rows,importe:_valImporteRestante.toFixed(2),deshabilitado:false,novisibles:_noVisibles,hiddenIconBorrar:_hiddenIconBorrar});xThisComTableFP.listTabla=JSON.parse(JSON.stringify(listIni));setTimeout(()=>{xCalcImporte();if(isSynOsWinOrMac()){$('table input.xmonto').last().focus();$('table input.xmonto').last().select();}},200);}
 function xCalcImporte(){var totalRegistrado=0,importeGrabar=0,_importeRecibido=0,_importeRestante=0,_importetotal;listIni.map((x,i)=>{const _nom='#tpf_option'+i;const _objOp=$(_nom).parents('tr').find('.tpf_option .xMiBoton_icon_option[selected]')[0];_importetotal=parseFloat(xThisComTableFP.importetotal);_importeRestante=_importetotal-totalRegistrado;_importeRecibido=parseFloat($(_nom).val());_importeRecibido=isNaN(_importeRecibido)?0:_importeRecibido;x.importe_recibido=_importeRecibido;importeGrabar=parseFloat(x.importe_recibido)>=_importetotal?_importetotal:x.importe_recibido;importeGrabar=isNaN(parseFloat(importeGrabar))?0:parseFloat(importeGrabar);importeGrabar=importeGrabar===0?i>0?_importeRestante:_importetotal:importeGrabar;importeGrabar=i>0?importeGrabar>_importeRestante?_importeRestante:importeGrabar:importeGrabar;x.importe=parseFloat(importeGrabar).toFixed(2);if(_objOp){x.id=_objOp.dataId;x.reqcliente=_objOp.dataReqcliente;x.limite=_objOp.dataLimite;x.des_tp=_objOp.dataDescripcion;}
 totalRegistrado+=parseFloat(x.importe_recibido);});_valImporteRestante=totalRegistrado===0?0:_importetotal-totalRegistrado;xThisComTableFP.valImporteRestante=_valImporteRestante;xThisComTableFP.fire('xCompTableChange',{datos:listIni,evento:event});}
 function xSetNoVisibles(){var itemNoVisible=''

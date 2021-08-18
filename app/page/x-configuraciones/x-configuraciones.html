@@ -172,6 +172,26 @@
 <th width="5px"></th>
 </thead>
 </table>
+<br><br>
+<hr>
+<br><br>
+<div>
+<h3>Metodos de Pago Aceptatos.</h3>
+<table>
+<thead>
+<th align="left">Metodo</th>
+<th></th>
+</thead>
+<tbody>
+<template is="dom-repeat" items="{{listMetodoPagos}}" as="itemT">
+<tr>
+<td> {{itemT.descripcion}}</td>
+<td><paper-checkbox class="checkTP" checked$="{{itemT.aceptado}}" data-idt="{{itemT.idtipo_pago}}" onchange="updateMetodoPagoAceptado()"></paper-checkbox></td>
+</tr>
+</template>
+</tbody>
+</table>
+</div>
 </div>
 <div id="div_regla">
 <p class="xBold">Especifique las reglas que obedece la carta, como por ejemplo: Cada plato de fondo sale con una entrada.</p>
@@ -640,7 +660,7 @@ Esto se utiliza en el escenario de que cada caja tenga su impresora, por ejemplo
 <script type="text/javascript" src="../../view/item_pedido_print_comprobante.js"></script>
 <script>/*<![CDATA[*/var xThisConfig,_arrPrintLocal=[],isSocket,numIconSeccion=244,xRutaIconSeccion='../../images/img-icon-carta/',xidSeccionIcon,opIcon;var xObjBorrar=0;function _getCategoria(val){console.log(val);}
 function xIniConf(){xPopupLoad=document.getElementById('xLoad');xm_LogChequea(function(){xm_log_get('ini_us');$('body').addClass('loaded');xThisConfig.xt_org=xIdOrg;xThisConfig.xt_idsede=xIdSede;xThisConfig.xt_idus=xIdUsuario;if(xIdOrg===""||xIdOrg==undefined){var _dtUs=xm_log_get('app3_us');xThisConfig.xt_org=_dtUs.ido;xThisConfig.xt_idsede=_dtUs.idsede;xThisConfig.xt_idus=_dtUs.idus;}
-_arrPrintLocal=[];xLoadOrg();xLoadCategoria();isSocket=parseInt(xm_log_get('datos_org_sede')[0].pwa)===0?false:true;loadIconSeccion();})
+_arrPrintLocal=[];xLoadOrg();xLoadCategoria();isSocket=parseInt(xm_log_get('datos_org_sede')[0].pwa)===0?false:true;loadIconSeccion();xloadMetodosPagos();})
 $("#Titulo_page").text("Configuraciones");xThisConfig.selected_conf=0;$('.xPasarEnter2').on('keyup',function(e){var code=e.which;if(code==13||code==186){var inputs=$('input');var a=inputs.index(document.activeElement);if(inputs[a+1]!==null)
 {var nextBox=inputs[a+1];if(nextBox===undefined){return}
 if(nextBox.disabled){nextBox=inputs[a+2]}
@@ -757,4 +777,7 @@ function openImgIconDialog(obj,_opIcon){opIcon=_opIcon;xidSeccionIcon=obj.parent
 dialog_img_ico_carta.open();}
 function updateIconSeccion(obj){const _img=obj.dataIndex+'.png';xPopupLoad.xopen();$.ajax({type:'POST',url:'../../bdphp/log_004.php?op=8',data:{i:xidSeccionIcon,img:_img,opIcon:opIcon}}).done(function(a){if(opIcon===0){xLoadSecciones();}else{xLoadSecciones_bodega();}
 dialog_img_ico_carta.close();xPopupLoad.xclose();})}
-Polymer({is:'x-configuraciones',properties:{xt_org:Number,xt_idsede:Number,xt_idus:Number,dt_sede:Object,dt_cat:Object,dt_impr:Object,listIconSeccion:[]},attached:function(){this.selected_conf=0;xThisConfig=this;xIniConf();},detached:function(){}})/*]]>*/</script>
+function xloadMetodosPagos(){$.ajax({type:'POST',url:'../../bdphp/log_004.php?op=11'}).done(function(res){res=JSON.parse(res);const metodosPagosIds=xm_log_get('datos_org_sede')[0]?.metodo_pago_aceptados||'';const aceptados=metodosPagosIds.split(',');let listMetodoPagosAceptados=[];xThisConfig.listMetodoPagos=[];res.datos.map(x=>{x.aceptado=!!aceptados.filter(t=>parseInt(t)===parseInt(x.idtipo_pago))[0];x.aceptado_a=x.aceptado?1:0;listMetodoPagosAceptados.push(x);});xThisConfig.listMetodoPagos=listMetodoPagosAceptados;console.log('xThisConfig.listMetodoPagos',xThisConfig.listMetodoPagos);});}
+function updateMetodoPagoAceptado(){let idAceptados='';$('.checkTP').each((i,e)=>{idAceptados+=e.checked?`${e.dataIdt},`:'';});$.ajax({type:'POST',url:'../../bdphp/log_004.php?op=1101',data:{ids:idAceptados}});}
+function checkboxChanged(event){if(event.target.checked){console.log(event.target.value);}}
+Polymer({is:'x-configuraciones',properties:{xt_org:Number,xt_idsede:Number,xt_idus:Number,dt_sede:Object,dt_cat:Object,dt_impr:Object,listIconSeccion:[],listMetodoPagos:{type:Object,notify:true}},attached:function(){this.selected_conf=0;xThisConfig=this;xIniConf();},detached:function(){}})/*]]>*/</script>
