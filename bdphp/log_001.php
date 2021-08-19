@@ -1700,13 +1700,13 @@
 	// devolver fecha del servidor // comprobante electronico
 	function getFechaServer() {
 		global $bd;	
-		// $fecha_actual=date('Y').'-'.date('m').'-'.date('d');
-		// $hora_actual=date('H').':'.date('i').':'.date('s');
+		$fecha_actual=date('Y').'-'.date('m').'-'.date('d');
+		$hora_actual=date('H').':'.date('i').':'.date('s');
 
-		// print $fecha_actual.'|'.$hora_actual;
+		print $fecha_actual.'|'.$hora_actual;
 
-		$sql = "select * from usuario";
-		$bd->xConsulta($sql);
+		// $sql = "select * from usuario";
+		// $bd->xConsulta($sql);
 		// echo $sql; 
 
 		// $data = [ 'name' => 'aaaaaaaaa' ];
