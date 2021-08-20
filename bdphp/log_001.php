@@ -44,8 +44,8 @@
 	if ( strrpos($x_from, "b") !== false ) { $x_from = str_replace('b','',$x_from); cocinar_pago_sp(); }
 	if ( strrpos($x_from, "c") !== false ) { $x_from = str_replace('c','',$x_from); cocinar_pago_sp(); }
 
-	if ( strrpos($x_from, "3") !== false ) { $x_from = str_replace('b','',$x_from); cocinar_pago_total_fetch(); }
-	if ( strrpos($x_from, "4") !== false ) { $x_from = str_replace('c','',$x_from); cocinar_pago_parcial_fetch(); }
+	if ( strrpos($x_from, "3") !== false ) { $x_from = str_replace('3','',$x_from); cocinar_pago_total_fetch(); }
+	if ( strrpos($x_from, "4") !== false ) { $x_from = str_replace('4','',$x_from); cocinar_pago_parcial_fetch(); }
 
 	
 	
