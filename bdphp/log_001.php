@@ -385,7 +385,8 @@
 		// $x_respuesta->numpedido = $numpedido; 
 		// $x_respuesta->correlativo_dia = $correlativo_dia; 
 		
-		$x_respuesta = json_encode(array('idpedido' => $id_pedido, 'numpedido' => $numpedido, 'correlativo_dia' => $correlativo_dia));
+		// $correlativo_dia, 'correlativo_comprobante' => '' para que no me mande generar factura
+		$x_respuesta = json_encode(array('idpedido' => $id_pedido, 'numpedido' => $numpedido, 'correlativo_dia' => $correlativo_dia, 'correlativo_comprobante' => ''));
 
 
 		// SI ES PAGO TOTAL
