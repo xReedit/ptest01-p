@@ -32,30 +32,30 @@
 	if ( strrpos($x_from, "re-suma") !== false ) { $x_from = str_replace('re-suma','',$x_from); restauraStockItemsPedido(); return;} // reserva stock desde mipedio
 
 	// fetch return json
-	if ( strrpos($x_from, "1") !== false ) { $x_from = str_replace('1','',$x_from); cocinar_pedido_fetch(); }
-	if ( strrpos($x_from, "2") !== false ) { $x_from = str_replace('2','',$x_from); cocinar_pago_total_fetch(); }
+	if ( strrpos($x_from, "1") !== false ) { $x_from = str_replace('1','',$x_from); cocinar_pedido_fetch(); return;}
+	if ( strrpos($x_from, "2") !== false ) { $x_from = str_replace('2','',$x_from); cocinar_pago_total_fetch(); return;}
 	
-	if ( strrpos($x_from, "a") !== false ) { $x_from = str_replace('a','',$x_from); cocinar_pedido(); }
-	if ( strrpos($x_from, "d") !== false ) { $x_from = str_replace('d','',$x_from); cocinar_registro_cliente(); }	
+	if ( strrpos($x_from, "a") !== false ) { $x_from = str_replace('a','',$x_from); cocinar_pedido(); return;}
+	if ( strrpos($x_from, "d") !== false ) { $x_from = str_replace('d','',$x_from); cocinar_registro_cliente(); return;}	
 	
 	// if ( strrpos($x_from, "b") !== false ) { $x_from = str_replace('b','',$x_from); cocinar_pago_total(); }
 	// if ( strrpos($x_from, "c") !== false ) { $x_from = str_replace('c','',$x_from); cocinar_pago_parcial(); }
 
-	if ( strrpos($x_from, "b") !== false ) { $x_from = str_replace('b','',$x_from); cocinar_pago_sp(); }
-	if ( strrpos($x_from, "c") !== false ) { $x_from = str_replace('c','',$x_from); cocinar_pago_sp(); }
+	if ( strrpos($x_from, "b") !== false ) { $x_from = str_replace('b','',$x_from); cocinar_pago_sp(); return;}
+	if ( strrpos($x_from, "c") !== false ) { $x_from = str_replace('c','',$x_from); cocinar_pago_sp(); return;}
 
-	if ( strrpos($x_from, "3") !== false ) { $x_from = str_replace('3','',$x_from); cocinar_pago_total_fetch(); }
-	if ( strrpos($x_from, "4") !== false ) { $x_from = str_replace('4','',$x_from); cocinar_pago_parcial_fetch(); }
+	if ( strrpos($x_from, "3") !== false ) { $x_from = str_replace('3','',$x_from); cocinar_pago_total_fetch(); return;}
+	if ( strrpos($x_from, "4") !== false ) { $x_from = str_replace('4','',$x_from); cocinar_pago_parcial_fetch(); return;}
 
 	
 	
-	if ( strrpos($x_from, "f") !== false ) { $x_from = str_replace('f','',$x_from); getCorrelativoComprobante(); }
-	if ( strrpos($x_from, "e") !== false ) { $x_from = str_replace('e','',$x_from); setComprobantePagoARegistroPago(); }
+	if ( strrpos($x_from, "f") !== false ) { $x_from = str_replace('f','',$x_from); getCorrelativoComprobante(); return;}
+	if ( strrpos($x_from, "e") !== false ) { $x_from = str_replace('e','',$x_from); setComprobantePagoARegistroPago(); return;}
 	// if ( strrpos($x_from, "h") !== false ) { $x_from = str_replace('h','',$x_from); cocinar_registro_cliente_sede(); }
 
-	if ( strrpos($x_from, "z") !== false ) { $x_from = str_replace('z','',$x_from); getFechaServer(); }
-	if ( strrpos($x_from, "y") !== false ) { $x_from = str_replace('y','',$x_from); setidExternalComprobanteElectronico(); }
-	if ( strrpos($x_from, "x") !== false ) { $x_from = str_replace('x','',$x_from); saveComprobanteElectronicoError(); }	
+	if ( strrpos($x_from, "z") !== false ) { $x_from = str_replace('z','',$x_from); getFechaServer(); return;}
+	if ( strrpos($x_from, "y") !== false ) { $x_from = str_replace('y','',$x_from); setidExternalComprobanteElectronico(); return;}
+	if ( strrpos($x_from, "x") !== false ) { $x_from = str_replace('x','',$x_from); saveComprobanteElectronicoError(); return;}	
 	
 	// REGISTRA PEDIDO (a)
 	//registra pedidos, pedidodetalle, actualiza stock si es necesario //
