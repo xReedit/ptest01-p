@@ -80,6 +80,17 @@
             // echo $sqlCpe;
             $idcpe_facturador = $bd->xConsulta_UltimoId($sqlCpe);
 
+            // guardar correlativo comprobante
+            $idtipo_comprobante = $objRegistro['idcomprobante'];
+            $idtipo_comprobante_serie = $objRegistro['idtipo_comprobante_serie'];
+            if ( isset($idtipo_comprobante_serie) ) {
+                $sql_correlativo = "update tipo_comprobante_serie set correlativo = correlativo + 1 where idtipo_comprobante_serie=$idtipo_comprobante_serie";
+            } else {
+                $sql_correlativo = "update tipo_comprobante_serie set correlativo = correlativo + 1 where idsede=$g_idsede and idtipo_comprobante=$idtipo_comprobante and estado=0";
+            }
+            $bd->xConsulta_NoReturn($sql_correlativo);
+            
+
             // detalles del comprobante
             $sql_dt_item = '';
             foreach ($arrItems as $item){
