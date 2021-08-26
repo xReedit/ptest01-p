@@ -132,4 +132,12 @@
             $sql = "select * from sede_plan_contratado where estado = 0";
             $bd->xConsulta($sql);
             break; 
+
+        case 18: // canal de consumo vr
+            $sql = "select tc.*, tci.img from tipo_consumo tc 
+            left join tipo_cosnumo_img tci on POSITION(UPPER(tci.descripcion) in UPPER(tc.descripcion)) > 0
+            where idsede = $g_idsede and tc.estado = 0
+            order by tc.idtipo_consumo";
+            $bd->xConsulta($sql);
+            break; 
     }

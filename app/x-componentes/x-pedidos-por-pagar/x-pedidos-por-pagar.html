@@ -1,0 +1,123 @@
+<dom-module id="x-pedidos-por-pagar">
+    <link rel="import" href="../x-pedido-cuenta-cobrar/x-pedido-cuenta-cobrar.html">    
+	<template is="dom">
+
+        <x-pedido-cuenta-cobrar id="compPedidoCobrarDetalle"></x-pedido-cuenta-cobrar>
+
+        <div class="p-3">
+            <div class="d-flexx justify-content-between align-items-center">
+                <p class="fs-18">  Pedidos pendientes por cobrar</p>
+                <button class="btn btn-sm btn-primary" onclick="xClosePedidosPendientes()">
+                    <i class="fa fa-arrow-circle-left pr-2"></i>
+                    Atras
+                </button>
+            </div>
+            <br>
+            <div class="xLinea2"></div>
+            <br>
+            <div class="div-content-pedidos-cobrar">
+                <template is="dom-repeat" items="{{listPedidosPorPagar}}" as="item">
+                    <div class="item-pedido-cobrar"
+                        data-nummesa="{{item.nummesa}}"
+                        data-numpedido="{{item.numpedido}}"
+                        data-correlativo="{{item.correlativo_dia}}"
+                        data-idcat="{{item.idcategoria}}"
+                        data-isconfirmarpago="{{item.confirmar_pago}}"
+    
+                        onclick="goPedidoDetalle(this)"
+                    >
+                        <p class="fw-600 fs-15">{{  item.titulo }}</p>
+                        <p class="text-secondary fs-11">ID: {{ item.idpedido }}  F: {{ item.fecha }}  {{ item.hora }} </p>
+                        <p class="text-secondary fs-11">Referencia: {{ item.referencia }}</p>
+                        <p class="fw-600 fs-18 pt-2">S/. {{ item.importe }}</p>
+                    </div>
+                </template>
+            </div>
+        </div>
+    </template>
+</dom-module>
+
+<style>
+    .div-content-pedidos-cobrar {
+        display: flex;
+        flex-wrap: wrap;
+        margin: 5px;
+    }
+    .item-pedido-cobrar {
+        width: 200px;
+        background: #F3E5F5;
+        border-radius: 5px;
+        border: 1px solid #bdbdbd;
+        padding: 10px;
+        margin: 5px;
+    }
+    .item-pedido-cobrar p {
+        margin: 0px;
+    }
+</style>
+
+<script>
+    var xThisComPedidosPorPagarl, _compPedidoDetallePcp;
+        function getIniPedidosPorPagar() {
+            xPopupLoad.xopen();
+            $.ajax({ type: 'POST', url: '../../bdphp/log.php?op=501'})
+	        .done( function (dt) {
+                var listPedidos = JSON.parse(dt);
+                // console.log('pedidos vr', listPedidos);
+
+                listPedidos.datos.map(p => {
+                    p.titulo = parseInt(p.nummesa) === 0 ? p.des_tipo_consumo : 'MESA ' + p.nummesa;                    
+                    p.importe = parseFloat(p.importe).toFixed(2);
+                });
+
+                xThisComPedidosPorPagar.listPedidosPorPagar = listPedidos.datos;
+
+                xPopupLoad.xclose();
+                            
+            });
+
+            _compPedidoDetallePcp = document.getElementById('compPedidoCobrarDetalle');
+            _compPedidoDetallePcp.addEventListener('total_pagar_cuenta', (e) => {
+                // console.log('eeeee', e);
+                xThisComPedidosPorPagar.fire('total_pagar_cuenta', e.detail)
+            });          
+
+        }
+
+        function goPedidoDetalle(obj) {
+            // console.log('pedido ', obj);
+
+            // _compPedidoDetallePcp = document.getElementById('compPedidoCobrarDetalle');
+            _compPedidoDetallePcp.viewPedidoDetalle(obj)
+            xThisComPedidosPorPagar.objPedidoSelected = $(obj);
+        }
+
+        function xQuitarObjPedidoCuentaPagar() {
+            // console.log('quitar obj pedido');
+            xThisComPedidosPorPagar.objPedidoSelected.addClass('xInvisible')
+        }
+
+        function xClosePedidosPendientes() {
+            xThisComPedidosPorPagar.fire('close_pedidos_pendientes', true)
+        }
+
+        
+        Polymer({
+			is: 'x-pedidos-por-pagar',
+			properties: {				
+                listPedidosPorPagar:[],
+                objPedidoSelected: Object
+			},
+			attached: function() {
+                xThisComPedidosPorPagar=this;	
+                getIniPedidosPorPagar();
+            },
+            loadPedidosPendientesCobrar: () => {
+                getIniPedidosPorPagar();
+            },
+            quitarObjPedido: () => {
+                xQuitarObjPedidoCuentaPagar();
+            }
+		})
+
+</script>

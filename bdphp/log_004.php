@@ -199,6 +199,12 @@
 			$sql = "update sede set pwa_delivery_img = '".$img. "' where idsede = ".$idsede;
 			$bd->xConsulta($sql);
 			break;
+		case 60401: // img-mini
+			$idsede = $_POST['idsede'];
+			$img = $_POST['d'];
+			$sql = "update sede set img_mini = '".$img. "' where idsede = ".$idsede;
+			$bd->xConsulta($sql);
+			break;
 		
 		case 700: //horario de trabajo
 			$sql = "insert into sede_horario_trabajo (idsede, de, a) values (".$_POST['idsede'].", '".$_POST['de']."', '".$_POST['a']."')";

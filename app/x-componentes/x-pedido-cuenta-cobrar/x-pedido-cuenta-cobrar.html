@@ -1,0 +1,960 @@
+<dom-module id="x-pedido-cuenta-cobrar">
+    <link rel="import" href="../x-comp-descuento/x-comp-descuento.html">    
+	<template is="dom">
+        <paper-dialog modal id="dialog_detalle_pcp" class="tall-polys tall xNoScroll" entry-animation="scale-up-animation" exit-animation="fade-out-animation" with-backdrop>
+			<div>
+
+				<iron-pages selected="0" id="content_page" class="xNoScroll">
+					<div id="div_detalle_pedido" class="xNoScroll">
+						<div class="lh-7">
+							<div class="xDerecha">
+								<!-- <div>									
+									<button>Llamar repartidor</button>
+								</div> -->
+								<!-- <paper-fab mini icon="perm-phone-msg" onclick="xCallRepartidorPapaya()" title="Llamar a Repartidor de Papaya Express" tabindex="0" class="btnAddPapaya" id="btnLlamarRepartidorP"></paper-fab>
+								<paper-fab icon="add" onclick="xOpenLULI()" title="[F8] Agregar item" tabindex="0" class="btnAdd2"></paper-fab> -->
+							</div>
+							<h3 id="p_mesa">MESA 02</h3>
+							<div class="xfont11 pb-3"><span id="p_correlativo"> CO: 00112</span><span id="p_referencia"> DR VALDES</span><span id="p_antendido"> | ATENDIDO POR: ORLANDO</span></div>													
+
+
+							<div class="xdiv-info-delivery xInvisible lh-15" id="content-info-delivery">
+
+
+								<!-- cuando tiene repartidor propio o no a llamado a papaya express -->
+								<div id="divRepartidorPropio" class="pb-3">
+									<div id="divRepartidorNom" class="xInvisible">
+										<span class="xfont11">Repartidor: </span>
+										<span class="xBold" id="a_nom_repartidor"></span>
+										<hr>
+									</div>
+									<div id="divRepartidorSelect" class="xInvisible">																	
+										<span class="xfont11">Repartidor: </span>
+										<select name="" id="selectRepartidor" onchange="selectRepartidor()">
+											<option value="-1">No Asignado</option>
+											<template is="dom-repeat" items="{{listRepartidor}}" as="repartidor">
+												<option value="[[index]]">[[repartidor.nombre]] </option>
+											</template>
+										</select>
+										<hr>
+									</div>	
+								</div>
+
+
+								<!-- <div class="xfont11"  style="padding: 5px 0px 5px 0px;" id="txt-info-delivery">DELIVERY: 42299556 | MARCELO RAMIREZ | JR. REYES GUERRA 7 | 745212 | PAGA CON: 420 : EFECTIVO</div> -->
+								<div class="div-info-pedido">									
+									<div class="w-50">
+										<span class="xColorRow_Plomo3 fs-13">Datos del Cliente</span>
+										<div id="info-pedido" class="fs-11">
+
+										</div>
+										
+									</div>
+									<div class="w-50">											
+										<p class="xColorRow_Plomo3 fs-13">Comprobante</p>
+										<div id="info-comprobante" class="fs-11">
+
+										</div>
+									</div>
+								</div>
+								<div id="div-info-delivery-from-app" class="xInvisible" style="padding: 5px 0px 5px 0px; border-top: 1px solid #bbbb; background: antiquewhite;">		
+									<!-- <div class="xLinea"></div> -->
+									<div class="xfont12" id="txt-info-delivery-from-app"></div>
+								</div>
+							</div>
+							<!-- <br> -->
+						</div>
+						<div class="xLinea"></div>
+						<br>
+						<div class="content-pedido">
+							<table width="100%" class="xtable4">
+								<tr class="xSinBorde_tr" valign="top">
+									 <!-- style="padding-right:10px;" -->
+									<td width="40%" class="pd-r-10">
+										<div class="xtd-derecha">
+										<table width="100%" id="tb_pedidos" class="xRowPading4">
+											<thead><th colspan="5" align="left">PEDIDOS</th></thead>
+											<tr class="row selected1 xCursor check_item_p" data-idpedido="1">
+												<td><paper-checkbox checked class="check_item"></paper-checkbox>1</td>
+												<td>Pedido 00102</td>
+												<td>13:15:02</td>
+												<td align="right" class="td_importe" id="td_importe">120.00</td>
+											</tr>
+											<tr class="row selected1 xCursor check_item_p" data-idpedido="2">
+												<td><paper-checkbox checked class="check_item"></paper-checkbox>2</td>
+												<td>Pedido 00102</td>
+												<td>13:15:02</td>
+												<td align="right" class="td_importe" id="td_importe">120.00</td>
+											</tr>
+											<tr class="row selected1 xCursor check_item_p" data-idpedido="3">
+												<td><paper-checkbox checked class="check_item"></paper-checkbox>3</td>
+												<td>Pedido 00102</td>
+												<td>13:15:02</td>
+												<td align="right" class="td_importe" id="td_importe">120.00</td>
+											</tr>
+										</table>
+										<br>
+
+										<!-- <button class="btn btn-sm btn-warning"><i class="fa fa-sort-amount-desc"></i> Aplicar Descuento</button> -->
+										<x-comp-descuento id="component_descuento_pedido" importeventa$="[[ importeTotalPedido ]]"></x-comp-descuento>
+
+										</div>
+									</td>
+									<td class="xBordeIzq pd-l-10">										
+										<!-- <img src="../../images/_union.png" onclick="xJuntarFilasIguales();" class="xDerecha xAlinearce xCursor pos-union" title="Unir items">
+										<img src="../../images/_juntar_row.png" onclick="xDesJuntarItem();" class="xDerecha xAlinearce xCursor pd-l-10-a" title="Separar items"> -->
+										<div class="xtd-derecha" id="xBody_pcp">
+										<div>
+										<table width="100%" id="tb_det_pedidos" class="xRowPading4">
+											<!--thead><th colspan="6" align="left">Detalle del pedido | <div class="xBoton_flat xPlomo"> (2)</div><div class="xBoton_flat xPlomo">Para LLevar (3)</div></th></thead-->
+											<tr>
+												<td colspan="5" class="xFondoRowPlomo">CONSUMIR EN EL LOCAL</td>
+											</tr>
+											<tr>
+												<td colspan="5"><h4>ENTRADAS</h4></td>
+											</tr>
+											<tr class="row xCursor" data-idpedidodetalle="1" data-idpedido="1" data-punitario="1.00" data-idtipoconsumo="1" data-idcategoria="1" data-idcartalista="117422605116">
+												<td width="50px" class="click_row_dt_p" id="td_cant"><paper-checkbox  class="check_item"></paper-checkbox>03</td>
+												<td class="click_row_dt_p">COCO RALLADO</td>
+												<td class="click_row_dt_p" align="right" id="td_importe">0.00</td>
+												<td align="center" class="td_op" data-op="cambiar"><img src="../../images/_change.png" title="Cambiar"></td>
+												<td align="center" class="td_op" data-op="borrar"><img src="../../images/_delete3.png" title="Borrar"></td>
+											</tr>
+											<tr class="row xCursor" data-idpedidodetalle="2" data-idpedido="1" data-punitario="2.00" data-idtipoconsumo="1" data-idcategoria="1" data-idcartalista="11122605116">
+												<td width="50px" class="click_row_dt_p" id="td_cant"><paper-checkbox  class="check_item"></paper-checkbox>02</td>
+												<td class="click_row_dt_p">GELATINA</td>
+												<td class="click_row_dt_p" align="right" id="td_importe">2.00</td>
+												<td align="center" class="td_op" data-op="cambiar"><img src="../../images/_change.png" title="Cambiar"></td>
+												<td align="center" class="td_op" data-op="borrar"><img src="../../images/_delete3.png" title="Borrar"></td>
+											</tr>
+										</table>
+										</div>
+										</div>
+										<div class="d-flexx justify-content-end align-items-center" style="position: sticky; width: 100%;" hidden$="[[ !isAddItemRow ]]">
+											<button class="btn btn-success" style="margin-top: -80px;" onclick="xArmarSqlAddLUlI()" ><i class="fa fa-check"></i> Confirmar</button>
+										</div>
+									</td>
+								</tr>
+							</table>
+						</div>
+						 <!-- style="overflow: hidden;" -->
+						<!-- <div class="xAddItemPedido xNoScroll" id="SelAddLuLi">
+								<div>
+									<x-comp-find-categoria id="compFindCategoria" onchange="_getCategoria(categorias)"></x-comp-find-categoria>
+									<select class="xTextRow2 xCursor w-100" id="select_ulTPC"></select>
+									<input type="text" class="xMiInput w-100" placeholder="Buscar.." id="txt_bus_item_add">
+								</div>
+								<br>
+								<ul id="accordion_pcp" class="list_add_item noselect">
+									
+								</ul>
+								<br>
+								<div class="footer_dialog-more-item xFondoRowPlomo3">
+									<div class="xLinea"></div>
+									<br>
+									<div class="xBoton2 xVerde" onclick="xArmarSqlAddLUlI();">F9 | Confirmar</div>
+									<div class="xBoton2 xPlomo" onclick="xCloseLULI();">Cerrar</div>
+									<br>
+								</div>
+
+								<div class="xInvisible"><table data-TablaName="pedido_detalle" id="xli_tb_pedido_ad"></table></div>
+						</div> -->
+						<div class="footer_dialog xAlinearce xFondoRowBlanco2">
+							<div class="xLinea"></div>
+							<br>
+							<!-- style="margin-top: 12px;display: inline-flex;" -->
+							<div class="xDerecha pos-fotter-btn">
+								<div class="xMiBoton_icon_lateral mg-t-15" onclick="xImprimirPrecuenta();"><img src="../../../images/_pre_cuenta.png"><p class="fs-10">Pre-cuenta</p></div>
+								<!-- <div class="xMiBoton_icon_lateral mg-t-15" onclick="xOpenCambiarMesa();" id="btn_cambiar_mesa"><img src="../../images/_cambiar_mesa.png"><p class="fs-10">Cambiar mesa</p></div>
+								<div class="xMiBoton_icon_lateral mg-t-15" onclick="xOpenAnularPedido();" id="btn_anular_pedido"><img src="../../images/_delete_pedido.png"><p class="fs-10">Anular</p></div> -->
+							</div>
+							<button class="xBoton2 xAzul" id="btn_registrar_pago_pcp" onclick="xIrPage(1);">F10 | Listo, pagar</button>
+							<button class="xBoton2 xPlomo" dialog-dismiss>Cerrar</button>
+
+							<!-- <button class="xBoton2 xVerde" onclick="xImprimirComprobante()">Factura</button> -->
+							<br>
+						</div>
+					</div>
+					<!-- <div id="div_pago">
+						<x-pago id="component_pago_pcp"></x-pago>						
+					</div> -->
+					<br><br>
+				</iron-pages>
+			</div>
+		</paper-dialog>
+    </template>
+</dom-module>
+
+<style>
+   #dialog_detalle_pcp.tall{
+		border-radius: 5px; width: 100%;min-width: 300px;
+		position: fixed;
+		top: 0;
+		left: 2;
+		bottom: 0;
+		right: 2;
+		margin: 2px;
+		min-height: 50vh;
+		width: -webkit-fill-available;
+		height: -webkit-fill-available;
+	} 
+
+	#dialog_detalle_pcp.tall-polys{
+		width: -webkit-fill-available;
+		height: -webkit-fill-available;
+		border-radius: 5px;
+	}
+
+	#dialog_detalle_pcp.normal{border-radius: 5px; width: auto 0;min-width: 300px;}
+</style>
+
+<script>
+    var xThisComPedidosCuenta, xCompDescuentoPedido, xtt_pedidos, isPedidoPagadoFromApp = false, xRpt_pago_pcp, xDtBdPCC;
+        function getIniPedidoCuenta() {
+            // $.ajax({ type: 'POST', url: '../../bdphp/log.php?op=501'})
+	        // .done( function (dt) {
+            
+            // });
+            
+
+            xCompDescuentoPedido=document.getElementById('component_descuento_pedido');
+            xCompDescuentoPedido.addEventListener('changeDescuento', function (e) {		
+                const _rptDsc = e.detail;
+                arrSubtTotalesDescuento = colocarDescuentoSubtotales(_rptDsc.value, arrSumSubtTotales, _rptDsc.descripcion, _rptDsc.isAgregar);
+                
+                xSumarTotalPedidos(null, true);
+
+                e.stopPropagation();
+                e.stopImmediatePropagation()
+            });
+
+            $("#dialog_cotent").on('iron-overlay-opened',function(){
+                $("#dialog_cotent #us").focus()
+            })
+
+           
+        }
+
+    function xLoadDetallesPedido (obj, clearDataLastPedidoInsert = true){        
+
+        lastDataPedidoInsert = clearDataLastPedidoInsert ? null : lastDataPedidoInsert;
+        
+        isPedidoOpenDeliveryCliente = false;
+        xAgrupar_item_activo=false;
+        xPopupLoad.titulo="Cargando...";
+        xPopupLoad.xopen();
+        xIrPage(0)
+        xObj_miPedido=$(obj);
+
+        // reset sub totales tachados
+        xLocal_SubTotal_Quitados = "";
+
+        //clearInterval(xRefreshPedidos);
+
+        // var xp_sel_nummesa=$(obj).attr('data-nummesa');
+        // var xp_sel_numpedido=$(obj).attr('data-numpedido');
+        // var xp_sel_correlativo_dia=$(obj).attr('data-correlativo');
+        // xp_sel_idcategoria=$(obj).attr('data-idcat');
+        // var xp_sel_is_confirmar_pago=$(obj).attr('data-isconfirmarpago');
+
+        var xp_sel_nummesa=obj.dataNummesa;
+        var xp_sel_numpedido=obj.dataNumpedido;
+        var xp_sel_correlativo_dia=obj.dataCorrelativo;
+        xp_sel_idcategoria=obj.dataIdcat;
+        var xp_sel_is_confirmar_pago=obj.dataIsconfirmarpago;
+        var xtitulo='';
+        var xidCategoriaPD = xp_sel_idcategoria;
+
+        if(xp_sel_nummesa=='0'){xtitulo='PEDIDO '+xCeroIzq(xp_sel_correlativo_dia,5)}else{xtitulo='MESA '+xCeroIzq(xp_sel_nummesa,2)}	
+
+        // if ( !clearDataLastPedidoInsert ) {
+        //     xRefreshListaPedidosItems(obj);		
+        //     return;
+        // }
+
+        //armar cantidad de pedidos
+        const lastIdPedidoCobrado = localStorage.getItem('::app3_woLastIdP') || undefined;
+        $.ajax({ type: 'POST', url: '../../bdphp/log.php?op=507', data:{m:xp_sel_nummesa, p:xp_sel_numpedido, confirmar_pago: xp_sel_is_confirmar_pago, lastIdPedido: lastIdPedidoCobrado}})
+        .done( function (dtDpedido) {
+
+            var isDelivery = false;
+            var isClienteDeliveryFromApp = false, pintarInfoDeliveryCliente = '', isLlamoRepartidorRed = false,infoFacturacion = ''; // si el pedido es delivery y viene de la app
+            var labelInfoPedido = '', labelInfoComprobante = '';
+
+            // si es solo para confirmar aunque no sea delivery
+            // isPedidoPagadoFromApp se utliza en comp-find-tipo-pago-option
+            // para saber si solo muestra tarjeta
+            isPedidoPagadoFromApp = xp_sel_is_confirmar_pago.toString() === '1' ? true : false;
+            localStorage.setItem('::app3_papp', xp_sel_is_confirmar_pago.toString());
+            xdtDpedido=$.parseJSON(dtDpedido);
+
+            xdtDpedido=xdtDpedido.datos;
+            xid_pedido_selected = xdtDpedido[0].idpedido;
+            
+            
+            var atendidoPor = xdtDpedido[0].nom_usuario ? xdtDpedido[0].nom_usuario : 'Cliente';
+            atendidoPor = 'ATENDIDO POR: '+ atendidoPor  +' | ';
+            
+
+            //encabezado
+            $("#p_correlativo").text('CO-'+xCeroIzq(xdtDpedido[0].correlativo_dia,5)+' | ');
+            $("#p_referencia").text(xdtDpedido[0].referencia +' | ');
+            $("#p_antendido").text(atendidoPor);
+
+            datosDelivery = xdtDpedido[0].json_datos_delivery;
+
+            try {									
+                datosDelivery = datosDelivery != '' && datosDelivery != '{}' && datosDelivery != '[]' ? JSON.parse(datosDelivery) : null;
+            } catch (error) {
+                // si el string tiene saltos de pagina /n 
+                // itemList.json_datos_delivery = JSON.parse(datosDelivery.replace(/(\r\n|\n|\r)/g,""));
+                datosDelivery = JSON.parse(datosDelivery.replace(/(\r\n|\n|\r)/g,""));
+            }
+
+            // datosDelivery = datosDelivery != '' && datosDelivery != '{}' && datosDelivery != '[]' ? JSON.parse(datosDelivery) : null;
+            xdtDpedido[0].json_datos_delivery = datosDelivery;
+
+            isDelivery = datosDelivery ? true : false;
+            // console.log('datosDelivery', datosDelivery);		
+
+            $('#btnLlamarRepartidorP').addClass('xInvisible');
+            $('#content-info-delivery').addClass('xInvisible');
+            
+
+            if (isDelivery) {			
+
+                // datos del delivery app cliente
+                optionDeliveryCliente = datosDelivery;
+                isClienteDeliveryFromApp = optionDeliveryCliente ? optionDeliveryCliente.p_header ? optionDeliveryCliente.p_header.delivery === 1 : false : false;		
+            
+                if ( isClienteDeliveryFromApp ) { // o delivery
+                    isComercioServicioDeliveryPropio =  xDtSede_cm[0].pwa_delivery_servicio_propio === '1'; // optionDeliveryCliente.p_header.arrDatosDelivery.establecimiento.pwa_delivery_servicio_propio !== 0;
+                    
+                    isPedidoOpenDeliveryCliente = isClienteDeliveryFromApp; // para el calculo de subtotales
+
+
+                    xtitulo = 'Pedido #' + xp_sel_numpedido; // para el titulo
+                    if ( optionDeliveryCliente.p_header.arrDatosDelivery.pasoRecoger ) {
+                        pintarInfoDeliveryCliente = 'El cliente pasa a recoger. ';
+                    } else {
+                        pintarInfoDeliveryCliente = !xdtDpedido[0].nom_repartidor ? 'Repartidor ... ' :  'REPARTIDOR: ' + xdtDpedido[0].nom_repartidor + ' ' + xdtDpedido[0].ap_repartidor + '. Telefono: ' + xdtDpedido[0].tel_repartidor;
+                    }
+
+                    // facturacion
+                    const dtFacDelivery = optionDeliveryCliente.p_header.arrDatosDelivery.tipoComprobante;
+                    const dtMetodoPago = optionDeliveryCliente.p_header.arrDatosDelivery.metodoPago;
+                    const fac_razon_social = dtFacDelivery ? dtFacDelivery.dni ? dtFacDelivery.dni : 'Publico en general' + ' ' + (dtFacDelivery.otro_dato || ''): 'Publico en general';
+                    const desRepartidorPaga = dtMetodoPago.idtipo_pago === 2 ? 'El pedido YA ESTA pagado, solo recogen.' : 'El pedido DEBE ser pagado';
+                    isPedidoPagadoFromApp = dtMetodoPago.idtipo_pago === 2; // esto va al componente pago
+                    infoFacturacion = ' | Facturacion: ' + dtFacDelivery.descripcion + ' ' + fac_razon_social + '  |  ' + desRepartidorPaga;
+
+                    labelInfoComprobante = '<p>' + dtFacDelivery.descripcion + ' ' + fac_razon_social + '  </p><strong>' + desRepartidorPaga + '</strong></p>';
+
+                    $('#div-info-delivery-from-app').removeClass('xInvisible');
+
+                    // totales
+                    // si el servicio de delivery no es propio no muestra costo del servicio ni propinas
+                    arrTotalesDeliveryCliente = isComercioServicioDeliveryPropio ? optionDeliveryCliente.p_subtotales : darFormatoSubTotalesDelivery(optionDeliveryCliente.p_subtotales);
+                
+                    
+                    
+                    $('#btnLlamarRepartidorP').removeClass('xInvisible');
+                    
+                    
+                    
+                    // combo repartdior
+                    isLlamoRepartidorRed = xdtDpedido[0].flag_solicita_repartidor_papaya === '1';
+                    isPuedeLLamarRepartdiroPapaya = xDtSede_cm[0].pwa_delivery_habilitar_llamar_repartidor_papaya === '1';
+        
+                    
+                    if ( isLlamoRepartidorRed && !isPuedeLLamarRepartdiroPapaya ) {
+                        $('#btnLlamarRepartidorP').addClass('xInvisible');
+                    }
+        
+                    if ( xdtDpedido[0].idrepartidor ) {
+                        $('#divRepartidorNom #a_nom_repartidor').text(xdtDpedido[0].nom_repartidor + ' ' + xdtDpedido[0].ap_repartidor);
+                        $('#divRepartidorNom').removeClass('xInvisible');
+                        $('#divRepartidorSelect').addClass('xInvisible');
+                        $('#btnLlamarRepartidorP').addClass('xInvisible');
+                    } else {
+                        if ( isComercioServicioDeliveryPropio && !isLlamoRepartidorRed ) {
+                            $('select#selectRepartidor').val(-1);
+                            $('#divRepartidorSelect').removeClass('xInvisible');
+                            $('#divRepartidorNom').addClass('xInvisible');
+                        } else {					
+                            $('#divRepartidorNom').removeClass('xInvisible');
+                            $('#divRepartidorSelect').addClass('xInvisible');
+                            $('#btnLlamarRepartidorP').addClass('xInvisible');
+                            $('#divRepartidorNom #a_nom_repartidor').text('Repartidor no asignado..');
+                        }
+        
+                    }
+                    ///
+                    
+                }
+                
+                
+
+                datosDelivery = typeof datosDelivery === 'object' ? datosDelivery.p_header ? datosDelivery.p_header.delivery === 0 ? null : datosDelivery.p_header.arrDatosDelivery : datosDelivery : datosDelivery;
+                
+                if (datosDelivery) {				
+                    $('#content-info-delivery').removeClass('xInvisible');
+                    datosDelivery.paga_con = datosDelivery.paga_con.replace('undefined', '');
+                    const infoDelivery =  datosDelivery.num_doc || '' + ' | ' + datosDelivery.nombre + ' | '+  datosDelivery.direccion + ' | '+  datosDelivery.telefono + ' | '+  datosDelivery.paga_con;
+                    $('#txt-info-delivery').text('DELIVERY: ' + infoDelivery + infoFacturacion);				
+                                    
+
+                    if ( datosDelivery.pasoRecoger ) {		
+                        $('#divRepartidorPropio').addClass('xInvisible');
+                        $('#btnLlamarRepartidorP').addClass('xInvisible');
+                        labelInfoPedido = '<p><i class="fa fa-user"></i> '+ xdtDpedido[0].referencia +'</p>'								
+                                    +'<p><i class="fa fa-phone"></i> '+ datosDelivery.telefono +'</p>';
+                        labelInfoComprobante = '<p class="badge badge-warning fs-14"><strong> <i class="fa fa-user"></i> El cliente pasa a recoger. <strong></p>';
+                    } else {
+                        $('#divRepartidorPropio').removeClass('xInvisible');
+                        $('#btnLlamarRepartidorP').removeClass('xInvisible');
+                        const _nomClienteDelivery = xdtDpedido[0].referencia === '' ? datosDelivery.nombre : xdtDpedido[0].referencia;
+                        const _refDireccion = datosDelivery.referencia ? '<p><i class="fa fa-map-marker"></i> '+ datosDelivery.referencia +'</p>' : '';
+                        labelInfoPedido = '<p><i class="fa fa-user"></i> '+ _nomClienteDelivery +'</p>'
+                                    +'<p><i class="fa fa-map-marker"></i> '+ datosDelivery.direccion +'</p>'
+                                    + _refDireccion
+                                    +'<p><i class="fa fa-phone"></i> '+ datosDelivery.telefono +'</p>';
+
+                    }
+                    
+                    const _stylepago = datosDelivery.metodoPago ? datosDelivery.metodoPago.idtipo_pago === 2 ? 'fs-14 badge-info' : 'badge-secondary' : 'badge-secondary';
+                    labelInfoComprobante += '<p><strong>Metodo de pago: </strong><span class="badge '+ _stylepago +'">' + datosDelivery.paga_con + '</span></p>';
+
+
+                    $('#txt-info-delivery-from-app').text(pintarInfoDeliveryCliente);
+                    $('#div-info-delivery-from-app').removeClass('xInvisible');
+
+                    $('#info-comprobante').html(labelInfoComprobante);
+                    $('#info-pedido').html(labelInfoPedido);
+
+                    if (  xDtSede_cm[0].pwa_delivery_servicio_propio === '0' || xdtDpedido[0].flag_solicita_repartidor_papaya === '0' ) {
+                        $('#div-info-delivery-from-app').addClass('xInvisible');					
+                        // xSumarTotalPedidos();
+                    }
+
+                    if ( xdtDpedido[0].flag_solicita_repartidor_papaya === '1' ) {
+                        arrTotalesDeliveryCliente = darFormatoSubTotalesComisionRepartidor(xDtSede_cm[0], optionDeliveryCliente.p_subtotales, optionDeliveryCliente.p_header.arrDatosDelivery.costoTotalDelivery, true);
+                    }
+
+                } else {
+                    $('#content-info-delivery').addClass('xInvisible');
+                }
+            }
+
+            //PEDIDOS
+            var xcadena_pedido='';
+            var xcount_p=1;
+            for (var i = 0; i < xdtDpedido.length; i++) {
+                let xcolor_tiempo_despacho='';
+
+                switch (xdtDpedido[i].val_color_despachado) {
+                    case '1':xcolor_tiempo_despacho='xColorRow_verde'; break;
+                    case '2':xcolor_tiempo_despacho='xColorRow_Ambar'; break;
+                    case '3':xcolor_tiempo_despacho='xColorRow_Rojo'; break;
+                }
+                
+                const xClassColorMin = xcolor_tiempo_despacho === '' ? 'xColorRow_Plomo' : xcolor_tiempo_despacho;
+                const td_tiempo_atencion = xdtDpedido[i].tiempo_atencion.length > 0 ? '<td class="'+ xcolor_tiempo_despacho +'">' + xdtDpedido[i].tiempo_atencion + ' <span class="xfont11 '+ xClassColorMin +'">min</span></td>' : '<td></td>';
+
+                xcadena_pedido=String(xcadena_pedido+'<tr class="row selected1 xCursor check_item_p" data-idcategoria="'+xidCategoriaPD+
+                                    '" data-idpedido="'+xdtDpedido[i].idpedido+
+                                    '" data-idcliente="'+xdtDpedido[i].idcliente+
+                                    '" data-idcat="'+xp_sel_idcategoria+
+                                    '" data-punitario="'+xdtDpedido[i].punitario+
+                                    '" data-total="'+xdtDpedido[i].total+
+                                    '" data-m="'+xdtDpedido[0].nummesa+
+                                    '" data-idtipoconsumo="'+xdtDpedido[0].idtipo_consumo+
+                                    '" data-nump="'+xdtDpedido[0].numpedido+
+                                    '" data-correlativo="'+xdtDpedido[0].correlativo_dia+
+                                    '" data-ref="'+xdtDpedido[0].referencia+'">'+
+                                    '" data-subtotales_tachados="'+xdtDpedido[0].subtotales_tachados+'">'+
+                                        '<td><paper-checkbox checked class="check_item"></paper-checkbox>'+xcount_p+'</td>'+
+                                        '<td>'+xdtDpedido[i].des_pedido+' <span class="xfont10 xColorRow_Plomo">'+xdtDpedido[i].referencia+'</span></td>'+
+                                        '<td>'+xdtDpedido[i].min_transcurridos+' <span class="xfont11 xColorRow_Plomo">min</span></td>'+
+                                        td_tiempo_atencion +
+                                        '<td align="right" class="td_importe" id="td_importe">'+xMoneda(xdtDpedido[i].total)+'</td>'+
+                                    '</tr>');
+                xcount_p++;
+            };
+            $('#tb_pedidos .row').remove();
+            $('#tb_pedidos').append(xcadena_pedido).trigger('create');
+
+            $("#xBody_pcp div").remove();
+            $("#xBody_pcp").append('<div><paper-spinner active class="xCentradoVerticalHorizontal"></paper-spinner></div>').trigger('create');
+
+            
+            const idPedidoAdd = lastDataPedidoInsert ? lastDataPedidoInsert.idpedido : 0;
+            const _numMesa = lastDataPedidoInsert ? 0 : xp_sel_nummesa;
+            $.ajax({ type: 'POST', url: '../../bdphp/log.php?op=3051', data:{m:_numMesa, p:xp_sel_numpedido, confirmar_pago: xp_sel_is_confirmar_pago, lastIdPedido: lastIdPedidoCobrado, idpedido: idPedidoAdd}})
+            .done( function (dtPbdet) {
+                var xdtPbdet=$.parseJSON(dtPbdet);
+
+                // si se agrego un nuevo pedido solo trae ese pedido
+                if (lastDataPedidoInsert) {
+                    xdtPbdet.datos.map(i => {
+                        xArrayDtOrdenFiltro.push(i);
+                    })
+                } else {
+                    xArrayDtOrdenFiltro=xdtPbdet.datos;
+                }
+
+
+                xThisComPedidosCuenta.xdtPedDet=xArrayDtOrdenFiltro;
+                // console.log('xThisCM.xdtPedDet', xThisCM.xdtPedDet);
+                xLoadMipedidoBD(xArrayDtOrdenFiltro)
+
+                xSumarTotalPedidos();
+                // xCheckPedidos();
+            })
+            xPopupLoad.xclose();
+            dialog_detalle_pcp.open();
+
+            xThisComPedidosCuenta.isAddItemRow = false;
+            // xNuevoPedidoCM();
+            
+                    
+
+            event.stopPropagation();
+            //e.stopPropagation();
+            //e.stopImmediatePropagation();
+        });
+
+        // titulo
+        $("#p_mesa").text(xtitulo);
+
+
+        if ( !xGeneralDataCarta ) {
+            xLoadDataUlAdd();											
+        }
+    }
+
+
+
+    function xLoadMipedidoBD(dt){
+	var xTpConsumo='';
+	var xCadenaItemArray;
+	var xEncabezadoCollapse='';
+	var xCadenaCollapse='';
+	xArrayTpC=[]; //ini en xLoadMipedidoBD tambien para formar array o estructura de  impresion en precuenta o factura, estructura de pedido={tipo consumo > seccion > items}
+	xArraySeccion=[]; //ini en xLoadMipedidoBD tambien  para formar array impresion  en precuenta o factura
+	var xIdColapse='';
+	var xCadenaGrupo='';
+	//var xCantItems;
+	var xIndicacionItem='';
+	var xNom_seccion;
+	xDtBdPCC=dt;
+
+	var xdisabled_btn_cambiar='';
+	var xdisabled_procede='';
+
+	//tipo de consumo // estructura de impresion
+	for(a in xDtBdPCC) {
+		if(xArrayTpC[xDtBdPCC[a].idtipo_consumo]==null){xArrayTpC[xDtBdPCC[a].idtipo_consumo]={'id':xDtBdPCC[a].idtipo_consumo, 'des':xDtBdPCC[a].des_tp}}
+
+
+	}
+	//inicia check
+	xArraychek_pedido=[];
+
+	//body pedido
+
+	var xNom_seccion_b='';
+	for(b in xArrayTpC){
+		xCadenaItemArray='';
+		xEncabezadoCollapse='';
+		xCadenaCollapse='';
+		xIndicacionItem='';
+		xArraySeccion=[];
+
+		//xCantItems=0;
+		for (i in xDtBdPCC) {			
+			if(xArrayTpC[b].id==xDtBdPCC[i].idtipo_consumo){
+					//fue juntado
+					if(xDtBdPCC[i].visible==1){continue; }
+					if(xDtBdPCC[i].procede!=0){xdisabled_procede="xdisabled";}else{xdisabled_procede='';}
+					if(xAgrupar_item_activo==true){xdisabled_btn_cambiar="xdisabled";}else{xAgrupar_item_activo='';}
+
+					xNom_seccion=xDtBdPCC[i].des_seccion;
+
+					//seccion
+					if(xArraySeccion[xDtBdPCC[i].idseccion_index]==null){xArraySeccion[xDtBdPCC[i].idseccion_index]='<tr><td colspan="5" class="xBold">'+xNom_seccion+'</td></tr>'; }
+					xCadenaItemArray=String('<tr class="row xCursor" data-idpedidodetalle="'+xDtBdPCC[i].idpedido_detalle+
+							'" data-i="'+ i +
+							'" data-idpedido="'+xDtBdPCC[i].idpedido+
+							'" data-idcliente="'+xDtBdPCC[i].idcliente+
+							'" data-punitario="'+xDtBdPCC[i].punitario+
+							'" data-idtipoconsumo="'+xDtBdPCC[i].idtipo_consumo+
+							'" data-idcategoria="'+xDtBdPCC[i].idcategoria+
+							'" data-iditem="'+xDtBdPCC[i].iditem + 
+							'" data-idcartalista="'+xDtBdPCC[i].idcarta_lista+
+							'" data-procede="'+xDtBdPCC[i].procede+
+							'" data-descontar="'+xDtBdPCC[i].descontar_en+
+							'" data-iddescontar="'+xDtBdPCC[i].iddescontar+
+							'" data-cant_descontar="'+xDtBdPCC[i].cant_descontar+
+							'" data-idpedidodetaller="'+xDtBdPCC[i].idpedido_detalle_r+
+							'" data-cantidadr="'+xDtBdPCC[i].cantidad_r+
+							'" data-totalr="'+xDtBdPCC[i].total_r+
+							'" data-cantidad="'+xDtBdPCC[i].cantidad+
+							'" data-total="'+xDtBdPCC[i].ptotal+
+							'" data-des_seccion="'+ xNom_seccion +
+							'" data-subtotales_tachados="'+ xDtBdPCC[i].subtotales_tachados +
+							'" data-idbus = "' + xDtBdPCC[i].idseccion +
+							'" data-des_tp = "' + xDtBdPCC[i].des_tp + // add 260721
+							'" data-descripcion = "' + xDtBdPCC[i].descripcion +
+							'" data-idseccion_index = "' + xDtBdPCC[i].idseccion_index +
+							'" data-isalmacen = "' + xDtBdPCC[i].isalmacen +
+							'" data-precio_default = "' + xDtBdPCC[i].precio_default +
+							'" data-procede_index = "' + xDtBdPCC[i].procede_index +
+							'" data-ptotal = "' + xDtBdPCC[i].ptotal +
+							'" data-total = "' + xDtBdPCC[i].total +
+							'" data-total_r = "' + xDtBdPCC[i].total_r +
+							'" data-totalr = "' + xDtBdPCC[i].totalr +
+							'" data-idseccion="'+ xDtBdPCC[i].idseccion +'" >'+
+									'<td width="50px" class="click_row_dt_p" id="cant_descontar"><paper-checkbox class="check_item"></paper-checkbox><span id="td_cant">'+xCeroIzq(xDtBdPCC[i].cantidad,2)+'</span></td>'+
+									'<td class="click_row_dt_p" width="50%" id="descripcion_item">'+ xDtBdPCC[i].descripcion +																			
+									'</td>'+									
+									'<td class="click_row_dt_p" align="right" id="td_importe">'+xDtBdPCC[i].ptotal+'</td>'+
+									// '<td align="center" style="width: 35px" class="rowadditem" data-op="itempedido" data-procede=0>' +
+									// 	'<div class="btn-add-item btn-sm-add-row" data-op="itempedido" title="Agregar Uno"><i class="fa fa-plus" data-op="itempedido"></i></div>'+
+									// '</td>'+
+									// '<td align="center" style="width: 20px" class="td_op" data-op="borrar" data-procede=0>'+
+									// 	'<img src="../../images/_delete3.png" title="Borrar" class="'+xdisabled_btn_cambiar+'">'+										
+									// '</td>'+									
+								'</tr>');
+
+					//xCantItems=parseInt(xCantItems)+parseInt(xDtBdPCC[i].cantidad);
+					xArraySeccion[xDtBdPCC[i].idseccion_index]=xArraySeccion[xDtBdPCC[i].idseccion_index]+xCadenaItemArray;
+
+			}
+		}
+
+		xEncabezadoCollapse='<tr><td colspan="5" class="xFondoRowBlanco xBold">'+xArrayTpC[b].des+'</td></tr>';
+		for (a in xArraySeccion) {
+			xCadenaCollapse=String(xCadenaCollapse+xArraySeccion[a]);
+		};
+
+		xCadenaGrupo=String(xCadenaGrupo+xEncabezadoCollapse+xCadenaCollapse);
+	}
+	xCadenaGrupo='<div><table width="100%" id="tb_det_pedidos" class="xRowPading4">'+xCadenaGrupo+'</table></div>';
+	$("#xBody_pcp div").remove();
+	$("#xBody_pcp").html(xCadenaGrupo).trigger('create');
+
+	// setTimeout(() => {		
+	// 	xGeneralValidarRegalasCarta('#tb_det_pedidos', false);
+	// }, 200);
+}
+
+
+    function xIrPage(op){
+        //var pages = document.querySelector('iron-pages');
+        switch(op){
+            case 0:
+                $("#dialog_detalle_pcp").removeClass('normal');
+                $("#dialog_detalle_pcp").addClass('tall');
+                break;
+            case 1:
+            //$("#dialog_detalle_pcp").removeClass('tall');$("#dialog_detalle_pcp").addClass('normal');
+                //$("#component_pago_pcp").focus(); component_pago_pcp.setFocusTxt();
+                //  btn_pago.hidden=false;
+                
+                
+                goPagarCuenta();
+                // return;
+            break;
+        }
+        content_page.selected=op;
+    }
+        
+
+    async function goPagarCuenta() {
+        var xcheckItemsSeleccionados = await getItemsSeleccionados();
+        xarr_subtotal = arrSumSubtTotales;
+
+        const _dtSend = {
+            checkItemsSeleccionados: xcheckItemsSeleccionados,
+            arr_subtotal: xarr_subtotal,
+            tt_pedido: parseFloat(xtt_pedidos),
+            is_from_client_pwa: xDtBdPCC[0]?.is_from_client_pwa || 0,
+            isPedidoPagadoFromApp: isPedidoPagadoFromApp
+        };
+        
+        xThisComPedidosCuenta.fire('total_pagar_cuenta', _dtSend);
+        dialog_detalle_pcp.close();
+
+    }
+
+    async function xSumarTotalPedidos(viene_borrar, viene_dsct ){
+        var xcadena_pe='';
+        xtt_pedidos=0;
+        var xtt_pedidos_det=0;
+        var xtt_dif=0;
+        var xtb_pedidos=$("#tb_pedidos");
+        // var xImporteTotalSeleccionados;  // obtiene el total de los pedidos seleccionados
+
+        $("#tb_pedidos .total").remove();
+        xtt_pedidos=xSumaCantRow(xtb_pedidos,'.td_importe');
+
+        //
+        xtb_pedidos=$("#tb_det_pedidos");
+        xtt_pedidos_det=xSumaCantRow(xtb_pedidos,'.td_importe');
+        
+        // verifica los subitems seleccionados o todos
+        checkItemsSeleccionados = await getItemsSeleccionados();
+        var xSumSubItmes = checkItemsSeleccionados.arrayPedidosSeleccionados;
+
+        var xarrSumEstructura = xCargarDatosAEstructuraImpresion(xSumSubItmes);
+        var _importeTotalSeleccionados = xArmarSubtotalesArray(xarrSumEstructura,xSumSubItmes.importeTotalSubItemSeleccionados);
+
+        // si hay algun subitem seleccionado no cambia por que esto es el total de pedidos
+        xImporteTotalSeleccionados = checkItemsSeleccionados.esSeleccionTotal ?  _importeTotalSeleccionados : xImporteTotalSeleccionados;
+        // si es pedido delivery cliente
+        xImporteTotalSeleccionados = isPedidoOpenDeliveryCliente ? getImporteTotalSubTotalesDelivery(arrTotalesDeliveryCliente) : xImporteTotalSeleccionados;
+        
+        // armamos los subtotales que retorma en xLocal_xDtSubTotales
+        arrSumSubtTotales = isPedidoOpenDeliveryCliente ? arrTotalesDeliveryCliente : xLocal_xDtSubTotales;
+        arrSumSubtTotales = viene_dsct ? arrSubtTotalesDescuento : arrSumSubtTotales;
+        xLocal_xDtSubTotales = arrSumSubtTotales;
+
+        var htmlSubtotales='';	
+        xLocal_xDtSubTotales.forEach((element, index) => {
+            var _fontSize,_fontSizeTitulo, titulo, _style='', _id='';
+            
+            var classTachado = element.tachado ? 'xTachar' : '';
+            var textBnQuitar = element.tachado ? 'Add' : 'Quitar';
+            var importeRow = element.tachado ? element.importe_tachado : parseFloat(element.importe).toFixed(2);
+            var xBtnQuitar = element.quitar ? '<span data-tachado="'+ element.tachado +'" class="xCursor xBold xColorRow_Azul xfont11" title="no cobrar" onclick="quitarSubTotal(this, '+index+')"> '+textBnQuitar+' </span>' : '';
+
+            if ( element.descripcion.toUpperCase() === "TOTAL" ) {
+                _id='tt_importe_pagar_t';
+                _fontSizeTitulo='';
+                _fontSize='xfont18 xBold';
+                titulo='IMPORTE A PAGAR';
+                xtt_pedidos_det = parseFloat(element.importe).toFixed(2);
+            } else {
+                _fontSize='xfont15';
+                _fontSizeTitulo=='xfont15';
+                titulo=element.descripcion.toUpperCase();
+                // _style='style="padding-top:1px;padding-bottom:1px;"';
+                _style = 'subtotal-tr-row';
+            }
+            
+            htmlSubtotales = htmlSubtotales + '<tr class="total '+classTachado+'">'+
+                                '<td colspan="4" class="'+_style+'"><p class="'+_fontSizeTitulo+'">'+titulo+' '+ xBtnQuitar +'</p></td>'+
+                                '<td align="right" class="'+_style+'"><p class="'+_fontSize+' xColorRow_Azul" id="'+_id+'">'+importeRow+'</p></td>'+
+                            '</tr>';
+        });
+
+
+        xcadena_pe=String(xcadena_pe+'<tr class="total"><td colspan="4">CONSUMO TOTAL</><td align="right"><P class="xfont18" id="tt_consumo_t"><b>'+xMoneda(xtt_pedidos)+'</b></p></td></tr>');
+
+        xtt_dif=parseFloat(xImporteTotalSeleccionados)-parseFloat(xtt_pedidos_det);
+        ImporteDiferencia = viene_dsct ? 0 : xtt_dif;
+
+        
+        xcadena_pe=String(xcadena_pe+htmlSubtotales+'<tr class="total"><td colspan="4">DIFERENCIA</><td align="right"><P class="xfont18 xColorRow_Rojo"><b>'+xMoneda(ImporteDiferencia)+'</b></p></td></tr>');
+
+        $("#tb_pedidos").append(xcadena_pe).trigger('create');
+        xtt_pedidos=xtt_pedidos_det;
+
+        xThisComPedidosCuenta.importeTotalPedido = xtt_pedidos;
+        
+
+
+
+        // if(viene_borrar==1){//si viene de borrar items y ya no queda mas items = mesa disponible
+        // y si no viene de descuento
+            if(parseFloat(xtt_pedidos)==0 && !viene_dsct){//cierra pedido
+                // console.log('sumar pedidos neutro');
+                $(xObj_miPedido).removeClass('xOcupado');
+                $(xObj_miPedido).removeClass('xDespachado');
+                $(xObj_miPedido).addClass('xNeutro');
+                $(xObj_miPedido).find('.show-led-precuenta').addClass('xInvisible');
+                $(xObj_miPedido).find('.show-led-print').addClass('xInvisible');
+                $(xObj_miPedido).find('.show-ico-mozo').addClass('xInvisible');
+                $(xObj_miPedido).find('.show-mozo-pedido').removeClass('pintar');
+                $(xObj_miPedido).find("#nommozo").text('.');
+                
+                $(xObj_miPedido).find(".importe").text('.');
+                $(xObj_miPedido).find(".tiempo").text('disponible');
+                $(xObj_miPedido).attr('data-hora','');
+                $(xObj_miPedido).attr('data-estado','b');
+                $(xObj_miPedido).attr('data-abrir-detalle','0');
+                $('.grid').isotope('updateSortData',$(xObj_miPedido)).isotope('layout');
+
+                // cerramos
+                dialog_detalle_pcp.close();
+            }else{
+                $(xObj_miPedido).find(".importe").text(xMoneda(xtt_pedidos));
+            }
+
+        // si mofica el importe y que no venga de descuento resetea componente
+        if ( !viene_dsct ) {  xCompDescuentoPedido.reset(); }
+        // }
+        //actualizar importe en grid;
+        //xtt_pedidos
+
+    }
+
+
+    // obtener los pedidos seleccionados
+async function getItemsSeleccionados() {
+	var xidpedido_seleccionados = '', idRowClientePedido, xArrayIdClienteUsuarioPedido = [], countPedidosListaSelected = 0, _esSeleccionTodoPeidoLista = false;
+	var ximporte_total_seleccionados=0;
+
+	// // si es pago total o parcial
+	// var xConsumo_tt_p=parseFloat($("#tb_pedidos #tt_consumo_t").text());
+	var ximporte_pagar_tt_p=parseFloat($("#tb_pedidos #tt_importe_pagar_t").text());
+	// var xCantidadSubItems =$("#tb_pedidos .check_item").length;
+
+	
+	
+	$("#tb_pedidos .row.selected1").each(function(index,element){
+		countPedidosListaSelected++;
+		xidpedido_seleccionados=xidpedido_seleccionados+$(element).attr('data-idpedido')+',';
+		idRowClientePedido=$(element).attr('data-idcliente'),
+		ximporte_total_seleccionados += parseFloat(ximporte_total_seleccionados)+parseFloat($(element).find("#td_importe"));
+		xid_tipo_consumo=$(element).attr('data-idtipoconsumo');
+
+		if ( xArrayIdClienteUsuarioPedido.filter(x => x === idRowClientePedido).length ===0 ) {
+			xArrayIdClienteUsuarioPedido.push(idRowClientePedido);
+		}
+
+	});
+
+	xidpedido_seleccionados=xidpedido_seleccionados.slice(0,-1);
+
+	_esSeleccionTodoPeidoLista = countPedidosListaSelected == xdtDpedido.length;
+
+	//obtener subitems detalle pedido - idpedido_detalle
+	var xArraySql_dt_p=[],
+	tb_pedido_dt=$("#tb_det_pedidos"),
+	cant_subitem_seleccionados=tb_pedido_dt.find('.row.selected1').length,
+	cant_subitems_tb=tb_pedido_dt.find('.row').length,
+	importe_total_por_pedido=0;
+
+	var xCantRow=parseInt(tb_pedido_dt.find(".row").length);
+	var xCantRowSel=parseInt(tb_pedido_dt.find(".row.selected1").length);
+	// xCantRow=xCantRow-xCantRowSel;
+
+	// var _esSeleccionTotal = ximporte_pagar_tt_p<xConsumo_tt_p ? false : true;
+	var _esSeleccionTotal = (xCantRowSel < xCantRow && xCantRowSel > 0)  ? false : true;
+
+	//obtner todos los subitems
+	tb_pedido_dt.find('.row').each(function(i,e){
+		var xid_pedido_dt_p=$(e).attr('data-idpedido'),
+			xid_cliente_dt_p=$(e).attr('data-idcliente'),
+			xid_iditem=$(e).attr('data-iditem'),
+			xid_pedido_detalle_dt_p=$(e).attr('data-idpedidodetaller'),
+			ximporte_dt_p=$(e).attr('data-totalr'),
+			xpunitario_dt_p = $(e).attr('data-punitario'),
+			xcantidad_dt_p = $(e).attr('data-cantidadr'),
+			ximporte_dt_p_mostrar=$(e).attr('data-total'),
+			xcantidad_dt_p_mostrar = $(e).attr('data-cantidad'),
+			xdes_seccion = $(e).attr('data-des_seccion'),
+			xid_seccion = $(e).attr('data-idseccion'),
+			xsubtotales_tachados = $(e).attr('data-subtotales_tachados'), // para calcular los tachados o quitados - no cobrar
+			xdescripcion = $(e).find("#descripcion_item").text(),
+			xsub_i='';
+			if(xid_pedido_detalle_dt_p.indexOf(',')!==-1){
+					xid_pedido_detalle_dt_p=xid_pedido_detalle_dt_p.slice(0,-1);
+					ximporte_dt_p=ximporte_dt_p.slice(0,-1);
+					xcantidad_dt_p=xcantidad_dt_p.slice(0,-1);
+			}
+			/*xid_pedido_detalle_dt_p=$(e).attr('data-idpedidodetalle'),
+			ximporte_dt_p=$(e).find("#td_importe").text(),
+			xcantidad_dt_p=$(e).find("#td_cant").text(),*/
+
+
+		xid_tipo_consumo=$(e).attr('data-idtipoconsumo');
+		//if(xArraySql_dt_p[xid_pedido_dt_p]===undefined){xsub_i='';importe_total_por_pedido=0;}else{xsub_i=xArraySql_dt_p[xid_pedido_dt_p]["sub_items"];importe_total_por_pedido=xArraySql_dt_p[xid_pedido_dt_p]["tt_x_idpedido"];}
+
+		if(cant_subitem_seleccionados===0){
+			//importe_total_por_pedido=parseFloat(importe_total_por_pedido)+parseFloat(ximporte_dt_p);
+			//xArraySql_dt_p[xid_pedido_dt_p]={'sub_items':xsub_i+xid_pedido_detalle_dt_p+',','tt_x_idpedido':importe_total_por_pedido};
+			xArraySql_dt_p.push({'des_seccion':xdes_seccion, 'idseccion': xid_seccion, 
+								'descripcion':xdescripcion,'idpedido':xid_pedido_dt_p,
+								'idpedido_detalle':xid_pedido_detalle_dt_p, 
+								'iditem': xid_iditem, 'cantidad':xcantidad_dt_p,
+								'precio': xpunitario_dt_p, 'total':ximporte_dt_p,'ptotal':ximporte_dt_p_mostrar, 
+								'idtipo_consumo': xid_tipo_consumo, 
+								'subtotales_tachados': xsubtotales_tachados});
+		}else{
+			//obtener solo los seleccionados
+			if($(e).hasClass('selected1')){
+				//importe_total_por_pedido=parseFloat(importe_total_por_pedido)+parseFloat(ximporte_dt_p);
+				//xArraySql_dt_p[xid_pedido_dt_p]={'sub_items':xsub_i+xid_pedido_detalle_dt_p+',','tt_x_idpedido':importe_total_por_pedido};
+				xArraySql_dt_p.push({'des_seccion':xdes_seccion, 'idseccion': xid_seccion,
+									'descripcion':xdescripcion,'idpedido':xid_pedido_dt_p,
+									'idpedido_detalle':xid_pedido_detalle_dt_p, 
+									'iditem': xid_iditem, 'cantidad':xcantidad_dt_p,
+									'precio': xpunitario_dt_p, 'total':ximporte_dt_p,'ptotal':ximporte_dt_p_mostrar, 
+									'idtipo_consumo': xid_tipo_consumo, 
+									'subtotales_tachados': xsubtotales_tachados});				
+			}
+		}
+	});
+
+	
+	return {esSeleccionTodoPeidoLista: _esSeleccionTodoPeidoLista, esSeleccionTotal: _esSeleccionTotal, arrayPedidosSeleccionados: xArraySql_dt_p, arrayIdClienteUsPedido: xArrayIdClienteUsuarioPedido, idPedidosSeleccionados: xidpedido_seleccionados, tipoConsumo : xid_tipo_consumo, importeTotalSeleccionado: ximporte_pagar_tt_p, importeTotalSubItemSeleccionados: ximporte_total_seleccionados };
+
+}
+
+
+async function xImprimirPrecuenta(){
+	//generar estructura de array impresion
+	var xArrayItemPreCuenta=[];
+	// var xDtBd=xArrayDtOrdenFiltro;
+	var xSubItmes=[];
+	//verificar items seleccionados
+	// var checkItemsSeleccionados = await getItemsSeleccionados();
+	// xSubItmes = checkItemsSeleccionados.esSeleccionTotal ? xDtBd : checkItemsSeleccionados.arrayPedidosSeleccionados;
+
+	// cargar a los items en la estructura de impresion
+	xArrayItemPreCuenta = xCargarDatosAEstructuraImpresion(checkItemsSeleccionados.arrayPedidosSeleccionados);
+
+	//saca el null
+	var xmesa_pc=$("#p_mesa").text().split(' ');
+	var xmunp_pc=$("#p_correlativo").text();
+	xmunp_pc=xmunp_pc.replace('CO-','');
+	xmunp_pc=xmunp_pc.replace('|','');
+	xmunp_pc=xmunp_pc.replace(/\s/g,'');
+	// xmesa_pc=xmesa_pc[1]; 
+	// po si no sale el numero de mesa
+	xmesa_pc=xdtDpedido[0].nummesa;
+
+	const isDelivery = datosDelivery ? 1 : 0;
+
+	xArrayPrintEncaLi_pre_cuenta={'m':xmesa_pc, 'r':'', 'num_pedido':xmunp_pc,'reservar':0, 'solo_llevar':0,'correlativo_dia':xmunp_pc,'precuenta':true, 'delivery': isDelivery, 'arrDatosDelivery': datosDelivery};
+
+	xMandarImprimirOtroDoc(xArrayPrintEncaLi_pre_cuenta,xDtPrint,xArrayItemPreCuenta,arrSumSubtTotales,-1);
+
+	// update bd print
+	xUpdatePrintPrecuentaPedido(checkItemsSeleccionados.idPedidosSeleccionados);
+	$(xObj_miPedido).find('.show-led-precuenta').removeClass('xInvisible');
+	// _cpSocketEmitPrinterPrecuenta(null);
+	// _cpSocketPintarPedido(null); // vuelve a pintar las mesas
+}
+
+        Polymer({
+			is: 'x-pedido-cuenta-cobrar',
+			properties: {				
+                listPedidosPorPagar:[],
+                xdtPedDet: Object,    
+                isAddItemRow: Boolean,    
+                importeTotalPedido: Number,        
+			},
+			attached: function() {
+                xThisComPedidosCuenta=this;	
+                // getIniPedidoCuenta();
+            },
+            viewPedidoDetalle: (obj) => {
+                xLoadDetallesPedido(obj)
+            }
+		})
+
+</script>
