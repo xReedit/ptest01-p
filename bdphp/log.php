@@ -2570,10 +2570,12 @@
 			$bd->xConsulta($sql);
 			break;
 		case 70011://resumne de ingresos y salidas de caja no cerradas
+			// GROUP by fecha, motivo agregamos porque enm algunos comercios esta duplicando
 			$sql="
 				SELECT  fecha, IF(tipo=1,'INGRESO','SALIDA') AS des_tipo,tipo,motivo,monto
 					FROM ie_caja
 				WHERE (idorg=".$g_ido." AND idsede=".$g_idsede.") AND idusuario=".$_SESSION['idusuario']." AND cierre=0
+				GROUP by fecha, motivo
 				ORDER BY idie_caja desc
 			";
 			$bd->xConsulta($sql);
