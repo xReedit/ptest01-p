@@ -585,12 +585,14 @@
 								$id_item=$bd->xConsulta_UltimoId($sql);
 							}
 							else{//actualizar
-								$sql_update_item="update item set descripcion='".$item['des_item']."', detalle='".$item['det_item']."', precio='".$item['precio_item']."', img='".$item['img_item']."' where iditem=".$id_item;
+								// $sql_update_item="update item set descripcion='".$item['des_item']."', detalle='".$item['det_item']."', precio='".$item['precio_item']."', img='".$item['img_item']."' where iditem=".$id_item;
+								$sql_update_item="update item set descripcion='".$item['des_item']."', precio='".$item['precio_item']."' where iditem=".$id_item;
 								// echo $sql_update_item;
 								$bd->xConsulta_NoReturn($sql_update_item);
 							}
 						} else {//actualizar
-								$sql_update_item="update item set descripcion='".$item['des_item']."', detalle='".$item['det_item']."', precio='".$item['precio_item']."', img='".$item['img_item']."' where iditem=".$id_item.";";
+							 // $sql_update_item="update item set descripcion='".$item['des_item']."', detalle='".$item['det_item']."', precio='".$item['precio_item']."', img='".$item['img_item']."' where iditem=".$id_item.";";
+								$sql_update_item="update item set descripcion='".$item['des_item']."', precio='".$item['precio_item']."' where iditem=".$id_item.";";
 								$bd->xConsulta_NoReturn($sql_update_item);
 								// echo $sql_update_item;
 							}
@@ -2706,7 +2708,7 @@
 			where (tpcs.idorg=".$g_ido.") and tpcs.estado=0
 			";
 			$bd->xConsulta($sql);
-			break;
+			break;		
 		case 17://recetas y costos  //load items platos de la carta
 			$sql="
 				SELECT i.iditem, concat(IFNULL(s.descripcion,'----'),' | ',i.descripcion) AS descripcion, i.precio, i.costo, format(i.precio-i.costo,2) as rentabilidad

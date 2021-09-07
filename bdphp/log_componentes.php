@@ -140,4 +140,15 @@
             order by tc.idtipo_consumo";
             $bd->xConsulta($sql);
             break; 
+        
+        case 19: //load productos y alamacen
+            $seacrh = $_POST["search"];
+            $sql="
+                SELECT ps.idproducto_stock as value, concat(a.descripcion, ' | ', p.descripcion) as label 
+                FROM producto AS p
+                    inner join producto_stock ps on ps.idproducto = p.idproducto 
+                    inner join almacen a on a.idalmacen = ps.idalmacen
+                WHERE (p.idsede=".$g_idsede.") AND p.estado=0 AND p.descripcion like '%$seacrh%'
+            ";
+            $bd->xConsulta($sql);
     }

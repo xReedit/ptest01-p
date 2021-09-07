@@ -252,7 +252,55 @@
 			$sql = "update sede set metodo_pago_aceptados='$ids' where idsede=$g_idsede";
 			$bd->xConsulta($sql);
 			break;
-		
+
+		case 12:
+			$sql="select psd.idprint_server_detalle, psd.fecha, psd.hora, psd.descripcion_doc, u.nombres usuario from print_server_detalle psd  
+			inner join usuario u on u.idusuario =psd.idusuario 
+			where psd.idusuario = ".$_SESSION['idusuario']." and psd.idprint_server_estructura = 4
+				and HOUR(TIMEDIFF(STR_TO_DATE(concat(psd.fecha, ' ', psd.hora), '%d/%m/%Y %H:%i:%s'), NOW())) < 10
+			order by psd.idprint_server_detalle desc limit 5";
+			$bd->xConsulta($sql);
+			break;
+
+		case 13: // compras
+			$pagination = $_POST['pagination'];
+            $fecha = $pagination['pageFecha'];
+            $filtroFecha = $fecha === '' ? '' : " HAVING c.f_registro = '".$fecha."'";
+            $filtroFechaCount = $fecha === '' ? '' : " and (c.f_registro = '".$fecha."')";
+            $filtro = $pagination['pageFilter'] === '' ? '' : " and CONCAT(tp.descripcion,c.f_registro,a.descripcion,COALESCE(p.descripcion, '')) LIKE '%".$pagination['pageFilter']."%' ";
+            
+            
+			$sql="select c.idcompra, c.idalmacen, c.f_registro, c.f_compra, c.f_pago, c.total, tp.descripcion des_tipo_pago, a.descripcion des_almacen, COALESCE(p.descripcion, '') des_proveedor 				
+			from compra c
+			inner join tipo_pago tp on c.idtipo_pago = tp.idtipo_pago 
+			inner join almacen a on c.idalmacen = a.idalmacen 
+			left join proveedor p on c.idproveedor = p.idproveedor
+			where c.idsede = ".$_SESSION['idsede']." and c.estado = 0 ".$filtro."
+			order by idcompra desc limit ".$pagination['pageLimit']." OFFSET ".$pagination['pageDesde'];
+                			
+
+            $sqlCount="
+                SELECT count(c.idcompra) as d1 from compra as c   
+				inner join tipo_pago tp on c.idtipo_pago = tp.idtipo_pago 
+				inner join almacen a on c.idalmacen = a.idalmacen 
+				left join proveedor p on c.idproveedor = p.idproveedor                 
+                where (c.idsede=".$_SESSION['idsede']." and c.estado=0) ".$filtro." ".$filtroFechaCount;            
+            
+
+
+            $rowCount = $bd->xDevolverUnDato($sqlCount);
+
+            $rpt = $bd->xConsulta($sql);            
+            print $rpt."**".$rowCount;
+			break;
+
+		case 1301:
+			$idcompra = $_POST['id'];
+			$sql = "select ci.cantidad, p.descripcion producto, format(ci.ptotal, 2) precio from compra_items ci
+				inner join producto p on ci.idproducto = p.idproducto 
+				where ci.idcompra = $idcompra";
+			$bd->xConsulta($sql);  
+			break;
 	}
 
 ?>

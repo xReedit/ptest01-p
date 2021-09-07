@@ -1,4 +1,5 @@
 <link rel="import" href="../x-componentes/x-comp-item-subitems-edit/x-comp-item-subitems-edit.html">;
+<link rel="import" href="../x-componentes/x-comp-productos-enlazados-item-carta/x-comp-productos-enlazados-item-carta.html">;
 <dom-module id="x-carta">
 <template>
 <paper-dialog id="dialog_detalle" class="dialog_redondo" style="width:90%;max-width:550px;height:auto!important;overflow:auto" modal entry-animation="scale-up-animation" exit-animation="fade-out-animation" with-backdrop>
@@ -16,6 +17,7 @@
 <paper-tab>DESCRIPCION</paper-tab>
 <paper-tab>SUBITEMS</paper-tab>
 <paper-tab>FOTO</paper-tab>
+<paper-tab>ENLAZADOS</paper-tab>
 </paper-tabs>
 <div class="xLinea2"></div>
 <br>
@@ -41,6 +43,12 @@
 <br><br>
 <div class="xBoton2 xAzul" dialog-confirm onclick="xItemGuardarFoto()">Listo, guardar</div>
 <div class="xBoton2 xPlomo" dialog-dismiss>Cerrar</div>
+</div>
+<div>
+<x-comp-productos-enlazados-item-carta></x-comp-productos-enlazados-item-carta>
+<br><br>
+<div class="xBoton2 xPlomo" dialog-dismiss>Cerrar</div>
+<br><br><br>
 </div>
 </iron-pages>
 </div>
@@ -252,6 +260,6 @@ else{$(obj).removeClass('xImgNoCheck');$(obj).addClass('xImgCheck');$(obj).attr(
 $(obj).parent().parent().find("#seccion_des").attr('data-stockcero',xval);$.ajax({type:'POST',url:'../../bdphp/log.php?op=2033',data:{i:xid,p:xval}})}
 function xloadCartaHistorial(){const _filtro=txt_buscar.value;$.ajax({type:'POST',url:'../../bdphp/log_005.php?op=6',data:{filtro:_filtro}}).done(res=>{res=JSON.parse(res);xThisCarta.ListHistorial=res.datos;});}
 function xfiltrarCartaHistorial(){if(xe_debounce)return;xe_debounce=true;clearTimeout(xdebounce);xdebounce=setTimeout(()=>{xe_debounce=false;xloadCartaHistorial();},900);}
-function updateVisible(){const val=check_visible_cliente.checked?1:0;xdtCAct[index].is_visible_cliente=val;const _filtro=txt_buscar.value;$.ajax({type:'POST',url:'../../bdphp/log_005.php?op=19',data:{id:xIdObjCartaLista,check:val}}).done(res=>{console.log('ok');});}
+function updateVisible(){const val=check_visible_cliente.checked?1:0;const _filtro=txt_buscar.value;$.ajax({type:'POST',url:'../../bdphp/log_005.php?op=19',data:{id:xIdObjCartaLista,check:val}}).done(res=>{console.log('ok');});}
 function updateVisibleSeccion(obj){const val=obj.checked?1:0;const _id=$(obj).attr('data-idseccion');$.ajax({type:'POST',url:'../../bdphp/log_005.php?op=1901',data:{id:_id,check:val}}).done(res=>{console.log('ok');});}
 Polymer({is:'x-carta',properties:{dt_item:Object,dt_seccion:Object,ListHistorial:[],},attached:function(){this.selected=0;this.selectedDetalle=0;xThisCarta=this;xInicarta();},displayIndex:function(index){return xCeroIzq(index+1,1);},})/*]]>*/</script>

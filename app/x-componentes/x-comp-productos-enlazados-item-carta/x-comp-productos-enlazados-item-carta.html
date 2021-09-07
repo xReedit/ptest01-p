@@ -1,0 +1,135 @@
+<dom-module id="x-comp-productos-enlazados-item-carta">
+	<template is="dom-bind">
+		<div>
+			<p>Productos de almacen enlazados con el item de la carta y con un canal de consumo en especifico. Ejemplo: El lomito saltado "para llevar" descuenta un taper eco.  </p>
+            <br>
+
+            <div class="xDerecha">
+                <button class="btn btn-sm btn-success" onclick="addEnlazadoProducto()"> + Agregar</button>
+            </div>
+            <table width="100%">
+                <thead>
+                    <th style="width:10%" class="fs-11">Canal Consumo</th>
+                    <th class="fs-11">Producto</th>
+                    <th class="fs-11">Cant. Descuenta</th>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td>
+                            <select id="selectTPCE" class="fs-11">
+                                <template is="dom-repeat" items="{{listCanalConsumo}}" as="item">
+                                    <option [value]="item" class="fs-11">{{item.descripcion}}</option>
+                                </template>
+                            </select>
+                        </td>
+                        <td>
+                            <input type="text" class="xMiInput xPasarEnter2 fs-12" id="des_item" onkeyup="xloadProductoItemAlmacen(this)">
+                        </td>
+                        <td>
+                            <input type="number" class="xMiInput xPasarEnter2 fs-12 text-center" id="txt_cant">
+                        </td>                        
+                    </tr>
+
+                    <template is="dom-repeat" items="{{listEnlazados}}" as="item">
+                        <tr data-id="{{index}}">
+                            <td align="left" class="fs-11">{{ item.des_tipo_consumo }}</td>
+                            <td align="left" class="fs-11">{{ item.des_producto }}</td>
+                            <td align="center" class="fs-11">
+                                {{ item.cantidad }}
+                                <span class="xDeleteRow ml-2" title="Anular" onclick="xBorrarItem(this);"></span>
+                            </td>                            
+                        </tr>
+                    </template>
+
+                    
+                </tbody>
+            </table>
+
+			
+		</div>
+	</template>
+	<script>
+		var xThisComEnlazados, productoSeleted, xNewItemPro=false, _listEnlazados = [];
+
+		function xIniCompEnlazadosItemCarta() {	
+            const listTc = xm_log_get('estructura_pedido');
+            xThisComEnlazados.listCanalConsumo = listTc;
+
+            // xloadProductoItemAlmacen();
+        }
+
+        function xloadProductoItemAlmacen(obj){
+            const _val = obj.value;
+            if ( _val.length < 3) {return; }
+            $.ajax({ type: 'POST', url: '../../bdphp/log_componentes.php?op=19', data: {search: _val}})
+            .done( function (DtItems) {
+                var xDtItems=JSON.parse(DtItems);
+                xThisComEnlazados.dtProItem=xDtItems.datos;
+                console.log('xThisComEnlazados.dtProItem', xThisComEnlazados.dtProItem);
+                xCargarProductoItem();
+            })
+        }
+
+        function xCargarProductoItem () {
+            var xPrecio_pro_calc=0;
+            var xObjTxtItemPro=$("#des_item");
+                xObjTxtItemPro.autocomplete({
+                    autoFocus:true,
+                    source:xThisComEnlazados.dtProItem,
+                    appendTo : $('#dialog_detalle'),
+                    select: function( event, ui ) {
+                        xObjTxtItemPro.val(ui.item.label);
+                        xObjTxtItemPro.attr('data-id',ui.item.value);                        
+                        productoSeleted=ui.item;
+                        
+
+                        console.log(productoSeleted)
+
+                        return false;
+                    },
+                    focus:function(event, ui){return false;},
+                    change:function( event, ui ) {
+                        if(ui.item===null){
+                            xObjTxtItemPro.attr('data-value',"");
+                            xObjTxtItemPro.attr('data-id',"");
+                            
+                            xNewItemPro=true;
+                        }else{xNewItemPro=false; $("#frm_item_pro #idproducto").val(ui.item.value);}
+                        return false;
+                    }
+                });
+        }
+
+        function addEnlazadoProducto() {
+            xThisComEnlazados.listEnlazados = [];
+            const indexTPC = selectTPCE.selectedIndex;
+            const itemTpc = xThisComEnlazados.listCanalConsumo[indexTPC];
+            const _row = {
+                idtipo_consumo: itemTpc.idtipo_consumo,
+                des_tipo_consumo: itemTpc.descripcion,
+                idproducto: productoSeleted.value,                
+                des_producto: productoSeleted.label.split(' | ')[1],
+                cantidad: txt_cant.value
+            }
+
+            _listEnlazados.push(_row);
+            xThisComEnlazados.listEnlazados = JSON.parse(JSON.stringify(_listEnlazados));
+        }
+
+
+		Polymer({
+			is: 'x-comp-productos-enlazados-item-carta',
+			properties: {
+				listCanalConsumo: [],
+                dtProItem: [],
+                listEnlazados: []
+			},
+			attached: function () {
+                this.listEnlazados = [];
+				xThisComEnlazados = this;				
+				xIniCompEnlazadosItemCarta();
+			}
+		})
+	</script>
+
+</dom-module>

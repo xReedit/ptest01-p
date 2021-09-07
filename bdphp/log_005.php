@@ -628,6 +628,11 @@
 			$sql = "select idprint_server_detalle, detalle_json from print_server_detalle where CONCAT(detalle_json->>'$.ArrayComprobante.inicial',detalle_json->>'$.ArrayComprobante.serie','-', detalle_json->>'$.ArrayComprobante.correlativo') = '$c'";
 			$bd->xConsulta($sql);
 			break;
+		case 1703: // reimprimir cuadre de caja
+			$c = $_POST['idprint'];			
+			$sql = "select idprint_server_detalle, detalle_json from print_server_detalle where idprint_server_detalle = $c";
+			$bd->xConsulta($sql);
+			break;
 		case 18: // contenido dinamico
 			echo '<hr>';
 			break;
