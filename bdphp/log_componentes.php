@@ -151,4 +151,22 @@
                 WHERE (p.idsede=".$g_idsede.") AND p.estado=0 AND p.descripcion like '%$seacrh%'
             ";
             $bd->xConsulta($sql);
+            break;
+
+        case 1901: // guarda los productos relacionados
+            $data = $_POST['data'];
+            $sql="insert into item_producto_relacionado (idtipo_consumo, iditem, idproducto_stock, cantidad) 
+                        values (".$data['idtipo_consumo'].", ".$data['iditem'].", ".$data['idproducto_stock'].", ". $data['cantidad'].")";
+            echo $bd->xConsulta_UltimoId($sql);
+            break;
+        
+        case 1902: // load productos relacionados
+            $id = $_POST['id'];
+            $sql = "select ipr.iditem_producto_relacionado, tc.descripcion des_tipo_consumo, p.descripcion des_producto, cantidad from item_producto_relacionado ipr 
+            inner join tipo_consumo tc using(idtipo_consumo)
+            inner join producto_stock ps using(idproducto_stock)
+            inner join producto p using(idproducto)
+            where ipr.iditem = ".$id."  and ipr.estado = 0";
+            $bd->xConsulta($sql);
+            break;
     }

@@ -254,7 +254,7 @@ xNuevoPedidoVR();}
 _pedido_pagar_cuenta.quitarObjPedido();}
 async function goSendPedidoFecht(_data){const _fetchApi=new httpFecht();const rpt=await _fetchApi.postJson('../../bdphp/log_001.php',_data);return rpt;}
 function xMandarCocinarImpresionComprobante(correlativo,idregistro_pago){console.log('paso d');if(xRpt_pago.length>0){var arr_cliente=xRpt_pago[0].cliente;var arr_comprobante=xRpt_pago[0].comprobante;if(xRpt_pago[0].idcliente===''&&xdelivery===1){arr_cliente={"idcliente":0,"num_doc":"","nombres":xarr_cliente.cliente.nombre,"direccion":xarr_cliente.cliente.direccion,"telefono":xarr_cliente.cliente.telefono,"referencia":xarr_cliente.cliente.referencia}}
-if(arr_comprobante){arr_comprobante.correlativo=xCeroIzqNumComprobante(correlativo);}
+try{arr_comprobante.correlativo=xCeroIzqNumComprobante(correlativo);}catch(error){}
 console.log('paso E');const _arrPedidoObj=xDataPagoPedidoPendiente?xCargarDatosAEstructuraImpresion(xDataPagoPedidoPendiente.checkItemsSeleccionados.arrayPedidosSeleccionados):xArrayPedidoObj;xCocinarImprimirComprobante(_arrPedidoObj,xarr_subtotales,arr_comprobante,arr_cliente,idregistro_pago,-2);}}
 function xLLamarPrintVR(){xCocinarImprimirComanda(xArrayEnca,xArrayPedidoObj,xarr_subtotales,(res)=>{if(res==false){xPopupLoad.xclose();if(isSocket){_cpSocketClearStorage();}
 xNuevoPedidoVR();}else{dialog_erro_print.open();}});}
