@@ -1,0 +1,428 @@
+<dom-module id="x-produccion">
+    <link rel="import" href="../../x-componentes/x-comp-find-producto-almacen/x-comp-find-producto-almacen.html">
+    <script src="../../view/httpFech.js"></script>
+	<template is="dom-bind">
+
+        <paper-dialog modal id="dialog_detalle_produccion" style="min-width: 500px" class="dialog_redondo" modal entry-animation="scale-up-animation" exit-animation="fade-out-animation" with-backdrop>
+			<div class="d-flexx justify-content-between">
+				<p class="fw-600 fs-18">Detalles de compra</p>
+				<button class="btn btn-sm btn-secondary" dialog-dismiss> <span class="pl-1 pr-1 fw-600"> x </span> </button>
+			</div>
+            <div>
+                <p><span class="fw-600">Fecha: </span> {{ fechaProduccion }}</p>
+                <p><span class="fw-600">Obersvaciones: </span> {{ observacionesProduccion }} </p>
+            </div>
+            <hr>            
+			<div>
+				<table width="100%">
+					<thead>
+                        <th align="left">Producto</th>						
+						<th align="center">Cantidad</th>
+					</thead>
+					<tbody>
+						<template is="dom-repeat" items="{{listItemAddProduccionD}}" as="item">
+							<tr>								
+								<td align="left">{{ item.descripcion }}</td>								
+								<td align="center">{{ item.cantidad }}</td>
+							</tr>
+						</template>						
+					</tbody>
+				</table>
+			</div>
+            <br><br>
+		</paper-dialog>
+
+        <paper-dialog id="dialog_additem_pro_produccion" class="dialog_redondo" modal entry-animation="scale-up-animation" exit-animation="fade-out-animation" with-backdrop>
+			<div class="xContent">
+				<h3>Registrar nuevo producto</h3>
+				<br>
+				<form id="frm_item_pro" method="post" action="#">
+					<input type="text" id="descripcion" name="descripcion" placeholder="Descripcion" class="xMiInput xPasarEnter2" onChange="conMayusculas(this)" required espaciar><br>
+					<input type="text" id="sel_familia" name="no_post" class="xMiInput xPasarEnter2" placeholder="Familia" onChange="conMayusculas(this)" required autofocus espaciar><br>
+					<input type="text" id="codigo_barra" name="codigo_barra" placeholder="Codigo de barras" class="xMiInput xPasarEnter2" onChange="conMayusculas(this)" espaciar><br>
+					<input type="text" id="stock_minimo" name="stock_minimo" placeholder="Stock minimo" class="xMiInput xPasarEnter2" onChange="conMayusculas(this)" espaciar><br>
+					<input type="text" id="precio" name="precio" placeholder="Precio de compra" onblur="xRetornaMoneda(this)" class="xMiInput xPasarEnter2" onChange="conMayusculas(this)" required espaciar><br>
+					<input type="text" id="precio_venta" name="precio_venta" placeholder="Precio de venta x unidad" onblur="xRetornaMoneda(this)" class="xMiInput xPasarEnter2 xPrecioAddPro" onChange="conMayusculas(this)" required espaciar><br>
+					<div class="xInvisible">
+						<input type="text" id="idproducto" name="idproducto">
+						<input type="text" id="idorg" name="idorg">
+						<input type="text" id="idsede" name="idsede">
+						<input type="text" id="idproducto_familia" name="idproducto_familia">
+						<input type="text" id="precio_unitario" name="precio_unitario">
+					</div>
+				</form>
+				<br><br>
+				<div class="xBoton2 xAzul" dialog-confirm  onclick="xGuardarItemProCompNuevo();">Listo, guardar</div>
+				<div class="xBoton2 xPlomo" dialog-dismiss>Cancelar</div>
+				<br><br><br>
+			</div>
+		</paper-dialog>
+
+		<br>
+        <div class="xMiCard xradius" style="width:90%; max-width: 1250px;">
+            <div class="xEncanezadoCard" style="background: lavenderblush; color: #424242;">
+                <div class="div-content-head-op">
+                    <p class="fw-600 fs-18">Producción de productos</p>                    
+                </div>                
+            </div>
+            <div class = "p-3 mb-5">
+                <!-- lista -->
+                <div hidden$="[[ showDetalleProduccion ]]">
+                    <div class="d-flexx justify-content-between align-items-center">
+                        <p class="fs-15 fw-600">Listado de produccion</p>                    
+                        <button class="btn btn-sm btn-info" onclick="goDetalleProduccion()"> + Nuevo</button>
+                    </div>
+                    <br>
+                    <table width="100%">
+                        <thead>
+                            <th>#</th>
+                            <th>Fecha</th>
+                            <th>Usuario</th>
+                            <th>Observaciones</th>
+                            <th></th>
+                        </thead>
+                        <tbody>
+                            <template is="dom-repeat" items="{{listProduccion}}" as="item">
+                                <tr data-id="[[index]]">
+                                    <td data-id="{{index}}"><span>{{displayIndex(index)}}</span></td>
+                                    <td>{{ item.fecha }}</td>
+                                    <td> {{ item.usuario }} </td>
+                                    <td>{{ item.detalle }}</td>
+                                    <td align="right"><button class="btn btn-sm btn-success" data-id="{{item.idcompra}}"  onclick="xloadDetalleProduccion(this)">Ver</button></td>
+                                </tr>
+                            </template>                            
+                        </tbody>
+                    </table>
+                </div>
+
+
+                <!-- nuevo -->
+                <div hidden$="[[ !showDetalleProduccion ]]">
+                    <p class="fw-600 text-secondary">Todos los productos ingresaran al almacen de producción.</p>
+
+                    
+                    <table width="100%">
+                        <thead>
+                            <td width="80%">Producto</td>
+                            <td>Cantidad</td>
+                            <td></td>
+                        </thead>
+                        <tbody>
+                            <tr>
+                                <td>
+                                    <!-- <input type="text" class="xMiInput xPasarEnter2 fs-12" id="des_item" onkeyup="xloadProductoProduccion(this)"> -->
+                                    <x-comp-find-producto-almacen 
+                                        id="compProductoAlmacen" 
+                                        onlynomproducto="true"
+                                        idalmacenfiltro$="[[idAlmacenProduccion]]"></x-comp-find-producto-almacen>
+                                </td>
+                                <td>
+                                    <input type="number" class="xMiInput xPasarEnter2 fs-12" id="text_cantidad_producto">
+                                </td>
+                                <td>
+                                    <button class="btn btn-sm btn-success" onclick="addProductoList()">+</button>
+                                </td>                                
+                            </tr>
+
+                            <template is="dom-repeat" items="{{listItemAddProduccion}}" as="item">
+                                <tr data-id="[[item.idproducto_stock]]">
+                                    <td>{{ item.descripcion }}</td>
+                                    <td> {{ item.cantidad }} </td>
+                                    <td>
+                                        <span class="xDeleteRow ml-2" title="Anular" onclick="removeItemListProd(this);"></span>
+                                    </td>
+                                </tr>
+                            </template>
+                        </tbody>
+                    </table>
+
+                    <br><br><br>
+                    <div>
+                        <textarea name="" id="txt_detalle" cols="30" maxlength="150" rows="2" placeholder="Observaciones"></textarea>
+                        <br>
+                        <hr>
+                        <br>
+                        <div class="d-flexx">
+                            <button class="btn btn-info" disabled$="[[isDisabledGuardar]]" onclick="guardarProduccion()">Guardar Produccion</button>
+                            <button class="btn btn-secondary ml-2" onclick="goDetalleProduccion()"> Atras </button>
+                        </div>
+                    </div>
+
+                </div>
+
+
+
+
+            </div>
+        </div>
+	</template>
+	<script>
+		var xThisPageProduccion, _idAlmacenProduccion, compProductoAlmacen, rowItemAdd = {}, listItemProduccion = [];
+		
+        function xIniPageProduccion() {
+            compProductoAlmacen = document.getElementById('compProductoAlmacen');
+            xlistaProduccion();
+
+            createAlmacenProduccion();
+            xLoadFamiliasProd();
+
+
+
+
+            $('.xPasarEnter2').on('keyup',function(e){
+                var code=e.which;
+                if ( code==13||code==186 ) {
+                    var inputs = $('input'); // storage a array of Inputs
+                    var a = inputs.index(document.activeElement);
+                    if (inputs[a + 1] !== null)
+                    {
+                    var nextBox = inputs[a + 1];
+                    if(nextBox===undefined){return}
+                    if(nextBox.disabled){nextBox = inputs[a + 2]}
+
+                    if(nextBox==undefined){return;}
+                    nextBox.focus();
+                    nextBox.select();
+                    }
+                    event.stopPropagation();
+                    e.stopPropagation();
+                    e.stopImmediatePropagation()
+                    return false;
+                }
+            });
+
+            $("#text_cantidad_producto").on('keyup',function(e){
+                var code=e.which;
+                if ( code==13||code==186 ) {
+                    addProductoList();
+                }
+            });
+        }
+
+        function xloadProductoProduccion(obj) {
+            const _val = obj.value;
+            if ( _val.length < 3) {return; }
+            $.ajax({ type: 'POST', url: '../../bdphp/log_009.php?op=1'})
+            .done( function (DtItems) {
+                var xDtItems=JSON.parse(DtItems);
+                xThisPageProduccion.dtProItem=xDtItems.datos;                
+                xCargarProductoItem();
+            })
+        }
+
+        function createAlmacenProduccion() {
+            $.ajax({ type: 'POST', url: '../../bdphp/log_009.php?op=1'})
+            .done( function (resDt) {                 
+                if ( isNaN(parseInt(resDt) ) ) { alert('Primero cree el almacen Produccion'); return; };
+                _idAlmacenProduccion = resDt;
+                xThisPageProduccion.idAlmacenProduccion  = _idAlmacenProduccion;
+            });
+        }
+
+        function xCargarFamiliaInput(){
+        //cargan en control
+            var xObjTxtFam=$("#sel_familia");
+            xObjTxtFam.autocomplete({
+                autoFocus:true,
+                source:xThisPageProduccion.dtProFam,
+                appendTo : $('#dialog_additem_pro_produccion'),
+                select: function( event, ui ) {
+                    xObjTxtFam.val(ui.item.label);
+                    xObjTxtFam.attr('data-id',ui.item.value);
+                    $("#frm_item_pro #idproducto_familia").val(ui.item.value);
+                    return false;
+                },
+                focus:function(event, ui){return false;},
+                change:function( event, ui ) {
+                    if(ui.item===null){
+                        xObjTxtFam.attr('data-value',"");
+                        xObjTxtFam.attr('data-id',"");
+                        $("#frm_item_pro #idproducto_familia").val("");
+                        xNewFamilia=true;
+                    }else{xNewFamilia=false; $("#frm_item_pro #idproducto_familia").val(ui.item.value);}
+                    return false;
+                }
+            });
+        }
+
+        function xGuardarItemProCompNuevo(){
+        //guardar familia
+
+            //guardar familia
+            xvalidateFormInput('frm_item_pro',function(a){
+                if(a===false){return;}
+                xPopupLoad.xopen();
+                xnom_familia=$("#sel_familia").val();
+                xPrecio_item=xMoneda($("#frm_item_pro #precio").val());
+                if(xNewFamilia==true){
+                    $.ajax({ type: 'POST', url: '../../bdphp/log.php?op=1602', data:{f:xnom_familia}})
+                    .done( function (DtIdFamRpt) {
+                        $("#frm_item_pro #idproducto_familia").val(DtIdFamRpt);
+                        //$("#sel_familia").attr('data-value')=xnom_familia;
+                        xGuardarItemProDtPPProd();
+                        xLoadFamiliasProd();
+                    })
+                }else{ xGuardarItemProDtPPProd();}
+            });
+        }
+
+        function xLoadFamiliasProd(){
+            $.ajax({ type: 'POST', url: '../../bdphp/log.php?op=1601'})
+            .done( function (DtFam) {
+                var xDtFam=$.parseJSON(DtFam);
+                xThisPageProduccion.dtProFam=xDtFam.datos;
+                xCargarFamiliaInput();
+            })
+        }
+
+
+        function xGuardarItemProDtPPProd(){
+            //guardar producto
+            xCan_item= rowItemAdd.cantidad;
+            var xPrecio_und_pro=parseFloat(xPrecio_item)/parseFloat(xCan_item);
+            $("#frm_item_pro #idorg").val(xIdOrg);
+            $("#frm_item_pro #idsede").val(xIdSede);
+            $("#frm_item_pro #precio_unitario").val(xPrecio_und_pro);
+            $.post("../../bdphp/ManejoBD_IUD.php?tb=producto",$("#frm_item_pro").serialize(),function(xUltimo_id_pro){
+                xIdProducto_sel=xUltimo_id_pro;
+                $.ajax({ type: 'POST', url: '../../bdphp/log.php?op=1808',data:{'p':xIdProducto_sel,'a':xThisPageProduccion.idAlmacenProduccion,'c':xCan_item}})
+                .done( function (idLast) {
+                    rowItemAdd.idproducto_stock = idLast;
+                    dialog_additem_pro_produccion.close();
+                    xPopupLoad.xclose();
+                    $("#frm_item_pro").reset();
+                    setItemList();
+                })
+            })
+        }
+
+        function addProductoList() {
+            const _productoSelected = compProductoAlmacen.getProductoSeletedAlmacen();
+            // console.log('_productoSelected', _productoSelected);
+
+            rowItemAdd.cantidad = text_cantidad_producto.value;
+            if ( !_productoSelected ) {
+                rowItemAdd.descripcion = des_item_comp.value
+
+                $('#frm_item_pro #descripcion').val(rowItemAdd.descripcion);
+                dialog_additem_pro_produccion.open();
+		        xCargarFamiliaInput();
+                // xGuardarItemProCompNuevo();
+                return;
+            } else {
+                rowItemAdd.descripcion = _productoSelected.label;
+                rowItemAdd.idproducto_stock = _productoSelected.value;
+                setItemList();
+            }
+
+        }
+
+        function setItemList() {
+            // console.log('rowItemAdd', rowItemAdd);
+            listItemProduccion = xThisPageProduccion.listItemAddProduccion || [];
+            listItemProduccion.push(rowItemAdd);
+            setListListProd();
+
+            compProductoAlmacen.resetText();
+            text_cantidad_producto.value = '';
+            compProductoAlmacen.focusText();
+
+        }
+
+        function removeItemListProd(obj) {
+            const xRowObj=obj.parentNode.parentNode;
+            const indexPS = xRowObj.dataId;
+
+            listItemProduccion = listItemProduccion.filter(x => x.idproducto_stock !== indexPS);
+            setListListProd();
+
+            // $(xRowObj).fadeTo(550, 0, function () {$(this).remove();});
+        }
+
+        function setListListProd() {
+            xThisPageProduccion.isDisabledGuardar = listItemProduccion.length === 0;
+            xThisPageProduccion.listItemAddProduccion = JSON.parse(JSON.stringify(listItemProduccion));
+        }
+
+
+        async function guardarProduccion() {
+            xPopupLoad.xopen();
+
+            if ( xThisPageProduccion.listItemAddProduccion.length === 0 ) { return; }
+
+            const _dataSend = {
+                op: 2,
+                list: xThisPageProduccion.listItemAddProduccion,
+                detalle: txt_detalle.value,
+            }
+
+            const _httpFech = new httpFecht();
+            const rpt = await _httpFech.postJson('../../bdphp/log_009.php', _dataSend)            
+            xThisPageProduccion.isDisabledGuardar = true;
+
+            xPopupLoad.xclose();
+            xlistaProduccion();
+        }
+
+
+        // lista
+
+        function xlistaProduccion() {
+            $.ajax({ type: 'POST', url: '../../bdphp/log_009.php?op=3'})
+            .done( function (res) {
+                var _resList=JSON.parse(res);
+                xThisPageProduccion.listProduccion=_resList.datos;                                
+            });
+        }
+
+        function xloadDetalleProduccion(obj) {
+            const xRowObj=obj.parentNode.parentNode;
+            const itemProduccion = xThisPageProduccion.listProduccion[xRowObj.dataId];
+
+            $.ajax({ type: 'POST', url: '../../bdphp/log_009.php?op=301', data: {id: itemProduccion.idproduccion_producto}})            .done( function (res) {
+                var _resList=JSON.parse(res);
+                xThisPageProduccion.listItemAddProduccionD=_resList.datos;                                                
+                xThisPageProduccion.observacionesProduccion = itemProduccion.detalle;
+                xThisPageProduccion.fechaProduccion = itemProduccion.fecha;
+
+                dialog_detalle_produccion.open();
+            });
+        }
+
+        function goDetalleProduccion() {
+            xThisPageProduccion.showDetalleProduccion = !xThisPageProduccion.showDetalleProduccion;
+        }
+
+
+
+		Polymer({
+			is: 'x-produccion',
+			properties: {			
+                idAlmacenProduccion: Number,	
+                dtProFam: [],
+                listItemAddProduccion: [],
+                listItemAddProduccionD: [],
+                isDisabledGuardar: Boolean,
+                listProduccion: [],
+                observacionesProduccion: String,
+                fechaProduccion: String,
+                showDetalleProduccion: Boolean
+			},
+			attached: function () {                
+                this.isDisabledGuardar = true;
+                this.showDetalleProduccion = false;
+				xThisPageProduccion = this;				
+				xIniPageProduccion();
+                
+			},
+            ready: () => {
+                xLoadFamiliasProd();
+                // xlistaProduccion();
+            },
+            displayIndex: function (index) {
+                return xCeroIzq(index + 1, 1);
+            },
+		})
+	</script>
+
+</dom-module>

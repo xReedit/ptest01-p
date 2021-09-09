@@ -2882,6 +2882,10 @@
 		case 1807://guardar producto_stock desde
 			$sql="INSERT INTO producto_stock( idproducto, idalmacen, stock ) VALUES (".$_POST[p].", ".$_POST['a'].", ".$_POST['c'].")";
 			$bd->xConsulta($sql);
+		case 1808://guardar producto_stock desde y retorna el id
+			$sql="INSERT INTO producto_stock( idproducto, idalmacen, stock ) VALUES (".$_POST[p].", ".$_POST['a'].", 0)";
+			echo $bd->xConsulta_UltimoId($sql);
+			break;
 		case 19:// monitor de pedidos
 			// $sql="
 			// 	SELECT cl.idcarta_lista,cl.iditem, cl.cantidad, s.sec_orden, i.descripcion AS plato, ifnull(pd_v.cant_vendido,0) AS cant_vendido, IF(cl.cantidad='SP',(IFNULL((SELECT FLOOR(p1.stock/i1.cantidad) FROM item_ingrediente AS i1 INNER JOIN porcion AS p1 ON i1.idporcion=p1.idporcion WHERE i1.iditem=cl.iditem GROUP BY i1.iditem ORDER BY i1.iditem_ingrediente),0)),cl.cantidad) AS cantidad,s.idseccion, s.descripcion AS des_seccion,IF(cl.cantidad='SP',2,1) AS procede
