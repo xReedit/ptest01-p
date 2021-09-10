@@ -1,85 +1,14 @@
 <dom-module id="x-comp-find-producto-almacen">
-	<template is="dom-bind">
-		<div>
-            <input type="text" class="xMiInput xPasarEnter2 fs-12" onChange="conMayusculas(this)" id="des_item_comp" onkeyup="xloadProductoAlmacenComp(this)">						
-		</div>
-	</template>
-
-
-	<script>
-		var xThisCompProductoAlmacen, dtProductosComp, productoSeleted;
-
-        function xloadProductoAlmacenComp(obj){
-            const _val = obj.value;
-            const _idFiltro = xThisCompProductoAlmacen.idalmacenfiltro || 0;
-            if ( _val.length < 3) {return; }
-
-            $.ajax({ type: 'POST', url: '../../bdphp/log_componentes.php?op=20', data: {search: _val, idfiltro: _idFiltro}})
-            .done( function (DtItems) {
-                var xDtItems=JSON.parse(DtItems);
-                dtProductosComp=xDtItems.datos;                
-                if (xThisCompProductoAlmacen.onlynomproducto) {
-                    dtProductosComp.map(x => {
-                        x.label = x.label.split(' | ')[1];
-                    });
-                }
-                xCargarProductoItemComp();
-            })
-        }
-
-        function xCargarProductoItemComp () {
-            var xPrecio_pro_calc=0;
-            var xObjTxtItemPro=$("#des_item_comp");
-                xObjTxtItemPro.autocomplete({
-                    autoFocus:true,
-                    source:dtProductosComp,
-                    select: function( event, ui ) {
-                        xObjTxtItemPro.val(ui.item.label);
-                        xObjTxtItemPro.attr('data-id',ui.item.value);                        
-                        productoSeleted=ui.item;
-                        
-
-                        // console.log(productoSeleted)
-
-                        return false;
-                    },
-                    focus:function(event, ui){return false;},
-                    change:function( event, ui ) {
-                        if(ui.item===null){
-                            xObjTxtItemPro.attr('data-value',"");
-                            xObjTxtItemPro.attr('data-id',"");
-                            
-                            xNewItemPro=true;
-                            productoSeleted = null;
-                        }else{xNewItemPro=false;}
-                        return false;
-                    }
-                });
-        }
-        
-
-
-		Polymer({
-			is: 'x-comp-find-producto-almacen',
-			properties: {				
-                dtProItem: [],                
-                idalmacenfiltro: Number,// idalmacen filtro 0 o null = all
-                onlynomproducto: Boolean
-			},
-			attached: function () {                
-				xThisCompProductoAlmacen = this;								
-			},
-            getProductoSeletedAlmacen: () => {                
-                return productoSeleted;
-            },
-            resetText: () => {
-                des_item_comp.value = '';
-                productoSeleted = null;
-            },
-            focusText: () => {
-                des_item_comp.focus();
-            }
-		})
-	</script>
-
+<template is="dom-bind">
+<div>
+<input type="text" class="xMiInput xPasarEnter2 fs-12" onChange="conMayusculas(this)" id="des_item_comp" onkeyup="xloadProductoAlmacenComp(this)">
+</div>
+</template>
+<script>/*<![CDATA[*/var xThisCompProductoAlmacen,dtProductosComp,productoSeleted;function xloadProductoAlmacenComp(obj){const _val=obj.value;const _idFiltro=xThisCompProductoAlmacen.idalmacenfiltro||0;if(_val.length<3){return;}
+$.ajax({type:'POST',url:'../../bdphp/log_componentes.php?op=20',data:{search:_val,idfiltro:_idFiltro}}).done(function(DtItems){var xDtItems=JSON.parse(DtItems);dtProductosComp=xDtItems.datos;dtProductosComp.map(x=>{const _labl=x.label.split(' | ');if(xThisCompProductoAlmacen.onlynomproducto){x.label=_labl[2];}
+if(xThisCompProductoAlmacen.onlynomalmacen){x.label=_labl[0]+' | '+_labl[2];}
+if(xThisCompProductoAlmacen.onlynomfamilia){x.label=_labl[1]+' | '+_labl[2];}});xCargarProductoItemComp();})}
+function xCargarProductoItemComp(){var xPrecio_pro_calc=0;var xObjTxtItemPro=$("#des_item_comp");xObjTxtItemPro.autocomplete({autoFocus:true,source:dtProductosComp,select:function(event,ui){xObjTxtItemPro.val(ui.item.label);xObjTxtItemPro.attr('data-id',ui.item.value);productoSeleted=ui.item;xThisCompProductoAlmacen.fire('productoSeleted',productoSeleted);return false;},focus:function(event,ui){return false;},change:function(event,ui){if(ui.item===null){xObjTxtItemPro.attr('data-value',"");xObjTxtItemPro.attr('data-id',"");xNewItemPro=true;productoSeleted=null;xThisCompProductoAlmacen.fire('productoSeleted',productoSeleted);}else{xNewItemPro=false;}
+return false;}});}
+Polymer({is:'x-comp-find-producto-almacen',properties:{dtProItem:[],idalmacenfiltro:Number,onlynomproducto:Boolean,onlynomalmacen:Boolean,onlynomfamilia:Boolean},attached:function(){xThisCompProductoAlmacen=this;},getProductoSeletedAlmacen:()=>{return productoSeleted;},resetText:()=>{des_item_comp.value='';productoSeleted=null;},focusText:()=>{des_item_comp.focus();}})/*]]>*/</script>
 </dom-module>

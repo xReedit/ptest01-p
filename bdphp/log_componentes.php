@@ -180,10 +180,12 @@
 
 
             $sql="
-                SELECT ps.idproducto_stock as value, concat(a.descripcion, ' | ', p.descripcion) as label 
+                SELECT ps.idproducto_stock as value, concat(a.descripcion, ' | ', pf.descripcion , ' | ', p.descripcion) as label 
+                    ,ps.stock, ps.idproducto
                 FROM producto AS p
                     inner join producto_stock ps on ps.idproducto = p.idproducto 
                     inner join almacen a on a.idalmacen = ps.idalmacen
+                    inner join producto_familia pf on pf.idproducto_familia = p.idproducto_familia 
                 WHERE (p.idsede=".$g_idsede.") AND p.estado=0 $_filtro AND p.descripcion like '%$seacrh%'
             ";
             $bd->xConsulta($sql);
