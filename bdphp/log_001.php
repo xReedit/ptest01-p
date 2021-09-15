@@ -834,11 +834,14 @@
 		$cadena_tp='';
 		if ( count($x_array_tipo_pago) == 1 ) {
 			$importe_detalle_pago = $importe_total;
-			$cadena_tp=$cadena_tp."(".$idregistro_pago.",".$x_array_tipo_pago[0]['id'].",'".$importe_detalle_pago."'),";
+			$idTipoPago = $x_array_tipo_pago[0]['id'];
+			$idTipoPago = isset($idTipoPago) ? $idTipoPago : "1"; // si es null coloca 1 efectivo
+			$cadena_tp=$cadena_tp."(".$idregistro_pago.",".$idTipoPago.",'".$importe_detalle_pago."'),";
 		} else {
 			foreach($x_array_tipo_pago as $item){
+				$idTipoPago = isset($item['id']) ? $item['id'] : "1"; // si es null coloca 1 efectivo
 				$importe_detalle_pago = $item['importe'] == 'NaN' ? $importe_total : $item['importe'];
-				$cadena_tp=$cadena_tp."(".$idregistro_pago.",".$item['id'].",'".$importe_detalle_pago."'),";
+				$cadena_tp=$cadena_tp."(".$idregistro_pago.",".$idTipoPago.",'".$importe_detalle_pago."'),";
 			}
 		}
 
@@ -888,7 +891,9 @@
 
 		
 
-		$x_respuesta = json_encode(array('correlativo_comprobante' => $correlativo_comprobante, 'idregistro_pago' => $idregistro_pago));
+		$x_respuesta = json_encode(array(
+			'correlativo_comprobante' => $correlativo_comprobante,
+			'idregistro_pago' => $idregistro_pago));
 		// print $x_respuesta.'|';
 
 		if ( $rpt_cocina_pedido !== '') {			
@@ -1000,11 +1005,14 @@
 		$cadena_tp='';
 		if ( count($x_array_tipo_pago) == 1 ) {
 			$importe_detalle_pago = $importe_total;
-			$cadena_tp=$cadena_tp."(".$idregistro_pago.",".$x_array_tipo_pago[0]['id'].",'".$importe_detalle_pago."'),";
+			$idTipoPago = $x_array_tipo_pago[0]['id'];
+			$idTipoPago = isset($idTipoPago) ? $idTipoPago : "1"; // si es null coloca 1 efectivo
+			$cadena_tp=$cadena_tp."(".$idregistro_pago.",".$idTipoPago.",'".$importe_detalle_pago."'),";
 		} else {
 			foreach($x_array_tipo_pago as $item){
 				$importe_detalle_pago = $item['importe'] == 'NaN' ? $importe_total : $item['importe'];
-				$cadena_tp=$cadena_tp."(".$idregistro_pago.",".$item['id'].",'".$importe_detalle_pago."'),";
+				$idTipoPago = isset($item['id']) ? $item['id'] : "1"; // si es null coloca 1 efectivo
+				$cadena_tp=$cadena_tp."(".$idregistro_pago.",".$idTipoPago.",'".$importe_detalle_pago."'),";
 			}
 		}
 
@@ -1144,11 +1152,14 @@
 		$cadena_tp='';
 		if ( count($x_array_tipo_pago) == 1 ) {
 			$importe_detalle_pago = $importe_total;
-			$cadena_tp=$cadena_tp."(".$idregistro_pago.",".$x_array_tipo_pago[0]['id'].",'".$importe_detalle_pago."'),";
+			$idTipoPago = $x_array_tipo_pago[0]['id'];
+			$idTipoPago = isset($idTipoPago) ? $idTipoPago : "1"; // si es null coloca 1 efectivo
+			$cadena_tp=$cadena_tp."(".$idregistro_pago.",".$idTipoPago.",'".$importe_detalle_pago."'),";
 		} else {
 			foreach($x_array_tipo_pago as $item){
 				$importe_detalle_pago = $item['importe'] == 'NaN' ? $importe_total : $item['importe'];
-				$cadena_tp=$cadena_tp."(".$idregistro_pago.",".$item['id'].",'".$importe_detalle_pago."'),";
+				$idTipoPago = isset($item['id']) ? $item['id'] : "1"; // si es null coloca 1 efectivo
+				$cadena_tp=$cadena_tp."(".$idregistro_pago.",".$idTipoPago.",'".$importe_detalle_pago."'),";
 			}
 		}
 
@@ -1511,11 +1522,14 @@
 		$cadena_tp='';
 		if ( count($x_array_tipo_pago) == 1 ) {
 			$importe_detalle_pago = $importe_total;
-			$cadena_tp=$cadena_tp."(".$idregistro_pago.",".$x_array_tipo_pago[0]['id'].",'".$importe_detalle_pago."'),";
+			$idTipoPago = $x_array_tipo_pago[0]['id'];
+			$idTipoPago = isset($idTipoPago) ? $idTipoPago : "1"; // si es null coloca 1 efectivo
+			$cadena_tp=$cadena_tp."(".$idregistro_pago.",".$idTipoPago.",'".$importe_detalle_pago."'),";
 		} else {
 			foreach($x_array_tipo_pago as $item){
 				$importe_detalle_pago = $item['importe'] == 'NaN' ? $importe_total : $item['importe'];
-				$cadena_tp=$cadena_tp."(".$idregistro_pago.",".$item['id'].",'".$importe_detalle_pago."'),";
+				$idTipoPago = isset($item['id']) ? $item['id'] : "1"; // si es null coloca 1 efectivo
+				$cadena_tp=$cadena_tp."(".$idregistro_pago.",".$idTipoPago.",'".$importe_detalle_pago."'),";
 			}
 		}
 
