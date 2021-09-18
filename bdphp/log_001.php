@@ -873,13 +873,13 @@
 
 
 		// echo $sql_pago_pedido;
-        // $bd->xConsulta_NoReturn($sql_pago_pedido);
-		// $bd->xConsulta_NoReturn($cadena_tp);
-		// $bd->xConsulta_NoReturn($sql_subtotales);
+        $bd->xConsulta_NoReturn($sql_pago_pedido);
+		$bd->xConsulta_NoReturn($cadena_tp);
+		$bd->xConsulta_NoReturn($sql_subtotales);
 
 
 		
-		$bd->xMultiConsultaNoReturn($sql_pago_pedido.$cadena_tp.$sql_subtotales);
+		// $bd->xMultiConsultaNoReturn($sql_pago_pedido.$cadena_tp.$sql_subtotales);
 		// echo $cadena_tp;
 				
 		
@@ -1067,12 +1067,12 @@
 		// $sql_pedido_update='update pedido set total=total-'.$tt.' where idpedido in ('++')';
 				
 		// echo $sql_subtotales;
-        // $bd->xConsulta_NoReturn($sql_pago_pedido);
-		// $bd->xConsulta_NoReturn($cadena_tp);
-		// $bd->xConsulta_NoReturn($sql_subtotales);
+        $bd->xConsulta_NoReturn($sql_pago_pedido);
+		$bd->xConsulta_NoReturn($cadena_tp);
+		$bd->xConsulta_NoReturn($sql_subtotales);
 		// print $correlativo_comprobante;
 
-		$bd->xMultiConsultaNoReturn($sql_pago_pedido.$cadena_tp.$sql_subtotales);
+		// $bd->xMultiConsultaNoReturn($sql_pago_pedido.$cadena_tp.$sql_subtotales);
 
 		$x_respuesta = json_encode(array('correlativo_comprobante' => $correlativo_comprobante, 'idregistro_pago' => $idregistro_pago));
 		print $x_respuesta;
