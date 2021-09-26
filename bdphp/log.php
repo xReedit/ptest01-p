@@ -132,7 +132,9 @@
 				$u_per=explode('?', $u_per);
 				$u_per= isset($u_per[0]) ? $u_per[0] : null;
 
-				$pos = isset($_SESSION['u_pas_rl']) ? strpos($_u_pas_rl, $u_per) : false;
+				$pos = isset($_SESSION['u_pas_rl']) ? strpos($_SESSION['u_pas_rl'], $u_per) : false;
+				// $pos = isset($_SESSION['u_pas_rl']) ? strpos($_u_pas_rl, $u_per) : false;
+				// echo '$_u_pas_rl = '.$_u_pas_rl."  session_u_pas_rl=".$_SESSION['u_pas_rl']."  u_per = ".$u_per. "   pos = ".$pos."   u_pas_rl=".$_SESSION['u_pas_rl'];
 				if ($pos=== false) {
 					print 0;
 				}else{//si existe en tabla verifica permiso
