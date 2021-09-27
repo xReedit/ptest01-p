@@ -14,6 +14,8 @@
 
 	$op = $_GET['op'];
 	$g_idsede = $_SESSION['idsede'];	
+	$g_idorg = $_SESSION['ido'];	
+	$g_idusuario  = $_SESSION['idusuario'];	
 	
     switch ($op) {
 		case '1': //lista sede
@@ -300,6 +302,37 @@
 				inner join producto p on ci.idproducto = p.idproducto 
 				where ci.idcompra = $idcompra";
 			$bd->xConsulta($sql);  
+			break;
+		
+		case 14: // guardar cliente_sede
+			$data = $_POST['data'];
+			$sql = "insert into cliente_sede (idsede, idcliente) values (".$g_idsede.",".$data['idcliente'].")";
+			// echo $sql;
+			$bd->xConsulta($sql); 
+			break;
+
+		case 15: // caja adelantos ordenes de pedidos	
+			$sql = "select opa.idorden_pedido_adelanto, opa.idorden_pedido, opa.fecha_hora, opa.concepto, opa.importe, tp.descripcion destp, u.usuario
+				,op.cliente_nom, op.numero
+			from orden_pedido_adelanto opa
+				inner join orden_pedido op on op.idorden_pedido = opa.idorden_pedido 
+				inner join usuario u on u.idusuario = opa.idusuario 
+				inner join tipo_pago tp on tp.idtipo_pago = opa.idtipo_pago 
+			where op.idsede = $g_idsede and opa.isprocesado_caja = '0' and tp.idtipo_pago = 1";
+			$bd->xConsulta($sql);
+			break;
+
+		case 1501: // aceptar pago adelanto orden pago
+			$data = $_POST['data'];
+			$sql = "update orden_pedido_adelanto set isprocesado_caja = '1' where idorden_pedido_adelanto=".$data['idorden_pedido_adelanto'];
+			$bd->xConsulta_NoReturn($sql);
+
+			// insertamos como ingreso a caja
+			$motivo = "Orden de pago #".$data['numero']." ".$data['cliente_nom']." ".$data['concepto'];
+			$sql_c = "insert into ie_caja(idorg,idsede,idusuario,tipo,motivo,fecha,monto,fecha_cierre)
+					values($g_idorg, $g_idsede, $g_idusuario,1,'".$motivo."','".$data['fecha_guardar']."',".$data['importe'].",'')";
+
+			$bd->xConsulta($sql_c);
 			break;
 	}
 

@@ -662,7 +662,7 @@
 			$idtipo_pago = $_POST['idtipo_pago'];
 
 			if ( $concepto !== '' ) {
-				$sql = "insert into orden_pedido_adelanto (idorden_pedido, idtipo_pago, concepto, importe, fecha_hora) values ($idOrden, $idtipo_pago, '$concepto', '$importe', DATE_FORMAT(now(),'%d/%m/%Y %H:%i:%s'))";
+				$sql = "insert into orden_pedido_adelanto (idorden_pedido, idtipo_pago, idusuario, concepto, importe, fecha_hora) values ($idOrden, $idtipo_pago, $g_idusuario, '$concepto', '$importe', DATE_FORMAT(now(),'%d/%m/%Y %H:%i:%s'))";
 				$bd->xConsulta_NoReturn($sql);
 			}
 
@@ -1205,6 +1205,5 @@
 					order by idsede_pago_confirmacion desc";
 				$bd->xConsulta($sql);
 				break;
-
 	}
 ?>
