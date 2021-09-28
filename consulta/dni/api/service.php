@@ -33,7 +33,7 @@
 				$rpt = (object)array(
 					"success" 		=> true,
 					"source" 		=> "jne",
-					"haydatos"    => $response->result->Nombres === "" ? false : true,
+					"haydatos"    => $response->result->nombre == '' ? false : true,
 					"result" 		=> $response->result
 				);
 				if ($rpt->haydatos) {
@@ -43,7 +43,7 @@
 
 			// token uno
 			$token_a = '9032a50cc5152873fe7c0d1485ade12b09b050b01b5cdf3235d370665d9b41ab';
-			$response = $this->jne->check( $dni, $token_a, 1 );
+			$response = $this->jne->check( $dni, $token_a, true );
 			if($response->success == true)
 			{
 				$rpt = (object)array(

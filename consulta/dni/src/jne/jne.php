@@ -2,8 +2,8 @@
 
 namespace Jne;
 
-use GuzzleHttp\Client;
-use GuzzleHttp\RequestOptions;
+// use GuzzleHttp\Client;
+// use GuzzleHttp\RequestOptions;
 
 class jne 
 {
@@ -72,6 +72,7 @@ class jne
             }
             return false;
         }
+
         function check( $dni, $token = '', $fromApi = 0, $inJSON = false )
         {            
             if( strlen($dni) == 8 )
@@ -79,7 +80,7 @@ class jne
 
                 if ( $fromApi == 1 ) {
 
-                    $_url = 'https://apiperu.dev/api/dni/'.$number;
+                    // $_url = 'https://apiperu.dev/api/dni/'.$number;
         
         
                     // $httpClient = new Client();
@@ -106,16 +107,16 @@ class jne
                     // curl_close($ch); 
 
 
-                    $url = "https://apiperu.dev/api/dni/".$number;
+                    $url = "https://apiperu.dev/api/dni/".$dni;
+                    $headers = array(
+                        "Accept: application/json",
+                        "Authorization: Bearer 9032a50cc5152873fe7c0d1485ade12b09b050b01b5cdf3235d370665d9b41ab",
+                        );
 
                     $curl = curl_init($url);
+                    // curl_setopt($curl, CURLOPT_URL,$url);
                     curl_setopt($curl, CURLOPT_URL, $url);
                     curl_setopt($curl, CURLOPT_RETURNTRANSFER, true);
-
-                    $headers = array(
-                    "Accept: application/json",
-                    "Authorization: Bearer 9032a50cc5152873fe7c0d1485ade12b09b050b01b5cdf3235d370665d9b41ab",
-                    );
                     curl_setopt($curl, CURLOPT_HTTPHEADER, $headers);
                     //for debug only!
                     curl_setopt($curl, CURLOPT_SSL_VERIFYHOST, false);
@@ -162,6 +163,7 @@ class jne
         
                         return [
                             'success' => false,
+                            'dni' => $number,
                             'source' => 'apidev',
                             'message' => 'Datos no encontrados.',
                             "data"  => $result
