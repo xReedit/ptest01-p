@@ -43,17 +43,18 @@ Guardar</button>
 </div>
 </paper-dialog>
 <br><br>
-<div class="xMiCard xradius animated fadeIn" style="width:85%">
+<div class="xMiCard xradius animated fadeIn myDivToPrint" style="width:85%" id="myDivToPrint">
 <div class="xContentCard">
-<div class="xDerecha" style="text-align:right">
+<div class="xDerecha xBtnNoPrint" style="text-align:right">
 <button class="xBoton2 xAzul" onclick="window.history.back()">Regresar</button>
+<button class="xBoton2 xVerde" onclick="imprimirFile()">Imprimir</button>
 <button class="xBoton2 xRojo" hidden$="{{dataEnca.debaja}}" onclick="dialog_baja.open()">Dar de baja</button>
 </div>
 <div>
 <h3>{{dataEnca.nombres}} | {{dataEnca.dni}}</h3>
 <p>Cargo: <strong>{{dataEnca.descargo}}</strong></p>
 <p>Profesion: <strong>{{dataEnca.profesion}}</strong></p>
-<div class="xDerecha" style="text-align:right"><h3>Junio 2019</h3></div>
+<div class="xDerecha" style="text-align:right"><h3> {{ dataEnca.mes_corresponte }} </h3></div>
 <p>Area: <strong>{{dataEnca.area}}</strong></p>
 <p>F. Ingreso: <strong>{{dataEnca.f_ingreso}} | {{dataEnca.tiempo_laborando}} DE SERVICIO.</strong></p>
 <div hidden$="{{!dataEnca.debaja}}">
@@ -65,7 +66,7 @@ Guardar</button>
 <div class="x_div_linea">
 <div id="div_ingresos" class="xitem1 xBordeDe" style="height:50vh;overflow-y:auto">
 <div hidden$="{{dataEnca.debaja}}">
-<paper-fab mini icon="add" onclick="_newIngreso()" title="Agregar" tabindex="0" class="xDerecha" style="top:30px;margin:-5px"></paper-fab>
+<paper-fab mini icon="add" onclick="_newIngreso()" title="Agregar" tabindex="0" class="xDerecha xBtnNoPrint" style="top:30px;margin:-5px"></paper-fab>
 <h4>Ingresos</h4>
 </div>
 <table style="width:100%">
@@ -99,7 +100,7 @@ Guardar</button>
 </div>
 <div id="div_descuentos" class="xitem2">
 <div hidden$="{{dataEnca.debaja}}">
-<paper-fab mini icon="add" onclick="_newDescuento()" title="Agregar" tabindex="0" class="xDerecha" style="top:30px;margin:-5px"></paper-fab>
+<paper-fab mini icon="add" onclick="_newDescuento()" title="Agregar" tabindex="0" class="xDerecha xBtnNoPrint" style="top:30px;margin:-5px"></paper-fab>
 <h4>Descuentos</h4>
 </div>
 <table style="width:100%">
@@ -139,8 +140,9 @@ Guardar</button>
 </div>
 </template>
 </dom-module>
+<style></style>
 <script>var xThisPColFile,dataUrl,_mesactivo;function xIniPlanillaDetalle(){const ulr_val=router.activeRoute.baseURI.split('?');dataUrl=JSON.parse(atob(ulr_val[1]));console.log(dataUrl);xLoadPlanillaColaborador();$('body').addClass('loaded');}
-function xLoadPlanillaColaborador(){$.ajax({type:'POST',url:'../../bdphp/log_005.php?op=503',data:{id:dataUrl.id,mes:dataUrl.mes}}).done((res)=>{const _res=JSON.parse(res);xThisPColFile.dataEnca=_res.datos.map(x=>{x.tiempo_laborando=xTiempoTrascurridoYYMMDD(x.laborando);x.fecha_baja=x.fecha_baja===null?'':x.fecha_baja;x.debaja=x.fecha_baja!=''?true:false;return x;})[0];xloadDetallesPlanilla();});}
+function xLoadPlanillaColaborador(){$.ajax({type:'POST',url:'../../bdphp/log_005.php?op=503',data:{id:dataUrl.id,mes:dataUrl.mes}}).done((res)=>{const _res=JSON.parse(res);console.log('_res',_res);xThisPColFile.dataEnca=_res.datos.map(x=>{x.tiempo_laborando=xTiempoTrascurridoYYMMDD(x.laborando);x.fecha_baja=x.fecha_baja===null?'':x.fecha_baja;x.debaja=x.fecha_baja!=''?true:false;x.mes_corresponte=xDesMes(parseInt(x.mes_activo.split('/')[0])+1)+' '+x.mes_activo.split('/')[1];return x;})[0];xloadDetallesPlanilla();});}
 function xloadDetallesPlanilla(){$.ajax({type:'POST',url:'../../bdphp/log_005.php?op=5031',data:{id:dataUrl.id,mes:dataUrl.mes}}).done((res)=>{const _resD=JSON.parse(res);var sumListI=parseFloat(xThisPColFile.dataEnca.sueldo.replace(',','')),sumListD=0;console.log(_resD.datos);xThisPColFile.ListIngresos=_resD.datos.filter(x=>x.tipo==="0").map(x=>{sumListI+=parseFloat(x.importe);return x;});xThisPColFile.ListDescuentos=_resD.datos.filter(x=>x.tipo==="1").map(x=>{sumListD+=parseFloat(x.importe);return x;});xThisPColFile.sumListIngresos=numeroConComas(sumListI.toFixed(2));xThisPColFile.sumListDescuentos=numeroConComas(sumListD.toFixed(2));xThisPColFile.netoPagar=numeroConComas((sumListI-sumListD).toFixed(2));});}
 function newPlanillaDetalle(){xPopupLoad.xopen();const frm=$("#form_new_planilla_detalle");frm.find("#fecha").val(xDevolverFecha());frm.find("#idplanilla").val(dataUrl.id);frm.find("#mes_activo").val(dataUrl.mes);xvalidateForm('form_new_planilla_detalle',function(a){if(a===false){return;}
 $.post("../../bdphp/ManejoBD_IUD.php?tb=planilla_detalle",$("#form_new_planilla_detalle").serialize(),function(a){xPopupLoad.xclose();$("#form_new_planilla_detalle").reset();xPopupLoad.xclose();dialog_new_planilla_detalle.close();xloadDetallesPlanilla();})})}
@@ -149,4 +151,5 @@ function _newDescuento(){xThisPColFile.titulo_dialog="Descuento";xThisPColFile.t
 function xDarDeBaja(){$.ajax({type:'POST',url:'../../bdphp/log_005.php?op=505',data:{id:dataUrl.id}}).done((res)=>{dialog_baja.close();});}
 function xDialogBorrarObj(obj,event){xObjBorrar=obj;dialog_borrar.open();}
 function xDlgBorrar(){xBorrarItem(xObjBorrar);dialog_borrar.close();xloadDetallesPlanilla();}
+function imprimirFile(){$('.xBtnNoPrint').attr('hidden',true);setTimeout(()=>{PrintElemDiv('myDivToPrint','Boleta de Pago');},500);setTimeout(()=>{$('.xBtnNoPrint').attr('hidden',false);},2000);}
 Polymer({is:'x-planilla-colaborador-file',properties:{xt_org:Number,xt_idsede:Number,titulo_dialog:String,tipo_registro:Number,classDialog:String,dataEnca:[],listDetalle:[],ListIngresos:[],ListDescuentos:[],sumListIngresos:String,sumListDescuentos:String,netoPagar:String,},attached:function(){xThisPColFile=this;xIniPlanillaDetalle();},displayIndex:function(index){return xCeroIzq(index+1,1);},})</script>

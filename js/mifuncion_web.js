@@ -97,3 +97,5 @@ async function inputFileImgToBase64(e,maxW,maxH){var file=e.target.files[0];retu
 function isSynOsWinOrMac(){const sysOS=getOS();return sysOS==='Windows'||sysOS==='Mac';}
 function getOS(){var userAgent=window.navigator.userAgent,platform=window.navigator.platform,macosPlatforms=['Macintosh','MacIntel','MacPPC','Mac68K'],windowsPlatforms=['Win32','Win64','Windows','WinCE'],iosPlatforms=['iPhone','iPad','iPod'],os=null;if(macosPlatforms.indexOf(platform)!==-1){os='Mac';}else if(iosPlatforms.indexOf(platform)!==-1){os='iOS';}else if(windowsPlatforms.indexOf(platform)!==-1){os='Windows';}else if(/Android/.test(userAgent)){os='Android';}else if(!os&&/Linux/.test(platform)){os='Linux';}
 return os;}
+function PrintElemDiv(divId,titulo)
+{var printContents=document.getElementById(divId).innerHTML;var originalContents=document.body.innerHTML;document.body.innerHTML="<html><head><title></title></head><body>"+printContents+"</body>";window.print();document.body.innerHTML=originalContents;}

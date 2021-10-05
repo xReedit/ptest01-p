@@ -625,7 +625,7 @@
 			break;
 		case 1702: // reimprimir comprobante
 			$c = $_POST['comprobante'];			
-			$sql = "select idprint_server_detalle, detalle_json from print_server_detalle where CONCAT(detalle_json->>'$.ArrayComprobante.inicial',detalle_json->>'$.ArrayComprobante.serie','-', detalle_json->>'$.ArrayComprobante.correlativo') = '$c'";
+			$sql = "select idprint_server_detalle, detalle_json from print_server_detalle where idsede = $g_idsede and CONCAT(detalle_json->>'$.ArrayComprobante.inicial',detalle_json->>'$.ArrayComprobante.serie','-', detalle_json->>'$.ArrayComprobante.correlativo') = '$c'";
 			$bd->xConsulta($sql);
 			break;
 		case 1703: // reimprimir cuadre de caja
