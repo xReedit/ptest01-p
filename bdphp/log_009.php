@@ -70,5 +70,11 @@
             $sql = "select * from distribuicion_detalle where iddistribuicion = ".$_POST['id'];
             $bd->xConsulta($sql);
             break;
+
+        // promociones
+        case '5': // load tipo promocion
+            $sql="select * from promocion_lista where estado=0";
+            $bd->xConsulta($sql);
+            break;
     }
 ?>    

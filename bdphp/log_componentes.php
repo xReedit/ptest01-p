@@ -57,7 +57,7 @@
             $bd->xConsulta($sql);
             break;
         case 602:// load tipo pago from app todos
-            $sql="SELECT * FROM tipo_pago WHERE estado=0 ";
+            $sql="SELECT * FROM tipo_pago WHERE estado=0 order by orden";
             $bd->xConsulta($sql);
             break;
         case 7://load clientes
@@ -187,6 +187,26 @@
                     inner join almacen a on a.idalmacen = ps.idalmacen
                     inner join producto_familia pf on pf.idproducto_familia = p.idproducto_familia 
                 WHERE (p.idsede=".$g_idsede.") AND p.estado=0 $_filtro AND p.descripcion like '%$seacrh%'
+            ";
+            $bd->xConsulta($sql);
+            break;
+
+        case 2001: // buscar item carta_lista
+            $seacrh = $_POST["search"];
+            $sql = "
+            SELECT cl.idcarta_lista value, concat(s.descripcion,' | ',i.descripcion) label, cl.cantidad stock, cl.iditem, cl.precio precio FROM 
+            carta_lista cl 
+            inner join item i on cl.iditem = i.iditem 
+            inner join seccion s on cl.idseccion = s.idseccion 
+            where s.idsede = ".$g_idsede." AND i.descripcion like '%$seacrh%'
+            UNION all
+            SELECT ps.idproducto_stock as value, concat(a.descripcion, ' | ', pf.descripcion , ' | ', p.descripcion) as label 
+                                ,ps.stock, ps.idproducto iditem, p.precio_venta precio
+                            FROM producto AS p
+                                inner join producto_stock ps on ps.idproducto = p.idproducto 
+                                inner join almacen a on a.idalmacen = ps.idalmacen
+                                inner join producto_familia pf on pf.idproducto_familia = p.idproducto_familia 
+                            WHERE (p.idsede=".$g_idsede.") AND p.estado=0 and a.bodega = 1 AND p.descripcion like '%$seacrh%'
             ";
             $bd->xConsulta($sql);
             break;

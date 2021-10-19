@@ -1,0 +1,98 @@
+<dom-module id="x-comp-find-item-producto">
+	<template is="dom-bind">
+		<div>
+            <input type="text" class="xMiInput xPasarEnter2 fs-12" onChange="conMayusculas(this)" id="des_item_pro_comp" onkeyup="xloadItemProductoComp(this)">						
+		</div>
+	</template>
+</dom-module>
+    <script>
+		var xThisCompItemProducto, dtItemProductosComp, elementSeleted;
+
+        function xloadItemProductoComp(obj){
+            const _val = obj.value;
+            const _idFiltro = xThisCompItemProducto.idalmacenfiltro || 0;
+            if ( _val.length < 3) {return; }
+
+            $.ajax({ type: 'POST', url: '../../bdphp/log_componentes.php?op=2001', data: {search: _val, idfiltro: _idFiltro}})
+            .done( function (DtItems) {
+                var xDtItems=JSON.parse(DtItems);
+                dtItemProductosComp=xDtItems.datos;                
+                // dtItemProductosComp.map(x => {
+                //     const _labl = x.label.split(' | ');
+                //         if (xThisCompItemProducto.onlynomproducto) {
+                //             x.label = _labl[2];
+                //         }
+                //         if (xThisCompItemProducto.onlynomalmacen) {
+                //             x.label = _labl[0] + ' | ' + _labl[2];
+                //         }
+                //         if (xThisCompItemProducto.onlynomfamilia) {
+                //             x.label = _labl[1] + ' | ' + _labl[2];
+                //         }
+                // });
+                xCargarProductoItemCartaComp();
+            })
+        }
+
+        function xCargarProductoItemCartaComp () {
+            var xPrecio_pro_calc=0;
+            var xObjTxtItemPro=$("#des_item_pro_comp");
+                xObjTxtItemPro.autocomplete({
+                    autoFocus:true,
+                    source:dtItemProductosComp,
+                    select: function( event, ui ) {
+                        xObjTxtItemPro.val(ui.item.label);
+                        xObjTxtItemPro.attr('data-id',ui.item.value);                        
+                        elementSeleted=ui.item;
+
+                        xThisCompItemProducto.valueInput = des_item_pro_comp.value;
+                        xThisCompItemProducto.fire('elementSeleted', elementSeleted);
+                        
+
+                        // console.log(elementSeleted)
+
+                        return false;
+                    },
+                    focus:function(event, ui){return false;},
+                    change:function( event, ui ) {
+                        if(ui.item===null){
+                            xObjTxtItemPro.attr('data-value',"");
+                            xObjTxtItemPro.attr('data-id',"");
+                            
+                            xNewItemPro=true;
+                            elementSeleted = null;
+                            xThisCompItemProducto.valueInput = des_item_pro_comp.value;
+                            xThisCompItemProducto.fire('elementSeleted', elementSeleted);
+                        }else{xNewItemPro=false;}
+                        return false;
+                    }
+                });
+        }
+        
+
+
+		Polymer({
+			is: 'x-comp-find-item-producto',
+			properties: {				
+                dtProItem: [],                
+                idalmacenfiltro: Number,// idalmacen filtro 0 o null = all
+                onlynomproducto: Boolean,
+                onlynomalmacen: Boolean,
+                onlynomfamilia: Boolean, //
+                valueInput: String
+			},
+			attached: function () {                
+				xThisCompItemProducto = this;								
+			},
+            getelementSeletedAlmacen: () => {                
+                return elementSeleted;
+            },
+            resetText: () => {
+                des_item_pro_comp.value = '';
+                elementSeleted = null;
+            },
+            focusText: () => {
+                des_item_pro_comp.focus();
+            }
+		})
+	</script>
+
