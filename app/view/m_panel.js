@@ -12,7 +12,7 @@ console.log(window.innerWidth);break;case 17:xruta='/producto_porcion';break;cas
 const _urlEncuesta='http://appx.papaya.com.pe/encuesta/?o='+btoa(JSON.stringify(dataE));window.location.replace(_urlEncuesta);return;break;case 27:const demo=window.location.href.indexOf('demo')>-1?'d':'';const _xdataOrg={o:xIdOrg,s:xIdSede,d:demo}
 const _xr=btoa(JSON.stringify(_xdataOrg));const versionPrintServer='print-server'
 const _urlPrintServver='http://appx.papaya.com.pe/'+versionPrintServer+'/print-server.html?o='+_xr
-window.open(_urlPrintServver,"Servidor de Impresion");return;case 41:xruta='/indicadores';break;case 42:xruta='/mozo_virtual';break;case 43:xruta='/pago_desde_app';break;case 44:const url_s='https://comercio.papaya.com.pe/';window.open(url_s,"Seguimiento de Delivery");break;case 45:xruta='/orden_pedido';break;case 46:xruta='/indicadores2';break;case 47:xruta='/facturacion';break;case 48:xruta='/produccion_producto';break;}
+window.open(_urlPrintServver,"Servidor de Impresion");return;case 41:xruta='/indicadores';break;case 42:xruta='/mozo_virtual';break;case 43:xruta='/pago_desde_app';break;case 44:const url_s='https://comercio.papaya.com.pe/';window.open(url_s,"Seguimiento de Delivery");break;case 45:xruta='/orden_pedido';break;case 46:xruta='/indicadores2';break;case 47:xruta='/facturacion';break;case 48:xruta='/produccion_producto';break;case 49:xruta='/promociones';break;}
 xruta=xruta+parametro;if(router==undefined){router=document.querySelector('app-router');}
 router.go(xruta);xScrolUp(0);}
 function clearStorageVariablesComp(){localStorage.removeItem('::app3_comp_cat');localStorage.removeItem('::::app3_comp_tpp_all');}

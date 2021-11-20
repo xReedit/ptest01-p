@@ -1,0 +1,78 @@
+<dom-module id="x-comp-button-succes">
+    <template>
+        <button 
+            class="btn btn-success btn-succes-comp" 
+            disabled$="[[ disabled ]]" 
+            id="btnComSuccess"
+            hidden$="[[ anumationEndSave ]]"
+            onclick="_onClickCompBtnSuscces()">
+            <div hidden$="[[ isSave ]]" class="animate__animated animate__fadeIn">
+                <i hidden$="[[ !loader ]]" class="fa fa-circle-o-notch fa-spin"></i>
+                <i hidden$="[[ loader ]]" class="fa fa-save mr-1"></i>
+                <span hidden$="[[ loader ]]">Guardar</span>            
+            </div>
+
+            <div hidden$="[[ !isSave ]]" class="animate__animated animate__fadeIn">
+                <i class="fa fa-check"></i>
+            </div>
+        </button>
+        <button hidden$="[[ !anumationEndSave ]]" class="btn btn-success btn-succes-comp animate__animated animate__shakeY">
+            <i class="fa fa-check"></i>
+        </button>
+    </template>
+</dom-module>
+<style>
+    .btn-succes-comp {
+        width: 110px;
+    }
+</style>
+
+<script>
+    var xThisComBtnSuccess;
+    function _onClickCompBtnSuscces() {
+                // e.stopPropagation();
+                // return false;
+                if ( xThisComBtnSuccess.loader ) { return false; }
+                xThisComBtnSuccess.fire('onclix', true);
+                console.log('click control');
+            }
+
+    Polymer({
+			is: 'x-comp-button-succes',
+			properties: {				
+                loader: Boolean,
+                isSave: Boolean,
+                disabledx: Boolean,
+                anumationEndSave: Boolean
+			},
+            attached: function () {                
+                xThisComBtnSuccess = this;
+                this.isSave = false;
+                this.loader = false;
+                this.anumationEndSave = false;
+            },            
+            setLoader: (val) => {
+                xThisComBtnSuccess.loader = val;
+                btnComSuccess.disabled = true;
+            },
+            setSave: (val) => {
+                if (!val) { return; }
+                xThisComBtnSuccess.isSave = true;
+                btnComSuccess.disabled = true;  
+                
+                xPopupLoad.xopen();
+                
+                setTimeout(() => {
+                    btnComSuccess.disabled = false;
+                    xThisComBtnSuccess.isSave = false;
+                    xThisComBtnSuccess.anumationEndSave = true;
+                    setTimeout(() => {
+                        xThisComBtnSuccess.anumationEndSave = false;
+                        xThisComBtnSuccess.loader = false
+                        xPopupLoad.xclose();
+                    },1000);
+
+                }, 1000);
+            }
+		})
+</script>

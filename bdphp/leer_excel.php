@@ -57,7 +57,7 @@ function sheetDataProductos($sheet) {
     while($y <= $sheet['numCols']) {    
       //descripcion
       $cell = isset($sheet['cells'][$x][$y]) ? $sheet['cells'][$x][$y] : '';                  
-      $cell=trim(strtoupper($cell));      
+      $cell= $y !== 8 ? trim(strtoupper($cell)) : $cell; // 8 = nomimg      
 
       // echo $cell;
 
@@ -142,6 +142,7 @@ function sheetDataProductos($sheet) {
           case 5:$sqlProductoUpdateRow=$sqlProductoUpdateRow.", stock_minimo='".$cell."'";break;
           case 6:$sqlProductoUpdateRow=$sqlProductoUpdateRow.", precio='".$cell."'";$sqlProductoUpdateRow=$sqlProductoUpdateRow.", precio_unitario='".$xpu."'";break;                  
           case 7:$sqlProductoUpdateRow=$sqlProductoUpdateRow.", precio_venta=".$cell;break;
+          case 8:$sqlProductoUpdateRow=$sqlProductoUpdateRow.", img=".$cell;break;
         }         
       }
 
@@ -156,7 +157,7 @@ function sheetDataProductos($sheet) {
     //guardar producto
     //echo 'new:'.$xrow_producto_new;
     if($xrow_producto_new==0){
-      $sqlProducto="insert into producto (descripcion,idproducto_familia,codigo_barra,stock_minimo,precio,precio_unitario,precio_venta, idorg, idsede) values ".$re;            
+      $sqlProducto="insert into producto (descripcion,idproducto_familia,codigo_barra,stock_minimo,precio,precio_unitario,precio_venta,img, idorg, idsede) values ".$re;            
       // echo ' | sql:'.$sqlProducto;
       //echo 'add producto '.$sqlProducto;
       $idProducto=$bdP->xConsulta_UltimoId($sqlProducto);

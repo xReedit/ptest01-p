@@ -1,4 +1,6 @@
+<link rel="import" href="../x-componentes/x-comp-img-upload/x-comp-img-upload.html">
 <dom-module id="x-producto-porcion">
+<script type="text/javascript" src="../view/export.excel.js"></script>
 <template>
 <paper-dialog modal id="dialog_msj_confirma" class="dialog_redondo" style="min-width:300px" entry-animation="scale-up-animation" exit-animation="fade-out-animation">
 <div class="xContent">
@@ -63,13 +65,10 @@ Utilize la misma unidad de medida que esta en el producto a porcionar. Es decir 
 <div class="xContent">
 <div id="dlg_foto_vista_previa-div">
 <a class="xDerecha xInvisible xCursor" onclick="xItemQuitarFoto()" id="dlg_btn_quitar_foto">Quitar Foto</a>
-<br>
-<input type="file" class="xInvisible xobj_subir_foto" id="ctrl_open_file" accept="image/*"/>
-<div id="dlg_foto_vista_previa" class="div_foto" onclick="xSeleccionarFoto()">
-<div class="xCentradoHijo" id="dlg_label_foto">Clic aqui para seleccionar</div>
-</div>
 <br><br>
-<div class="xBoton2 xAzul" dialog-confirm onclick="xItemGuardarFoto()">Listo, guardar</div>
+<x-comp-img-upload id="compImgProducto" medidasimg="[[medidaImgProducto]]"></x-comp-img-upload>
+<br><br><br><br>
+<div class="xBoton2 xAzul" dialog-confirm onclick="xItemGuardarFotProducto()">Listo, guardar</div>
 <div class="xBoton2 xPlomo" dialog-dismiss>Cerrar</div>
 </div>
 </div>
@@ -109,28 +108,73 @@ Utilize la misma unidad de medida que esta en el producto a porcionar. Es decir 
 <th align="left" width="20%">Familia</th>
 <th align="left">Producto</th>
 <th align="left" width="80px">Stock</th>
-<th align="left" width="80px">P. Venta</th>
+<th align="left" width="80px">P.Venta</th>
 <th align="left" width="80px">Imagen</th>
+<th align="left" width="80px" class="xInvisible">nom_imagen</th>
 <th width="5px"></th>
 </thead>
 </table>
+<div class="xInvisible">
+<table id="tb_productos_export" width="100%" class="xtable2">
+<thead>
+<th align="left">Producto</th>
+<th align="left">familia</th>
+<th align="left">codigo_barras</th>
+<th align="left">cantidad</th>
+<th align="left">stock_min</th>
+<th align="left">precio compra total</th>
+<th align="left">precio venta</th>
+<th align="left">nom_imagen</th>
+</thead>
+<tbody>
+<template is="dom-repeat" items="{{listProductosExport}}" as="item">
+<tr data-index="[[index]]">
+<td>{{item.producto}}</td>
+<td>{{item.familia}}</td>
+<td>{{item.codigo_barra}}</td>
+<td>{{item.stock}}</td>
+<td>{{item.stock_minimo}}</td>
+<td>{{item.precio}}</td>
+<td>{{item.precio_venta}}</td>
+<td>{{item.img}}</td>
+</tr>
+</template>
+</tbody>
+</table>
+</div>
 <br><br><br>
+<div id="btn_soporte_shared">
+<div class="d-flexx">
+<button class="btn btn-sm btn-info mr-2" onclick="descargarListaProductos()">Exportar a Excel</button>
+</div>
+<br><br><br>
+</div>
 </div>
 <div id="cont_porciones">
 <br>
 <input type="text" class="xMiInput" placeholder="Buscar" inline id="txt_buscar_porcion">
 <div class="xBoton2 xAzul xDerecha" onclick="dialog_additem_porcion.open()">+ Agregar Porcion</div>
-<div class="xBoton2 xVerde xDerecha" onclick="xGuardarCambiosTbProductos(2)">Guardar Cambios</div>
+<div class="xBoton2 xVerde xDerecha" onclick="xGuardarCambiosPorcion()">Guardar Cambios</div>
 <br><br><br>
 <div class="xLinea2"></div>
 <br>
-<table id="tb_porcion" width="100%" class="xtable2">
+<table width="100%">
 <thead>
 <th align="left" width="20%">Familia</th>
 <th align="left">Porcion</th>
 <th align="left" width="90px">Stock</th>
 <th width="5px"></th>
 </thead>
+<tbody>
+<template is="dom-repeat" items="{{listPorciones}}" as="item">
+<tr data-index="[[index]]">
+<td>{{ item.familia }}</td>
+<td class="xCursor" onclick="xModRowPorcion(this,3)" id="td_des"> {{ item.porcion }}</td>
+<td class="sumar_stock xCursor" onclick="xModRowPorcion(this,2)" id="td_stock">{{ item.stock }}</td>
+<td><span class="xDeleteRowNeutro" title="Borrar" onclick="xBorrarProcion(this)"></span></td>
+</tr>
+</template>
+</tbody>
 </table>
 <br><br><br>
 </div>
@@ -138,8 +182,8 @@ Utilize la misma unidad de medida que esta en el producto a porcionar. Es decir 
 </div>
 </template>
 <style>.div_foto{width:100%;height:260px;background:#e0e0e0;cursor:pointer;display:inline-block}.div_foto #dlg_label_foto{opacity:.8;text-align:center;z-index:0}.div_foto img{width:100%}</style>
-<script>/*<![CDATA[*/var xThisProPor,xidAlmacenbUS,xObjRowSel,xPrecio_item,xObjImgDet,xIdObjImgDet,filtroStokMin='no';function xIniProPor(){xPopupLoad=document.getElementById('xLoad');xm_LogChequea(function(){xm_log_get('ini_us');$('body').addClass('loaded');$("#Titulo_page").text("Productos y porciones");xLoadAlmacenes();var xDesFiltro1=getUrlParameter('stock_minimo','?');filtroStokMin=xDesFiltro1?xDesFiltro1:'no';})
-$("#ctrl_open_file").change(function(e){for(var i=0;i<e.originalEvent.srcElement.files.length;i++){var file=e.originalEvent.srcElement.files[i];var img=document.createElement("img");var reader=new FileReader();reader.onloadend=function(){img.src=reader.result;}
+<script>/*<![CDATA[*/var xThisProPor,xidAlmacenbUS,xObjRowSel,xPrecio_item,xObjImgDet,xIdObjImgDet,filtroStokMin='no',compImgProducto;function xIniProPor(){xPopupLoad=document.getElementById('xLoad');xm_LogChequea(function(){xm_log_get('ini_us');$('body').addClass('loaded');$("#Titulo_page").text("Productos y porciones");xLoadAlmacenes();var xDesFiltro1=getUrlParameter('stock_minimo','?');filtroStokMin=xDesFiltro1?xDesFiltro1:'no';});xThisProPor.medidaImgProducto={width:220,height:200}
+compImgProducto=document.getElementById('compImgProducto');$("#ctrl_open_file").change(function(e){for(var i=0;i<e.originalEvent.srcElement.files.length;i++){var file=e.originalEvent.srcElement.files[i];var img=document.createElement("img");var reader=new FileReader();reader.onloadend=function(){img.src=reader.result;}
 reader.readAsDataURL(file);$("#dlg_foto_vista_previa img").remove();$("#dlg_foto_vista_previa").append(img).trigger('create');}});$('.xPasarEnter2').on('keyup',function(e){var code=e.which;if(code==13||code==186){var inputs=$('input');var a=inputs.index(document.activeElement);if(inputs[a+1]!==null)
 {var nextBox=inputs[a+1];if(nextBox===undefined){return}
 if(nextBox.disabled){nextBox=inputs[a+2]}
@@ -162,20 +206,20 @@ function xGuardarItemProDtPP(){xCan_item=$("#frm_item_pro #stock").val();var xPr
 function xCargarFamiliaInput(){var xObjTxtFam=$("#sel_familia");xObjTxtFam.autocomplete({autoFocus:true,source:xThisProPor.dtProFam,appendTo:$('#dialog_additem_pro'),select:function(event,ui){xObjTxtFam.val(ui.item.label);xObjTxtFam.attr('data-id',ui.item.value);$("#frm_item_pro #idproducto_familia").val(ui.item.value);return false;},focus:function(event,ui){return false;},change:function(event,ui){if(ui.item===null){xObjTxtFam.attr('data-value',"");xObjTxtFam.attr('data-id',"");$("#frm_item_pro #idproducto_familia").val("");xNewFamilia=true;}else{xNewFamilia=false;$("#frm_item_pro #idproducto_familia").val(ui.item.value);}
 return false;}});}
 function xLoadFamilias(){$.ajax({type:'POST',url:'../../bdphp/log.php?op=1601'}).done(function(DtFam){var xDtFam=$.parseJSON(DtFam);xThisProPor.dtProFam=xDtFam.datos;xCargarFamiliaInput();})}
-function xLoadPorciones(){$.ajax({type:'POST',url:'../../bdphp/log.php?op=1803'}).done(function(dtPor){var xdtPor=$.parseJSON(dtPor);var xcadena_por='';var xtr_stock_por='';xdtPor=xdtPor.datos;for(var i=0;i<xdtPor.length;i++){xtr_stock_por=xdtPor[i].stock;xcadena_por=String(xcadena_por+'<tr class="row" data-idp="'+xdtPor[i].idporcion+'">'
+function xLoadPorciones(){$.ajax({type:'POST',url:'../../bdphp/log.php?op=1803'}).done(function(dtPor){var xdtPor=$.parseJSON(dtPor);var xcadena_por='';var xtr_stock_por='';xdtPor=xdtPor.datos.map(x=>{x.modificado=false;return x});xThisProPor.listPorciones=xdtPor;for(var i=0;i<xdtPor.length;i++){xtr_stock_por=xdtPor[i].stock;xcadena_por=String(xcadena_por+'<tr class="row" data-idp="'+xdtPor[i].idporcion+'">'
 +'<td>'+xdtPor[i].familia+'</td>'
 +'<td class="xCursor"><span onclick="xModRow(this,3);" id="td_des" data-valorginal="'+xdtPor[i].porcion+'">'+xdtPor[i].porcion+'</span></td>'
 +'<td class="sumar_stock xCursor" onclick="xModRow(this,2);" id="td_stock" data-valorginal="'+xtr_stock_por+'" data-mod-stock="'+xtr_stock_por+'" data-colummn="stock">'+xtr_stock_por+'</td>'
 +'<td><span class="xDeleteRowNeutro" title="Borrar" onclick="xBorrarProcion(this);"></span></td>'
 +'</tr>')}
-$("#tb_porcion .row").remove();$("#tb_porcion").append(xcadena_por).trigger('create');xSumarTotalesPorcion();})}
+$("#tb_porcion .row").remove();})}
 function xBuscarXTxt(valbus){xBuscarTbData($("#tb_productos"),valbus)
 xSumarTotales();}
 function xLoadAlmacenes(){xPopupLoad.xopen();$.ajax({type:'POST',url:'../../bdphp/log.php?op=1604'}).done(function(DtAlm){xDtAlam=$.parseJSON(DtAlm);var xcandena_alm='';xDtAlam=xDtAlam.datos;for(var i=0;i<xDtAlam.length;i++){xcandena_alm=String(xcandena_alm+'<option value="'+xDtAlam[i].idalmacen+'">'+xDtAlam[i].descripcion+'</option>')};xcandena_alm=String(xcandena_alm+'<option value=0>TODOS</option>')
 $("#sel_almacen_pp").html(xcandena_alm).trigger('create');$("#sel_almacen_pro").html(xcandena_alm).trigger('create');xLoadProductos_dt();xLoadFamilias();})}
 function xLoadProductos_dt(xid_filtro){$.ajax({type:'POST',url:'../../bdphp/log.php?op=18'}).done(function(dtPro){var xdtPro=$.parseJSON(dtPro);xdtPro=xdtPro.datos;xThisProPor.xdt_prodcutos=xdtPro;xLoadProductos(0)})}
 function xLoadProductos(xid_filtro){$("#tb_productos .row").remove();var xdtPro=xThisProPor.xdt_prodcutos
-var xCadenaPro='';var xico_stock_min='';var xtitulo_stock_min='',btnImgTitulo='Subir Imagen';for(var i=0;i<xdtPro.length;i++){if(xid_filtro!=0){if(xid_filtro!=xdtPro[i].idalmacen){continue;}}
+var xCadenaPro='';var xico_stock_min='';var xtitulo_stock_min='',btnImgTitulo='Subir Imagen';listProductosExportar=xdtPro.filter(x=>xid_filtro===x.idalmacen);xThisProPor.listProductosExport=JSON.parse(JSON.stringify(listProductosExportar));for(var i=0;i<xdtPro.length;i++){if(xid_filtro!=0){if(xid_filtro!=xdtPro[i].idalmacen){continue;}}
 xico_stock_min='';xtitulo_stock_min='';var xtr_stock_min=parseInt(xdtPro[i].stock_minimo);var xtr_stock=parseInt(xdtPro[i].stock);btnImgTitulo=xdtPro[i].img!=''?'Cambiar Imagen':'Subir Imagen';if(xtr_stock<=xtr_stock_min&&xtr_stock_min!=0){xtitulo_stock_min='stock minimo';xico_stock_min='<image title="stock minimo '+xtr_stock_min+'" src="../../images/tr_alert_min.png">'}
 xCadenaPro=String(xCadenaPro+'<tr class="row" data-idal="'+xdtPro[i].idproducto_stock+'" data-idp="'+xdtPro[i].idproducto+'" data-idalmacen="'+xdtPro[i].idalmacen+'">'
 +'<td>'+xdtPro[i].almacen+'</td>'
@@ -184,8 +228,8 @@ xCadenaPro=String(xCadenaPro+'<tr class="row" data-idal="'+xdtPro[i].idproducto_
 +'<td class="sumar_stock xCursor" onclick="xModRow(this,2);" id="td_stock" data-valorginal="'+xtr_stock+'" data-mod-stock="'+xtr_stock+'" data-mod-precio="" data-colummn="stock">'+xtr_stock+'</td>'
 +'<td class="xCursor" onclick="xModRow(this,1);" id="td_pventa" data-valorginal="'+xdtPro[i].precio_venta+'" data-mod-stock="" data-mod-precio="'+xdtPro[i].precio_venta+'" data-colummn="precio_venta">'+xdtPro[i].precio_venta+'</td>'
 +'<td class="xCursor" onclick="openDialogImg(this);"><span class="xfont11">'+btnImgTitulo+'</span></td>'
-+'<td><span class="xDeleteRowNeutro" title="Borrar" onclick="xBorrarProducto(this);"></span></td>'
 +'<td class="xInvisible" id="td_img">'+xdtPro[i].img+'</td>'+
++'<td><span class="xDeleteRowNeutro" title="Borrar" onclick="xBorrarProducto(this);"></span></td>'
 +'</tr>')};$("#tb_productos .row").remove();$("#tb_productos").append(xCadenaPro).trigger('create');xSumarTotales()
 if(filtroStokMin==='si'){xBuscarXTxt('stock minimo');}
 xPopupLoad.xclose();}
@@ -193,8 +237,15 @@ function xSumarTotales(){var xtotal_row=xContarCantRowVisible($("#tb_productos")
 function xSumarTotalesPorcion(){var xtotal_row=xContarCantRowVisible($("#tb_porcion"),'.sumar_stock');var xsum_stock=xSumaCantRowVisible($("#tb_porcion"),'.sumar_stock');var xrow_total='<tr class="tr_total xBold xfont18"><td>Totales</td><td>'+xtotal_row+'</td><td>'+xsum_stock+'</td></tr>';$("#tb_porcion .tr_total").remove();$("#tb_porcion").append(xrow_total).trigger('create');}
 function xModRow(obj,tipo){var xvalObj=$(obj).text();if($(obj).find('input').length>0){$(obj).find('input').select();return;}
 $(obj).html('<input type="text" class="xMiInput xPasarEnter2 xAlinearIzquierda" onblur="xModBlur(this,'+tipo+')" value="'+xvalObj+'" select>').trigger('create');$(obj).find('input').select();}
+function xModRowPorcion(obj,tipo){var xvalObj=$(obj).text();const indexPorcion=obj.parentElement.dataIndex;const itemPorcion=xThisProPor.listPorciones[indexPorcion]
+itemPorcion.modificado=true;if($(obj).find('input').length>0){$(obj).find('input').select();return;}
+$(obj).html('<input type="text" class="xMiInput xPasarEnter2 xAlinearIzquierda inputCantPorcion" onblur="xModBlurPorcion(this, '+indexPorcion+', '+tipo+')" value="'+xvalObj+'" select>').trigger('create');$(obj).find('input').select();}
+function xModBlurPorcion(obj,indexPorcion,tipo){var xvalObj=$(obj).val();var xtb=$(obj).parents('table');var xrow_obj=$(obj).parent();const itemPorcion=xThisProPor.listPorciones[indexPorcion]
+switch(tipo){case 2:itemPorcion.stock=xCeroIzq(xvalObj,2);break;case 3:itemPorcion.porcion=xvalObj;break;}
+$(obj).parent().text(xvalObj);$(obj).remove();}
 function xModBlur(obj,tipo){var xvalObj=$(obj).val();var xtb=$(obj).parents('table');var xrow_obj=$(obj).parent();switch(tipo){case 1:xvalObj=xMoneda(xvalObj);xrow_obj.attr('data-mod-precio',xvalObj);xrow_obj.addClass('modificado');break;case 2:xvalObj=xCeroIzq(xvalObj,2);xrow_obj.attr('data-mod-stock',xvalObj);xrow_obj.addClass('modificado');break;case 3:xvalObj=xvalObj;xrow_obj.parents('td').attr('data-mod-descripcion',xvalObj);xrow_obj.parents('td').addClass('modificado');break;}
 $(obj).parent().text(xvalObj);$(obj).remove();}
+function xGuardarCambiosPorcion(){xPopupLoad.xopen();const listProcionModificar=xThisProPor.listPorciones.filter(x=>x.modificado);$.ajax({type:'POST',url:'../../bdphp/log_005.php?op=21',data:{data:listProcionModificar}}).done(res=>{setTimeout(()=>{xPopupLoad.xclose();},200);});}
 function xGuardarCambiosTbProductos(op){var xArraySaveProducto=new Array();var xtb;if(op==1){xtb=$("#tb_productos");xtb=document.getElementById('tb_productos');}else{xtb=$("#tb_porcion");xtb=document.getElementById('tb_porcion');}
 listModificados=xtb.getElementsByClassName('modificado');listModificados=[...listModificados];listModificados.map(element=>{var xval_mod_stock=element.dataset.modStock;var xval_mod_precio=element.dataset.modPrecio||'';var xval_mod_descripcion=element.dataset.modDescripcion||'';var xval_org=element.dataset.valorginal;var xid_pro=element.parentElement.dataset.idp;var xid_alm=element.parentElement.dataset.idal||'';if(xval_org==xval_mod_stock){xval_mod_stock='';}
 if(xval_org==xval_mod_precio){xval_mod_precio='';}
@@ -206,16 +257,18 @@ function xBorrarProcion(obj){$("#dialog_msj_confirma #titulo_msj").text('Esta se
 function xOkPopupConfirm(){var xtitulo=$("#dialog_msj_confirma #titulo_msj").text();if(xtitulo.indexOf('producto')>-1){xConfirmBorrarProducto();}else{xConfirmBorrarPorcion();}}
 function xConfirmBorrarProducto(){var xida=xObjRowSel.attr('data-idalmacen');var xidp=xObjRowSel.attr('data-idal');$.ajax({type:'POST',url:'../../bdphp/log.php?op=1802',data:{idp:xidp,ida:xida}}).done(function(dtElimPro){xObjRowSel.fadeTo(550,0,function(){$(this).remove();})
 dialog_msj_confirma.close();})}
-function xConfirmBorrarPorcion(){var xidp=xObjRowSel.attr('data-idp');$.ajax({type:'POST',url:'../../bdphp/log.php?op=1804',data:{idp:xidp}}).done(function(dtElimPor){xObjRowSel.fadeTo(550,0,function(){$(this).remove();})
+function xConfirmBorrarPorcion(){const indexItem=xObjRowSel[0].dataIndex
+const itemPorcion=xThisProPor.listPorciones[indexItem];var xidp=itemPorcion.idporcion;$.ajax({type:'POST',url:'../../bdphp/log.php?op=1804',data:{idp:xidp}}).done(function(dtElimPor){xObjRowSel.fadeTo(550,0,function(){$(this).remove();})
 dialog_msj_confirma.close();})}
 function xSeleccionarFoto(){$("#ctrl_open_file").click();}
 function xItemFoto(obj,e){xObjImgDet=obj;xIdObjImgDet=$(obj).parents('tr').attr('data-id');var xval_des=$(obj).parent().text();var xval_img=$(obj).parents('tr').find("#td_img").text();$("#dlg_foto_vista_previa img").remove();$("#dlg_btn_quitar_foto").addClass('xInvisible');if(xval_img!==''){xval_img='<img src=../img/'+xval_img+'>';$("#dlg_foto_vista_previa").append(xval_img).trigger('create');$("#dlg_btn_quitar_foto").removeClass('xInvisible');}
 $("#dialog_foto #dlg_des_item").text(xval_des)
 $("#ctrl_open_file").val('');e.stopImmediatePropagation();e.stopPropagation();}
 function xItemQuitarFoto(){xPopupLoad.xopen();$(".div_foto img").remove();$(xObjImgDet).parents('tr').find('#td_img').text('');$.ajax({type:'POST',url:'../../bdphp/log.php?op=20701',data:{i:xIdObjImgDet,d:''}}).done(function(a){xPopupLoad.xclose();})}
-function xItemGuardarFoto(){$(".xobj_subir_foto").each(function(index,element){if($(this).val()==''){return}
-file=this.files[0];name=file.name;size=file.size;type=file.type;xhr=new XMLHttpRequest();xhr.upload.addEventListener('load',transferenciaCompleta(name),false);xhr.open('POST','upload.php?op=1',true);xhr.setRequestHeader("Cache-Control","no-cache");xhr.setRequestHeader("X-Requested-With","XMLHttpRequest");xhr.setRequestHeader("X-File-Name",file.name);xhr.send(file);})};function transferenciaCompleta(xfile){xfile=xIdOrg+xIdSede+xfile;$.ajax({type:'POST',url:'../../bdphp/log.php?op=20701',data:{i:xIdObjImgDet,d:xfile}}).done(function(a){$(xObjImgDet).parents('tr').find('#td_img').text(xfile);xPopupLoad.xclose();})}
-function openDialogImg(obj){xObjImgDet=obj;xObjRowSel=obj.parentElement;xIdObjImgDet=obj.parentElement.dataset.idp;var xval_des=$(obj).parent().text();var xval_img=$(obj).parents('tr').find("#td_img").text();xval_img=xval_img===''?'':URL_IMG_CARTA+xval_img;$("#dlg_foto_vista_previa img").remove();$("#dlg_btn_quitar_foto").addClass('xInvisible');if(xval_img!==''){xval_img='<img src="'+xval_img+'">';$("#dlg_foto_vista_previa").append(xval_img).trigger('create');$("#dlg_btn_quitar_foto").removeClass('xInvisible');}
-$("#ctrl_open_file").val('');dialog_detalle.open();}
-Polymer({is:'x-producto-porcion',properties:{xt_org:Number,xt_idsede:Number,xt_idus:Number,xdt_prodcutos:Object,dtProFam:Object,},attached:function(){this.selected=0;xThisProPor=this;xIniProPor();}})/*]]>*/</script>
+function xItemGuardarFotProducto(){const nomfileImg=xIdObjImgDet;const img_Item=compImgProducto.getImgBase64();uploadImgProducto(img_Item,nomfileImg);};function uploadImgProducto(imgBase64,nomfile){$.ajax({type:'POST',url:'upload_base64.php?op=1',data:{nomfile:nomfile,img:imgBase64}}).done((res)=>{nomfile=nomfile+'.png';transferenciaCompleta(nomfile);});}
+function transferenciaCompleta(xfile){xfile=xIdOrg+xIdSede+xfile;$.ajax({type:'POST',url:'../../bdphp/log.php?op=20701',data:{i:xIdObjImgDet,d:xfile}}).done(function(a){$(xObjImgDet).parents('tr').find('#td_img').text(xfile);xPopupLoad.xclose();})}
+function openDialogImg(obj){xObjImgDet=obj;xObjRowSel=obj.parentElement;xIdObjImgDet=obj.parentElement.dataset.idp;var xval_des=$(obj).parent().text();var xval_img=$(obj).parents('tr').find("#td_img").text();xval_img=xval_img===''?'':URL_IMG_CARTA+xval_img;$("#dlg_foto_vista_previa img").remove();$("#dlg_btn_quitar_foto").addClass('xInvisible');if(xval_img!==''){const xval_img_control='<img src="'+xval_img+'">';$("#dlg_foto_vista_previa").append(xval_img_control).trigger('create');$("#dlg_btn_quitar_foto").removeClass('xInvisible');}
+$("#ctrl_open_file").val('');compImgProducto.resetControl();compImgProducto.setImgPathFile(xval_img);dialog_detalle.open();}
+function descargarListaProductos(){var _table=document.getElementById('tb_productos_export');var html=_table.outerHTML;window.open('data:application/vnd.ms-excel,'+encodeURIComponent(html));setTimeout(()=>{xPopupLoad.xclose();},500);}
+Polymer({is:'x-producto-porcion',properties:{xt_org:Number,xt_idsede:Number,xt_idus:Number,xdt_prodcutos:Object,dtProFam:Object,listPorciones:[],medidaImgProducto:[],listProductosExport:[]},attached:function(){this.selected=0;xThisProPor=this;xIniProPor();}})/*]]>*/</script>
 </dom-module>

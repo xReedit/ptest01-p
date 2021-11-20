@@ -76,5 +76,33 @@
             $sql="select * from promocion_lista where estado=0";
             $bd->xConsulta($sql);
             break;
+
+        case 501: //guardar promocion
+            $data = file_get_contents('php://input');            
+            $sql = "call procedure_guardar_promocion($g_idsede, $g_ido, $g_us,'$data')";
+            $rpt = $bd->xDevolverUnDatoSP($sql);
+            echo json_encode(array('respuesta' => $rpt));
+
+            break;
+
+        case 502: // lista de promociones
+            $sql="select * from promocion where idsede = $g_idsede order by idpromocion desc";
+            $bd->xConsulta($sql);
+            break;
+
+        case 503: // cambia de estado activo
+            $sql = "update promocion set activo = '".$_POST['estado']."' where idpromocion = ".$_POST['id'];
+            $bd->xConsulta($sql);
+            break;
+
+        case 504: // detalle items descuentos
+            $sql = "select * from promocion_detalle where idpromocion = ".$_POST['id'];
+            $bd->xConsulta($sql);
+            break;
+        
+        case 505: // ico gif pormo
+            $sql = "select * from promocion_gif where estado=0";
+            $bd->xConsulta($sql);
+            break;
     }
 ?>    

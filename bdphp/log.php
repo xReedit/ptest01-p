@@ -581,20 +581,20 @@
 							$id_item=$bd->xDevolverUnDato($sql);
 							if($id_item==''){
 								//guarda nuevo item
-								$sql="insert into item (idorg, idsede,descripcion,precio,detalle,img) values (".$g_ido.",".$g_idsede.",'".$item['des_item']."','".$item['precio_item']."','".$item['det_item']."','".$item['img_item']."')";
+								$sql="insert into item (idorg, idsede,descripcion,precio,detalle,img) values (".$g_ido.",".$g_idsede.",'".strtoupper($item['des_item'])."','".$item['precio_item']."','".$item['det_item']."','".$item['img_item']."')";
 								//echo $sql;
 								// echo $sql;
 								$id_item=$bd->xConsulta_UltimoId($sql);
 							}
 							else{//actualizar
 								// $sql_update_item="update item set descripcion='".$item['des_item']."', detalle='".$item['det_item']."', precio='".$item['precio_item']."', img='".$item['img_item']."' where iditem=".$id_item;
-								$sql_update_item="update item set descripcion='".$item['des_item']."', precio='".$item['precio_item']."' where iditem=".$id_item;
+								$sql_update_item="update item set descripcion='".strtoupper($item['des_item'])."', precio='".$item['precio_item']."' where iditem=".$id_item;
 								// echo $sql_update_item;
 								$bd->xConsulta_NoReturn($sql_update_item);
 							}
 						} else {//actualizar
 							 // $sql_update_item="update item set descripcion='".$item['des_item']."', detalle='".$item['det_item']."', precio='".$item['precio_item']."', img='".$item['img_item']."' where iditem=".$id_item.";";
-								$sql_update_item="update item set descripcion='".$item['des_item']."', precio='".$item['precio_item']."' where iditem=".$id_item.";";
+								$sql_update_item="update item set descripcion='".strtoupper($item['des_item'])."', precio='".$item['precio_item']."' where iditem=".$id_item.";";
 								$bd->xConsulta_NoReturn($sql_update_item);
 								// echo $sql_update_item;
 							}
@@ -1061,7 +1061,7 @@
 
 			$sql = "
 			SELECT c.idcarta, cl.idcarta_lista,s.idseccion, i.iditem,s.descripcion AS des_seccion, i.descripcion AS des_item, cl.precio, cl.cantidad,s.sec_orden,i.detalle,i.img,cl.cant_preparado,c.fecha,s.imprimir,s.ver_stock_cero
-				,cl.is_visible_cliente,s.is_visible_cliente as is_visible_cliente_seccion
+				,cl.is_visible_cliente,s.is_visible_cliente as is_visible_cliente_seccion, i.is_recomendacion, s.img img_seccion
 			FROM carta_lista AS cl
 				INNER JOIN carta AS c using(idcarta)
 				INNER JOIN seccion AS s using(idseccion)
@@ -1119,6 +1119,10 @@
 			break;
 		case 206://guardar detalleitem
 			$sql="update item set detalle='".$_POST['d']."' where iditem=".$_POST['i'];
+			$bd->xConsulta($sql);
+			break;
+		case 20601://guardar is_recomendacion
+			$sql="update item set is_recomendacion='".$_POST['d']."' where iditem=".$_POST['i'];
 			$bd->xConsulta($sql);
 			break;
 		case 207://guardar foto
@@ -2750,7 +2754,7 @@
 			";*/
 			$sql="
 				SELECT ps.idproducto_stock,p.idproducto, ps.idalmacen,pf.descripcion AS familia, a.descripcion AS almacen, p.descripcion AS producto, ps.stock, IF(p.precio_venta='','0.00',format(p.precio_venta,2)) AS precio_venta, IF(p.stock_minimo='',0,p.stock_minimo) AS stock_minimo
-						,p.img
+						,p.img, p.codigo_barra, p.precio
 				FROM producto AS p
 					INNER JOIN producto_stock AS ps using(idproducto)
 					INNER JOIN almacen AS a using(idalmacen)
@@ -2930,7 +2934,7 @@
 		case 1902://pedidos por hora // en el intervalo de 60min
 			$sql="
 				SELECT count(*) AS cantidad  FROM pedido
-				WHERE (idorg=".$g_ido." AND idsede=".$g_idsede.") AND fecha_hora >= NOW() - INTERVAL 45 MINUTE and estado!=3
+				WHERE (idsede=".$g_idsede.") AND fecha_hora >= NOW() - INTERVAL 45 MINUTE and estado!=3
 			";
 			$bd->xConsulta($sql);
 			break;
@@ -2939,7 +2943,7 @@
 				SELECT count(*) AS cantidad, u.nombres
 				FROM pedido AS p
 					INNER JOIN usuario AS u using (idusuario)
-				WHERE (p.idorg=".$g_ido." AND p.idsede=".$g_idsede.") AND p.cierre=0 AND p.estado!=3
+				WHERE fecha_hora >= NOW() and (p.idsede=".$g_idsede.") AND p.cierre=0 AND p.estado!=3
 				GROUP BY p.idusuario
 				ORDER BY cantidad desc
 				";

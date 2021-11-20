@@ -329,6 +329,7 @@
 						, subitem_cant_select=".$arrItem['cant_select']."
 						, show_cant_item = ".$arrItem['show_cant_item']."
 						, is_sum_cant_subitems = ".$arrItem['is_sum_cant_subitems']."
+						, controlable = ".$arrItem['controlable']."
 					where iditem_subitem_content=".$arrItem['iditem_subitem_content'];
 			// $sql = "update item_subitem_content set is_sum_cant_subitems = ".$arrItem['is_sum_cant_subitems']."  where iditem_subitem_content=".$arrItem['iditem_subitem_content'];
 			$bd->xConsulta_NoReturn($sql);
@@ -337,6 +338,7 @@
 						subitem_required_select = ".$arrItem['required_select']."
 						, subitem_cant_select=".$arrItem['cant_select']." 
 						, show_cant_item = ".$arrItem['show_cant_item']."
+						, controlable = ".$arrItem['controlable']."
 					where iditem_subitem_content=".$arrItem['iditem_subitem_content']." and iditem=".$arrItem['iditem'];
 			$bd->xConsulta_NoReturn($sql);
 			
@@ -360,7 +362,7 @@
 		case 803: // subitems // content
 			// $sql = "select * from item_subitem_content where iditem = ".$_POST['i']. " and estado=0";
 			$sql = "select isubd.iditem_subitem_content_detalle, isub.iditem_subitem_content, isub.iditem, isub.titulo, isub.compartido, isub.is_sum_cant_subitems, isubd.subitem_required_select, isubd.subitem_cant_select 
-				, isubd.show_cant_item
+				, isubd.show_cant_item, isubd.controlable
 				from item_subitem_content_detalle isubd
 				inner join item_subitem_content isub on isubd.iditem_subitem_content = isub.iditem_subitem_content
 				where isubd.iditem =".$_POST['i']." and isubd.estado=0";
@@ -1203,6 +1205,13 @@
 					from sede_pago_confirmacion spc 
 					where idsede = $g_idsede and confirmado = 1 AND external_id IS NOT NULL 
 					order by idsede_pago_confirmacion desc";
+				$bd->xConsulta($sql);
+				break;
+			
+			
+			case 21: //modificar list porcion
+				$dtSend = json_encode($_POST['data'], true);
+				$sql= "call procedure_guardar_mod_procion('$dtSend')";
 				$bd->xConsulta($sql);
 				break;
 	}

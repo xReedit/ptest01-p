@@ -1618,6 +1618,8 @@
 		$idclie=$datos_cliente['idcliente'];
 		$num_doc=$datos_cliente['num_doc'];
 		$direccion=$datos_cliente['direccion'];
+		$referencia=$datos_cliente['referencia'];
+		$direccion_delivery_no_map=$datos_cliente['direccion_delivery_no_map'];
 		$f_nac=$datos_cliente['f_nac'];
 		$telefono=array_key_exists('telefono', $datos_cliente) ? $datos_cliente['telefono'] : '';
 		$update_telefono = $telefono != '' ? ", telefono = '".$telefono."'" : '';
@@ -1637,7 +1639,7 @@
 			}
 		} else {
 			// update cliente
-			$sql="update cliente set nombres='".$nomclie."',ruc='".$num_doc."',direccion='".$direccion."'".$update_telefono." where idcliente = ".$idclie;
+			$sql="update cliente set nombres='".$nomclie."',ruc='".$num_doc."',referencia='".$referencia."',direccion='".$direccion."'".$update_telefono.", direccion_delivery_no_map = '". $direccion_delivery_no_map ."' where idcliente = ".$idclie;
 			$bd->xConsulta_NoReturn($sql);
 		}
 

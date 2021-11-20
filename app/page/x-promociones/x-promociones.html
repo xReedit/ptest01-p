@@ -1,508 +1,330 @@
 <dom-module id="x-promociones">
-    
-    <template>
-		<br>
-		<div class="xMiCard xradius" style="width:85%">
-			<div class="xEncanezadoCard xFondoRowAmarillo4">
-				<p><strong>Combos y promociones.</strong><br> Seleccione un item de la carta e indique los item, productos o porciones que contiene.</p>
-				<p>Luego indique los dias la hora y el precio.</p>
-			</div>
-			<div class="xContentCard">
-				<div class="x_div_linea">
-					<div class="xitem1 xBordeDe">
-						<p><strong>Item de la Carta</strong></p>
-						<form id="frm_item">
-							<input type="text" id="item_des_carta" class="xMiInput xPasarEnter2 xDesItem" style="width:90%;" placeholder="item de carta" onChange="conMayusculas(this)" required id="des_item_porcionar" espaciar>
-							<input type="number" class="xMiInput _xcant" style="width:50%;" placeholder="Cantidad" onChange="conMayusculas(this)" required id="txt_precio_item" espaciar>
-							<!-- <input type="number" class="xMiInput xPasarEnter2" style="width:50%;" placeholder="Stock actual" id="txt_precio_item" encendido espaciar> -->
-							<br><br>
-							<!-- <paper-checkbox id="check_enlaze">Enlazar</paper-checkbox><br><br>
-							<span class="xColorRow_Plomo xfont11">Enlazar este producto con la porcion al momento de registrar la compra, esto puede realizarse si el producto no se transforma es decir cuando el producto mantiene la misma unidad de medida y el mismo peso que la compra. Ejemplo: Huevos; cuando compre huevos tambien se actualizara la porcion</span> -->
-						</form>
-					</div>
-					<div class="xitem2">
-						<p><strong>Lo que contiene</strong></p>
-						<table class="xtable4" width="100%" id="tb_contiene" data-TablaName="porcion">
-							<thead>
-								<th class="xSinBorde" width="60%"></th>								
-								<th class="xSinBorde" width="10px"></th>
-								<th class="xSinBorde" width="10px"></th>
-							</thead>
-							<tr class="xSinBorde" data-id="">
-								<td><input type="text" id="des_all_item" class="xMiInput xPasarEnter2 xDesItem" placeholder="Descripcion" onChange="conMayusculas(this)" required></td>
-								<td><input type="number" class="xMiInput _xcant" placeholder="Cantidad" onChange="conMayusculas(this)" id="cant_all_item" required></td>
-								<td><paper-fab icon="add" onclick="addItemContiene()" title="Agregar item" class="xmini"></paper-fab></td>
-                            </tr>
-                            <template is="dom-repeat" items="{{listItemContiene}}" as="item">
-                                <tr data-index="[[index]]">
-                                    <td>{{item.descripcion}}</td>
-                                    <td>{{item.cantidad}}</td>
-                                    <td><span class="xDeleteRowNeutro" title="Borrar" onclick="xBorrarItemAllLocal(this);"></span></td>
-                                </tr>
-                            </template>
-                        </table>
-                        <br><br>
-                        <div class="xLinea2"></div>
-                        <br>
-                        <p><strong>Tiempo y precio</strong></p>
-                        <br>
-                        <paper-checkbox data-index="1" data-dia="LUN" class="check-d">LUN</paper-checkbox>
-                        <paper-checkbox data-index="2" data-dia="MAR" class="check-d">MAR</paper-checkbox>
-                        <paper-checkbox data-index="3" data-dia="MIE" class="check-d">MIE</paper-checkbox>
-                        <paper-checkbox data-index="4" data-dia="JUE" class="check-d">JUE</paper-checkbox>
-                        <paper-checkbox data-index="5" data-dia="VIE" class="check-d">VIE</paper-checkbox>
-                        <paper-checkbox data-index="6" data-dia="SAB" class="check-d">SAB</paper-checkbox>
-                        <paper-checkbox data-index="7" data-dia="DOM" class="check-d">DOM</paper-checkbox>
-                        <br><br>                        
-                        <div id="div-hora">
-                                <input type="text" style="width: 100px" class="xMiInput xPasarEnter2" placeholder="Hora Inicio" id="h_ini" required>
-                                <input type="text" style="width: 100px" class="xMiInput xPasarEnter2" placeholder="Hora Fin" id="h_fin" required>
-                                <input type="text" style="width: 100px" class="xMiInput xPasarEnter2" placeholder="Precio" id="precio" required>
-                                <paper-fab icon="add" onclick="xAddTiempoPrecio()" title="Agregar item" class="xmini"></paper-fab>
-                        </div>
-                        <br><br>
-
-                        <table class="xtable4" width="100%" id="tb_precio" data-TablaName="porcion">
-							<thead>
-                                <th class="xSinBorde" width="40%">Dias</th>								
-                                <th class="xSinBorde" width="20px">H.Ini</th>
-								<th class="xSinBorde" width="20px">H.Fin</th>
-                                <th class="xSinBorde" width="20px">Precio</th>
-                                <th class="xSinBorde" width="10px">.</th>
-                            </thead>
-                            <template is="dom-repeat" items="{{listDayPrecio}}" as="item">
-                                <tr data-index="[[index]]">
-                                    <td>{{item.dias}}</td>
-                                    <td>{{item.h_ini}}</td>
-                                    <td>{{item.h_fin}}</td>
-                                    <td>{{item.precio}}</td>
-                                    <td><span class="xDeleteRowNeutro" title="Borrar" onclick="xBorrarItemAllLocal(this);"></span></td>
-                                </tr>
-                            </template>
-							<!-- <tr class="xSinBorde" data-id="">
-								<td><input type="text" class="xMiInput xPasarEnter2 xDesItem" placeholder="Descripcion" onChange="conMayusculas(this)" required id="des_porcion"></td>								
-								<td><input type="number" class="xMiInput _xcant" placeholder="Cantidad" onChange="conMayusculas(this)" id="cant_porcion" required></td>
-								<td><paper-fab icon="add" onclick="xAddItemPorcionado()" title="Agregar item" class="xmini"></paper-fab></td>
-							</tr> -->
-                        </table>
-					</div>
-				</div>
-				<br><br><br>
-				<div class="xInvisible">
-					<table id="tb_almacen_items" data-TablaName="almacen_items"></table>
-				</div>
-			</div>
-			<div class="xPieCard">
-				<br>
-				<div class="xBoton2 xAzul xDerecha">Listo, guardar</div>
-				<br><br>
-			</div>
-		</div>
-	</template>
-    	
+<link rel="import" href="../../x-componentes/x-comp-find-item-producto/x-comp-find-item-producto.html">
+<link rel="import" href="../../x-componentes/x-comp-find-seccion/x-comp-find-seccion.html">
+<link rel="import" href="../../x-componentes/x-comp-img-upload/x-comp-img-upload-2.html">
+<script src="../../view/httpFech.js"></script>
+<template>
+<paper-dialog modal id="dialog_img_gif_promo" class="dialog_redondo" style="min-width:300px" entry-animation="scale-up-animation" exit-animation="fade-out-animation">
+<div class="xContent">
+<div class="div-content-img">
+<template is="dom-repeat" items="{{listIconGif}}" as="item">
+<img data-id="[[index]]" src$="[[item.path]]" alt$="[[item.titulo]]" class="xCursor" onclick="selectOptionIcoGif(this)">
+</template>
+</div>
+<hr>
+<br><br>
+<div class="xBoton2 xPlomo" dialog-dismiss>Cerrar</div>
+</div>
+</paper-dialog>
+<br>
+<div class="xMiCard xradius" style="width:94%;max-width:1300px">
+<div class="xEncanezadoCard" style="background:lavenderblush;color:#424242">
+<div class="d-flexx justify-content-between align-items-center">
+<p class="fs-18">Promociones. Descuentos</p>
+</div>
+</div>
+<div class="xContentCard" style="padding:20px">
+<div class="w-100" hidden$="[[!isShowListaPromo]]" class="animate__animated animate__fadeIn">
+<div class="d-flexx justify-content-between align-items-center">
+<p class="fw-600 fs-18">Lista</p>
+<button class="btn btn-sm btn-success" onclick="xNewPromocion()">+ Agregar</button>
+</div>
+<br>
+<table class="w-100">
+<thead>
+<th>Activo</th>
+<th>Fecha</th>
+<th width="30%">Titulo</th>
+<th>Inicio</th>
+<th>Fin</th>
+<th aling="right"></th>
+</thead>
+<tbody>
+<template is="dom-repeat" items="{{dataPromociones}}" as="item">
+<tr data-id="[[item.idpromocion]]">
+<td>
+<paper-toggle-button checked$="[[item.check_activo]]" onchange="xDisabledPromo(this)">Toggle</paper-toggle-button>
+</td>
+<td>{{ item.fecha_registro }}</td>
+<td width="30%">
+<p class="fw-600"> {{ item.parametros.header.titulo }}</p>
+<p class="text-secondary fs-10"> {{ item.parametros.header.descripcion }}</p>
+</td>
+<td>
+<p class="fw-600"> {{ item.parametros.body.f_inicio }}</p>
+<p class="text-secondary fs-10"> {{ item.parametros.body.h_inicio }}</p>
+</td>
+<td>
+<p class="fw-600"> {{ item.parametros.body.f_fin }}</p>
+<p class="text-secondary fs-10"> {{ item.parametros.body.h_fin }}</p>
+</td>
+<td aling="right">
+<button class="btn btn-sm btn-info" onclick="xModificarPromo(this)">Modificar</button>
+</td>
+</tr>
+</template>
+</tbody>
+</table>
+<br><br><br>
+</div>
+<div hidden$="[[isShowListaPromo]]" class="animate__animated animate__fadeIn">
+<div class="w-100">
+<div class="d-flexx justify-content-between align-items-center">
+<p class="fs-18">Detalle Promoción</p>
+<button class="btn btn-secondary ml-2" onclick="backListPromo()">Atras</button>
+</div>
+<hr>
+<br>
+<div class="conent-grid-two">
+<div class="div-child">
+<p class="fw-600">Tipo</p>
+<select id="select_promo" class="selected-template-1 w-100" onchange="selectOptionPromo()">
+<template is="dom-repeat" items="{{listPromos}}" as="item">
+<option value="[[index]]">[[item.titulo]] </option>
+</template>
+</select>
+<br>
+<div>
+<p class="text-secondary"> {{ promoSeleted.descripcion }} </p>
+</div>
+<br>
+<div class="xLinea2"></div>
+<br><br>
+<div>
+<p class="fw-600">Titulo</p>
+<input type="text" class="selected-template-1 w-100" placeholder="Titulo" onChange="conMayusculas(this)" id="titulo" onKeyUp="xValidFormPromo()" required>
+<br><br>
+<p class="fw-600">Descripcion</p>
+<textarea class="selected-template-1 w-100" maxlength="150" rows="4" id="descripcion" onKeyUp="xValidFormPromo()" required></textarea>
+</div>
+<br>
+<div>
+<p class="fw-600">Imagen Promocional</p>
+<p class="text-secondary">Esta imagen se mostrará en la aplicación de delivery "Papaya Expres". *Debe coincindir en el recuadro.</p>
+<x-comp-img-upload-2 id="compImgPromo" medidasimg="[[medidaImg]]"></x-comp-img-upload-2>
+</div>
+<br>
+</div>
+<div class="div-child">
+<p class="fs-16">Parametros</p>
+<br>
+<div>
+<div>
+<p class="fw-600">Dias de la semana</p>
+<div style="display:grid">
+<paper-checkbox class="mr-1 check_dia" data-id="0">Domingo</paper-checkbox>
+<paper-checkbox class="mr-1 check_dia" data-id="1">Lunes</paper-checkbox>
+<paper-checkbox class="mr-1 check_dia" data-id="2">Martes</paper-checkbox>
+<paper-checkbox class="mr-1 check_dia" data-id="3">Miercoles</paper-checkbox>
+<paper-checkbox class="mr-1 check_dia" data-id="4">Jueves</paper-checkbox>
+<paper-checkbox class="mr-1 check_dia" data-id="5">Viernes</paper-checkbox>
+<paper-checkbox class="mr-1 check_dia" data-id="6">Sabado</paper-checkbox>
+</div>
+</div>
+<div class="pt-3">
+<p class="fw-600">Fecha de Vigencia</p>
+<div class="d-flexx">
+<div class="mr-1">
+<p class="text-secondary">Fecha de Inicio</p>
+<input type="date" id="f_ini" class="selected-template-1" onKeyUp="xValidFormPromo()" required>
+</div>
+<div>
+<p class="text-secondary">Fecha de Fin</p>
+<input type="date" id="f_fin" class="selected-template-1" onKeyUp="xValidFormPromo()" required>
+</div>
+</div>
+</div>
+<div class="pt-3">
+<p class="fw-600">Hora de Vigencia</p>
+<div class="d-flexx">
+<div class="mr-1">
+<p class="text-secondary">Hora de Inicio</p>
+<input type="time" class="selected-template-1" id="h_ini" onKeyUp="xValidFormPromo()" required>
+</div>
+<div>
+<p class="text-secondary">Hora de Fin</p>
+<input type="time" class="selected-template-1" id="h_fin" onKeyUp="xValidFormPromo()" required>
+</div>
+</div>
+</div>
+<div class="pt-3" id="div_num_primeros_pedidos">
+<p class="fw-600">Cantidad de pedidos</p>
+<p class="text-secondary">Si se limita a los primeros x pedidos. Colocar cero (0) si es ílimitado.</p>
+<input type="number" class="selected-template-1" placeholder="Titulo" onChange="conMayusculas(this)" value="0" id="num_primeros_pedidos">
+</div>
+<div class="pt-3" id="div_importe_consumo_min">
+<p class="fw-600">Importe mínimo de consumo</p>
+<p class="text-secondary">Ej: Si el importe total del pedido supera los S/100.00 entonces aplica a la promoción. Colocar cero (0) sino corresponde.</p>
+<input type="number" class="selected-template-1" placeholder="Titulo" onChange="conMayusculas(this)" value="0" id="importe_consumo_min">
+</div>
+<div class="pt-3">
+<p class="fw-600">Solo por la aplicación</p>
+<p class="text-secondary">la promocion solo aplica para los pedidos realizados desde la aplicacion Papaya Expres (Delivery o Mozo Virtual).</p>
+<paper-checkbox id="check_solo_app" class="mr-1" data-id="6">Solo App</paper-checkbox>
+</div>
+<div class="pt-3">
+<p class="fw-600">Icono de Seccion</p>
+<button class="btn btn-sm btn-secondary" onclick="dialog_img_gif_promo.open()"> Seleccionar </button>
+<br><br>
+<div>
+<div>
+<img src="" alt="" id="promo_img_ico_gif">
+</div>
+</div>
+</div>
+</div>
+</div>
+</div>
+</div>
+<br><br>
+<div class="xLinea2"></div>
+<br><br>
+<div class="w-100">
+<div>
+<div>
+<p class="fs-16">Lista</p>
+<p class="text-secondary">Agregue las secciones o items de la carta, o productos de bodega que forman parte de la promoción.</p>
+</div>
+</div>
+<br>
+<h4 hidden$="[[ !isShowNxN ]]">2x1 o 3x2 solo aplica a productos o items.</h4>
+<table width="100%">
+<thead>
+<th>Tipo</th>
+<th>Producto / Item / Seccion</th>
+<th hidden$="[[ !isShowProductoItem ]]">
+<span hidden$="[[ isShowNxN ]]">Cantidad</span>
+<span hidden$="[[ !isShowNxN ]]">Lleva</span>
+</th>
+<th hidden$="[[ !isShowNxN ]]">Solo Paga x</th>
+<th hidden$="[[ !isShowProductoItem ]]">Precio</th>
+<th>% Desct</th>
+<th hidden$="[[ !isShowProductoItem ]]">P. Final</th>
+<th aling="right"></th>
+</thead>
+<tbody>
+<tr>
+<td width="8%">
+<select class="selected-template-1" onchange="selectedTipo(this)">
+<option value="0">Item / Producto</option>
+<option value="2" hidden$="[[ isShowNxN ]]">Sección</option>
+</select>
+</td>
+<td width="45%">
+<div hidden$="[[ !isShowProductoItem ]]">
+<x-comp-find-item-producto clasecss="selected-template-1 w-100" id="compItemProducto"></x-comp-find-item-producto>
+</div>
+<div hidden$="[[ isShowProductoItem ]]">
+<x-comp-find-seccion clasecss="selected-template-1 w-100" id="compFindSeccion"></x-comp-find-seccion>
+</div>
+</td width="10%">
+<td hidden$="[[ !isShowProductoItem ]]">
+<select id="sel_cant" class="selected-template-1">
+<option value="0" hidden$="[[ isShowNxN ]]">Todos</option>
+<option value="1">1</option>
+<option value="2">2</option>
+<option value="3">3</option>
+<option value="4">4</option>
+<option value="5">5</option>
+<option value="6">6</option>
+<option value="7">7</option>
+<option value="8">8</option>
+<option value="9">9</option>
+<option value="10">10</option>
+</select>
+</td>
+<td hidden$="[[ !isShowNxN ]]">
+<select id="sel_cant_x" class="selected-template-1">
+<option value="1">1</option>
+<option value="2">2</option>
+<option value="3">3</option>
+<option value="4">4</option>
+<option value="5">5</option>
+</select>
+</td>
+<td hidden$="[[ !isShowProductoItem || !isShowNxN]]">
+<p>{{ itemProductoSeleted.precio }}</p>
+</td>
+<td width="10%">
+<input type="number" class="selected-template-1" id="imp_desct" onkeyup="precioFinalProductoItem()">
+</td>
+<td hidden$="[[ !isShowProductoItem ]]">
+<p>{{ precioFinal }}</p>
+</td>
+<td aling="right">
+<button class="btn btn-sm btn-info" onclick="addListDescuentoItem()">+</button>
+</td>
+</tr>
+<template is="dom-repeat" items="{{listItemsDescuento}}" as="item">
+<tr data-id="[[index]]">
+<td>{{ item.tipo }}</td>
+<td>{{ item.descripcion }}</td>
+<td hidden$="[[ !isShowProductoItem ]]">{{ item.elementCantidadShow }}</td>
+<td hidden$="[[ !isShowNxN ]]"> {{ item.cantidad_x }} </td>
+<td hidden$="[[ !isShowProductoItem ]]">{{ item.precio }}</td>
+<td>{{ item.porc_descuento }}%</td>
+<td hidden$="[[ !isShowProductoItem ]]">{{ item.precio_final }}</td>
+<td><span class="xDeleteRow ml-2" title="Anular" onclick="removeItemListPromo(this)"></span></td>
+</tr>
+</template>
+</tbody>
+</table>
+<div hidden$="[[ !isShowError ]]" class="animate__animated animate__shakeX">
+<p class="fw-600 text-danger">{{ isShowMsjError }}</p>
+</div>
+</div>
+<br><br>
+<br><br>
+<x-comp-button-succes id="btnSucces" disabled$="[[!isFormValid]]" loader="{{isShowLoaderSave}}"></x-comp-button-succes>
+<button class="btn btn-secondary ml-2" onclick="backListPromo()">Atras</button>
+<br><br><br><br>
+</div>
+</div>
+</div>
+<br><br>
+</template>
 </dom-module>
-<script>
-var xThisProm
-, xidproducto_porcionado=0
-, xtt_ingredientes=0
-, xes_nuevo_item=0
-, xid_item="", _listItemContiene, _listDayPrecio;
-
-function xIniPromociones(){
-	xPopupLoad=document.getElementById('xLoad');
-	xm_LogChequea(function(){
-		xm_log_get('ini_us');
-		$('body').addClass('loaded');
-		//if(xIdOrg=='' || xIdOrg==undefined){xIdOrg=window.localStorage.getItem('::app3_wo');}
-		//if(xIdSede=='' || xIdSede==undefined){xIdSede=window.localStorage.getItem('::app3_woS');}
-		$("#Titulo_page").text("Ofertas y Combos");		
-
-		// xListaDeRecetas();
-        // xloadDataRecetas();
-        xLoadItemsCategoria();
-
-        _listItemContiene = [];
-        _listDayPrecio = [];
-        xThisProm.listItemContiene = [];
-        xThisProm.listDayPrecio = [];
-	})
-
-	$('.xPasarEnter2').on('keyup',function(e){
-			var code=e.which;
-			if ( code==13||code==186 ) {
-				var inputs = $('input'); // storage a array of Inputs
-			    var a = inputs.index(document.activeElement);
-			    if (inputs[a + 1] !== null)
-			    {
-			      var nextBox = inputs[a + 1];
-			      if(nextBox===undefined){return}
-			      if(nextBox.disabled){nextBox = inputs[a + 2]}
-
-			      if(nextBox==undefined){return;}
-			  	  nextBox.focus();
-			  	  nextBox.select();
-			    }
-			    event.stopPropagation();
-			    e.stopPropagation();
-			    e.stopImmediatePropagation();
-			    return false;
-			}
-	});
-	$("#costo_item").on('keyup',function(e){
-		var code=e.which;
-		if ( code==13||code==186 ) {
-			xAddItemIngrediente()
-		}
-	});
-
-	$("#txt_bus").on('keyup',function(){
-		xBuscarTbData($("#tb_platos"),$(this).val());
-	});
-	$("#txt_precio").on('keyup',function(e){
-		xRefreshImportes();
-		var code=e.which;
-		if ( code==13||code==186 ) {
-			$("#des_porcion").focus();
-		}
-	});
-
-	$("#cant_all_item").on('keyup',function(e){
-		// var xcosto_ingrediente=$("#costo_item").val();
-		// var xcan_item=$("#cant_item").val();
-		// xcosto_ingrediente=parseFloat(xcosto_ingrediente)*parseFloat(xcan_item);
-		// if(isNaN(xcosto_ingrediente)){xcosto_ingrediente=0;}
-		// xcosto_ingrediente=parseFloat(xcosto_ingrediente).toFixed(2);
-        // $("#costo_item").val(xcosto_ingrediente);
-        var code=e.which;
-        if ( code==13||code==186 ) { addItemContiene(); }        
-	});
-}
-
-function xLoadItemsCategoria(){
-	xPopupLoad.titulo="Cargando...";
-	xPopupLoad.xopen();
-	$.ajax({ type: 'POST', url: '../../bdphp/log.php?op=2'})
-	.done( function (dtI) {
-		var xdtI=$.parseJSON(dtI);
-		xThisProm.dt_item=xdtI.datos;
-		xCargarEnInputItem();
-        //var xdtItem=eval((JSON.stringify(xdtI.datos).replace(/des_item/g,'label')).replace(/iditem/g,'value'));
-
-        $.ajax({ type: 'POST', url: '../../bdphp/log.php?op=2021'})
-        .done( function (dtI) {
-            xdtI=$.parseJSON(dtI);
-            xThisProm.dt_all_item=xdtI.datos;		
-            xCargarEnInputAllItem();
-        });
-        
-        xPopupLoad.xclose();
-    });
-        
-}
-
-function xCargarEnInputItem(){
-	var xdtI=xThisProm.dt_item;
-	var xObjTxtItem=$("#item_des_carta");
-		xObjTxtItem.autocomplete({
-			autoFocus:true,
-			source:xdtI,
-			select: function( event, ui ) {
-				xObjTxtItem.val(ui.item.label);
-		        xObjTxtItem.attr('data-value',ui.item.value);
-                xObjTxtItem.parents().find('#txt_precio_item').val(ui.item.precio);
-                // xObjTxtItem.parents().find('#txt_cant_item').val(ui.item.cantidad);
-		        //xObjTxtItem.parents('tr').find('#item_precio').focus();
-		        return false;
-		    },
-		    focus:function(event, ui){return false;},
-		    change:function( event, ui ) {
-		    	if(ui.item===null){
-		    		xObjTxtItem.attr('data-value',"");                    
-                    xObjTxtItem.parents().find('#txt_precio_item').val(ui.item.precio);
-		    	}
-		    	return false;
-		    }
-		});
-}
-
-function xCargarEnInputAllItem(){
-	var xdtIAll=xThisProm.dt_all_item;
-	var xObjTxtItem=$("#des_all_item");
-		xObjTxtItem.autocomplete({
-			autoFocus:true,
-			source:xdtIAll,
-			select: function( event, ui ) {
-				xObjTxtItem.val(ui.item.label);
-                xObjTxtItem.attr('data-value',ui.item.value);
-                xObjTxtItem.attr('data-procede_tabla',ui.item.procede_tabla);
-                // xObjTxtItem.parents().find('#txt_precio_item').val(ui.item.precio);
-                // xObjTxtItem.parents().find('#txt_cant_item').val(ui.item.cantidad);
-		        //xObjTxtItem.parents('tr').find('#item_precio').focus();
-		        return false;
-		    },
-		    focus:function(event, ui){return false;},
-		    change:function( event, ui ) {
-		    	if(ui.item===null){
-		    		xObjTxtItem.attr('data-value',"");
-		    		// xObjTxtItem.parents('tr').find('#item_precio').val('');
-		    	}
-		    	return false;
-		    }
-		});
-}
-
-function addItemContiene() {
-    // const objtextItem = $('#des_all_item');    
-    if ( cant_all_item.value === '' ||  des_all_item.value === '') return;
-
-    const _cantidad = cant_all_item.value;
-    const itemAdd = {
-        id: des_all_item.dataset.value,
-        procede: des_all_item.dataset.procede_tabla,
-        descripcion: des_all_item.value,
-        cantidad: _cantidad
-    }
-    _listItemContiene.push(itemAdd);
-    xThisProm.listItemContiene = JSON.parse(JSON.stringify(_listItemContiene));
-
-    cant_all_item.value = '';
-    des_all_item.value = '';
-}
-
-function xBorrarItemAllLocal(obj) {
-    const index = obj.parentElement.parentElement.dataIndex;
-    _listItemContiene = xThisProm.listItemContiene;
-    
-    delete _listItemContiene[index];
-    // _listItemContiene.splice(index, 0);
-
-    xThisProm.listItemContiene = JSON.parse(JSON.stringify(_listItemContiene));
-    xBorrarItem(obj);
-    
-}
-
-function xAddTiempoPrecio() {
-    var listIdDia = []; 
-    var listDia = []; 
-    $('.check-d').each((e, i) => {
-        if ( i.checked ) {
-            listDia.push(i.dataset.dia)
-            listIdDia.push(i.dataset.index);
-        }
-    });
-    
-    const addInsert = {
-        idDias: listIdDia.join(','),
-        dias: listDia.join(','),
-        h_ini: h_ini.value,
-        h_fin: h_fin.value,
-        precio: xMoneda(precio.value),
-    }
-
-    _listDayPrecio.push(addInsert);
-    xThisProm.listDayPrecio = JSON.parse(JSON.stringify(_listDayPrecio));
-}
-
-// function xNuevoPlato(){
-// 	xes_nuevo_item=1;
-
-// 	//$("#frm_item").reset();
-// 	//$("#frm_item #iditem").val('');
-// 	$("#tb_item #tr_des").removeClass('xInvisible');
-// 	$("#xdes_item_titulo").addClass('xInvisible');
-// 	xNuevaIngredientes();
-// 	dialog_detalle_receta.open();
-// }
-// function xNuevaIngredientes(){
-// 	$("#tb_ingredientes .row").remove();
-// 	$("#tb_ingredientes .row_tt").remove();
-// 	$("#frm_item").reset();
-// 	$("#txt_descripcion").val('');
-// 	$("#txt_precio").val('');
-// 	$("#txt_costo_t").val('');
-// 	$("#txt_rentabilidad").val('');
-// 	xtt_ingredientes=0;
-// 	xid_item="";
-// 	dialog_detalle_receta.close();
-// }
-// function xAbrirDetalleReceta(obj){
-// 	xNuevaIngredientes();
-// 	xid_item=$(obj).attr('data-id');
-// 	xes_nuevo_item=0;
-
-// 	var xdes_tr=$(obj).find('#xtr_des').text();
-// 	xdes_tr=xdes_tr.split('|');
-// 	xdes_tr=xdes_tr[1].trim();
-// 	$("#tb_item #tr_des").addClass('xInvisible');
-// 	$("#xdes_item_titulo").removeClass('xInvisible');
-// 	$("#xdes_item_titulo").text(xdes_tr);
-
-// 	$("#txt_precio").val($(obj).find('#xtr_precio').text())
-// 	$("#txt_costo_t").val($(obj).find('#xtr_costo').text())
-// 	$("#txt_rentabilidad").val($(obj).find('#xtr_rentabilidad').text())
-
-// 	//detalle de ingredientes
-// 	$("#tb_ingredientes").append('<tr class="row"><td colspan="4"><paper-spinner active></paper-spinner></td></tr>').trigger('create');
-// 	$.ajax({ type: 'POST', url: '../../bdphp/log.php?op=1702', data:{i:xid_item}})
-// 	.done( function (dtDetalleI) {
-// 		var xdtDetalleI=$.parseJSON(dtDetalleI);
-// 		var xcadena_det_i='';
-// 		xdtDetalleI=xdtDetalleI.datos
-// 		for (var i = 0; i < xdtDetalleI.length; i++) {
-// 			xcadena_det_i=String(xcadena_det_i+'<tr class="row">'+
-// 			'<td data-ColumName="descripcion">'+xdtDetalleI[i].descripcion+'</td>'+
-// 			'<td align="right" data-ColumName="cantidad">'+xdtDetalleI[i].cantidad+'</td>'+
-// 			'<td align="right" data-ColumName="costo" class="row_costo">'+xdtDetalleI[i].costo+'</td>'+
-// 			'<td><span class="xDeleteRowNeutro" title="Borrar" onclick="xBorrarItemLocalPro(this);"></span></td>'+
-// 			'<td data-ColumName="iditem" class="xInvisible">-item</td>'+
-// 			'<td data-ColumName="idporcion" class="xInvisible">'+xdtDetalleI[i].idporcion+'</td>'+
-// 			'</tr>');
-// 		};
-
-// 		$("#tb_ingredientes .row").remove();
-// 		$("#tb_ingredientes").append(xcadena_det_i).trigger('create');
-// 		xSumaringredientes();
-// 	})
-
-// 	//xRefreshImportes();
-// 	dialog_detalle_receta.open();
-// }
-
-// function xloadDataRecetas(){
-// 	//listado de porciones para ingredientes
-// 	$.ajax({ type: 'POST', url: '../../bdphp/log.php?op=1701'})
-// 	.done( function (DtItemsPor) {	
-// 		var xDtItemsPor=$.parseJSON(DtItemsPor);
-// 		xThis.dtProItem_porcion=xDtItemsPor.datos;
-// 		xCargarDtProcionesTxt();
-// 	})
-// }
-// function xUpdateNewItem(){
-// 	xPopupLoad.xopen();
-// 	$("#frm_item #iditem").val(xid_item);
-// 	$("#frm_item #idorg").val(xIdOrg);
-// 	$("#frm_item #idsede").val(xIdSede);
-// 	$("#frm_item #precio").val($("#txt_precio").val());
-// 	$("#frm_item #costo").val($("#txt_costo_t").val());
-// 	if(xes_nuevo_item==1){
-// 		//nuevo
-// 		$("#frm_item #descripcion").val($("#txt_descripcion").val());
-// 	}else{
-// 		$("#frm_item #descripcion").val($("#xdes_item_titulo").text());
-// 	}
-// 	$.post("../../bdphp/ManejoBD_IUD.php?tb=item",$("#frm_item").serialize(),function(xultimo_id_item){
-// 		xid_item=xultimo_id_item;
-// 		xGuardarRegistroReceta();
-// 	})
-// }
-// function xGuardarRegistroReceta(){
-// 	var xsql_remove='';
-// 	var sql_ingrediente=xArmarInsertDetalle($("#tb_ingredientes"),'','');
-// 	if(xid_item!=""){//si no es nuevo
-// 		xsql_remove="delete from item_ingrediente where iditem="+xid_item+";";
-// 	}
-// 	sql_ingrediente=sql_ingrediente.replace(/-item/g,xid_item);
-// 	sql_ingrediente=xsql_remove+' '+sql_ingrediente;
-// 	$.ajax({ type: 'POST', url: '../../bdphp/log.php?op=100', data:{xsql:sql_ingrediente}})
-// 		.done( function (dtsuccess) {
-// 			xPopupLoad.xclose();
-// 			xNuevaIngredientes();
-// 			xListaDeRecetas();
-// 		})
-// }
-
-// function xAddItemIngrediente(){
-// 	var xtb_ingrediente=$("#tb_ingredientes");
-// 	var xdes_ingrediente=$("#des_porcion").val();
-// 	var xcosto_ingrediente=$("#costo_item").val();
-// 	var xcan_item=$("#cant_item").val();
-
-// 	if(xdes_ingrediente=="" || xcosto_ingrediente==""){return;}
-// 	xcosto_ingrediente=parseFloat($("#costo_item").val()).toFixed(2);
-// 	//xcosto_ingrediente=parseFloat(parseFloat(xcosto_ingrediente)*parseFloat(xcan_item)).toFixed(2);
-
-
-// 	var xrow_ingrediente='<tr class="row">'+
-// 			'<td data-ColumName="descripcion">'+xdes_ingrediente+'</td>'+
-// 			'<td align="right" data-ColumName="cantidad">'+xcan_item+'</td>'+
-// 			'<td align="right" data-ColumName="costo" class="row_costo">'+xcosto_ingrediente+'</td>'+
-// 			'<td><span class="xDeleteRowNeutro" title="Borrar" onclick="xBorrarItemLocalPro(this);"></span></td>'+
-// 			'<td data-ColumName="iditem" class="xInvisible">-item</td>'+
-// 			'<td data-ColumName="idporcion" class="xInvisible">'+xidproducto_porcionado+'</td>'+
-// 			'</tr>';
-
-// 	xtb_ingrediente.append(xrow_ingrediente).trigger('create');
-// 	xSumaringredientes();
-
-// 	$("#des_porcion").val('');
-// 	$("#costo_item").val('');
-// 	$("#cant_item").val('');
-// 	$("#des_porcion").focus();
-// }
-
-// function xSumaringredientes(){
-// 	xtt_ingredientes=parseFloat(xSumaCantRow($("#tb_ingredientes"),'.row_costo')).toFixed(2);
-// 	$("#tb_ingredientes .row_tt").remove();
-// 	$("#tb_ingredientes").append('<tr class="row_tt"><td align="right" colspan="3"><strong>'+xtt_ingredientes+'</strong></td><td></td></tr>').trigger('create');
-// 	xRefreshImportes();
-// }
-// function xRefreshImportes(){
-// 	var xtt_precio=$("#txt_precio").val();
-// 	var xdif_tt;
-// 	var xrent_por=0;
-
-// 	$("#txt_costo_t").val(xtt_ingredientes);
-// 	xdif_tt=parseFloat(parseFloat(xtt_precio)-parseFloat(xtt_ingredientes)).toFixed(2);
-// 	xrent_por=Math.round((parseFloat(xdif_tt)/parseFloat(xtt_precio))*100)+'%';
-// 	$("#txt_rentabilidad").val(xdif_tt+' | '+xrent_por);
-// }
-
-// function xBorrarItemLocalPro(obj){
-// 	var xObj=$(obj).parent().parent();
-// 	xObj.fadeTo(550, 0, function () {$(this).remove();xSumaringredientes();});
-// }
-
-// function xCargarDtProcionesTxt(){
-// 	var xObjTxtItemProPor=$("#des_porcion");
-// 		xObjTxtItemProPor.autocomplete({
-// 			autoFocus:true,
-// 			source:xThis.dtProItem_porcion,
-// 			appendTo : $('#dialog_detalle_receta'),
-// 			select: function( event, ui ) {
-// 				xObjTxtItemProPor.val(ui.item.label);
-// 		        xObjTxtItemProPor.attr('data-id',ui.item.value);
-// 		        xidproducto_porcionado=ui.item.value
-// 		        $("#costo_item").val(ui.item.precio_unitario)
-// 		        $("#cant_item").val(1);
-// 		        return false;
-// 		    },
-// 		    focus:function(event, ui){return false;},
-// 		    change:function( event, ui ) {
-// 		    	if(ui.item===null){
-// 		    		xObjTxtItemProPor.attr('data-value',"");
-// 		    		xObjTxtItemProPor.attr('data-id',"");
-// 		    		xidproducto_porcionado=0;
-// 		    		$("#costo_item").val('');
-// 		    		$("#cant_item").val(1);
-// 		    	}
-// 		    	return false;
-// 		    }
-// 		});
-// }
-
-
-Polymer({
-	is:'x-promociones',
-	properties:{
-        dt_item: Object,
-        dt_all_item: Object,
-        dtProItem_porcion:Object,
-        listItemContiene: [],
-        listDayPrecio: []
-	},
-	attached:function(){
-    	xThisProm=this;
-    	xIniPromociones();
-    }
-})
-</script>
+<style>.conent-grid-two{width:100%;display:grid;grid-gap:1rem;margin:0 auto;grid-template-columns:1fr 1fr}.div-child{max-width:360px}.div-content-img{display:flex;flex-wrap:wrap;max-width:560px;margin-bottom:20px}.div-content-img img{padding-right:10px;margin:auto}</style>
+<script>/*<![CDATA[*/var xThisProm,btnSucces,compItemProducto,compFindSeccion,compImgPromo,tipoElementId=0,tipoElementNom='Item',_listItemsDescuento=[],diasSemana='',idPromoSelected=0,firstIconGif='';function xIniPromociones(){xThisProm.medidaImg={width:350,height:180}
+xThisProm.isShowListaPromo=true;xLoadListaPromocion();xLoadDataPromociones();xloadGifPromo();btnSucces=document.getElementById('btnSucces');btnSucces.addEventListener('onclix',()=>{guardarPromo();});compItemProducto=document.getElementById('compItemProducto');compItemProducto.addEventListener('elementSeleted',(e)=>{xThisProm.itemProductoSeleted=e.detail||null;precioFinalProductoItem();});compFindSeccion=document.getElementById('compFindSeccion');compImgPromo=document.getElementById('compImgPromo');$('.check_dia').on('change',()=>{diasSemana='';$('.check_dia').each((i,e)=>{diasSemana+=e.checked?i.toString()+',':'';});});_listItemsDescuento=[];xThisProm.isFormValid=false;}
+function xLoadListaPromocion(){$.ajax({type:'POST',url:'../../bdphp/log_009.php?op=5'}).done(res=>{const _listPromos=JSON.parse(res).datos;xThisProm.listPromos=_listPromos;selectOptionPromoIni();});}
+function selectOptionPromoIni(){xThisProm.promoSeleted=xThisProm.listPromos[0];}
+function selectOptionPromo(){const _index=xThisProm.$.select_promo.value;xThisProm.promoSeleted=xThisProm.listPromos[_index];div_num_primeros_pedidos.hidden=false;div_importe_consumo_min.hidden=false;xThisProm.isShowNxN=false;if(xThisProm.promoSeleted.nxn==='1'){div_num_primeros_pedidos.hidden=true;div_importe_consumo_min.hidden=true;xThisProm.isShowNxN=true;}}
+function selectedTipo(e){tipoElementId=e.value;tipoElementNom=e[e.selectedIndex].text;xThisProm.isShowProductoItem=e.value!=="2";newLista();}
+function precioFinalProductoItem(){const _desct=isNaN(parseFloat(imp_desct.value))?0:parseFloat(imp_desct.value);if(xThisProm.itemProductoSeleted&&xThisProm.isShowProductoItem){const precio=parseFloat(xThisProm.itemProductoSeleted.precio);const descFinal=precio-(precio*(_desct/100));xThisProm.precioFinal=descFinal.toFixed(2);}else{xThisProm.precioFinal=0;xThisProm.itemProductoSeleted=null;}}
+function addListDescuentoItem(){const ItemSelected=xThisProm.itemProductoSeleted;const seccionSeleted=xThisProm.isShowProductoItem?null:compFindSeccion.getSeccion();const splitDescripcionItem=xThisProm.itemProductoSeleted?.label.split(' | ')||0;const elementDescripcion=seccionSeleted?seccionSeleted.descripcion:splitDescripcionItem[splitDescripcionItem.length-1];const elementPrecio=seccionSeleted?0:xThisProm.itemProductoSeleted.precio;const idItem=ItemSelected?.procede=='0'?ItemSelected.iditem:null;const idItemSubItem=idItem?ItemSelected.iditem_subitem:null;const idProducto_stock=ItemSelected?.procede=='1'?ItemSelected.value:null;const idSeccion=seccionSeleted?seccionSeleted.idseccion:null;const elementCantidad=sel_cant.value;const elementCantidadPor=xThisProm.promoSeleted.nxn==='1'?sel_cant_x.value:null;const elementIdimpresora=ItemSelected?ItemSelected.idimpresora:seccionSeleted.idimpresora;if(xThisProm.promoSeleted.nxn==='1'){xThisProm.isShowError=parseFloat(elementCantidad)<parseFloat(elementCantidadPor);if(xThisProm.isShowError){xThisProm.isShowMsjError='La cantidad debe ser mayor a la cantidad x';return;}}
+tipoElementNom=idItem?'Item':idSeccion?'Seccion':'Producto';const isExistElement=_listItemsDescuento.filter(x=>x.elementDescripcion===elementDescripcion)[0];if(isExistElement){return;}
+const _row={tipoId:tipoElementId,tipo:tipoElementNom,elementItem:ItemSelected,elementSeccion:seccionSeleted,elementCantidadShow:elementCantidad=='0'?'Todos':elementCantidad,precio:elementPrecio,precio_final:xThisProm.precioFinal,descripcion:elementDescripcion,cantidad_x:elementCantidadPor,cantidad:elementCantidad,porc_descuento:parseFloat(imp_desct.value),iditem:idItem,iditem_subitem:idItemSubItem,idproducto_stock:idProducto_stock,idseccion:idSeccion,idimpresora:elementIdimpresora,is_nxn:elementCantidadPor?true:false}
+_listItemsDescuento.push(_row);xThisProm.listItemsDescuento=JSON.parse(JSON.stringify(_listItemsDescuento));newRowItem();xValidFormPromo();}
+function newRowItem(){imp_desct.value=0;xThisProm.precioFinal=0;}
+function newLista(){_listItemsDescuento=[];xThisProm.listItemsDescuento=JSON.parse(JSON.stringify(_listItemsDescuento));}
+function removeItemListPromo(obj){const xRowObj=obj.parentNode.parentNode;const indexPS=xRowObj.dataId;const itemRemove=_listItemsDescuento[indexPS];_listItemsDescuento=_listItemsDescuento.filter(x=>x.elementDescripcion!==itemRemove.elementDescripcion);xThisProm.listItemsDescuento=JSON.parse(JSON.stringify(_listItemsDescuento));}
+async function guardarPromo(){diasSemana='';$('.check_dia').each((i,e)=>{diasSemana+=e.checked?i.toString()+',':'';});const _f_ini=f_ini.value;const _f_fin=f_fin.value;const _h_ini=h_ini.value;const _h_fin=h_fin.value;const _num_primeros_pedidos=num_primeros_pedidos.value;const _importe_consumo_min=importe_consumo_min.value;const _establecio_img=compImgPromo.getIsEstablecioImg()?1:0;var idImprsoras='';xThisProm.listItemsDescuento.map(x=>{const idImpresora=(x.idimpresora?x.idimpresora:x.idimpresora)+',';idImprsoras=idImprsoras.indexOf(idImpresora)>-1?'':idImpresora;})
+const _parametros={"body":{"f_fin":_f_fin,"h_fin":_h_fin,"f_inicio":_f_ini,"h_inicio":_h_ini,"solo_app":check_solo_app.checked?1:0,"dias_semana":diasSemana,"importe_consumo_min":_importe_consumo_min==0?null:_importe_consumo_min,"num_primeros_pedidos":_num_primeros_pedidos==0?null:_num_primeros_pedidos,},"header":{"titulo":titulo.value,"descripcion":descripcion.value,"establecio_img":_establecio_img,"icon":xThisProm.promoIcoGifSeleted}};const _dataSend={'idpromocion':idPromoSelected,'idpromocion_lista':xThisProm.promoSeleted.idpromocion_lista,'idimpresoras':idImprsoras,'parametros':_parametros,'lista':xThisProm.listItemsDescuento,'op':501}
+xValidFormPromo();if(!xThisProm.isFormValid){return;}
+btnSucces.setLoader(true);const _httpFech=new httpFecht();const rpt=await _httpFech.postJson('../../bdphp/log_009.php',_dataSend)
+idPromoSelected=rpt.respuesta;const nomfileImg='promo'+idPromoSelected;const img_promo=compImgPromo.getImgBase64();uploadImgPromo(img_promo,nomfileImg,)
+setTimeout(()=>{btnSucces.setSave(true);},1000);}
+function uploadImgPromo(imgBase64,nomfile){$.ajax({type:'POST',url:'upload_base64.php?op=6',data:{nomfile:nomfile,img:imgBase64}}).done((res)=>{});}
+function xValidFormPromo(){xThisProm.isFormValid=titulo.value!=='';if(!xThisProm.isFormValid){return;}
+xThisProm.isFormValid=descripcion.value!=='';if(!xThisProm.isFormValid){return;}
+xThisProm.isFormValid=diasSemana!=='';if(!xThisProm.isFormValid){return;}
+xThisProm.isFormValid=f_ini.value!=='';if(!xThisProm.isFormValid){return;}
+xThisProm.isFormValid=f_fin.value!=='';if(!xThisProm.isFormValid){return;}
+xThisProm.isFormValid=h_ini.value!=='';if(!xThisProm.isFormValid){return;}
+xThisProm.isFormValid=h_fin.value!=='';if(!xThisProm.isFormValid){return;}
+if(xThisProm.promoSeleted.nxn==='1'){xThisProm.isShowError=parseFloat(sel_cant.value)<parseFloat(sel_cant_x.value);xThisProm.isFormValid=xThisProm.isShowError;}
+xThisProm.isFormValid=xThisProm.listItemsDescuento.length>0;}
+function xLoadDataPromociones(){$.ajax({type:'POST',url:'../../bdphp/log_009.php?op=502'}).done(res=>{const _dataPromos=JSON.parse(res).datos;_dataPromos.map(x=>{x.parametros=JSON.parse(x.parametros);x.check_activo=x.activo==="1";});xThisProm.dataPromociones=_dataPromos;});}
+function xDisabledPromo(obj){const idPromo=xGetIdPromo(obj);const _estado=obj.checked?'1':'0';$.ajax({type:'POST',url:'../../bdphp/log_009.php?op=503',data:{id:idPromo,estado:_estado}})}
+function xModificarPromo(obj){xPopupLoad.xopen();const idPromo=xGetIdPromo(obj);const dataPromocionSeleted=xThisProm.dataPromociones.find(x=>x.idpromocion===idPromo);const parametrosPromo=dataPromocionSeleted.parametros;xThisProm.medidaImg={width:350,height:180}
+idPromoSelected=idPromo;titulo.value=parametrosPromo.header.titulo;descripcion.value=parametrosPromo.header.descripcion;xThisProm.promoIcoGifSeleted=parametrosPromo.header.icon||firstIconGif;setIcoGifPromo()
+f_ini.value=parametrosPromo.body.f_inicio;f_fin.value=parametrosPromo.body.f_fin;h_ini.value=parametrosPromo.body.h_inicio;h_fin.value=parametrosPromo.body.h_fin;diasSemana='';$('.check_dia').each((i,e)=>{e.checked=parametrosPromo.body.dias_semana.indexOf(i)>-1;diasSemana+=e.checked?i.toString()+',':'';});num_primeros_pedidos.value=parametrosPromo.body.num_primeros_pedidos||0;importe_consumo_min.value=parametrosPromo.body.importe_consumo_min||0;check_solo_app.checked=parametrosPromo.body.solo_app===1;if(parametrosPromo.header.establecio_img===1){const _pathImg=URL_IMG_PROMO+dataPromocionSeleted.img;compImgPromo.setImgPathFile(_pathImg);}else{compImgPromo.resetControl();}
+$.ajax({type:'POST',url:'../../bdphp/log_009.php?op=504',data:{id:idPromo}}).done(res=>{_listItemsDescuento=JSON.parse(res).datos;_listItemsDescuento.map(x=>{x.elementCantidadShow=x.cantidad==="0"?'Todos':x.cantidad;});xThisProm.listItemsDescuento=JSON.parse(JSON.stringify(_listItemsDescuento));xThisProm.isFormValid=true;xThisProm.isShowListaPromo=false;xPopupLoad.xclose();});}
+function xGetIdPromo(obj){const xRowObj=obj.parentNode.parentNode;return xRowObj.dataId;}
+function xNewPromocion(){idPromoSelected=0;titulo.value='';descripcion.value='';f_ini.value='';f_fin.value='';h_ini.value='';h_fin.value='';$('.check_dia').each((i,e)=>{e.checked=false;});_listItemsDescuento=[];xThisProm.listItemsDescuento=JSON.parse(JSON.stringify(_listItemsDescuento));xThisProm.isFormValid=false;num_primeros_pedidos.value=0;importe_consumo_min.value=0;check_solo_app.checked=false;compImgPromo.resetControl();xThisProm.isShowListaPromo=false;xThisProm.medidaImg={width:350,height:180}}
+function backListPromo(){xThisProm.isShowListaPromo=true;xLoadDataPromociones();}
+function xloadGifPromo(){$.ajax({type:'POST',url:'../../bdphp/log_009.php?op=505'}).done(res=>{xThisProm.listIconGif=JSON.parse(res).datos;xThisProm.listIconGif.map(i=>{i.path=`../../images/${i.img}`;});firstIconGif=xThisProm.listIconGif[0].img;xThisProm.promoIcoGifSeleted=firstIconGif;setIcoGifPromo();});}
+function selectOptionIcoGif(obj){const _index=obj.dataId;xThisProm.promoIcoGifSeleted=xThisProm.listIconGif[_index].img;setIcoGifPromo();dialog_img_gif_promo.close();}
+function setIcoGifPromo(){promo_img_ico_gif.src=`../../images/${xThisProm.promoIcoGifSeleted}`;}
+Polymer({is:'x-promociones',properties:{listPromos:[],promoSeleted:[],promoIcoGifSeleted:String,itemProductoSeleted:[],seccionSeleted:[],listItemsDescuento:[],listIconGif:[],precioFinal:Number,isShowProductoItem:Boolean,isFormValid:Boolean,medidaImg:[],medidaContent:[],dataPromociones:[],isShowListaPromo:Boolean,isShowLoaderSave:Boolean,isShowNxN:Boolean,isShowError:Boolean,isShowMsjError:String},attached:function(){this.isShowProductoItem=true;this.isFormValid=false;this.listItemsDescuento=[];this.isShowListaPromo=true;this.isShowLoaderSave=false;this.isShowNxN=false;this.isShowError=false;xThisProm=this;xIniPromociones();}})/*]]>*/</script>

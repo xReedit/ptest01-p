@@ -690,12 +690,12 @@ return false;})
 $(document).on('change',".xsel_otros_print",function(e){var xid_secc_row=$(this).attr('data-id');var xid_secc_print=this.value;var xid_doc_print=$(this).parents('tr').attr('data-id');xGuardarCambiosConfOtrosDoc(xid_doc_print,xid_secc_row,xid_secc_print);event.stopPropagation();e.stopPropagation();e.stopImmediatePropagation()
 return false;})}
 function loadIconSeccion(){var nomIcon='',contador=0,lisIcon=[];xThisConfig.listIconSeccion=[];while(contador<=numIconSeccion){nomIcon=xRutaIconSeccion+contador+'.png';lisIcon.push({img:nomIcon});contador++;}
-xThisConfig.listIconSeccion=lisIcon;console.log('xThisConfig.listIconSeccion',xThisConfig.listIconSeccion);}
+xThisConfig.listIconSeccion=lisIcon;}
 function xDialogBorrarObj(obj){xThisConfig.xObjBorrar=obj;dialog_borrar.open();}
 function xDlgBorrar(){xBorrarItem(xThisConfig.xObjBorrar);dialog_borrar.close();}
 function xSubirFileAlmacen(){$('#fileAlamcen').click();}
 function transferenciaCompletaAlmacen(a){xNomFileXls=xIdOrg+xIdSede+xNomFileXls;xleerXls(xNomFileXls)}
-function xleerXls(xfile){xIdA=sel_almacen_file.value;if($("#fileAlamcen").val==""){return};$.ajax({type:'POST',url:'../../bdphp/leer_excel.php?op=2',data:{f:xNomFileXls,fecha:xDevolverFecha(),a:xIdA}}).done(function(dtUpP){console.log(dtUpP);$("#fileAlamcen").val('');xPopupLoad.xclose();dialog_subir_file_alamcen.close();alert("Se subio la informacion correctamente.");})}
+function xleerXls(xfile){xIdA=sel_almacen_file.value;if($("#fileAlamcen").val==""){return};$.ajax({type:'POST',url:'../../bdphp/leer_excel.php?op=2',data:{f:xNomFileXls,fecha:xDevolverFecha(),a:xIdA}}).done(function(dtUpP){$("#fileAlamcen").val('');xPopupLoad.xclose();dialog_subir_file_alamcen.close();alert("Se subio la informacion correctamente.");})}
 $(document).on('change','.check_almacen',function(e){var xid_al=$(this).parents('tr').attr("data-id");var xcampo_al=$(this).attr("data-campo");var xval_check=this.checked?1:0;$.ajax({type:'POST',url:'../../bdphp/log.php?op=1605',data:{id:xid_al,t:'conf_print_adicionales',campo:xcampo_al,valor:xval_check}})
 event.stopPropagation();e.stopPropagation();e.stopImmediatePropagation()
 return false;})
@@ -722,7 +722,7 @@ function xModBlurImpuesto(obj){var xvalObj=$(obj).val(),xtb=$(obj).parents('tabl
 function xBorrarItemPrintLocal(obj){xRowObj=obj.parentNode.parentNode;xTableRow=$(xRowObj).attr('data-t');xIdROw=$(xRowObj).attr('data-id')
 xBorrarRegistro(xTableRow,xIdROw);$("#form_impresora_local").reset();xLoadImpresorasConf();}
 function xTestPrint(xOpC){var xArrayPasarTest=new Array();var xClasTr='',sel_papel='';if(xOpC==0){xClasTr='.tr_addPrint';sel_papel=' #select_papel_zona';}else{xClasTr='.tr_addPrint_local';sel_papel=' #select_papel_caja';}
-xArrayPasarTest={'ip_print':$(xClasTr+" #ip").val(),'mum_copias':0,'pie_pagina':xThisConfig.dt_impr[0].pie_pagina,'logo':xThisConfig.dt_impr[0].logo,'size_font':$(xClasTr+" #var_size_font").val(),'margen_iz':$(xClasTr+" #var_margen_iz").val(),'papel_size':$(xClasTr+sel_papel).val()};console.log('print params',xArrayPasarTest);const _sys_local=parseInt(xm_log_get('datos_org_sede')[0].sys_local);const _data={Array_enca:xArrayPasarTest}
+xArrayPasarTest={'ip_print':$(xClasTr+" #ip").val(),'mum_copias':0,'pie_pagina':xThisConfig.dt_impr[0].pie_pagina,'logo':xThisConfig.dt_impr[0].logo,'size_font':$(xClasTr+" #var_size_font").val(),'margen_iz':$(xClasTr+" #var_margen_iz").val(),'papel_size':$(xClasTr+sel_papel).val()};const _sys_local=parseInt(xm_log_get('datos_org_sede')[0].sys_local);const _data={Array_enca:xArrayPasarTest}
 if(_sys_local===1){xPopupLoad.xopen();xSendDataPrintServer(_data,3,'prueba');setTimeout(()=>{xPopupLoad.xclose();},1000);return;}
 $.ajax({type:'POST',url:'../../print/x-test_print.php',data:{Array_enca:xArrayPasarTest}}).done(function(dtPrint){if(dtPrint.indexOf('Error')!=-1){alert(dtPrint)}})}
 function xLoadSecciones(){$.ajax({type:'POST',url:'../../bdphp/log.php?op=409'}).done(function(dtSec){var xdtSec=$.parseJSON(dtSec);var xCadena_sec='',imgIcon='';xdtSec=xdtSec.datos
@@ -780,7 +780,7 @@ function openImgIconDialog(obj,_opIcon){opIcon=_opIcon;xidSeccionIcon=obj.parent
 dialog_img_ico_carta.open();}
 function updateIconSeccion(obj){const _img=obj.dataIndex+'.png';xPopupLoad.xopen();$.ajax({type:'POST',url:'../../bdphp/log_004.php?op=8',data:{i:xidSeccionIcon,img:_img,opIcon:opIcon}}).done(function(a){if(opIcon===0){xLoadSecciones();}else{xLoadSecciones_bodega();}
 dialog_img_ico_carta.close();xPopupLoad.xclose();})}
-function xloadMetodosPagos(){$.ajax({type:'POST',url:'../../bdphp/log_004.php?op=11'}).done(function(res){res=JSON.parse(res);const metodosPagosIds=xm_log_get('datos_org_sede')[0]?.metodo_pago_aceptados||'';const aceptados=metodosPagosIds.split(',');let listMetodoPagosAceptados=[];xThisConfig.listMetodoPagos=[];res.datos.map(x=>{x.aceptado=!!aceptados.filter(t=>parseInt(t)===parseInt(x.idtipo_pago))[0];x.aceptado_a=x.aceptado?1:0;listMetodoPagosAceptados.push(x);});xThisConfig.listMetodoPagos=listMetodoPagosAceptados;console.log('xThisConfig.listMetodoPagos',xThisConfig.listMetodoPagos);});}
+function xloadMetodosPagos(){$.ajax({type:'POST',url:'../../bdphp/log_004.php?op=11'}).done(function(res){res=JSON.parse(res);const metodosPagosIds=xm_log_get('datos_org_sede')[0]?.metodo_pago_aceptados||'';const aceptados=metodosPagosIds.split(',');let listMetodoPagosAceptados=[];xThisConfig.listMetodoPagos=[];res.datos.map(x=>{x.aceptado=!!aceptados.filter(t=>parseInt(t)===parseInt(x.idtipo_pago))[0];x.aceptado_a=x.aceptado?1:0;listMetodoPagosAceptados.push(x);});xThisConfig.listMetodoPagos=listMetodoPagosAceptados;});}
 function updateMetodoPagoAceptado(){let idAceptados='';$('.checkTP').each((i,e)=>{idAceptados+=e.checked?`${e.dataIdt},`:'';});$.ajax({type:'POST',url:'../../bdphp/log_004.php?op=1101',data:{ids:idAceptados}});}
 function checkboxChanged(event){if(event.target.checked){console.log(event.target.value);}}
 Polymer({is:'x-configuraciones',properties:{xt_org:Number,xt_idsede:Number,xt_idus:Number,dt_sede:Object,dt_cat:Object,dt_impr:Object,listIconSeccion:[],listMetodoPagos:{type:Object,notify:true}},attached:function(){this.selected_conf=0;xThisConfig=this;xIniConf();},detached:function(){}})/*]]>*/</script>

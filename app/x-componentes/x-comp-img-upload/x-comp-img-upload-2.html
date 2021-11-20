@@ -1,0 +1,222 @@
+<dom-module id="x-comp-img-upload-2">
+    <link rel="stylesheet" href="../../../css/croppie.css">
+    <script src="../../../js/croppie.js"></script>
+    <template>        
+            <div class="pb-2" hidden$="[[isShowResult]]">
+                <!-- <button class="btn btn-sm btn-info">Cargar Imagen</button> -->
+                <a class="btn btn-sm btn-info file-btn2">
+                    <span>Cargar Imagen</span>
+                    <input type="file" id="upload2" value="Choose a file" accept="image/*" />
+                </a>
+
+                <button class="btn btn-sm btn-success upload-result2">Establecer</button>
+                <!-- <input type="file" id="upload" value="Choose a file" accept="image/*" /> -->
+            </div>
+            <div class="upload-demo2-wrap" hidden$="[[isShowResult]]">
+                <div class="upload-demo2"></div>
+            </div>     
+
+            <div hidden$="[[!isShowResult]]" class="animate__animated animate__fadeIn">
+                <button class="btn btn-sm btn-secondary mb-2" onclick="xEditarComImg2()">Editar</button>
+                <div id="result2">
+                </div>   
+            </div>
+        <!-- <img src="../../../file/cat.jpg" class="my-image" alt=""> -->
+    </template>
+</dom-module>
+<style>    
+    .file-btn2 {
+        position: relative;
+    }
+    .file-btn2 input[type="file"] {
+        position: absolute;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        opacity: 0;
+    }
+    .upload-demo2 .upload-demo2-wrap,
+    .upload-demo2 .upload-result2,
+    .upload-demo2.ready .upload-msg {
+        display: none;
+    }
+    .upload-demo2.ready .upload-demo2-wrap {
+        display: block;
+    }
+    .upload-demo2.ready .upload-result2 {
+        display: inline-block;    
+    }
+    .upload-demo2-wrap {
+        width: 350px;
+        height: 300px;
+        margin: 0 auto;
+    }
+
+    #result img {
+        border: 2px solid #9e9e9e;
+        border-radius: 5px;
+    }
+</style>
+<script>
+    var xThisCompImg2, optsImg, imgCompImgBase64;
+    var $uploadCrop2;
+    
+    function xComIniUpLoadImg2() {
+        optsImg = {
+            url: '../../file/promo_demo.JPG',
+            viewport: {
+                width: xThisCompImg2.medidasimg.width,
+                height: xThisCompImg2.medidasimg.height
+            },
+            // points: [77,469,280,739]
+        }
+        
+        // $('.upload-demo2').croppie(optsImg);
+        demoUpload2();
+
+        // if ( xThisCompImg2.medidascontent ) {
+        //     // setTimeout(() => {            
+        //         $('.upload-demo2-wrap').width(xThisCompImg2.medidascontent.width + 50);
+        //         $('.upload-demo2-wrap').height(xThisCompImg2.medidascontent.height + 50);
+        //     // }, 1000);
+        // } else {
+        //     $('.upload-demo2-wrap').width(xThisCompImg2.medidasimg.width + 50);
+        //     $('.upload-demo2-wrap').height(xThisCompImg2.medidasimg.height + 50);
+        // }
+
+        resetMedidas2();
+        
+    }
+
+    function resetMedidas2(medida) {
+        if ( xThisCompImg2.medidascontent ) {
+            // setTimeout(() => {            
+                $('.upload-demo2-wrap').width(xThisCompImg2.medidascontent.width + 50);
+                $('.upload-demo2-wrap').height(xThisCompImg2.medidascontent.height + 50);
+            // }, 1000);
+        } else {
+            $('.upload-demo2-wrap').width(xThisCompImg2.medidasimg.width + 50);
+            $('.upload-demo2-wrap').height(xThisCompImg2.medidasimg.height + 50);
+        }
+
+        $uploadCrop2.croppie('bind', optsImg);
+    }
+
+    function resetControlImg2() {
+        // if(!$uploadCrop2.data('croppie')) { return; }
+        
+        $uploadCrop2.croppie('bind', optsImg);
+    }
+
+    function demoUpload2() {
+		
+
+		function readFile2(input) {
+ 			if (input.files && input.files[0]) {
+	            var reader2 = new FileReader();
+	            
+	            reader2.onload = function (e) {
+					$('.upload-demo2').addClass('ready');
+	            	$uploadCrop2.croppie('bind', {
+	            		url: e.target.result
+	            	}).then(function(){
+	            		// console.log('jQuery bind complete');
+	            	});
+	            	
+	            }
+	            
+	            reader2.readAsDataURL(input.files[0]);
+	        }
+	        else {
+		        // console.log('Sorry - youre browser doesnt support the FileReader API');
+		    }
+		}
+
+        // if(!$('.upload-demo2').data('croppie')) {
+            $uploadCrop2 = $('.upload-demo2').croppie(optsImg);
+        // }
+
+		$('#upload2').on('change', function () { readFile2(this); });
+		$('.upload-result2').on('click', function (ev) {
+			$uploadCrop2.croppie('result', {
+				type: 'canvas',
+				size: 'viewport'
+			}).then(function (resp) {
+                // console.log('resp', resp);
+				popupResult2({
+					src: resp
+				});
+			});
+		});
+	}
+
+    function popupResult2(result) {
+		var html;
+		if (result.html) {
+			html = result.html;
+		}
+		if (result.src) {
+            imgCompImgBase64 = result.src;
+			html = '<img src="' + result.src + '" />';
+		}
+
+        $('#result2').html(html);
+        xThisCompImg2.isShowResult = true;		
+        xThisCompImg2.isEstablecioImg = true;
+        xThisCompImg2.isUploadImg = true;
+	}
+
+    function xEditarComImg2() {
+        xThisCompImg2.isShowResult = false;
+    }
+
+    function setImagenFile2(path_file) {
+        xThisCompImg2.isShowResult = true;		
+        xThisCompImg2.isEstablecioImg = true;
+        xThisCompImg2.isUploadImg = false;
+        var html = '<img src="' + path_file + '" />';
+        $('#result2').html(html);
+    }
+
+
+    Polymer({
+			is: 'x-comp-img-upload-2',
+			properties: {				
+                isShowResult: Boolean,
+                medidasimg:[],
+                medidascontent:[],
+                isEstablecioImg: Boolean,
+                isUploadImg: Boolean, // si se sube la imagen
+			},
+			attached: function () {                
+                this.isShowResult = false;
+                this.isEstablecioImg = false;
+                this.isUploadImg = false;
+				xThisCompImg2 = this;	
+                xComIniUpLoadImg2();							
+			},
+            getImgBase64: () => {
+                return imgCompImgBase64;
+            },
+            getIsEstablecioImg: () => {
+                return xThisCompImg2.isEstablecioImg;
+            },
+            getIsUploadImg: () => {
+                return xThisCompImg2.isUploadImg;
+            },
+            setImgPathFile: (path_file) => {
+                setImagenFile2(path_file);
+            },
+            resetControl: () => {
+                xThisCompImg2.isShowResult = false;
+                xThisCompImg2.isEstablecioImg = false;
+                xThisCompImg2.isUploadImg = false;
+                resetControlImg2();
+            },
+            setMedidas: (medida) => {
+                this.medidasimg = medida;
+                resetMedidas2();
+            }
+		})	
+</script>
