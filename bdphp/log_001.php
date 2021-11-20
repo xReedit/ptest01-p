@@ -1629,7 +1629,7 @@
 			if($nomclie==''){//publico general
 				$idclie=0;
 			}else{
-				$sql="insert into cliente (idorg,nombres,direccion,ruc,f_nac, f_registro,telefono)values(".$_SESSION['ido'].",'".$nomclie."','".$direccion."','".$num_doc."','".$f_nac."',DATE_FORMAT(now(),'%d/%m/%Y'),'".$telefono."')";
+				$sql="insert into cliente (idorg,nombres,direccion,ruc,f_nac, f_registro,telefono, direccion_delivery_no_map)values(".$_SESSION['ido'].",'".$nomclie."','".$direccion."','".$num_doc."','".$f_nac."',DATE_FORMAT(now(),'%d/%m/%Y'),'".$telefono."', '".json_encode($direccion_delivery_no_map)."')";
 				$idclie=$bd->xConsulta_UltimoId($sql);
 
 				// insertar en cliente_sede
@@ -1639,7 +1639,7 @@
 			}
 		} else {
 			// update cliente
-			$sql="update cliente set nombres='".$nomclie."',ruc='".$num_doc."',referencia='".$referencia."',direccion='".$direccion."'".$update_telefono.", direccion_delivery_no_map = '". $direccion_delivery_no_map ."' where idcliente = ".$idclie;
+			$sql="update cliente set nombres='".$nomclie."',ruc='".$num_doc."',referencia='".$referencia."',direccion='".$direccion."'".$update_telefono.", direccion_delivery_no_map = '". json_encode($direccion_delivery_no_map) ."' where idcliente = ".$idclie;
 			$bd->xConsulta_NoReturn($sql);
 		}
 
