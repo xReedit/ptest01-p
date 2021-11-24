@@ -2888,6 +2888,7 @@
 		case 1807://guardar producto_stock desde
 			$sql="INSERT INTO producto_stock( idproducto, idalmacen, stock ) VALUES (".$_POST[p].", ".$_POST['a'].", ".$_POST['c'].")";
 			$bd->xConsulta($sql);
+			break;
 		case 1808://guardar producto_stock desde y retorna el id
 			$sql="INSERT INTO producto_stock( idproducto, idalmacen, stock ) VALUES (".$_POST[p].", ".$_POST['a'].", 0)";
 			echo $bd->xConsulta_UltimoId($sql);
