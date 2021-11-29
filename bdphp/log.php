@@ -1118,6 +1118,8 @@
 			$bd->xConsulta($sql);
 			break;
 		case 206://guardar detalleitem
+			// $sql="update item set detalle='".$_POST['d']."' where iditem=".$_POST['i'];
+			// $bd->xConsulta($sql);
 			$detalle = str_replace("\n", " ", $_POST['d']);
 			$sql="update item set detalle='".$detalle."' where iditem=".$_POST['i'];
 			$bd->xConsulta($sql);
@@ -2389,7 +2391,7 @@
 			// ";
 
 			$sql = "
-				SELECT concat(i.descripcion, COALESCE(subIt.des, '')) descripcion, sum(rpp.cantidad) as t1,
+				SELECT i.descripcion, sum(rpp.cantidad) as t1,
 				if (cl.cantidad = 'SP', 
 					(SELECT CAST((po.stock/ii.cantidad) AS SIGNED) AS stock 
 					FROM item AS i1 
@@ -2403,13 +2405,8 @@
 				inner join pedido_detalle as pd on rpp.idpedido_detalle = pd.idpedido_detalle
 				inner join item as i on pd.iditem = i.iditem
 				INNER JOIN carta_lista AS cl ON i.iditem=cl.iditem
-				left join (select itcd.iditem,  isub.iditem_subitem, concat(' - ', isub.descripcion) des , isub.precio
-				                from item_subitem_content ic		
-				                    inner join item_subitem isub on isub.iditem_subitem_content = ic.iditem_subitem_content
-				                    inner join item_subitem_content_detalle itcd on ic.iditem_subitem_content = itcd.iditem_subitem_content and itcd.estado=0 -- and itcd.iditem = ic.iditem
-				                where itcd.controlable = 1 and ic.estado=0) subIt on subIt.iditem = cl.iditem and subIt.iditem_subitem = pd.subitems->>'$[0].subitems[0].iditem_subitem'
 				where (rp.cierre = 0 AND rp.idusuario=".$_SESSION['idusuario']." AND rp.idsede=".$g_idsede.") AND pd.procede_tabla!=0 
-				GROUP BY i.iditem, pd.subitems->>'$[0].subitems[0].iditem_subitem'
+				GROUP BY i.iditem
 				order BY sum(rpp.total) desc
 			";
 
