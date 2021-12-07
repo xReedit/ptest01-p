@@ -324,6 +324,10 @@
             $sql="update ce set anulado=1, external_id_anulacion='".$obj['external_id_anulacion']."', ticket_anulacion='".$obj['ticket']."', motivo_anulacion='".$obj['motivo']."' where external_id='".$obj['external_id']."'";
             $bd->xConsulta($sql);
             break;
+        
+        // regularizar comprobantes no enviados hace 2 dias
+        case '9':
+            break;
         default:
             # code...
             break;

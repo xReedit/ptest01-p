@@ -1,5 +1,35 @@
+<script src="../../view/xApiConsultaSunat.js"></script>
+<script src="../../view/httpFech.js"></script>
 <dom-module id="x-admin-contador">
 <template is="dom">
+<paper-dialog id="dialog_match_sunat" class="dialog_redondo" modal style="min-width:330px;max-width:400px" modal entry-animation="scale-up-animation" exit-animation="fade-out-animation">
+<div class="p-2 text-center">
+<div>
+<img src="../../../images/scan_docs_sunat.gif" alt="img_match">
+</div>
+<div hidden$="[[ showProccessVerificationFinalize ]]">
+<paper-progress indeterminate></paper-progress>
+</div>
+<p class="fs-15 fw-600">Verificando el estado de los comprobantes con Sunat. <span class="text-success">{{numRowsVerificadoSuccess}}</span> de {{ numRowsList}}</p>
+<div hidden$="[[ !showRowsNoResponse ]]">
+<br>
+<div class="xLinea2"></div>
+<br>
+<p class="fs-15 fw-600">Sin respuesta: <span class="text-danger">{{numRowsVerificadoError}}</span></p>
+<div class="d-flexx justify-content-center" hidden$="[[ !showProccessVerificationFinalize ]]">
+<button class="btn btn-sm btn-info mr-2" onclick="downloadReporteCPE()">Verificar Nuevamente ({{numRowsVerificadoError}})</button>
+<button class="btn btn-sm btn-success" onclick="setDataListReporte()">Descargar</button>
+</div>
+</div>
+<div hidden$="[[ !showProccessVerificationError ]]">
+<br>
+<div class="xLinea2"></div>
+<br>
+<p class="fw-600 text-danger">Ocurrio un error al procesar</p>
+<button class="btn btn-sm btn-info mr-2" onclick="downloadReporteCPE()">Procesar Nuevamente</button>
+</div>
+</div>
+</paper-dialog>
 <br>
 <div class="xMiCard xradius" style="width:calc(100% - 10%);height:calc(100vh - 120px)">
 <div class="xEncanezadoCard xFondoRowAmarillo4">
@@ -87,7 +117,8 @@ Para asignar mas Establecimientos o para soporte tecnico, comuniquese con nosotr
 <th align="right">Sub total</th>
 <th align="right">I.G.V</th>
 <th align="right">Total</th>
-<th>Estado</th>
+<th>Estado Sistema</th>
+<th>Estado Sunat</th>
 </thead>
 <tbody>
 <template is="dom-repeat" items="{{ListReporte}}" as="row">
@@ -102,6 +133,7 @@ Para asignar mas Establecimientos o para soporte tecnico, comuniquese con nosotr
 <td style$="{{row.style_td}}">{{row.igv}}</td>
 <td style$="{{row.style_td}}">{{row.total}}</td>
 <td style$="{{row.style_reporte}}">{{row.estado}}</td>
+<td style$="{{row.style_estado_sunat}}">{{row.estadoCp}}</td>
 </tr>
 </template>
 </tbody>
@@ -111,22 +143,29 @@ Para asignar mas Establecimientos o para soporte tecnico, comuniquese con nosotr
 </template>
 </dom-module>
 <script type="text/javascript" src="../../view/export.excel.js"></script>
-<script>/*<![CDATA[*/var xThisAdmContador,xObjBorrar;const dateNow=new Date();const _m_now=dateNow.getMonth()+1;const _y_now=dateNow.getFullYear();function xIniAdmContador(){xPopupLoad=document.getElementById('xLoad');var _dtUs=xm_log_get('app3_us');xThisAdmContador.xt_org=_dtUs.ido;xThisAdmContador.xt_idsede=_dtUs.idsede;xThisAdmContador.xt_idus=_dtUs.idus;xThisAdmContador.ListReporte=[];$('body').addClass('loaded');$('.xPasarEnter2').on('keyup',function(e){var code=e.which;if(code==13||code==186){var inputs=$('input');var a=inputs.index(document.activeElement);if(inputs[a+1]!==null){var nextBox=inputs[a+1];if(nextBox===undefined){return}
+<script>/*<![CDATA[*/var xThisAdmContador,xObjBorrar,_apiConsultaCpe,listCpeSuccess=[],dataListReporte,objProcesar;const dateNow=new Date();const _m_now=dateNow.getMonth()+1;const _y_now=dateNow.getFullYear();function xIniAdmContador(){xPopupLoad=document.getElementById('xLoad');setTimeout(()=>{_apiConsultaCpe=new apiConsulaCpe();},1500);var _dtUs=xm_log_get('app3_us');xThisAdmContador.xt_org=_dtUs.ido;xThisAdmContador.xt_idsede=_dtUs.idsede;xThisAdmContador.xt_idus=_dtUs.idus;xThisAdmContador.ListReporte=[];$('body').addClass('loaded');$('.xPasarEnter2').on('keyup',function(e){var code=e.which;if(code==13||code==186){var inputs=$('input');var a=inputs.index(document.activeElement);if(inputs[a+1]!==null){var nextBox=inputs[a+1];if(nextBox===undefined){return}
 if(nextBox.disabled){nextBox=inputs[a+2]}
 if(nextBox==undefined){return;}
 nextBox.focus();nextBox.select();}
 return false;}});xLoadEstablecimientosAsignados();}
 function xLoadEstablecimientosAsignados(){$.ajax({type:'GET',url:'../../bdphp/log_007.php?op=1'}).done((res)=>{const _res=JSON.parse(res);xThisAdmContador.listAsignados=_res.datos;});}
-function selectEsablecimiento(obj){const index=obj.id;xThisAdmContador.selEstablecimiento=xThisAdmContador.listAsignados[index];xDataYears();selectedRowTR(obj);}
+function selectEsablecimiento(obj){const index=obj.id;xThisAdmContador.selEstablecimiento=xThisAdmContador.listAsignados[index];console.log('xThisAdmContador.selEstablecimiento',xThisAdmContador.selEstablecimiento);listCpeSuccess=[];xDataYears();selectedRowTR(obj);}
 function selectedRowTR(obj){$(obj).addClass("selected").siblings().removeClass("selected");}
 function xDataYears(){const f_ini=xThisAdmContador.selEstablecimiento.mes_inicio.split('/');var _m=f_ini[0],_y=f_ini[1],count_year=0;var _listYear=[];while(_y<=_y_now){_listYear.push({y:_y});_y++;count_year++;}
 xThisAdmContador.listYears=_listYear;setTimeout(()=>{xThisAdmContador.$.selYear.selectedIndex=count_year-1;xDataYearsMonth(_y_now);},100);}
 function selectOptionYear(){const index=xThisAdmContador.$.selYear.selectedIndex;const yy=parseInt(xThisAdmContador.listYears[index].y);xDataYearsMonth(yy);}
 function xDataYearsMonth(yy){var _listMonth=[],count_m=1;const _my_ini=xThisAdmContador.selEstablecimiento.mes_inicio.split('/');const yy_ini=parseInt(_my_ini[1]);const _num_f_ini=_y_now===yy_ini?parseInt(_my_ini[0])+yy_ini:1+_y_now;const isMismoYY=_y_now===yy;while(count_m<=12){const _num_f_now=isMismoYY?_m_now+_y_now:12+yy;const _num_f=count_m+yy;const _activo=_num_f<_num_f_ini||_num_f>_num_f_now?false:true;const _clase=_activo?'animated fadeIn fast xCursor':'animated fadeIn fast xColorRow_Plomo2';const _desestado=_activo?'DISPONIBLE':'SIN DATOS';_listMonth.push({mes:xDesMes(count_m-1)+' '+yy,m:count_m,y:yy,activo:_activo,clase:_clase,desestado:_desestado,});count_m++;}
 xThisAdmContador.listMonth=_listMonth;}
-function downloadReporteCPE(obj){const index=obj.parentElement.parentElement.id;const _selMes=xThisAdmContador.listMonth[index];xThisAdmContador.selMes=_selMes;const _data={establecimiento:xThisAdmContador.selEstablecimiento,m:_selMes.m,y:_selMes.y}
-xPopupLoad.titulo='Descargando...';xPopupLoad.xopen();var dataListReporte=[];xThisAdmContador.ListReporte=[];$.ajax({type:'POST',url:'../../bdphp/log_007.php?op=2',data:{item:_data}}).done((res)=>{res=JSON.parse(res);if(res.error){console.log(res.error);return;}
-console.log(res.data);res.data.map(x=>{x.estado=x.tipo_doc==='FACTURA'&&parseInt(x.ruc)===0?'ANULADO':x.estado;x.style_reporte=x.estado==='ANULADO'?'color: red':'color: green';x.style_td=x.estado==='ANULADO'?'color: red':'';dataListReporte.push(x);});setDataListReporte(dataListReporte);});}
-function setDataListReporte(list){xThisAdmContador.ListReporte=list;setTimeout(()=>{xExportarExcel();},500);}
-function xExportarExcel(){tableToExcel('testTable','Comprobantes');setTimeout(()=>{xPopupLoad.xclose();},500);}
-Polymer({is:'x-admin-contador',properties:{xt_org:Number,xt_idsede:Number,xt_idus:Number,listYears:[],listMonth:[],listAsignados:[],ListReporte:[],selEstablecimiento:[],selMes:[],},attached:function(){this.selected=0,xThisAdmContador=this;xIniAdmContador();},displayIndex:function(index){return xCeroIzq(index+1,1);},})/*]]>*/</script>
+async function downloadReporteCPE(obj){objProcesar=obj?obj:objProcesar;obj=objProcesar;var countCpeSuccess=0,countCpeError=0;const index=obj.parentElement.parentElement.id;const _selMes=xThisAdmContador.listMonth[index];xThisAdmContador.selMes=_selMes;xThisAdmContador.numRowsVerificadoSuccess=0;xThisAdmContador.showRowsNoResponse=false;xThisAdmContador.showProccessVerificationFinalize=false;xThisAdmContador.showProccessVerificationError=false;const _data={establecimiento:xThisAdmContador.selEstablecimiento,m:_selMes.m,y:_selMes.y}
+const rptApiToken=await _apiConsultaCpe.getToken();const _apiToken=rptApiToken.access_token;xPopupLoad.titulo='Descargando...';xPopupLoad.xopen();dataListReporte=[];xThisAdmContador.ListReporte=[];$.ajax({type:'POST',url:'../../bdphp/log_007.php?op=2',data:{item:_data}}).done(async(res)=>{res=JSON.parse(res);if(res.error){console.log(res.error);return;}
+console.log(res.data);xPopupLoad.xclose();dialog_match_sunat.open();const ruc_emisor=xThisAdmContador.selEstablecimiento.ruc;const _numRows=res.data.length;xThisAdmContador.numRowsList=_numRows;for(let index=0;index<_numRows;index++){var x=res.data[index];x.estado=x.tipo_doc==='FACTURA'&&parseInt(x.ruc)===0?'ANULADO':x.estado;x.style_reporte=x.estado==='ANULADO'?'color: red':'color: green';x.style_td=x.estado==='ANULADO'?'color: red':'';try{const cpeVerificado=listCpeSuccess.find(c=>c.id===x.id);if(!cpeVerificado){const codComp=x.series.indexOf('F')>-1?'01':'03';const num_doc=parseInt(x.num_doc.split('-')[1]);const monto=x.total.replace(/,/g,'');const payload={header:{ruc_receptor:x.ruc,access_token:_apiToken},body:{"numRuc":ruc_emisor,"codComp":codComp,"numeroSerie":x.series,"numero":num_doc,"fechaEmision":x.fecha,"monto":monto}}
+const rptApiConsulta=await _apiConsultaCpe.getConsulta(payload);let estado_cpe;if(rptApiConsulta?.success===true){x.success_sunat=1;estado_cpe=xEstadoCpeApi(rptApiConsulta.data.estadoCp);x.estadoCp=estado_cpe.titulo;x.style_estado_sunat='color: '+estado_cpe.color;countCpeSuccess++;listCpeSuccess.push(x);}else{countCpeError++;x.success_sunat=0;x.estadoCp='Sin Respuesta';x.style_estado_sunat='color: black';xThisAdmContador.showRowsNoResponse=true;}}else{x=cpeVerificado;countCpeSuccess++;}
+xThisAdmContador.numRowsVerificadoSuccess=countCpeSuccess;xThisAdmContador.numRowsVerificadoError=countCpeError;dataListReporte.push(x);}catch(error){xThisAdmContador.showProccessVerificationFinalize=true;xThisAdmContador.showProccessVerificationError=true;return;}}
+xThisAdmContador.showProccessVerificationFinalize=true;if(xThisAdmContador.showRowsNoResponse||xThisAdmContador.showProccessVerificationError){return;}
+setDataListReporte(dataListReporte);});}
+function xEstadoCpeApi(estado){var _estado={titulo:'',color:''};switch(estado){case'0':_estado.titulo="NO EXISTE";_estado.color="purple";break;case'1':_estado.titulo="ACEPTADO";_estado.color="green";break;case'2':_estado.titulo="ANULADO";_estado.color="red";break;case'3':_estado.titulo="AUTORIZADO";_estado.color="green";break;case'4':_estado.titulo="NO AUTORIZADO";_estado.color="red";break;}
+return _estado;}
+function setDataListReporte(list){xThisAdmContador.ListReporte=list?list:dataListReporte
+setTimeout(()=>{xExportarExcel();},500);}
+function xExportarExcel(){tableToExcel('testTable','Comprobantes');setTimeout(()=>{dialog_match_sunat.close();},500);}
+Polymer({is:'x-admin-contador',properties:{xt_org:Number,xt_idsede:Number,xt_idus:Number,listYears:[],listMonth:[],listAsignados:[],ListReporte:[],selEstablecimiento:[],selMes:[],numRowsVerificadoSuccess:Number,numRowsVerificadoError:Number,numRowsList:Number,showRowsNoResponse:Boolean,showProccessVerificationFinalize:Boolean,showProccessVerificationError:Boolean,},attached:function(){this.selected=0,this.showRowsNoResponse=false;this.showProccessVerificationFinalize=false;this.showProccessVerificationError=false;xThisAdmContador=this;xIniAdmContador();},displayIndex:function(index){return xCeroIzq(index+1,1);},})/*]]>*/</script>

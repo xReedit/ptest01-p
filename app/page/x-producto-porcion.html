@@ -14,7 +14,7 @@
 <paper-dialog modal id="dialog_additem_pro" class="dialog_redondo" modal entry-animation="scale-up-animation" exit-animation="fade-out-animation" with-backdrop>
 <div class="xContent">
 <h3>Agregar Producto</h3>
-<form id="frm_item_pro" method="post">
+<form id="frm_item_pro">
 <label for="sel_almacen_pro">Almacen donde ingresa:</label><br>
 <select id="sel_almacen_pro" name="no_post" class="xMiInput"></select>
 <input type="text" id="descripcion" name="descripcion" placeholder="Descripcion" class="xMiInput xPasarEnter2" onChange="conMayusculas(this)" autofocus required espaciar><br>
@@ -45,7 +45,7 @@
 Por ejemplo: de 1000gr de bistec salen 10 porciones de 100gr cada una para el preparar bistec a lo pobre.<br>
 Utilize la misma unidad de medida que esta en el producto a porcionar. Es decir si el producto a porcionar esta en gramos la misma unidad de medida debe ser para las prociones.</p>
 <br>
-<form id="frm_add_porcion" method="post">
+<form id="frm_add_porcion">
 <input type="text" id="descripcion" name="descripcion" placeholder="Descripcion de la porcion" class="xMiInput xPasarEnter2" onChange="conMayusculas(this)" autofocus required espaciar><br>
 <input type="text" id="peso" name="peso" placeholder="Peso" class="xMiInput xPasarEnter2" onChange="conMayusculas(this)" autofocus required espaciar><br>
 <input type="text" id="stock" name="stock" placeholder="Cantidad" class="xMiInput xPasarEnter2" onChange="conMayusculas(this)" autofocus required espaciar><br>
@@ -56,7 +56,7 @@ Utilize la misma unidad de medida que esta en el producto a porcionar. Es decir 
 </div>
 </form>
 <br><br>
-<div class="xBoton2 xAzul" onclick="xGuardarItemPorcion()">Listo, guardar</div>
+<div class="xBoton2 xAzul" onclick="xGuardarItemPorcionPorcion()">Listo, guardar</div>
 <div class="xBoton2 xPlomo" dialog-dismiss>Cancelar</div>
 <br><br><br>
 </div>
@@ -115,7 +115,7 @@ Utilize la misma unidad de medida que esta en el producto a porcionar. Es decir 
 </thead>
 </table>
 <div class="xInvisible">
-<table id="tb_productos_export" width="100%" class="xtable2">
+<table id="tb_export_p" width="100%" class="xtable2">
 <thead>
 <th align="left">Producto</th>
 <th align="left">familia</th>
@@ -198,7 +198,7 @@ $("#chec_min").on('change',function(){var xbus='';if(this.checked){xbus='stock m
 xBuscarXTxt(xbus);})
 $("#tab_pro_por").on('iron-select',function(){switch(xThisProPor.selected){case 0:xLoadAlmacenes();break;case 1:xLoadPorciones();break;}})}
 function xEnterInInputDlgPP(e){var code=e.which;if(code==13||code==186){xGuardarItemProPP();}}
-function xGuardarItemPorcion(){xvalidateFormInput('frm_add_porcion',function(a){if(a===false){return;}
+function xGuardarItemPorcionPorcion(){xvalidateFormInput('frm_add_porcion',function(a){if(a===false){return;}
 xPopupLoad.xopen();$("#frm_add_porcion #idorg").val(xIdOrg);$("#frm_add_porcion #idsede").val(xIdSede);$.post("../../bdphp/ManejoBD_IUD.php?tb=porcion",$("#frm_add_porcion").serialize(),function(xUltimo_id_por){xLoadPorciones();xPopupLoad.xclose();dialog_additem_porcion.close();})});}
 function xGuardarItemProPP(){xvalidateFormInput('frm_item_pro',function(a){if(a===false){return;}
 xPopupLoad.xopen();xnom_familia=$("#sel_familia").val();xPrecio_item=xMoneda($("#frm_item_pro #precio").val());if(xNewFamilia==true){$.ajax({type:'POST',url:'../../bdphp/log.php?op=1602',data:{f:xnom_familia}}).done(function(DtIdFamRpt){$("#frm_item_pro #idproducto_familia").val(DtIdFamRpt);xGuardarItemProDtPP();xLoadFamilias();})}else{xGuardarItemProDtPP();}});}
@@ -228,7 +228,6 @@ xCadenaPro=String(xCadenaPro+'<tr class="row" data-idal="'+xdtPro[i].idproducto_
 +'<td class="sumar_stock xCursor" onclick="xModRow(this,2);" id="td_stock" data-valorginal="'+xtr_stock+'" data-mod-stock="'+xtr_stock+'" data-mod-precio="" data-colummn="stock">'+xtr_stock+'</td>'
 +'<td class="xCursor" onclick="xModRow(this,1);" id="td_pventa" data-valorginal="'+xdtPro[i].precio_venta+'" data-mod-stock="" data-mod-precio="'+xdtPro[i].precio_venta+'" data-colummn="precio_venta">'+xdtPro[i].precio_venta+'</td>'
 +'<td class="xCursor" onclick="openDialogImg(this);"><span class="xfont11">'+btnImgTitulo+'</span></td>'
-+'<td class="xInvisible" id="td_img">'+xdtPro[i].img+'</td>'+
 +'<td><span class="xDeleteRowNeutro" title="Borrar" onclick="xBorrarProducto(this);"></span></td>'
 +'</tr>')};$("#tb_productos .row").remove();$("#tb_productos").append(xCadenaPro).trigger('create');xSumarTotales()
 if(filtroStokMin==='si'){xBuscarXTxt('stock minimo');}
@@ -246,8 +245,7 @@ $(obj).parent().text(xvalObj);$(obj).remove();}
 function xModBlur(obj,tipo){var xvalObj=$(obj).val();var xtb=$(obj).parents('table');var xrow_obj=$(obj).parent();switch(tipo){case 1:xvalObj=xMoneda(xvalObj);xrow_obj.attr('data-mod-precio',xvalObj);xrow_obj.addClass('modificado');break;case 2:xvalObj=xCeroIzq(xvalObj,2);xrow_obj.attr('data-mod-stock',xvalObj);xrow_obj.addClass('modificado');break;case 3:xvalObj=xvalObj;xrow_obj.parents('td').attr('data-mod-descripcion',xvalObj);xrow_obj.parents('td').addClass('modificado');break;}
 $(obj).parent().text(xvalObj);$(obj).remove();}
 function xGuardarCambiosPorcion(){xPopupLoad.xopen();const listProcionModificar=xThisProPor.listPorciones.filter(x=>x.modificado);$.ajax({type:'POST',url:'../../bdphp/log_005.php?op=21',data:{data:listProcionModificar}}).done(res=>{setTimeout(()=>{xPopupLoad.xclose();},200);});}
-function xGuardarCambiosTbProductos(op){var xArraySaveProducto=new Array();var xtb;if(op==1){xtb=$("#tb_productos");xtb=document.getElementById('tb_productos');}else{xtb=$("#tb_porcion");xtb=document.getElementById('tb_porcion');}
-listModificados=xtb.getElementsByClassName('modificado');listModificados=[...listModificados];listModificados.map(element=>{var xval_mod_stock=element.dataset.modStock;var xval_mod_precio=element.dataset.modPrecio||'';var xval_mod_descripcion=element.dataset.modDescripcion||'';var xval_org=element.dataset.valorginal;var xid_pro=element.parentElement.dataset.idp;var xid_alm=element.parentElement.dataset.idal||'';if(xval_org==xval_mod_stock){xval_mod_stock='';}
+function xGuardarCambiosTbProductos(op){var xArraySaveProducto=new Array();var xtb;xtb=$("#tb_productos");xtb=document.getElementById('tb_productos');listModificados=xtb.getElementsByClassName('modificado');listModificados=[...listModificados];listModificados.map(element=>{var xval_mod_stock=element.dataset.modStock;var xval_mod_precio=element.dataset.modPrecio||'';var xval_mod_descripcion=element.dataset.modDescripcion||'';var xval_org=element.dataset.valorginal;var xid_pro=element.parentElement.dataset.idp;var xid_alm=element.parentElement.dataset.idal||'';if(xval_org==xval_mod_stock){xval_mod_stock='';}
 if(xval_org==xval_mod_precio){xval_mod_precio='';}
 if(xval_org==xval_mod_descripcion||xval_mod_descripcion==undefined){xval_mod_descripcion='';}
 xArraySaveProducto.push({'idproducto':xid_pro,'idproducto_stock':xid_alm,'val_stock':xval_mod_stock,'val_precio':xval_mod_precio,'val_descripcion':xval_mod_descripcion})});if(xArraySaveProducto.length>0){xPopupLoad.xopen();$.ajax({type:'POST',url:'../../bdphp/log.php?op=1801',data:{array_rows:xArraySaveProducto,op:op}}).done(function(dtRptPro){var xdtRptPro=$.parseJSON(dtRptPro);if(xdtRptPro.success!=true){alert(xdtRptPro.error)}
@@ -269,6 +267,6 @@ function xItemGuardarFotProducto(){const nomfileImg=xIdObjImgDet;const img_Item=
 function transferenciaCompleta(xfile){xfile=xIdOrg+xIdSede+xfile;$.ajax({type:'POST',url:'../../bdphp/log.php?op=20701',data:{i:xIdObjImgDet,d:xfile}}).done(function(a){$(xObjImgDet).parents('tr').find('#td_img').text(xfile);xPopupLoad.xclose();})}
 function openDialogImg(obj){xObjImgDet=obj;xObjRowSel=obj.parentElement;xIdObjImgDet=obj.parentElement.dataset.idp;var xval_des=$(obj).parent().text();var xval_img=$(obj).parents('tr').find("#td_img").text();xval_img=xval_img===''?'':URL_IMG_CARTA+xval_img;$("#dlg_foto_vista_previa img").remove();$("#dlg_btn_quitar_foto").addClass('xInvisible');if(xval_img!==''){const xval_img_control='<img src="'+xval_img+'">';$("#dlg_foto_vista_previa").append(xval_img_control).trigger('create');$("#dlg_btn_quitar_foto").removeClass('xInvisible');}
 $("#ctrl_open_file").val('');compImgProducto.resetControl();compImgProducto.setImgPathFile(xval_img);dialog_detalle.open();}
-function descargarListaProductos(){var _table=document.getElementById('tb_productos_export');var html=_table.outerHTML;window.open('data:application/vnd.ms-excel,'+encodeURIComponent(html));setTimeout(()=>{xPopupLoad.xclose();},500);}
+function descargarListaProductos(){var _table=document.getElementById('tb_export_p');var html=_table.outerHTML;window.open('data:application/vnd.ms-excel,'+encodeURIComponent(html));setTimeout(()=>{xPopupLoad.xclose();},500);}
 Polymer({is:'x-producto-porcion',properties:{xt_org:Number,xt_idsede:Number,xt_idus:Number,xdt_prodcutos:Object,dtProFam:Object,listPorciones:[],medidaImgProducto:[],listProductosExport:[]},attached:function(){this.selected=0;xThisProPor=this;xIniProPor();}})/*]]>*/</script>
 </dom-module>
