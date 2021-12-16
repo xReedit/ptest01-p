@@ -312,8 +312,10 @@
 				// $x_array_pedido_header['delivery'] = array_key_exists('pasoRecoger', $arrD) ? 1 : 0;
 				$is_delivery = array_key_exists('pasoRecoger', $arrD) ? 1 : 0;
 				$x_array_pedido_header['delivery'] = $is_delivery;
-								
-				if ( $is_delivery == 1 && $isComercioAppDeliveryMapa == 1) {									
+					
+				// 151221 quitamos && $isComercioAppDeliveryMapa == 1 para que los deliveris puedan ser leidos por papaya repartidor
+				// if ( $is_delivery == 1 && $isComercioAppDeliveryMapa == 1) {									
+				if ( $is_delivery == 1 ) {
 					$x_array_pedido_body = $x_array_pedido_body_homologacion;					
 				}
 					
@@ -325,7 +327,9 @@
 				$json_body = str_replace("\\n", "", $json_body); // eliminar los saltos de pagina
 				$json_body = json_decode(stripslashes($json_body), JSON_UNESCAPED_UNICODE);
 
+				
 				$json_datos_delivery = json_encode(array('p_body' => $json_body, 'p_header' => $x_array_pedido_header,'p_subtotales' => $x_array_subtotales), JSON_UNESCAPED_UNICODE); // , 'p_body' => $x_array_pedido_body, 'p_subtotales' => $x_array_subtotales
+				
 			}
 				// solo para pruebas
 				// $json_body = addslashes($x_array_pedido_body);				
@@ -643,7 +647,9 @@
 				$is_delivery = array_key_exists('pasoRecoger', $arrD) ? 1 : 0;
 				$x_array_pedido_header['delivery'] = $is_delivery;
 								
-				if ( $is_delivery == 1 && $isComercioAppDeliveryMapa == 1) {									
+				// 151221 quitamos && $isComercioAppDeliveryMapa == 1 para que los deliveris puedan ser leidos por papaya repartidor
+				// if ( $is_delivery == 1 && $isComercioAppDeliveryMapa == 1) {									
+				if ( $is_delivery == 1 ) {									
 					$x_array_pedido_body = $x_array_pedido_body_homologacion;					
 				}
 					
