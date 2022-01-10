@@ -2167,6 +2167,35 @@
 			$sql = "call procedure_cierre_bitacora($g_ido,$g_idsede,$idus,'".$arrItem."')";
 			$bd->xConsulta($sql);
 			break;
+		case 7011101: // verificar cuadre permiso remoto
+			$arrItem = json_encode($_POST['item']);
+			$idus = $_POST['item']['idusuario_solicita'];
+			$sql = "call procedure_cierre_bitacora($g_ido,$g_idsede,$idus,'".$arrItem."')";
+			$bd->xConsulta($sql);
+			break;
+		case 7011102: // verificar cuadre permiso remoto guardar
+			$arrItem = $_POST['item'];			
+			$sql = "update cierre_permiso_remoto set visto='1', signo = '".$arrItem['signo']."',
+						diferencia = '".$arrItem['diferencia']."',
+						importe_sistema = '".$arrItem['importe_sistema']."' where idcierre_permiso_remoto =".$arrItem['idcierre_permiso_remoto'];
+			$bd->xConsulta($sql);
+			break;
+		case 7011103: // permiso remoto guardar resultado enviado 1
+			$idPermiso = $_POST['id'];			
+			$sql = "update cierre_permiso_remoto set enviado='1' where idcierre_permiso_remoto =".$idPermiso;
+			$bd->xConsulta($sql);
+			break;
+		case 70112: // usuario administradores para permiso remoto
+			$sql = "select idusuario, nombres from usuario where idsede = $g_idsede and rol = 1 and nombres != 'SISTEMA' and estado = 0";
+			$bd->xConsulta($sql);
+			break;
+		case 70113: // guardar permiso remoto
+			$usAdmin = $_POST['idus'];
+			$importe = $_POST['importe'];
+			$usSolicita = $_SESSION['idusuario'];;
+			$sql = "insert into cierre_permiso_remoto (idsede, idusuario_admin, idusuario_solicita, importe, fecha) values ($g_idsede, $usAdmin, $usSolicita, $importe, now())";
+			$bd->xConsulta($sql);
+			break;
 		case 7://resumen ventas
 			$ido=$g_ido;
 			$idsede=$_SESSION['idsede'];

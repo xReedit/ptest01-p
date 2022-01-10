@@ -176,7 +176,7 @@
                     set c.estado_sunat=0
                     where (c.idorg=1 and c.idsede=1) and c.fecha = '".$obj['fecha_resumen']."' and tp.codsunat='03' and c.anulado=0";
 
-                echo $sql_bl;
+                // echo $sql_bl;
                 $bd->xConsulta_NoReturn($sql_bl);
             }
             break;
@@ -200,7 +200,16 @@
             break;
         case '3011': // facturas// lista documentos no registrados en suant - documnentos que no fueron enviados a sunat por algun error de conexion
             $sql = "SELECT * from ce where (idsede=".$_SESSION['idsede'].") and str_to_date(fecha, '%d/%m/%Y') between DATE_SUB( CURDATE() , INTERVAL 10 DAY ) AND CURDATE() and estado_api = 0 and (estado_sunat != 0 or msj='Registrado') and anulado=0";
-            $bd->xConsulta($sql);
+
+            // facturas y boletas, a las boletas revisa si esta sin registrar y las registra
+            // $sql = "SELECT tcs.idtipo_comprobante, ce.* from ce
+            //     inner join tipo_comprobante_serie tcs on tcs.idtipo_comprobante_serie = ce.idtipo_comprobante_serie
+            //     where (ce.idsede=".$_SESSION['idsede'].") and tcs.idtipo_comprobante = 3
+            //     and str_to_date(ce.fecha, '%d/%m/%Y') between DATE_SUB( CURDATE() , INTERVAL 10 DAY ) AND CURDATE() 
+            //     and ce.estado_api = 0 
+            //     and (ce.estado_sunat != 0 or msj='Registrado')
+            //     and ce.anulado=0;";
+            // $bd->xConsulta($sql);
             break;
         case '302':// resumen de boletas: consulta fecha de boletas no enviadas 
             $sql="SELECT fecha from ce where (idorg=".$_SESSION['ido']." and idsede=".$_SESSION['idsede'].") and str_to_date(fecha, '%d/%m/%Y') between DATE_SUB( CURDATE() , INTERVAL 10 DAY ) AND CURDATE() and (estado_sunat != 0 or msj='Registrado') and (estado=0 and anulado=0) GROUP BY fecha";

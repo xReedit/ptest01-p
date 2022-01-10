@@ -1,6 +1,26 @@
 <dom-module id="x-caja">
 <link rel="preload" href="../../../images/_msj_envio_sunat.gif" as="image" media="(max-width: 600px)">
 <template>
+<paper-dialog class="dialog_redondo" id="dialog_permiso_remoto" style="max-width:500px" modal entry-animation="scale-up-animation" exit-animation="fade-out-animation">
+<div>
+<img src="../../../images/_solicitud_remoto.png" alt="solicita">
+<p class="fs-18">Solicitar permiso remoto.</p>
+<p class="fw-100 text-secondary">Solicitar permiso al administrador para saber su diferencia y poder cerrar su caja.</p>
+<br>
+<p>Quien dará el permiso?</p>
+<select class="selected-template-1" id="selAdmin" onchange="selectedUsAdmin(this)">
+<template is="dom-repeat" items="{{listUsAdmin}}" as="item">
+<option value="{{item.idusario}}">{{ item.nombres }}</option>
+</template>
+</select>
+<br><br>
+<p>En efectivo tengo:</p>
+<input type="text" class="xMiInput xPasarEnter2 fs-15 fw-600 w-50" placeholder="0.00" id="txt_total_tengo">
+<br><br>
+<button class="xBoton2 xVerde" onclick="xEnviarPermisoRemoto()">Enviar</button>
+<button dialog-dismiss id="dlg_sunat_btn" class="xBoton2 xPlomo">Cancelar</button>
+</div>
+</paper-dialog>
 <paper-dialog class="dialog_redondo" id="dialog_enviando_sunat" style="width:245px" modal entry-animation="scale-up-animation" exit-animation="fade-out-animation">
 <div style="text-align:center">
 <img id="dgl_sunat_img" src="../../../images/_msj_envio_sunat.gif" alt="">
@@ -106,32 +126,30 @@
 <div id="cierre_caja">
 <div class="xTxtCierreCajaContenedor">
 <b><h3 id="xTituloCierre">CIERRE DE CAJA</h3></b>
-<p>Especifique que cantidad tiene en caja segun denominacion:</p>
-<br>
+<p class="fs-15">indique el importe en efectivo que tiene en caja, que es igual a todas las ventas en efectivo más ingresos y menos salidas de caja.</p>
+<br><br>
+<p class="fs-16 fw-600">Total de efectivo en caja:</p>
+<input type="text" class="xMiInput xPasarEnter2 fs-28 fw-600 w-50" data-valor="0.10" placeholder="0.00" id="txt_total_caja">
+<br><br>
 <form id="formCierre">
-<div class="xAlinearce xm_at_cont xEpaciarInputCierre">
-<input type="text" class="xMiInput xPasarEnter2" data-valor="200" placeholder="De 200">
-<input type="text" class="xMiInput xPasarEnter2" data-valor="100" placeholder="De 100">
-<input type="text" class="xMiInput xPasarEnter2" data-valor="50" placeholder="De 50">
-<input type="text" class="xMiInput xPasarEnter2" data-valor="20" placeholder="De 20">
-<input type="text" class="xMiInput xPasarEnter2" data-valor="10" placeholder="De 10">
-<input type="text" class="xMiInput xPasarEnter2" data-valor="5" placeholder="De 5">
-</div>
-<div class="xAlinearce xm_at_cont xEpaciarInputCierre">
-<input type="text" class="xMiInput xPasarEnter2" data-valor="2" placeholder="De 2">
-<input type="text" class="xMiInput xPasarEnter2" data-valor="1" placeholder="De 1">
-<input type="text" class="xMiInput xPasarEnter2" data-valor="0.50" placeholder="De 0.50">
-<input type="text" class="xMiInput xPasarEnter2" data-valor="0.20" placeholder="De 0.20">
-<input type="text" class="xMiInput xPasarEnter2" data-valor="0.10" placeholder="De 0.10" id="txt_fin">
-<input type="text" class="xMiInput" data-valor="total" placeholder="Total" id="TxtTotal" disabled encendido>
-</div>
 <div id="xTituloRpt">
 </div>
 <div id="xTituloRpt2"></div>
 </form><br>
+<div id="div_espera_rpt" class="xInvisible">
+<p class="fw-600 fs-15">Por favor espere la respuesta a la solicitud por parte del administrador... <i class="fa fa-circle-o-notch fa-spin"></i></p>
+<br>
+</div>
+<div id="div_rpt_solicitud" class="xInvisible">
+<p class="fw-600 fs-15">Respuesta Solicitud</p>
+<p class="fw-600">Efectivo Sistema: {{rowRptSolicitud.importe_sistema}}</p>
+<p class$="[[rowRptSolicitud.diferecia_color]]">{{ rowRptSolicitud.diferecia_estado }}: {{ rowRptSolicitud.diferencia}}</p>
+<br>
+</div>
 <div id="btns_cierre">
-<paper-button tabindex="0" raised class="xverde" onclick="xVerificar()"><iron-icon icon="save"></iron-icon>Verificar</paper-button>
-<paper-button tabindex="0" raised class="xnegro" onclick="xPSupervisor.xopen()"><iron-icon icon="save"></iron-icon>Supervisor</paper-button>
+<button class="btn btn-success" onclick="xVerificar()"><i class="fa fa-check pr-1"></i>Verificar</button>
+<button class="btn btn-dark" onclick="xPSupervisor.xopen()"><i class="fa fa-user pr-1"></i>Supervisor</button>
+<button class="btn btn-info" onclick="xOpenDialogPermisoRemotoUs()"><i class="fa fa-volume-control-phone pr-1"></i>Permiso Remoto</button>
 </div>
 </div>
 <br><br>
@@ -189,7 +207,7 @@
 <script type="text/javascript" src="../../view/cpe_interno.js"></script>
 <script type="text/javascript" src="../../view/xSOAPSunat.js"></script>
 <script type="text/javascript" src="../../view/socket.service.p.js"></script>
-<script>/*<![CDATA[*/var xThisCaja,xMontoTotalCaja,xSumData,xtbReport,xPermisoSupervisor=0,xArrayCierrePrint=[],xArrayEncabezadoCierre,xEfectivoCaja=0,nom_supervisor='',id_supervisor=0,xlo_idorg,xlo_idsede,xlo_us,isSocket,xArraySumT=[],numImtentosUs=0,guadandoIngresoSalida=false;function xIniCaja(){xPopupLoad=document.getElementById('xLoad');xm_LogChequea(function(){xm_log_get('ini_us');console.log('xUsAc_Ini',xUsAc_Ini);$('body').addClass('loaded');xThisCaja.xt_org=xIdOrg;xThisCaja.xt_idsede=xIdSede;xThisCaja.xt_idus=xIdUsuario;$("#Titulo_page").text("Movimientos de Caja");xtbReport=$("#xTableList");isSocket=parseInt(xm_log_get('datos_org_sede')[0].pwa)===0?false:true;});xPSupervisor=document.getElementById('xPSupervisor');xPSupervisor.valor='Rol1';xPSupervisor.addEventListener('xSend',function(e){var p=e.detail.xRpts[0].p;if(p==1){nom_supervisor=e.detail.xRpts[0].nomus;id_supervisor=e.detail.xRpts[0].us;xPermisoSupervisor=1;xVerificar()}});$('.xPasarEnter2').on('keyup',function(e){var xvalText=$(this).val();var xValDeno=$(this).attr('data-valor');if(xValDeno=='total'){return;}
+<script>/*<![CDATA[*/var xThisCaja,xMontoTotalCaja,xSumData,xtbReport,xPermisoSupervisor=0,xArrayCierrePrint=[],xArrayEncabezadoCierre,xEfectivoCaja=0,nom_supervisor='',id_supervisor=0,xlo_idorg,xlo_idsede,xlo_us,isSocket,xArraySumT=[],numImtentosUs=0,guadandoIngresoSalida=false,idUsAdminPermiso=0;function xIniCaja(){xPopupLoad=document.getElementById('xLoad');xm_LogChequea(function(){xm_log_get('ini_us');console.log('xUsAc_Ini',xUsAc_Ini);$('body').addClass('loaded');xThisCaja.xt_org=xIdOrg;xThisCaja.xt_idsede=xIdSede;xThisCaja.xt_idus=xIdUsuario;$("#Titulo_page").text("Movimientos de Caja");xtbReport=$("#xTableList");isSocket=parseInt(xm_log_get('datos_org_sede')[0].pwa)===0?false:true;});xPSupervisor=document.getElementById('xPSupervisor');xPSupervisor.valor='Rol1';xPSupervisor.addEventListener('xSend',function(e){var p=e.detail.xRpts[0].p;if(p==1){nom_supervisor=e.detail.xRpts[0].nomus;id_supervisor=e.detail.xRpts[0].us;xPermisoSupervisor=1;xVerificar()}});$('.xPasarEnter2').on('keyup',function(e){var xvalText=$(this).val();var xValDeno=$(this).attr('data-valor');if(xValDeno=='total'){return;}
 var xDeno=parseFloat(parseFloat(xvalText)/parseFloat(xValDeno));if(xDeno%1==0){$(this).removeClass('xTxtRojo');xSumarTotal();}else{$(this).addClass('xTxtRojo');}
 var code=e.which;if(code==13||code==186){var inputs=$('input');var a=inputs.index(document.activeElement);if(inputs[a+1]!==null)
 {var nextBox=inputs[a+1];if(nextBox===undefined){return}
@@ -199,7 +217,7 @@ nextBox.focus();}
 return false;}});$("#form_ingreso #monto").on('keyup',function(e){var code=e.which;if(code==13||code==186){xGuardarIngreso();}})
 $("#form_egreso #monto").on('keyup',function(e){var code=e.which;if(code==13||code==186){xGuardarEgreso();}})
 $("#txt_fin").on('keyup',function(e){var code=e.which;if(code==13||code==186){xVerificar();}})
-$("#tab_caja").on('iron-select',function(){switch(xThisCaja.selected){case 0:xLoadResumenIS();break;case 1:xloadLastCierres();break;}})}
+$("#tab_caja").on('iron-select',function(){switch(xThisCaja.selected){case 0:xLoadResumenIS();break;case 1:xloadLastCierres();break;}});xLoadUsAdminPermiso();}
 function xGuardarIngreso(){if(guadandoIngresoSalida){return;}
 guadandoIngresoSalida=true;xvalidateFormInput('form_ingreso',function(a){if(a===false){guadandoIngresoSalida=false;return;}
 var xvalIE=$("#form_ingreso #selecie").val();xPopupLoad.xopen();$("#form_ingreso #fecha").val(xDevolverFecha()+' '+xDevolverHora());$("#form_ingreso #monto").val(xMoneda($("#form_ingreso #monto").val()))
@@ -211,7 +229,7 @@ function xLoadResumenIS(){$("#tb_resumen_ie .row").remove();$("#tb_resumen_ie").
 xcadena_resumen_ie=String(xcadena_resumen_ie+'<tr class="row '+xClassTipo+'"><td>'+xCeroIzq(xCuentaRow,2)+'</td><td>'+xdtIE[i].fecha+'</td><td>'+xdtIE[i].des_tipo+'</td><td>'+xdtIE[i].motivo+'</td><td align="right">'+xdtIE[i].monto+'</td></tr>');};$("#tb_resumen_ie .row").remove();$("#tb_resumen_ie").append(xcadena_resumen_ie).trigger('create');});xLoadAdelantoOrdenPedido();}
 function xLoadAdelantoOrdenPedido(){$.ajax({type:'POST',url:'../../bdphp/log_004.php?op=15'}).done(function(resAdelanto){const _resAdelanto=JSON.parse(resAdelanto).datos;xThisCaja.listAdelantoOrden=_resAdelanto;console.log('xThisCaja.listAdelantoOrden',xThisCaja.listAdelantoOrden);xThisCaja.isShowListaAdelantoOrden=xThisCaja.listAdelantoOrden.length>0;});}
 function xSumarTotal(){xMontoTotalCaja=0;$('.xTxtCierreCajaContenedor').find('input:text').each(function(index,element){var xValElement=$(element).val();if(xValElement!=""&&$(element).attr('data-valor')!="total"){xMontoTotalCaja+=parseFloat(xValElement);}});$('#TxtTotal').val(xMoneda(xMontoTotalCaja));}
-function xVerificar(){$('#xTituloRpt').html('<paper-spinner active></paper-spinner>').trigger('create');const datos={totalcaja:parseInt(xMontoTotalCaja),idusuario_supervisor:id_supervisor||0,}
+function xVerificar(){xMontoTotalCaja=txt_total_caja.value;$('#xTituloRpt').html('<paper-spinner active></paper-spinner>').trigger('create');const datos={totalcaja:parseFloat(xMontoTotalCaja),idusuario_supervisor:id_supervisor||0,}
 $.ajax({type:'POST',url:'../../bdphp/log.php?op=70111',data:{item:datos}}).done(res=>{res=JSON.parse(res);if(!res.success){console.log(res);return;}
 res=res.datos[0];var xRpt,xColor='',labelItentos='',xsub_falta='',xsub_sobra='',xRpt_monto_supervicion='';const isConforme=res.isConforme==='1'?true:false;const isNumIntentosAgotado=res.isNumIntentosAgotado==='1'?true:false;const calTotal=parseInt(res.calcTotal);if(isConforme){xRpt='<h3>OK cuadre conforme.</h3>';xColor='#060';xArmarArrayPrint(res.idbitacora);xloadLastCierres()}else{if(xPermisoSupervisor==1){if(!isNaN(calTotal)){if(calTotal>1){xRpt_monto_supervicion='(falta '+xMoneda(calTotal)+'). ';xsub_falta='xSubrayar xBold2';}
 else{xRpt_monto_supervicion='(sobra '+xMoneda(calTotal)+'). ';xsub_sobra='xSubrayar xBold2';}}
@@ -260,4 +278,11 @@ function reImprimirCierreHistory(obj){const _cpe=obj.dataId;xPopupLoad.xopen()
 $.ajax({type:'POST',url:'../../bdphp/log_005.php?op=1703',data:{idprint:_cpe}}).done(function(res){var _detalle_json=JSON.parse(res).datos;_detalle_json=_detalle_json.length>0?_detalle_json[0]:_detalle_json;const _dataPrint={detalle_json:_detalle_json.detalle_json,idprint_server_detalle:_detalle_json.idprint_server_detalle+new Date().getMilliseconds(),hora:xDevolverHora(),nomUs:'Caja',nom_documento:"cuadre-caja"}
 _cpSocketprinterOnly(_dataPrint);setTimeout(()=>{xPopupLoad.xclose()},1500);});}
 function recibirAdelanto(obj){const indexList=obj.dataId;const item=xThisCaja.listAdelantoOrden[indexList];item.fecha_guardar=xDevolverFecha()+' '+xDevolverHora();$.ajax({type:'POST',url:'../../bdphp/log_004.php?op=1501',data:{data:item}}).done(function(res){xLoadResumenIS();});}
-Polymer({is:'x-caja',properties:{xt_org:Number,xt_idsede:Number,xt_idus:Number,winchaCierre:[],listCierres:[],isShowLastCierres:Boolean,listAdelantoOrden:[],isShowListaAdelantoOrden:Boolean,},attached:function(){this.selected=0;this.isShowLastCierres=false;this.isShowListaAdelantoOrden=false;xThisCaja=this;xIniCaja();setTimeout(()=>{_cpSocketOpen();},1000);},detached:function(){_cpSocketClose();}})/*]]>*/</script>
+function xOpenDialogPermisoRemotoUs(){txt_total_tengo.value=txt_total_caja.value;dialog_permiso_remoto.open();}
+function xLoadUsAdminPermiso(){$.ajax({type:'POST',url:'../../bdphp/log.php?op=70112'}).done(function(res){xThisCaja.listUsAdmin=JSON.parse(res).datos;selectedUsAdmin(null,0);console.log('listUsAdmin',xThisCaja.listUsAdmin);});}
+function selectedUsAdmin(obj,index=null){if(index!==null){idUsAdminPermiso=xThisCaja.listUsAdmin[index].idusuario;return;}
+idUsAdminPermiso=xThisCaja.listUsAdmin[obj.selectedIndex].idusuario;}
+function xEnviarPermisoRemoto(){$.ajax({type:'POST',url:'../../bdphp/log.php?op=70113',data:{idus:idUsAdminPermiso,importe:txt_total_tengo.value}}).done(function(res){console.log('res',res);$('#div_espera_rpt').removeClass('xInvisible');dialog_permiso_remoto.close();});}
+function xCajaResPermisoRemoto(res){console.log('permiso remoto',res);if(res.idusuario_solicita!==xIdUsuario){return;}
+xThisCaja.rowRptSolicitud=res;$('#div_espera_rpt').addClass('xInvisible');$('#div_rpt_solicitud').removeClass('xInvisible');}
+Polymer({is:'x-caja',properties:{xt_org:Number,xt_idsede:Number,xt_idus:Number,winchaCierre:[],listCierres:[],listUsAdmin:[],isShowLastCierres:Boolean,listAdelantoOrden:[],isShowListaAdelantoOrden:Boolean,isShowEsperaRptSolicitudCierre:Boolean,isShowRptSolicitudCierre:Boolean,rowRptSolicitud:[]},attached:function(){this.selected=0;this.isShowLastCierres=false;this.isShowListaAdelantoOrden=false;this.isShowEsperaRptSolicitudCierre=false;this.isShowRptSolicitudCierre=false;xThisCaja=this;xIniCaja();setTimeout(()=>{_cpSocketOpen();},1000);},detached:function(){_cpSocketClose();}})/*]]>*/</script>

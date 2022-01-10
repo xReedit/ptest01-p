@@ -104,5 +104,12 @@
             $sql = "select * from promocion_gif where estado=0";
             $bd->xConsulta($sql);
             break;
+        
+        case 6: // solicitudes remotas de cierre
+            $sql = "SELECT cpr.*, u.usuario  from cierre_permiso_remoto cpr
+                left join usuario u on cpr.idusuario_solicita = u.idusuario 
+                where cpr.idusuario_admin = $g_us order by cpr.idcierre_permiso_remoto desc limit 15";
+            $bd->xConsulta($sql);
+            break;
     }
 ?>    

@@ -1,0 +1,209 @@
+<dom-module id="x-permiso-remoto">
+    <template>
+        <br>
+        <div class="xMiCard xradius" style="width:90%; max-width: 1250px;">
+            <div class="xEncanezadoCard" style="background: lavenderblush; color: #424242;">
+                <div class="div-content-head-op">
+                    <p class="fw-600 fs-18">Solicitudes remotas de cierre.</p>
+                    <p class="fw-100 text-secondary fs-12">Usuarios solicitan permiso para saber su diferencia y poder cerrar caja.</p>
+                </div>                
+            </div>
+            <div class = "p-3 mb-5">
+                <!-- listado -->
+                <div hidden$="[[ showListPermiso ]]">                    
+                    <br>
+                    <button class="btn btn-sm btn-success" onclick="xIniPermisoRemoto(true)"><i class="fa fa-refresh pr-1"></i>Actualizar</button>
+                    <table width="100%">
+                        <thead>                            
+                            <th>Usuario</th>                            
+                            <th>Diferencia</th>                            
+                        </thead>
+                        <tbody>
+                            <template is="dom-repeat" items="{{listSolicitudes}}" as="item">
+                                <tr data-id="[[index]]">
+                                    <td>
+                                        <p class="fs-11">{{ item.fecha }}</p>
+                                        <p>{{ item.usuario }}</p>
+                                        <p>Efectivo: <strong>{{ item.importe }}</strong></p>
+                                    </td>                                    
+                                    <td>
+                                        <div hidden$="{{!item.is_visto}}">
+                                            <p>Efectivo Sistema: {{item.importe_sistema}}</p>
+                                            <p class$="[[item.diferecia_color]]">{{item.diferecia_estado}}: {{item.diferencia}}</p>                                            
+                                        </div>
+                                        <div>
+                                            <div id="div_btns">                                            
+                                                <button data-id="[[index]]" hidden$="{{item.is_visto}}" class="btn btn-sm btn-info" onclick="xVerDiferenciaCaja(this)">Ver Diferencia</button>
+                                                <div hidden$="{{!item.is_visto}}">
+                                                    <div hidden$="{{item.is_enviado}}">
+                                                        <button data-id="[[index]]" class="btn btn-sm btn-success" onclick="xEnviarResultadoPermiso(this)">Enviar Resultado</button>
+                                                        <p class="fw-600 xInvisible" id="labelEnviado">Enviado.</p>
+                                                    </div>
+                                                </div>
+                                                <p class="fw-600" hidden$="{{!item.is_enviado}}">Enviado.</p>
+                                            </div>                                            
+                                            <div id="div_loader" class="xInvisible">                                            
+                                                <i class="fa fa-circle-o-notch fa-spin"></i>
+                                            </div>
+                                        </div>
+                                    </td>
+                                </tr>
+                            </template>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>        
+    </template>
+</dom-module>
+<script type="text/javascript" src="../../view/socket.service.p.js"></script>
+<script>
+    var xThisPermisoRemoto, rowLoader, rowBtns;
+
+    function xIniPermisoRemoto(loader = false) {
+        // load listado ultimos 15
+        if ( loader ) {
+            xPopupLoad.titulo = "Actualizando...";
+            xPopupLoad.xopen();
+        }
+
+        xThisPermisoRemoto.listSolicitudes = [];
+        $.ajax({ type: 'POST', url: '../../bdphp/log_009.php?op=6'})
+            .done( function (DtItems) {                
+                const _listSolicitudes = JSON.parse(DtItems).datos.map(x => {
+                    x.is_visto = x.visto === '0' ? false : true;
+                    x.is_enviado = x.enviado === '0' ? false : true;
+                    x.showloader = false;
+
+                    if ( x.signo === '+' ) {
+                        x.diferecia_color = 'text-info fw-600';
+                        x.diferecia_estado = 'Sobrante';
+                    } else {
+                        x.diferecia_color = 'text-danger fw-600';
+                        x.diferecia_estado = 'Faltante';
+                    }  
+                    return x;
+                });                
+
+                xThisPermisoRemoto.listSolicitudes = JSON.parse(JSON.stringify(_listSolicitudes));
+                // console.log('xThisPermisoRemoto.listSolicitudes', xThisPermisoRemoto.listSolicitudes);
+            });
+
+            setTimeout(() => {xPopupLoad.xclose(); xPopupLoad.titulo = "Guardando...";}, 2000)
+
+            $('body').addClass('loaded');
+    }
+
+    function xVerDiferenciaCaja(obj) {
+        // const xRowObj=obj;        
+        const index = obj.dataId;        
+        const rowVerificar = xThisPermisoRemoto.listSolicitudes[index];
+
+        rowLoader = $(obj.parentElement.parentElement).find('#div_loader');
+        rowBtns = $(obj.parentElement.parentElement).find('#div_btns');
+
+        rowVerificar.showloader = true;
+        rowLoader.removeClass('xInvisible');
+        rowBtns.addClass('xInvisible');
+
+        // console.log('rowVerificar', rowVerificar);
+        setTimeout(() => {
+            xShowVerificacionCaja(rowVerificar);
+        }, 1000)
+    }
+
+    function xShowVerificacionCaja(rowVerificar, obj) {
+        const datos = {
+            totalcaja: parseFloat(rowVerificar.importe),
+            idusuario_supervisor: xIdUsuario,			
+            idusuario_solicita: rowVerificar.idusuario_solicita
+        }
+
+        
+
+
+        $.ajax({ type: 'POST', url: '../../bdphp/log.php?op=7011101', data: {item: datos} })
+        .done( res => {
+            res = JSON.parse(res).datos;
+            const efectivoEnCajaSistema = parseFloat(res[0].efectivoCaja);
+            const importeDiferencia = parseFloat(rowVerificar.importe) - efectivoEnCajaSistema;
+            if ( importeDiferencia > -1 ) {
+                rowVerificar.signo = '+';  
+                rowVerificar.diferecia_color = 'text-info fw-600';
+                rowVerificar.diferecia_estado = 'Sobrante';
+            } else {
+                rowVerificar.signo = '-';  
+                rowVerificar.diferecia_color = 'text-danger fw-600';
+                rowVerificar.diferecia_estado = 'Faltante';
+            }            
+            
+            rowVerificar.diferencia = importeDiferencia.toFixed(2);
+            rowVerificar.importe_sistema = efectivoEnCajaSistema.toFixed(2);
+            rowVerificar.visto = 1;
+            rowVerificar.is_visto = true;
+            // console.log('res', rowVerificar);
+
+            xSavePermisoRemoto(rowVerificar);
+        })
+    }
+
+    function xSavePermisoRemoto(rowVerificar) {
+        
+            
+            $.ajax({ type: 'POST', url: '../../bdphp/log.php?op=7011102', data: {item: rowVerificar} })
+            .done( res => {
+                // console.log('res', res);
+                xIniPermisoRemoto();
+
+                // setTimeout(() => {        
+                    // console.log('fin process');
+                    rowVerificar.showloader = false;
+                    rowBtns.removeClass('xInvisible');
+                    rowLoader.addClass('xInvisible');
+                // }, 1000);
+            });
+    }     
+
+    function xEnviarResultadoPermiso(obj) {
+        const index = obj.dataId;        
+        const rowVerificar = xThisPermisoRemoto.listSolicitudes[index];
+
+        _cpSocketPermisoCierreRemotoEnviarRpt(rowVerificar);
+
+        $.ajax({ type: 'POST', url: '../../bdphp/log.php?op=7011103', data: {id: rowVerificar.idcierre_permiso_remoto} })
+        .done( res => {
+            // console.log(res);
+            const objLabelEnviado = $(obj.parentElement).find('#labelEnviado');
+            objLabelEnviado.removeClass('xInvisible');
+            obj.remove();
+        });
+    }
+
+        
+
+    Polymer({
+	is:'x-permiso-remoto',
+	properties:{
+		listSolicitudes: [],
+        // isShowLoaderPermisoRpt: Boolean
+	},
+	attached:function(){
+        // this.isShowLoaderPermisoRpt = false;
+    	xThisPermisoRemoto=this;
+		xIniPermisoRemoto();
+		// _cpSocketIsConnect();
+
+		setTimeout(() => {				
+			// xIniControlMesa();
+			
+			_cpSocketOpen();
+		}, 1000);
+	},
+	detached:function(){
+		_cpSocketClose();
+	},
+    _isEqualToLoading : (item) => {
+            return item.showloader;
+        },
+})
+</script>
