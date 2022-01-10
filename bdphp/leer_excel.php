@@ -206,7 +206,8 @@ function sheetDataProductos($sheet) {
   // echo $sqlProductoUpdate;
   // return;
 
-  $bdP->xMultiConsulta($sqlProductoUpdate.' '.$sqlProductoDetalleNew);  
+  $bdP->xMultiConsulta($sqlProductoUpdate);  
+  $bdP->xMultiConsulta($sqlProductoDetalleNew);
   echo $sqlProductoUpdate.' | '.$sqlProductoDetalleNew;
 }
 
