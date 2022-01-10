@@ -120,14 +120,19 @@ function sheetDataProductos($sheet) {
           $xcant_y=$cell;
           $yapaso=true;
         }
+        
         if($y==6){//precio x unidad
           $xpu=round(($cell/$xcant_y),3);
           $xrow=$xrow."'".$cell."','".$xpu."',"; 
           $yapaso=true;
         }
+        
+         
         if($yapaso==false){
           $xrow=$xrow."'".$cell."',";  
         }        
+
+        
       }
       
       
@@ -142,7 +147,7 @@ function sheetDataProductos($sheet) {
           case 5:$sqlProductoUpdateRow=$sqlProductoUpdateRow.", stock_minimo='".$cell."'";break;
           case 6:$sqlProductoUpdateRow=$sqlProductoUpdateRow.", precio='".$cell."'";$sqlProductoUpdateRow=$sqlProductoUpdateRow.", precio_unitario='".$xpu."'";break;                  
           case 7:$sqlProductoUpdateRow=$sqlProductoUpdateRow.", precio_venta=".$cell;break;
-          case 8:$sqlProductoUpdateRow=$sqlProductoUpdateRow.", img=".$cell;break;
+          case 8:$sqlProductoUpdateRow=$sqlProductoUpdateRow.", img='".$cell."'";break;
         }         
       }
 
