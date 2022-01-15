@@ -2417,30 +2417,60 @@
 			// 	ORDER BY t2 desc
 			// ";
 
+			// $sql = "
+			// 	SELECT concat(i.descripcion, COALESCE(subIt.des, '')) descripcion, sum(rpp.cantidad) as t1,
+			// 	if (cl.cantidad = 'SP', 
+			// 		(SELECT CAST((po.stock/ii.cantidad) AS SIGNED) AS stock 
+			// 		FROM item AS i1 
+			// 		INNER JOIN item_ingrediente AS ii using(iditem) 
+			// 		INNER JOIN porcion AS po ON ii.idporcion=po.idporcion 
+			// 		WHERE i1.iditem = i.iditem
+			// 		GROUP BY i1.iditem)
+			// 	, cl.cantidad) as t2, format(sum(rpp.total),2) as t3
+			// 	FROM registro_pago_pedido as rpp
+			// 	inner join registro_pago as rp ON rpp.idregistro_pago = rp.idregistro_pago
+			// 	inner join pedido_detalle as pd on rpp.idpedido_detalle = pd.idpedido_detalle
+			// 	inner join item as i on pd.iditem = i.iditem
+			// 	INNER JOIN carta_lista AS cl ON i.iditem=cl.iditem
+			// 	left join (select itcd.iditem,  isub.iditem_subitem, concat(' - ', isub.descripcion) des , isub.precio
+			// 	                from item_subitem_content ic		
+			// 	                    inner join item_subitem isub on isub.iditem_subitem_content = ic.iditem_subitem_content
+			// 	                    inner join item_subitem_content_detalle itcd on ic.iditem_subitem_content = itcd.iditem_subitem_content and itcd.estado=0 -- and itcd.iditem = ic.iditem
+			// 	                where itcd.controlable = 1 and ic.estado=0) subIt on subIt.iditem = cl.iditem and subIt.iditem_subitem = pd.subitems->>'$[0].subitems[0].iditem_subitem'
+			// 	where (rp.cierre = 0 AND rp.idusuario=".$_SESSION['idusuario']." AND rp.idsede=".$g_idsede.") AND pd.procede_tabla!=0 
+			// 	GROUP BY i.iditem, pd.subitems->>'$[0].subitems[0].iditem_subitem'
+			// 	order BY sum(rpp.total) desc
+			// ";
+
 			$sql = "
-				SELECT concat(i.descripcion, COALESCE(subIt.des, '')) descripcion, sum(rpp.cantidad) as t1,
-				if (cl.cantidad = 'SP', 
-					(SELECT CAST((po.stock/ii.cantidad) AS SIGNED) AS stock 
-					FROM item AS i1 
-					INNER JOIN item_ingrediente AS ii using(iditem) 
-					INNER JOIN porcion AS po ON ii.idporcion=po.idporcion 
-					WHERE i1.iditem = i.iditem
-					GROUP BY i1.iditem)
-				, cl.cantidad) as t2, format(sum(rpp.total),2) as t3
-				FROM registro_pago_pedido as rpp
-				inner join registro_pago as rp ON rpp.idregistro_pago = rp.idregistro_pago
-				inner join pedido_detalle as pd on rpp.idpedido_detalle = pd.idpedido_detalle
-				inner join item as i on pd.iditem = i.iditem
-				INNER JOIN carta_lista AS cl ON i.iditem=cl.iditem
-				left join (select itcd.iditem,  isub.iditem_subitem, concat(' - ', isub.descripcion) des , isub.precio
+			SELECT concat(i.descripcion, COALESCE(subIt.des, '')) descripcion, sum(rpp.cantidad) as t1
+							, if(cl.cantidad = 'SP', porcion.stock,IFNULL(cl.cantidad, 0)) as t2
+							, format(sum(rpp.total),2) as t3
+						FROM registro_pago as rp
+							inner join registro_pago_pedido as rpp ON rpp.idregistro_pago = rp.idregistro_pago
+							inner join pedido_detalle as pd on rpp.idpedido_detalle = pd.idpedido_detalle				
+							inner join pedido p on pd.idpedido = p.idpedido 
+							INNER JOIN seccion AS s ON pd.idseccion=s.idseccion
+							inner join item as i on pd.iditem = i.iditem
+							left JOIN carta_lista AS cl ON i.iditem=cl.iditem and cl.idseccion = s.idseccion
+							left JOIN (
+								SELECT i1.iditem, CAST((po.stock/ii.cantidad) AS SIGNED) AS stock 
+								FROM item AS i1 
+								INNER JOIN item_ingrediente AS ii using(iditem)
+								INNER JOIN porcion AS po ON ii.idporcion=po.idporcion
+								GROUP BY i1.iditem
+							) as porcion on pd.iditem=porcion.iditem
+							left join (select itcd.iditem,  isub.iditem_subitem, concat(' - ', isub.descripcion) des , isub.precio
 				                from item_subitem_content ic		
 				                    inner join item_subitem isub on isub.iditem_subitem_content = ic.iditem_subitem_content
 				                    inner join item_subitem_content_detalle itcd on ic.iditem_subitem_content = itcd.iditem_subitem_content and itcd.estado=0 -- and itcd.iditem = ic.iditem
-				                where itcd.controlable = 1 and ic.estado=0) subIt on subIt.iditem = cl.iditem and subIt.iditem_subitem = pd.subitems->>'$[0].subitems[0].iditem_subitem'
-				where (rp.cierre = 0 AND rp.idusuario=".$_SESSION['idusuario']." AND rp.idsede=".$g_idsede.") AND pd.procede_tabla!=0 
-				GROUP BY i.iditem, pd.subitems->>'$[0].subitems[0].iditem_subitem'
-				order BY sum(rpp.total) desc
-			";
+				                where itcd.controlable = 1 and ic.estado=0
+				                ) subIt on subIt.iditem = cl.iditem and subIt.iditem_subitem = pd.iditem_subitem
+							where (rp.idusuario=".$_SESSION['idusuario']." AND rp.cierre = 0) 
+								and p.estado!=3 and pd.estado = 0 
+								AND pd.procede_tabla!=0
+							GROUP BY pd.iditem, pd.iditem_subitem
+							order BY sum(rpp.total) desc";
 
 			$bd->xConsulta($sql);
 			break;

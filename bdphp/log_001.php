@@ -171,13 +171,15 @@
 				// if ( !isset($lisSubItemsSelect[0]) ) {
 				if ( $isExistSubitemsSelect == false ) {
 					$desItemInsert = addslashes($subitem['des'].$indicaciones_p);
+					$idItemSubItemControlable = isset($subitem['iditem_subitem']) ? $subitem['iditem_subitem'] : 0;
 
 					// print $subItemSelect;					
-					$sql_pedido_detalle=$sql_pedido_detalle."(?,".$tipo_consumo.",".$categoria.",".$subitem['iditem'].",".$idItem2.",'".$subitem['idseccion']."','".$subitem['cantidad']."','".$subitem['cantidad']."','".$subitem['precio']."','".$precio_total."','".$precio_total."','".$desItemInsert."',".$viene_de_bodega.",".$tabla_procede.",".$pwa.",'".$subItemSelect."'),";
+					$sql_pedido_detalle=$sql_pedido_detalle."(?,".$tipo_consumo.",".$categoria.",".$subitem['iditem'].",".$idItem2.",'".$subitem['idseccion']."','".$subitem['cantidad']."','".$subitem['cantidad']."','".$subitem['precio']."','".$precio_total."','".$precio_total."','".$desItemInsert."',".$viene_de_bodega.",".$tabla_procede.",".$pwa.",'".$subItemSelect."',".$idItemSubItemControlable."),";
 
 				} else {					
 					$pUnitarioItem = $subitem['precio'];
 					$DesItemUp = $subitem['des'];
+					// $idItemSubItemControlable = isset($subitem['iditem_subitem']) ? $subitem['iditem_subitem'] : 0;
 
 					// cuando la cantidad del item es mas que los subitems seleccionados					
 					$lenghSubItem = count($lisSubItemsSelect);
@@ -193,7 +195,8 @@
 					foreach ($lisSubItemsSelect as $sub) {						
 
 						$pUnitario = $sub['precio'];
-						$desItem = addslashes($DesItemUp.' ('.$sub['des'].')');						
+						$desItem = addslashes($DesItemUp.' ('.$sub['des'].')');	
+						$idItemSubItemControlable = $sub['id'];					
 
 						$cantSeleccionadaSubItem = $sub['cantidad_seleccionada'];
 
@@ -215,7 +218,7 @@
 						
 
 						// print $subItemSelect;												
-						$sql_pedido_detalle=$sql_pedido_detalle."(?,".$tipo_consumo.",".$categoria.",".$subitem['iditem'].",".$idItem2.",'".$subitem['idseccion']."','".$subitem['cantidad']."','".$subitem['cantidad']."','".$subitem['precio']."','".$precio_total."','".$precio_total."','".$subitem['des']."',".$viene_de_bodega.",".$tabla_procede.",".$pwa.",'".$subItemSelect."'),";
+						$sql_pedido_detalle=$sql_pedido_detalle."(?,".$tipo_consumo.",".$categoria.",".$subitem['iditem'].",".$idItem2.",'".$subitem['idseccion']."','".$subitem['cantidad']."','".$subitem['cantidad']."','".$subitem['precio']."','".$precio_total."','".$precio_total."','".$subitem['des']."',".$viene_de_bodega.",".$tabla_procede.",".$pwa.",'".$subItemSelect."',".$idItemSubItemControlable."),";
 
 
 						$PrecioTotalItemSeleccionda = $PrecioTotalItemSeleccionda - $precio_total;
@@ -226,7 +229,7 @@
 					if ($cantItemSeleccionda > 0) {
 						$PrecioTotalItemSeleccionda = number_format($PrecioTotalItemSeleccionda, 2);						
 						$desItemInsert = addslashes($DesItemUp.$indicaciones_p);
-						$sql_pedido_detalle=$sql_pedido_detalle."(?,".$tipo_consumo.",".$categoria.",".$subitem['iditem'].",".$idItem2.",'".$subitem['idseccion']."','".$cantItemSeleccionda."','".$cantItemSeleccionda."','".$subitem['precio']."','".$PrecioTotalItemSeleccionda."','".$PrecioTotalItemSeleccionda."','".$desItemInsert."',".$viene_de_bodega.",".$tabla_procede.",".$pwa.",'".$subItemSelect."'),";
+						$sql_pedido_detalle=$sql_pedido_detalle."(?,".$tipo_consumo.",".$categoria.",".$subitem['iditem'].",".$idItem2.",'".$subitem['idseccion']."','".$cantItemSeleccionda."','".$cantItemSeleccionda."','".$subitem['precio']."','".$PrecioTotalItemSeleccionda."','".$PrecioTotalItemSeleccionda."','".$desItemInsert."',".$viene_de_bodega.",".$tabla_procede.",".$pwa.",'".$subItemSelect."',".$idItemSubItemControlable."),";
 					}
 				}
 
@@ -368,7 +371,7 @@
 		$sql_pedido_detalle=substr ($sql_pedido_detalle, 0, -1);
 
 		//pedido_detalle
-		$sql_pedido_detalle='insert into pedido_detalle (idpedido,idtipo_consumo,idcategoria,idcarta_lista,iditem,idseccion,cantidad,cantidad_r,punitario,ptotal,ptotal_r,descripcion,procede,procede_tabla, pwa, subitems) values '.$sql_pedido_detalle;
+		$sql_pedido_detalle='insert into pedido_detalle (idpedido,idtipo_consumo,idcategoria,idcarta_lista,iditem,idseccion,cantidad,cantidad_r,punitario,ptotal,ptotal_r,descripcion,procede,procede_tabla, pwa, subitems, iditem_subitem) values '.$sql_pedido_detalle;
 		// $sql_pedido_detalle = addslashes($sql_pedido_detalle);
 		// echo $sql_pedido_detalle;
 		
@@ -390,7 +393,7 @@
 		// $x_respuesta->correlativo_dia = $correlativo_dia; 
 		
 		// $correlativo_dia, 'correlativo_comprobante' => '' para que no me mande generar factura
-		$x_respuesta = json_encode(array('idpedido' => $id_pedido, 'numpedido' => $numpedido, 'correlativo_dia' => $correlativo_dia, 'correlativo_comprobante' => ''));
+		$x_respuesta = json_encode(array('idpedido' => $id_pedido, 'numpedido' => $numpedido, 'correlativo_dia' => $correlativo_dia, 'correlativo_comprobante' => '', 'sql_pedido_detalle' => $sql_pedido_detalle));
 
 
 		// SI ES PAGO TOTAL
