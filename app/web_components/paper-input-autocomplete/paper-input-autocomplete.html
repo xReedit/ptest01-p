@@ -452,7 +452,7 @@ Example:
          * `source` Array of objects with the options to execute the autocomplete feature
          */
         source: {
-          type: Array
+		  type: Array
         },
 
         /**
@@ -773,6 +773,7 @@ Example:
 
         var numberOfItems = items.length - 1;
 
+		this._currentIndex = this._currentIndex > numberOfItems ? numberOfItems : this._currentIndex;
         var isFirstItem = this._currentIndex === 0;
         var isLastItem = this._currentIndex === numberOfItems;
         var isNoItemHighlighted = this._currentIndex === -1;

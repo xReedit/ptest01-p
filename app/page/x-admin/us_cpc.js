@@ -16,5 +16,6 @@ function getAllCompaniesFac(){$.ajax({url:'../../bdphp/log_004.php?op=5'}).done(
 xThisAdmin.listCompanies=res.data;});}
 function selectOptionCompanies(){const index=xThisAdmin.$.selConpanies.value;_companySelect=xThisAdmin.listCompanies[index];}
 function addCompaniesContador(){if(event.keyCode!=13)return;if(!_id_num_us_new_cpc){alert('Guarda primero el contador.');return;}
-const dataCompanies={user_id:_companySelect.user_id,idus_cpc:_id_num_us_new_cpc,razonsocial:_companySelect.razonsocial,ruc:_companySelect.ruc,nomsede:txt_companies_sede.value,serie:txt_companies_serie.value,ciudad:txt_companies_ciudad.value,mes_inicio:_companySelect.mes_inicio,}
+var mes_inicio='';if(_companySelect.mes_inicio){mes_inicio=_companySelect.mes_inicio;}else{mes_inicio=xDevolverFechaParte('mm')+'/'+xDevolverFechaParte('yy');}
+const dataCompanies={user_id:_companySelect.user_id,idus_cpc:_id_num_us_new_cpc,razonsocial:_companySelect.razonsocial,ruc:_companySelect.ruc,nomsede:txt_companies_sede.value,serie:txt_companies_serie.value,ciudad:txt_companies_ciudad.value,mes_inicio:mes_inicio,}
 $.ajax({type:'POST',url:'../../bdphp/log_004.php?op=501',data:{item:dataCompanies}}).done(res=>{console.log(res);xloadEstablecimientosAsigConta(_id_num_us_new_cpc);});}

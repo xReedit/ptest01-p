@@ -1631,14 +1631,16 @@
 		$direccion_delivery_no_map=$datos_cliente['direccion_delivery_no_map'];
 		$f_nac=$datos_cliente['f_nac'];
 		$telefono=array_key_exists('telefono', $datos_cliente) ? $datos_cliente['telefono'] : '';
-		$update_telefono = $telefono != '' ? ", telefono = '".$telefono."'" : '';
+		$update_telefono = $telefono != '' ? ", telefono = '".$telefono."'" : "";
+
+		$direccion_delivery_no_map_save = isset($direccion_delivery_no_map) ? json_encode($direccion_delivery_no_map) : '';
 		// $idpedidos=$x_arr_cliente['i'] == '' ? $x_idpedido : $x_arr_cliente['i'];
 
 		if($idclie==''){
 			if($nomclie==''){//publico general
 				$idclie=0;
 			}else{
-				$sql="insert into cliente (idorg,nombres,direccion,ruc,f_nac, f_registro,telefono, direccion_delivery_no_map)values(".$_SESSION['ido'].",'".$nomclie."','".$direccion."','".$num_doc."','".$f_nac."',DATE_FORMAT(now(),'%d/%m/%Y'),'".$telefono."', '".json_encode($direccion_delivery_no_map)."')";
+				$sql="insert into cliente (idorg,nombres,direccion,ruc,f_nac, f_registro,telefono, direccion_delivery_no_map)values(".$_SESSION['ido'].",'".$nomclie."','".$direccion."','".$num_doc."','".$f_nac."',DATE_FORMAT(now(),'%d/%m/%Y'),'".$telefono."', '".$direccion_delivery_no_map_save."')";
 				$idclie=$bd->xConsulta_UltimoId($sql);
 
 				// insertar en cliente_sede
@@ -1647,8 +1649,12 @@
 				
 			}
 		} else {
+			// insertar en cliente_sede
+			$sql = "call procedure_registrar_cliente_sede(".$_SESSION['idsede'].",".$idclie.")";
+			$bd->xConsulta_NoReturn($sql);
+
 			// update cliente
-			$sql="update cliente set nombres='".$nomclie."',ruc='".$num_doc."',referencia='".$referencia."',direccion='".$direccion."'".$update_telefono.", direccion_delivery_no_map = '". json_encode($direccion_delivery_no_map) ."' where idcliente = ".$idclie;
+			$sql="update cliente set nombres='".$nomclie."',ruc='".$num_doc."',referencia='".$referencia."',direccion='".$direccion."'".$update_telefono.", direccion_delivery_no_map = '". $direccion_delivery_no_map_save ."' where idcliente = ".$idclie;
 			$bd->xConsulta_NoReturn($sql);
 		}
 
