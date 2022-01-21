@@ -315,7 +315,7 @@
             $sql="SELECT tp.descripcion as nom_comprobante, count(c.idtipo_comprobante_serie) cantidad, format(SUM(total),2) total from ce as c
                     inner join tipo_comprobante_serie as tps on tps.idtipo_comprobante_serie=c.idtipo_comprobante_serie
                     inner join tipo_comprobante as tp on tp.idtipo_comprobante=tps.idtipo_comprobante   
-                where (c.idsede=13) $filtroAplicarFecha                
+                where (c.idsede=".$_SESSION['idsede'].") $filtroAplicarFecha                
                 group by c.idtipo_comprobante_serie";
             $bd->xConsulta($sql);
             break;
