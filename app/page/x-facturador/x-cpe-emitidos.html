@@ -65,7 +65,7 @@ Sunat.<br>Este proceso es el mismo que se realiza al cierre de caja.</p>
 <br>
 <hr>
 <div class="x_div_linea">
-<input type="date" class="xMiInput xfont17 xitem1" style="width:200px" id="txt_fecha" enlinea>
+<input type="month" class="xMiInput xfont17 xitem1" style="width:200px" id="txt_fecha" enlinea>
 <input type="text" class="xMiInput xfont18 xitem2" style="width:80%;bottom:-2px" placeholder="Buscar" autofocus onkeyup="xfiltrarDatos()" id="txt_buscar" enlinea>
 </div>
 <br><br>
@@ -120,6 +120,32 @@ Sunat.<br>Este proceso es el mismo que se realiza al cierre de caja.</p>
 <br>
 <div>
 <pagination-input id="paginator" class="xDerecha" current-page="1" page-count="5" current-page-changed="onChangePagination($event)"></pagination-input>
+</div>
+<br><br><br>
+<div class="xLinea2"></div>
+<br>
+<div class="div-resumen-cpe">
+<p class="fs-17 fw-600">Resumen de comprobantes</p>
+<br>
+<table class="w-100">
+<thead>
+<th>Tipo</th>
+<th align="center">Cantidad</th>
+<th align="right">Total</th>
+</thead>
+<tbody>
+<template is="dom-repeat" items="{{listResumenCpeEmitidos}}" as="item">
+<tr>
+<td>{{ item.nom_comprobante }}</td>
+<td align="center">{{ item.cantidad }}</td>
+<td align="right">{{ item.total }}</td>
+</tr>
+</template>
+<tr>
+<td colspan="3" align="right"><p class="fw-600 fs-16">{{ listResumenCpeEmitidosTotal }}</p></td>
+</tr>
+</tbody>
+</table>
 </div>
 <br><br>
 </div>
@@ -209,6 +235,7 @@ Sunat.<br>Este proceso es el mismo que se realiza al cierre de caja.</p>
 </table>
 </div>
 </template>
+<style>.div-resumen-cpe{width:290px;background:#d2faf9;padding:15px;border:1px solid #ccc;border-radius:5px}</style>
 </dom-module>
 <script type="text/javascript" src="./list.resumen.boletas.js"></script>
 <script rel="preload" type="text/javascript" src="../../view/xm_all.js"></script>
@@ -218,7 +245,9 @@ Sunat.<br>Este proceso es el mismo que se realiza al cierre de caja.</p>
 <script rel="preload" type="text/javascript" src="../../view/cpe_interno.js"></script>
 <script type="text/javascript" src="../../view/export.excel.js"></script>
 <script>/*<![CDATA[*/var xThisCpe,lastPos=0,xPopupLoad,p_upadate=true,p_rows_re=0,p_rows=0,p_fecha='',p_filter='',p_desde=0,data_pagination={},data_pagination_re={},xdebounce,xe_debounce=false,index_anular;var cpe_mes_anterior='',cpe_yy_actual='',_us_cpe='';function xExportarExcel(){tableToExcel('testTable','Comprobantes');}
-function xIniCpe(){xThisCpe.ListCpe=[];xThisCpe.ListCpeResumen=[];xCPE_getMesYYActual();xCPEValidUs();xLoadCpeEmitidos('6');xIniPagination();setTimeout(()=>{$('body').addClass('loaded');},500);xThisCpe.$.paginator.addEventListener('page-limit-change',(e)=>{data_pagination=e.detail.value;p_desde=data_pagination.pageDesde;lastPos=$(window).scrollTop();xLoadCpeEmitidos('6');});$("#txt_fecha").on('change',function(){var d=$(this).val().split('-');p_fecha=d[1]===undefined?'':d[2]+'/'+d[1]+'/'+d[0];xThisCpe.$.paginator.currentPage=1;xLoadCpeEmitidos('6');});$("#tab_cpe").on('iron-select',function(){switch(xThisCpe.selected){}});xListRe_ini();}
+function xIniCpe(){xThisCpe.ListCpe=[];xThisCpe.ListCpeResumen=[];xCPE_getMesYYActual();xCPEValidUs();xLoadCpeEmitidos('6');xIniPagination();setTimeout(()=>{$('body').addClass('loaded');},500);xThisCpe.$.paginator.addEventListener('page-limit-change',(e)=>{data_pagination=e.detail.value;p_desde=data_pagination.pageDesde;lastPos=$(window).scrollTop();txt_fecha.valueAsDate=new Date();xApplyFilterDate();});$("#txt_fecha").on('change',function(){xApplyFilterDate();});$("#tab_cpe").on('iron-select',function(){switch(xThisCpe.selected){}});xListRe_ini();}
+function xApplyFilterDate(){var d=$(txt_fecha).val().split('-');p_fecha=d[1]===undefined?'':'01/'+d[1]+'/'+d[0];xThisCpe.$.paginator.currentPage=1;xLoadCpeEmitidos('6');xResumenMesTotaleCpe();}
+function xResumenMesTotaleCpe(){$.ajax({type:'POST',url:'../../bdphp/log_002.php',data:{op:'602',fecha_mes:p_fecha}}).done(function(res){res=JSON.parse(res);console.log('xResumenMesTotaleCpe',res);xThisCpe.listResumenCpeEmitidos=res.datos;const _totalImporteCpe=xThisCpe.listResumenCpeEmitidos.map(x=>parseFloat(x.total.replace(/,/g,''))).reduce((a,b)=>a+b,0);xThisCpe.listResumenCpeEmitidosTotal=numeroConComas(_totalImporteCpe.toFixed(2));});}
 function xIniPagination(){xThisCpe.$.paginator.currentPage=1;xThisCpe.$.paginator.pageRows=p_rows;xThisCpe.$.paginator.listRows=[10,20,30,40];}
 function xfiltrarDatos(){if(xe_debounce)return;xe_debounce=true;clearTimeout(xdebounce);xdebounce=setTimeout(()=>{xLoadCpeEmitidos('6');xe_debounce=false;xThisCpe.$.paginator.currentPage=1;},900);}
 function xLoadCpeEmitidos(op){p_filter=xThisCpe.$.txt_buscar.value;data_pagination.pageFilter=p_filter;data_pagination.pageFecha=p_fecha;let xDataRes=[];$.ajax({type:'POST',url:'../../bdphp/log_002.php',data:{op:op,pagination:data_pagination}}).done(function(res){res=res.split('**');p_rows=res[1];res=$.parseJSON(res[0]);xDataRes=res.datos;xDataRes.map(x=>{let msj_estado='';let class_estado='';const boleta=x.codsunat==='03'?true:false;const e_api=parseInt(x.estado_api)===0?true:false;const e_sunat=parseInt(x.estado_sunat)===0?true:false;let estado_cpe;let btn_enviar=false;let btn_anular=false;let style_reporte='';if(parseInt(x.anulado)===0){if(e_api&&e_sunat)estado_cpe=0;if(!e_api&&!e_sunat)estado_cpe=1;if(boleta&&e_api&&!e_sunat)estado_cpe=2;if(!boleta&&e_api&&!e_sunat)estado_cpe=3;}else{estado_cpe=4;}
@@ -246,4 +275,4 @@ _rowCpe.isReenviandoLoading=false;rowLoading.addClass('xInvisible');rowEstado.re
 async function reenviarComprobante(obj){const _idIndex=obj.dataId;const objRow=obj.parentElement.parentElement;const rowEstado=$(obj.parentElement.parentElement).find('#row_estado');const rowLoading=$(obj.parentElement.parentElement).find('#row_loading');var _rowCpe=xThisCpe.ListCpe[_idIndex];_rowCpe.isReenviandoLoading=true;rowEstado.addClass('xInvisible');rowLoading.removeClass('xInvisible');console.log('_rowCpe',_rowCpe);const rpt=await xSoapSunat_SendSunat(_rowCpe.external_id,_rowCpe.idce)
 if(rpt.ok){xLoadCpeEmitidos('6');}else{alert(rpt.msj_error);}
 _rowCpe.isReenviandoLoading=false;rowLoading.addClass('xInvisible');rowEstado.removeClass('xInvisible');console.log('rpt',rpt);}
-Polymer({is:'x-cpe-emitidos',properties:{ListCpe:[],ListCpeResumen:[],ListReporte:[],listSedeUsContador:[],nom_sede:'',isContador:false,isReenviandoLoading:false},attached:function(){this.selected=0,this.isReenviandoLoading=false;xThisCpe=this;xIniCpe();},displayIndex:function(index){return xCeroIzq(parseInt(p_desde)+(index+1),1);},_isEqualTo:(item)=>{return item.nom_estado==='Registrado'&&item?.json_xml?.length>1;},_isEqualToSinRegistrar:(item)=>{return item.nom_estado==='Sin Registrar'&&item?.json_xml?.length>1;},_isEqualToLoading:(item)=>{return item.isReenviandoLoading;},})/*]]>*/</script>
+Polymer({is:'x-cpe-emitidos',properties:{ListCpe:[],ListCpeResumen:[],ListReporte:[],listSedeUsContador:[],listResumenCpeEmitidos:[],listResumenCpeEmitidosTotal:Number,nom_sede:'',isContador:false,isReenviandoLoading:false},attached:function(){this.selected=0,this.isReenviandoLoading=false;this.listResumenCpeEmitidosTotal=0;xThisCpe=this;xIniCpe();},displayIndex:function(index){return xCeroIzq(parseInt(p_desde)+(index+1),1);},_isEqualTo:(item)=>{return item.nom_estado==='Registrado'&&item?.json_xml?.length>1;},_isEqualToSinRegistrar:(item)=>{return item.nom_estado==='Sin Registrar'&&item?.json_xml?.length>1;},_isEqualToLoading:(item)=>{return item.isReenviandoLoading;},})/*]]>*/</script>

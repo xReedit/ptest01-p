@@ -249,8 +249,10 @@
         case '6': // cpe-emitidos
             $pagination = $_POST['pagination'];
             $fecha = $pagination['pageFecha'];
-            $filtroFecha = $fecha === '' ? '' : " HAVING c.fecha = '".$fecha."'";
-            $filtroFechaCount = $fecha === '' ? '' : " and (c.fecha = '".$fecha."')";
+            $filtroAplicarFecha = $fecha === '' ? '' : "(MONTH(STR_TO_DATE(c.fecha ,'%d/%m/%Y')) = MONTH(STR_TO_DATE('$fecha' ,'%d/%m/%Y')) and YEAR(STR_TO_DATE(c.fecha ,'%d/%m/%Y')) = YEAR(STR_TO_DATE('$fecha' ,'%d/%m/%Y')))";
+            $filtroFecha = $fecha === '' ? '' : " HAVING $filtroAplicarFecha";
+            // $filtroFechaCount = $fecha === '' ? '' : " and (c.fecha = '".$fecha."')";
+            $filtroFechaCount = $fecha === '' ? '' : " and $filtroAplicarFecha";
             $filtro = $pagination['pageFilter'] === '' ? '' : " and CONCAT(c.hora,tp.descripcion,c.numero,c.nomcliente,c.fecha,(
                 if (c.anulado=1,'Anulado',
                         CASE
@@ -283,7 +285,8 @@
         case '601': // reporte export excel
             $pagination = $_POST['pagination'];
             $fecha = $pagination['pageFecha'];
-            $filtroFecha = $fecha === '' ? '' : " HAVING c.fecha = '".$fecha."'";            
+            $filtroAplicarFecha = $fecha === '' ? '' : "(MONTH(STR_TO_DATE(c.fecha ,'%d/%m/%Y')) = MONTH(STR_TO_DATE('$fecha' ,'%d/%m/%Y')) and YEAR(STR_TO_DATE(c.fecha ,'%d/%m/%Y')) = YEAR(STR_TO_DATE('$fecha' ,'%d/%m/%Y')))";
+            $filtroFecha = $fecha === '' ? '' : " HAVING $filtroAplicarFecha";            
             $filtro = $pagination['pageFilter'] === '' ? '' : " and CONCAT(c.hora,tp.descripcion,c.numero,c.nomcliente,c.fecha,(
                 if (c.anulado=1,'Anulado',
                         CASE
@@ -305,21 +308,46 @@
             
             $bd->xConsulta($sql);
             break;
+        
+        case '602': // resumen de comprobantes emitidos totales
+            $fecha = $_POST['fecha_mes'];
+            $filtroAplicarFecha = $fecha === '' ? '' : " and (MONTH(STR_TO_DATE(c.fecha ,'%d/%m/%Y')) = MONTH(STR_TO_DATE('$fecha' ,'%d/%m/%Y')) and YEAR(STR_TO_DATE(c.fecha ,'%d/%m/%Y')) = YEAR(STR_TO_DATE('$fecha' ,'%d/%m/%Y')))";
+            $sql="SELECT tp.descripcion as nom_comprobante, count(c.idtipo_comprobante_serie) cantidad, format(SUM(total),2) total from ce as c
+                    inner join tipo_comprobante_serie as tps on tps.idtipo_comprobante_serie=c.idtipo_comprobante_serie
+                    inner join tipo_comprobante as tp on tp.idtipo_comprobante=tps.idtipo_comprobante   
+                where (c.idsede=13) $filtroAplicarFecha                
+                group by c.idtipo_comprobante_serie";
+            $bd->xConsulta($sql);
+            break;
+        
         case '7': // resumen de boletas
             $pagination = $_POST['pagination'];
-            $filtro = $pagination['pageFilter'] === '' ? '' : " and CONCAT(u.usuario,cr.fecha_envio,ticket,external_id,msj) like '%".$pagination['pageFilter']."%'";
-            $sql="
-                SELECT u.nombres, u.usuario, cr.* 
-                from ce_resumen as cr
-                    inner join usuario as u on u.idusuario=cr.idusuario
-                where (cr.idorg=".$_SESSION['ido']." and cr.idsede=".$_SESSION['idsede'].")".$filtro ." and cr.estado=0 order by cr.idce_resumen desc limit ".$pagination['pageLimit']." OFFSET ".$pagination['pageDesde'];
+            $filtro = $pagination['pageFilter'] === '' ? '' : " and CONCAT(cr.fecha_envio,ticket,external_id,msj) like '%".$pagination['pageFilter']."%'";
+            // $filtro = $pagination['pageFilter'] === '' ? '' : " and CONCAT(u.usuario,cr.fecha_envio,ticket,external_id,msj) like '%".$pagination['pageFilter']."%'";
+            
+            // $sql="
+            //     SELECT u.nombres, u.usuario, cr.* 
+            //     from ce_resumen as cr
+            //         inner join usuario as u on u.idusuario=cr.idusuario
+            //     where (cr.idorg=".$_SESSION['ido']." and cr.idsede=".$_SESSION['idsede'].")".$filtro ." and cr.estado=0 order by cr.idce_resumen desc limit ".$pagination['pageLimit']." OFFSET ".$pagination['pageDesde'];
+
+            // $sqlCount = "
+            //     SELECT count(cr.idce_resumen) as d1
+            //     from ce_resumen as cr
+            //         inner join usuario as u on u.idusuario=cr.idusuario
+            //     where (cr.idorg=".$_SESSION['ido']." and cr.idsede=".$_SESSION['idsede'].")".$filtro ." and cr.estado=0
+            //     ";
+
+                $sql="
+                SELECT cr.* 
+                from ce_resumen as cr                    
+                where (cr.idsede=".$_SESSION['idsede'].")".$filtro ." and cr.estado=0 order by cr.idce_resumen desc limit ".$pagination['pageLimit']." OFFSET ".$pagination['pageDesde'];                
             
             
             $sqlCount = "
                 SELECT count(cr.idce_resumen) as d1
-                from ce_resumen as cr
-                    inner join usuario as u on u.idusuario=cr.idusuario
-                where (cr.idorg=".$_SESSION['ido']." and cr.idsede=".$_SESSION['idsede'].")".$filtro ." and cr.estado=0
+                from ce_resumen as cr            
+                where (cr.idsede=".$_SESSION['idsede'].")".$filtro ." and cr.estado=0
                 ";
 
             $rowCount = $bd->xDevolverUnDato($sqlCount);
