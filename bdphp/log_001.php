@@ -343,7 +343,7 @@
             // guarda pedido
             $sql="insert into pedido (idorg, idsede, idcliente, fecha,hora,fecha_hora,nummesa,numpedido,correlativo_dia,referencia,total,total_r,solo_llevar,idtipo_consumo,idcategoria,reserva,idusuario,subtotales_tachados,estado,json_datos_delivery, pwa_is_delivery, is_from_client_pwa)
 					values(".$_SESSION['ido'].",".$_SESSION['idsede'].",".$idc.",DATE_FORMAT(now(),'%d/%m/%Y'),DATE_FORMAT(now(),'%H:%i:%s'),now(),'".$x_array_pedido_header['mesa']."','".$numpedido."','".$correlativo_dia."','".$x_array_pedido_header['referencia']."','".$importe_subtotal."','".$importe_total."',".$solo_llevar.",".$tipo_consumo.",".$x_array_pedido_header['idcategoria'].",".$x_array_pedido_header['reservar'].",".$_SESSION['idusuario'].",'". $x_array_pedido_header['subtotales_tachados'] ."',".$estado_p.",'".$json_datos_delivery."', ".$is_delivery.", ".$is_delivery.")";
-			
+			$sqlPedido = $sql;
 			// echo $sql;
 			$id_pedido=$bd->xConsulta_UltimoId($sql);
 			
@@ -393,7 +393,8 @@
 		// $x_respuesta->correlativo_dia = $correlativo_dia; 
 		
 		// $correlativo_dia, 'correlativo_comprobante' => '' para que no me mande generar factura
-		$x_respuesta = json_encode(array('idpedido' => $id_pedido, 'numpedido' => $numpedido, 'correlativo_dia' => $correlativo_dia, 'correlativo_comprobante' => '', 'sql_pedido_detalle' => $sql_pedido_detalle));
+		// $x_respuesta = json_encode(array('idpedido' => $id_pedido, 'numpedido' => $numpedido, 'correlativo_dia' => $correlativo_dia, 'correlativo_comprobante' => '', 'sql_pedido_detalle' => $sql_pedido_detalle, 'sqlPedido' => $sqlPedido));
+		$x_respuesta = json_encode(array('idpedido' => $id_pedido, 'numpedido' => $numpedido, 'correlativo_dia' => $correlativo_dia, 'correlativo_comprobante' => ''));
 
 
 		// SI ES PAGO TOTAL
@@ -1633,15 +1634,15 @@
 		$telefono=array_key_exists('telefono', $datos_cliente) ? $datos_cliente['telefono'] : '';
 		$update_telefono = $telefono != '' ? ", telefono = '".$telefono."'" : "";
 
-		$direccion_delivery_no_map_save = isset($direccion_delivery_no_map) ? json_encode($direccion_delivery_no_map) : '';
+		$direccion_delivery_no_map_save = isset($direccion_delivery_no_map) ? json_encode($direccion_delivery_no_map) : '[]';
 		// $idpedidos=$x_arr_cliente['i'] == '' ? $x_idpedido : $x_arr_cliente['i'];
 
 		if($idclie==''){
 			if($nomclie==''){//publico general
 				$idclie=0;
 			}else{
-				$sql="insert into cliente (idorg,nombres,direccion,ruc,f_nac, f_registro,telefono, direccion_delivery_no_map)values(".$_SESSION['ido'].",'".$nomclie."','".$direccion."','".$num_doc."','".$f_nac."',DATE_FORMAT(now(),'%d/%m/%Y'),'".$telefono."', '".$direccion_delivery_no_map_save."')";
-				$idclie=$bd->xConsulta_UltimoId($sql);
+				$sqlClienteNew="insert into cliente (idorg,nombres,direccion,ruc,f_nac, f_registro,telefono, direccion_delivery_no_map)values(".$_SESSION['ido'].",'".$nomclie."','".$direccion."','".$num_doc."','".$f_nac."',DATE_FORMAT(now(),'%d/%m/%Y'),'".$telefono."', '".$direccion_delivery_no_map_save."')";
+				$idclie=$bd->xConsulta_UltimoId($sqlClienteNew);
 
 				// insertar en cliente_sede
 				$sql = "call procedure_registrar_cliente_sede(".$_SESSION['idsede'].",".$idclie.")";				
@@ -1650,8 +1651,9 @@
 			}
 		} else {
 			// insertar en cliente_sede
-			$sql = "call procedure_registrar_cliente_sede(".$_SESSION['idsede'].",".$idclie.")";
-			$bd->xConsulta_NoReturn($sql);
+			$sqlPredudereUpdate = "call procedure_registrar_cliente_sede(".$_SESSION['idsede'].",".$idclie.")";
+			$bd->xConsulta_NoReturn($sqlPredudereUpdate);
+			// echo $sqlPredudereUpdate;
 
 			// update cliente
 			$sql="update cliente set nombres='".$nomclie."',ruc='".$num_doc."',referencia='".$referencia."',direccion='".$direccion."'".$update_telefono.", direccion_delivery_no_map = '". $direccion_delivery_no_map_save ."' where idcliente = ".$idclie;
