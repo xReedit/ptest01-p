@@ -209,7 +209,7 @@
 			break;
 		
 		case 700: //horario de trabajo
-			$sql = "insert into sede_horario_trabajo (idsede, de, a) values (".$_POST['idsede'].", '".$_POST['de']."', '".$_POST['a']."')";
+			$sql = "insert into sede_horario_trabajo (idsede, de, a, numdia, desdia) values (".$_POST['idsede'].", '".$_POST['de']."', '".$_POST['a']."', '".$_POST['dias']."', '".$_POST['desdias']."')";
 			$bd->xConsulta($sql);
 			break;
 		case 701: // load //horario de trabajo
@@ -333,6 +333,12 @@
 					values($g_idorg, $g_idsede, $g_idusuario,1,'".$motivo."','".$data['fecha_guardar']."',".$data['importe'].",'')";
 
 			$bd->xConsulta($sql_c);
+			break;
+
+		case 16:  // verifica la disponibilidad de link carta
+			$nomCarta = $_POST['link_carta'];
+			$sql = "select idsede from sede where link_carta = '$nomCarta' and estado = 0";
+			$bd->xConsulta($sql);
 			break;
 	}
 

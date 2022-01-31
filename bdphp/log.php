@@ -3364,6 +3364,12 @@
 			$sql="update pedido set despachado=1 where (idorg=".$g_ido." and idsede=".$g_idsede.") and despachado=0";
 			$bd->xConsulta($sql);
 			break;
+		case 2110:// importe costo adicional
+			$importe = $_POST['importe'];
+			$id = $_POST['id'];
+			$sql="update conf_print_adicionales set importe=format('$importe', 2) where idconf_print_adicionales=".$id;
+			$bd->xConsulta($sql);
+			break;
 		case 2200: //recuperar stock pedidos borrados	
 			$sql = "
 			select * from				

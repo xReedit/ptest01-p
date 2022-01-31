@@ -188,7 +188,7 @@ xPopupLoad.titulo="Imprimiendo...";xPopupLoad.xopen();setTimeout(function(){xPop
 function xReImprimirFac(){dialog_erro_print.close();xPopupLoad.titulo="Enviando...";xPopupLoad.xopen();xLLamarPrintFac();}
 function fact_selectOptionCategoria(){const index=xThisFacturador.$.listPrint.value;impresoraSelect=xThisFacturador.listImpresoras[index];console.log(impresoraSelect);}
 function fact_getAllImpresoras(){$.ajax({type:'POST',url:'../../bdphp/log_002.php',data:{op:'5'}}).done(function(dtValues){var _arrPrint=[]
-dtValues=$.parseJSON(dtValues);_arrPrint.push({idimpresora:-1,descripcion:'MOSTRAR EN PDF'})
-dtValues.datos.map(x=>_arrPrint.push(x));xThisFacturador.listImpresoras=JSON.parse(JSON.stringify(_arrPrint));impresoraSelect=_arrPrint[0];console.log(xThisFacturador.listImpresoras);});}
+dtValues=$.parseJSON(dtValues);dtValues.datos.map(x=>_arrPrint.push(x));_arrPrint.push({idimpresora:-1,descripcion:'MOSTRAR EN PDF'})
+xThisFacturador.listImpresoras=JSON.parse(JSON.stringify(_arrPrint));impresoraSelect=_arrPrint[0];console.log(xThisFacturador.listImpresoras);});}
 Polymer({is:'x-facturador',properties:{arrItems:[],arrTotales:[],listImpresoras:[],formValid:boolean=false,modificarCliente:boolean=false,cpe_show:boolean=false,fecha_manual:boolean=false,isShowSearchSunat:Boolean,isShowFechaPagoCredito:Boolean,isShowCpeFactura:Boolean,},attached:function(){this.isShowSearchSunat=false;this.isShowFechaPagoCredito=false;this.isShowCpeFactura=false
 xThisFacturador=this;xIniFacturador();_cpSocketOpen();}})/*]]>*/</script>
