@@ -10,4 +10,4 @@ function CpeInterno_UpdateRegistro(dataUpdate){$.ajax({type:'POST',url:'../../bd
 function CpeInterno_SaveResumenDiario(dataResumen){$.ajax({type:'POST',url:'../../bdphp/log_002.php',data:{op:'202',data:dataResumen}}).done(function(res){});}
 async function CpeInterno_UpdateAnulacion(dataAnulacion){let rpt=false;await $.ajax({type:'POST',url:'../../bdphp/log_002.php',data:{op:'8',data:dataAnulacion}}).done(function(res){rpt=true;});return rpt;}
 function CpeInterno_UpdateAnulacionFactura(dataAnulacion){$.ajax({type:'POST',url:'../../bdphp/log_002.php',data:{op:'8',data:dataAnulacion}}).done(function(res){});}
-function CpeInterno_UpdateResumenDiario(dataUpdateResumen){$.ajax({type:'POST',url:'../../bdphp/log_002.php',data:{op:'203',data:dataUpdateResumen}}).done(function(res){});}
+function CpeInterno_UpdateResumenDiario(dataUpdateResumen){$.ajax({type:'POST',url:'../../bdphp/log_002.php',data:{op:'203',data:dataUpdateResumen}}).done(function(res){console.log(res);});}

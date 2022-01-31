@@ -164,7 +164,7 @@
                     xml=".$obj['xml'].",
                     cdr=".$obj['cdr']." 
                     where ticket='".$obj['ticket']."'";
-            echo $sql;
+            // echo $sql;
             $bd->xConsulta($sql);
 
             // actualizar boletas estado_sunat = 0 -> aceptadas
@@ -173,8 +173,8 @@
                     UPDATE ce as c
                         inner join tipo_comprobante_serie as tps on tps.idtipo_comprobante_serie = c.idtipo_comprobante_serie
                         inner join tipo_comprobante as tp on tp.idtipo_comprobante = tps.idtipo_comprobante
-                    set c.estado_sunat=0
-                    where (c.idorg=1 and c.idsede=1) and c.fecha = '".$obj['fecha_resumen']."' and tp.codsunat='03' and c.anulado=0";
+                    set c.estado_sunat=0, c.msj = 'Aceptado'
+                    where (c.idsede=".$_SESSION['idsede'].") and c.fecha = '".$obj['fecha_resumen']."' and tp.codsunat='03' and c.anulado=0";
 
                 // echo $sql_bl;
                 $bd->xConsulta_NoReturn($sql_bl);
@@ -192,7 +192,7 @@
             
             // 050221 // actualiza las boletas o facturas no enviados > 15, para que no siga notificando            
             $sql = "update ce set estado_api = 0 where idsede = ".$_SESSION['idsede']." and str_to_date(fecha, '%d/%m/%Y') < DATE_SUB( CURDATE() , INTERVAL 10 DAY ) and estado_api = 1 and anulado=0";
-            $bd->xConsulta($sql);
+            $bd->xConsulta_NoReturn($sql);
 
             // $sql = "SELECT * from ce where (idorg=".$_SESSION['ido']." and idsede=".$_SESSION['idsede'].") and estado_api = 1 and anulado=0";
             $sql = "SELECT * from ce where idsede = ".$_SESSION['idsede']." and str_to_date(fecha, '%d/%m/%Y') between DATE_SUB( CURDATE() , INTERVAL 10 DAY ) AND CURDATE() and estado_api = 1 and anulado=0";
@@ -209,7 +209,7 @@
             //     and ce.estado_api = 0 
             //     and (ce.estado_sunat != 0 or msj='Registrado')
             //     and ce.anulado=0;";
-            // $bd->xConsulta($sql);
+            $bd->xConsulta($sql);
             break;
         case '302':// resumen de boletas: consulta fecha de boletas no enviadas 
             $sql="SELECT fecha from ce where (idorg=".$_SESSION['ido']." and idsede=".$_SESSION['idsede'].") and str_to_date(fecha, '%d/%m/%Y') between DATE_SUB( CURDATE() , INTERVAL 10 DAY ) AND CURDATE() and (estado_sunat != 0 or msj='Registrado') and (estado=0 and anulado=0) GROUP BY fecha";

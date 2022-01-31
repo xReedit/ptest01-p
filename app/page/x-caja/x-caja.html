@@ -18,15 +18,15 @@
 <input type="text" class="xMiInput xPasarEnter2 fs-15 fw-600 w-50" placeholder="0.00" id="txt_total_tengo">
 <br><br>
 <button class="xBoton2 xVerde" onclick="xEnviarPermisoRemoto()">Enviar</button>
-<button dialog-dismiss id="dlg_sunat_btn" class="xBoton2 xPlomo">Cancelar</button>
+<button dialog-dismiss class="xBoton2 xPlomo">Cancelar</button>
 </div>
 </paper-dialog>
 <paper-dialog class="dialog_redondo" id="dialog_enviando_sunat" style="width:245px" modal entry-animation="scale-up-animation" exit-animation="fade-out-animation">
 <div style="text-align:center">
 <img id="dgl_sunat_img" src="../../../images/_msj_envio_sunat.gif" alt="">
 <p id="dgl_sunat_msj">Enviando comprobantes electronicos.</p>
-<p id="dgl_sunat_msj2" class="xInvisible xColorRow_Azul">Proceso concluido con exito.</p>
-<p id="dgl_sunat_msj3 xfont11" class="center xColorRow_Plomo">...</p>
+<p id="dgl_sunat_msj2" class="dgl_sunat_msj2 xInvisible xColorRow_Azul">Proceso concluido con exito.</p>
+<p id="dgl_sunat_msj3 xfont11" class="dgl_sunat_msj3 center xColorRow_Plomo">...</p>
 <paper-progress id="dgl_sunat_progress" indeterminate style="width:100%"></paper-progress>
 <button dialog-dismiss id="dlg_sunat_btn" class="xBoton2 xVerde xInvisible">Listo</button>
 </div>
