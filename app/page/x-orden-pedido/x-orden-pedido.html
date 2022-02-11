@@ -62,14 +62,14 @@
 <div class="rowx pb-2">
 <div class="col-sm-7">
 <h5>Cliente</h5>
-<input type="text" class="xMiInput xPasarEnter2 w-100" placeholder="Nombre / Razon Social" onChange="conMayusculas(this)" id="frm_nombres" required espaciar>
-<input type="text" class="xMiInput xPasarEnter2 w-100" placeholder="Direccion de entrega" onChange="conMayusculas(this)" id="frm_direccion" espaciar>
-<input type="text" class="xMiInput xPasarEnter2 w-100" placeholder="Telefono" onChange="conMayusculas(this)" id="frm_telefono" required espaciar>
+<input type="text" class="xMiInput xPasarEnter2 w-100" placeholder="Nombre / Razon Social" onkeyup="removeSpecialCharObj(this)" onChange="conMayusculas(this)" id="frm_nombres" required espaciar>
+<input type="text" class="xMiInput xPasarEnter2 w-100" placeholder="Direccion de entrega" onkeyup="removeSpecialCharObj(this)" onChange="conMayusculas(this)" id="frm_direccion" espaciar>
+<input type="text" class="xMiInput xPasarEnter2 w-100" placeholder="Telefono" onkeyup="removeSpecialCharObj(this)" onChange="conMayusculas(this)" id="frm_telefono" required espaciar>
 </div>
 <div class="col-sm-4">
 <h5>Fecha de entrega</h5>
 <input type="datetime-local" class="xMiInput w-100" placeholder="Fecha de entrega" id="f_entrega" required enlinea espaciar>
-<input type="text" class="xMiInput xPasarEnter2 w-100" placeholder="Nota" onChange="conMayusculas(this)" id="txt_nota" espaciar>
+<input type="text" class="xMiInput xPasarEnter2 w-100" placeholder="Nota" onkeyup="removeSpecialCharObj(this)" onChange="conMayusculas(this)" id="txt_nota" espaciar>
 </div>
 <div class="xInvisible">
 <input type="text" id="form_idorden_pedido">
@@ -91,7 +91,7 @@
 </thead>
 <tr class="xSinBorde" data-id="">
 <td>
-<x-comp-find-item-producto id="compItemProducto"></x-comp-find-item-producto>
+<x-comp-find-item-producto clasecss="xMiInput xPasarEnter2 w-100" id="compItemProducto"></x-comp-find-item-producto>
 </td>
 <td><input type="number" class="xMiInput xPasarEnter2" style="width:100%" placeholder="Cant" onChange="conMayusculas(this)" onkeyup="xCalcTotal()" required id="cant_item" autofocus></td>
 <td><input type="number" class="xMiInput xAlinearDerecha punitario" onChange="conMayusculas(this)" onblur="xRetornaMoneda(this)" placeholder="P. Unitario" id="punitario" name="precio" required></td>

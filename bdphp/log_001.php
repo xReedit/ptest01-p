@@ -1651,13 +1651,14 @@
 			}
 		} else {
 			// insertar en cliente_sede
-			$sqlPredudereUpdate = "call procedure_registrar_cliente_sede(".$_SESSION['idsede'].",".$idclie.")";
-			$bd->xConsulta_NoReturn($sqlPredudereUpdate);
+			$sqlPredudereUpdate = "call procedure_registrar_cliente_sede(".$_SESSION['idsede'].",".$idclie.");";
+			// $bd->xConsulta_NoReturn($sqlPredudereUpdate);
 			// echo $sqlPredudereUpdate;
 
 			// update cliente
-			$sql="update cliente set nombres='".$nomclie."',ruc='".$num_doc."',referencia='".$referencia."',direccion='".$direccion."'".$update_telefono.", direccion_delivery_no_map = '". $direccion_delivery_no_map_save ."' where idcliente = ".$idclie;
-			$bd->xConsulta_NoReturn($sql);
+			$sqlUpdateClient="update cliente set nombres='".$nomclie."',ruc='".$num_doc."',referencia='".$referencia."',direccion='".$direccion."'".$update_telefono.", direccion_delivery_no_map = '". $direccion_delivery_no_map_save ."' where idcliente = ".$idclie.";";
+
+			$bd->xMultiConsultaNoReturn($sqlPredudereUpdate.$sqlUpdateClient);
 		}
 
 		// $bd->xConsulta_NoReturn($sql);

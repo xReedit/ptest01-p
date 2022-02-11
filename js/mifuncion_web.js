@@ -100,3 +100,4 @@ return os;}
 function PrintElemDiv(divId,titulo)
 {var printContents=document.getElementById(divId).innerHTML;var originalContents=document.body.innerHTML;document.body.innerHTML="<html><head><title></title></head><body>"+printContents+"</body>";window.print();document.body.innerHTML=originalContents;}
 function removeSpecialChar(_string){return _string.replace(/[&\/\\,~'"?]/g,'');}
+function removeSpecialCharObj(obj){obj.value=obj.value.replace(/[&\/\\,~'"?]/g,'');}
