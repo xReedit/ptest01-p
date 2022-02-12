@@ -41,7 +41,7 @@ if(_dtDscStorage){try{xThisCompDesc.listTipoConceptos=JSON.parse(_dtDscStorage);
 if(paseDsc){return;}
 $.ajax({type:'GET',url:'../../bdphp/log_componentes.php?op=14'}).done(function(res){res=JSON.parse(res)
 if(!res.success){console.log('error',res);return;}
-xThisCompDesc.listTipoConceptos=res.datos;tipoDscSelected=xThisCompDesc.listTipoConceptos[0];localStorage.setItem(keyDscStorage,JSON.stringify(res.datos));console.log('xThisCompDesc.listTipoConceptos ',xThisCompDesc.listTipoConceptos);});}
+xThisCompDesc.listTipoConceptos=res.datos;tipoDscSelected=xThisCompDesc.listTipoConceptos[0];localStorage.setItem(keyDscStorage,JSON.stringify(res.datos));});}
 function selectedDsc(obj){tipoDscSelected=xThisCompDesc.listTipoConceptos[obj.selectedIndex];xCalcImporteDsc();txt_imp_dsc.focus();try{txt_imp_dsc.selected();}catch(error){}}
 function xCalcImporteDsc(){const isDestPorcentaje=tipoDscSelected.idtipo_descuento==='2';var rptCalc=0,descripcionDesct='';var importeTotalPedido=xThisCompDesc.importeventa;importeInicial=txt_imp_dsc.value===''?0:importeInicial;if(importeInicial===0){importeInicial=importeTotalPedido+lastValCalc;}
 var limiteCantidadDsc=isDestPorcentaje?100:importeInicial;var valtxt=parseFloat(txt_imp_dsc.value)||0;if(valtxt===lastValCalc){return;}
