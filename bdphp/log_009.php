@@ -80,8 +80,8 @@
         case 501: //guardar promocion
             $data = file_get_contents('php://input');            
             $sql = "call procedure_guardar_promocion($g_idsede, $g_ido, $g_us,'$data')";
-            $rpt = $bd->xDevolverUnDatoSP($sql);
-            echo json_encode(array('respuesta' => $rpt));
+            // $rpt = $bd->xDevolverUnDatoSP($sql);
+            echo json_encode(array('respuesta' => $sql));
 
             break;
 
