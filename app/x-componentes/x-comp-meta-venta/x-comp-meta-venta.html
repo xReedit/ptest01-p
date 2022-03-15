@@ -1,0 +1,103 @@
+<dom-module id="x-comp-meta-venta">
+	<template is="dom">
+        <div class="comp-val-num-meta mun-meta fw-600 animate__animated"><p></p> <span class$="{{fontsizeSimbol}}">%</span></div>
+    </template>
+</dom-module>
+<style>
+    .comp-val-num-meta {        
+        display: flex;
+        flex-wrap: nowrap;
+        justify-content: center;
+        align-items: baseline;
+        width: 30px;
+        margin: 0 auto;
+    }
+</style>
+<script>
+
+    var xThisComMetaVenta, compLastColorTestMeta = '';
+    setTimeout(() => {        
+        try {
+            socketCP.isRegistroVenta$.subscribe(res => {
+                xIniCompMetaVenta();
+            });
+        } catch (error) {
+            console.log('error ', error);
+        }
+    }, 4000);
+
+    function xIniCompMetaVenta() {
+
+        // setTimeout(() => {
+            // socketCP.listen('restobar-venta-registrada-res').subscribe(res => {
+            //     console.log('restobar-venta-registrada-res', res);            
+            // });
+
+            
+        // }, 4000)
+
+        // obtener meta
+        let nomClassMetaNum = 'text-danger';
+        xThisComMetaVenta.valNumMeta = 0;
+        const _url = '../../bdphp/log_componentes.php?op=21'
+        $.ajax({
+					type: 'POST',
+                    url: _url                    
+				})
+				.done(function (res) {
+                    res = JSON.parse(res);
+                    if (res.success ) {
+                        $('.comp-val-num-meta').addClass('animate__flash animate__heartBeat');
+                        const _numMeta = res.datos[0].pct;
+                        if (_numMeta > 100 ) { nomClassMetaNum = 'text-info'; }
+                        if (_numMeta >= 80 && _numMeta <= 100) { nomClassMetaNum = 'text-success'; }
+                        if (_numMeta < 80 && _numMeta >= 40) { nomClassMetaNum = 'text-warning'; }
+                        if (_numMeta < 40 ) { nomClassMetaNum = 'text-danger'; }
+                        $('.comp-val-num-meta').removeClass(compLastColorTestMeta);
+                        $('.comp-val-num-meta').addClass(nomClassMetaNum);
+
+                        if (_numMeta < 0 ) { 
+                            xThisComMetaVenta.valNumMeta = 'Fije una meta'; 
+                            $('.comp-val-num-meta span').addClass('xInvisible');
+                            changeValueMetaIndicador(nomClassMetaNum, compLastColorTestMeta);
+                            compLastColorTestMeta = nomClassMetaNum;
+                            return;
+                        }
+
+                        $('.comp-val-num-meta').addClass(xThisComMetaVenta.fontsize);
+                        xThisComMetaVenta.fontsizeSimbol = `fs-${xThisComMetaVenta.fontsize.split('-')[1] - 7}`;
+                        xThisComMetaVenta.valNumMeta = _numMeta;
+                        
+                        changeValueMetaIndicador(nomClassMetaNum, compLastColorTestMeta);
+                        compLastColorTestMeta = nomClassMetaNum;
+
+                        
+                        setTimeout(() => {
+                            $('.comp-val-num-meta').removeClass('animate__flash animate__heartBeat');
+                        }, 1000);
+                    }
+				});
+    }
+
+    function changeValueMetaIndicador(_nomClassMetaNum, _compLastColorTestMeta) {
+        $('.comp-val-num-meta p').each((i,e) => {
+            e.innerHTML = xThisComMetaVenta.valNumMeta;
+            if (_compLastColorTestMeta !== '' ) { $(e).parent().removeClass(_compLastColorTestMeta); }
+            $(e).parent().addClass(_nomClassMetaNum);
+        })        
+    }
+
+
+    Polymer({
+			is: 'x-comp-meta-venta',
+			properties: {			
+                valNumMeta: String,
+                fontsizeSimbol: String,
+                fontsize: String
+			},			
+			attached: function () {
+				xThisComMetaVenta = this;				
+				xIniCompMetaVenta();
+			}
+		})
+</script>

@@ -221,4 +221,9 @@
             $sql="select * from seccion where idsede=$g_idsede and estado=0 order by descripcion";
             $bd->xConsulta($sql);
             break;
+        
+        case 21: // componente meta
+            $sql = "call procedure_get_meta($g_idsede)";
+            $bd->xConsulta($sql);
+            break;
     }

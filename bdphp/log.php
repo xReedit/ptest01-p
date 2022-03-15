@@ -3494,7 +3494,7 @@ function xDtUS($op_us){
 			// WHERE (cp.idorg=".$g_ido." AND cp.idsede=".$g_idsede.")"; s.logo64
 			$sql_us="
 			SELECT cp.var_size_font_tall_comanda, cp.ip_print, cp.num_copias, cp.pie_pagina, cp.pie_pagina_comprobante, cp.logo, '' as logo64, s.nombre AS des_sede, s.eslogan, s.mesas, s.ciudad
-				,isprint_subtotales_comanda, isprint_copy_short
+				,isprint_subtotales_comanda, isprint_copy_short, isprint_all_delivery
 			FROM conf_print AS cp
             	INNER JOIN sede AS s ON cp.idsede = s.idsede
 			WHERE (cp.idorg=".$g_ido." AND cp.idsede=".$g_idsede.")";

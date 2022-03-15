@@ -49,6 +49,7 @@
 <input type="text" class="xMiInput xPasarEnter2" style="width:98%" placeholder="Direccion" onChange="conMayusculas(this)" onblur="removeSpecialCharObj(this)" required id="txt_direccion" espaciar>
 <input type="number" class="xMiInput xPasarEnter2" style="width:200px" placeholder="Telefono" onkeyup="showMsjTelefono(this)" required id="txt_telefono" espaciar>
 <p class="fs-11 pl-2 fw-600 text-info" hidden$="[[!isShowMsjTelefono]]">Se enviará el comprobante al WhatsApp.</p>
+<p class="fs-11 pl-2 fw-600 text-secondary" hidden$="[[isShowMsjTelefono]]">Para enviar el comprobante al WhatsApp.</p>
 <input type="text" class="xMiInput xInvisible" style="width:98%" placeholder="Cliente" onChange="conMayusculas(this)" id="txt_nombres" espaciar required$="[[!modificarCliente]]" readonly$="[[!modificarCliente]]">
 </div>
 </div>
@@ -68,11 +69,11 @@
 <th class="xSinBorde" width="30px" align="right">P.Total</th>
 </thead>
 <tr class="xSinBorde" data-id="">
-<td><input type="number" pattern="[^0-9]+" class="xMiInput xPasarEnter2" style="width:100%" placeholder="Cant" required id="cant_item" onkeyup="verificarInputInteger(this)" autofocus></td>
+<td><input type="number" pattern="[^0-9]+" class="xMiInput xPasarEnter2" style="width:100%" onkeyup="verificarInputInteger(this)" placeholder="Cant" required id="cant_item" autofocus></td>
 <td>
 <x-comp-find-item-producto clasecss="xMiInput xPasarEnter2 w-100" elplaceholder="Descripcion" id="compItemProductoFac"></x-comp-find-item-producto>
 </td>
-<td><input type="number" pattern="[^0-9]+" class="xMiInput xAlinearDerecha punitario" onblur="xRetornaMoneda(this)" onkeyup="verificarInputInteger(this)" placeholder="P. Unitario" id="punitario" name="precio" required></td>
+<td><input type="number" pattern="[^0-9]+" class="xMiInput xAlinearDerecha punitario" onblur="xRetornaMoneda(this)" placeholder="P. Unitario" id="punitario" name="precio" required></td>
 <td><input type="number" class="xMiInput xAlinearDerecha xprecio" onblur="xRetornaMoneda(this)" placeholder="P. Total" id="ptotal" name="total" required readonly></td>
 </tr>
 <template is="dom-repeat" items="{{arrItems}}" as="item">
@@ -119,6 +120,8 @@
 <button class="xBoton2 xAzul" onclick="xProcesarComprobante()" disabled="[[!formValid]]" hidden="[[cpe_show]]">Listo, emitir comprobante</button>
 <button class="xBoton2 xAzul" onclick="xProcesarComprobante()" hidden="[[!cpe_show]]">Volver a imprimir</button>
 <button class="xBoton2 xVerde" onclick="xNuevoFac()" hidden="[[!cpe_show]]">Nuevo</button>
+<br>
+<p hidden$="[[ !isShowMsjBoletaRequireDNI ]]" class="animate__animated animate__flash text-danger fw-600">Si el importe total supera los S/.700.00 es necesario un DNI o RUC</p>
 <br><br>
 </div>
 </div>
@@ -147,7 +150,7 @@ event.stopPropagation();e.stopPropagation();e.stopImmediatePropagation()
 return false;}});$(".punitario").on('keyup',function(e){var code=e.which;xCalcTotal();if(code==13||code==186){$("#punitario").val(xMoneda(this.value));$("#ptotal").focus();}});$(".xprecio").on('keyup',function(e){var code=e.which;if(code==13||code==186){xAddItem();}});$("#txt_fecha").on('change',function(){var d=$(this).val().split('-');txt_fecha_cpe_manual=d[1]===undefined?'':$(this).val();})
 $('#selectFormaPago').on('change',(e)=>{console.log('e',e);xThisFacturador.isShowFechaPagoCredito=e.target.selectedIndex===1;comprobanteFormaPago.forma_de_pago=e.target.options[e.target.selectedIndex].text;if(xThisFacturador.isShowFechaPagoCredito){comprobanteFormaPago.fecha_de_pago=fechaPagoCredito.value;}else{comprobanteFormaPago.fecha_de_pago='';}
 if(xThisFacturador.isShowFechaPagoCredito&&comprobanteFormaPago.fecha_de_pago===''){xThisFacturador.formValid=false;}else{xValidarBtnProcesar();}
-console.log('comprobanteFormaPago',comprobanteFormaPago);var today=new Date().toISOString().split('T')[0];document.getElementsByName("fechaPagoCredito")[0].setAttribute('min',today);});$('#fechaPagoCredito').on('change',(evt)=>{comprobanteFormaPago.fecha_de_pago=evt.target.value;if(xThisFacturador.isShowFechaPagoCredito&&comprobanteFormaPago.fecha_de_pago===''){xThisFacturador.formValid=false;}else{xValidarBtnProcesar();}});}
+console.log('comprobanteFormaPago',comprobanteFormaPago);var today=new Date().toISOString().split('T')[0];document.getElementsByName("fechaPagoCredito")[0].setAttribute('min',today);});$('#fechaPagoCredito').on('change',(evt)=>{comprobanteFormaPago.fecha_de_pago=evt.target.value;if(xThisFacturador.isShowFechaPagoCredito&&comprobanteFormaPago.fecha_de_pago===''){xThisFacturador.formValid=false;}else{xValidarBtnProcesar();}});setTimeout(()=>{xNuevoFac();},500);}
 function verificarInputInteger(obj){const _val=parseFloat(obj.value);obj.value=_val>0?_val:_val*-1;}
 function removeChartSpecial(obj){obj.value=removeSpecialChar(obj.value);}
 function xSeeFechaManual(){xThisFacturador.fecha_manual=!xThisFacturador.fecha_manual;}
@@ -160,7 +163,7 @@ xThisFacturador.isShowSearchSunat=new_rpt.buscarSunat;rpt.valid=true;rpt.msj="ok
 $("#progress_cliente").addClass("xInvisible");});}
 function NumDocNoValid(rpt){_formValid=rpt.valid;xValidarBtnProcesar();$("#txt_msj").text(rpt.msj)
 $("#txt_msj").removeClass('xInvisible');$("#txt_ruc").select();$("#txt_ruc").focus();}
-function xNuevoCliente(){_formValid=false;xValidarBtnProcesar();xThisFacturador.modificarCliente=true;xIdCliente_pago='';_arrCliente=[];_inputAutocompleteFacObj.inputValue='';$('#txt_nombres').val('');$('#txt_direccion').val('');$('#txt_telefono').val('');xThisFacturador.isShowMsjTelefono=false;$("#txt_ruc").select();$("#txt_ruc").focus();}
+function xNuevoCliente(){_formValid=false;xValidarBtnProcesar();xThisFacturador.isShowMsjBoletaRequireDNI=false;xThisFacturador.modificarCliente=true;xIdCliente_pago='';_arrCliente=[];_inputAutocompleteFacObj.inputValue='';$('#txt_nombres').val('');$('#txt_direccion').val('');$('#txt_telefono').val('');xThisFacturador.isShowMsjTelefono=false;$("#txt_ruc").select();$("#txt_ruc").focus();}
 function xCalcTotal(){const xCan_item=$("#cant_item").val()===''?0:parseFloat($("#cant_item").val());const xPUnitario=$("#punitario").val()===''?0:parseFloat($("#punitario").val());const ptotal=(xCan_item*xPUnitario).toFixed(2)||0;$("#ptotal").val(ptotal);}
 function xAddItem(){const xCan_item=$("#cant_item").val();_labelElemetFind=_labelElemetFind!==''?_labelElemetFind:compItemProductoFac.getTextInput();xDes_item=_labelElemetFind;const xPUnitario=$("#punitario").val();const xPTotal=$("#ptotal").val();if(xCan_item===''||xDes_item===''||xPUnitario===''||xPTotal===''){return}
 if(parseFloat(xPUnitario)<=0){return;}
@@ -171,7 +174,8 @@ const id=xCeroIzq(_arrItems.length+1,3);const item={'id':id,'iditem':id,'idtipo_
 function xBorrarItemLocalArr(obj){const i=obj.parentElement.parentElement.dataValue;_arrItems.splice(i,1);xThisFacturador.arrItems=JSON.parse(JSON.stringify(_arrItems));xCalcularTotal();}
 function xNuevoItem(){$("#cant_item").val('');$("#des_item").val('');$("#punitario").val('');$("#ptotal").val('');$("#cant_item").focus();compItemProductoFac.resetText();}
 function xValidarBtnProcesar(){if(_arrTotal.length>0){if(!cnf_ComprobanteSel){return;}
-if(cnf_ComprobanteSel.codsunat==="03"&&_listValid&&parseFloat(_arrTotal[2].importe)<=700){xThisFacturador.formValid=true;xThisFacturador.modificarCliente=true;return;}}
+if(cnf_ComprobanteSel.codsunat==="03"&&_listValid&&parseFloat(_arrTotal[2].importe)<=700){xThisFacturador.formValid=true;xThisFacturador.modificarCliente=true;xThisFacturador.isShowMsjBoletaRequireDNI=false;return;}
+if(cnf_ComprobanteSel.codsunat==="03"&&parseFloat(_arrTotal[2].importe)>=700){xThisFacturador.isShowMsjBoletaRequireDNI=true;}}
 xThisFacturador.formValid=_listValid&&_formValid;}
 function xCalcularTotal(){_arrTotal=[];const SumaLista=this._arrItems.map(x=>parseFloat(x.ptotal)).reduce((a,b)=>a+b,0);_listValid=parseInt(SumaLista)===0?false:true;_arrTotal.push({'descripcion':'Sub Total','importe':xMoneda(SumaLista)});xCartaSubtotales.map(x=>{if(x.es_impuesto.toString()==='1'){const impuesto=parseFloat(x.monto);const importeCalc=x.activo==='0'?parseFloat(SumaLista*(impuesto/100)).toFixed(2):'0.00';_arrTotal.push({'descripcion':x.descripcion,'importe':importeCalc});}});const total=_arrTotal.map(x=>parseFloat(x.importe)).reduce((a,b)=>a+b,0);_arrTotal.push({'descripcion':'Total','importe':xMoneda(total)});xThisFacturador.arrTotales=JSON.parse(JSON.stringify(_arrTotal));xValidarBtnProcesar();}
 async function xProcesarComprobante(){if(xThisFacturador.cpe_show){xMandarCocinarImpresionComprobante(arr_comprobante.correlativo,_idregistro);return;}
@@ -183,7 +187,7 @@ if(rptDoc.ok=false){alert(rptDoc.msj);return;}
 if(impresoraSelect.idimpresora===-1){const hash=rptDoc[0]?rptDoc[0].hash:rptDoc.hash;if(hash==='www.papaya.com.pe'){xPopupLoad.xclose();alert('Error con la conexion al servicio de Sunat. No puede descargar el pdf. Pero si puede imprimirlo. Este comprobante sera enviado a sunat al cerrar caja.');return;}
 xThisFacturador.cpe_show=true;xSoapSunat_DownloadFile('pdf',rptDoc[0].external_id);xPopupLoad.xclose();return;}else{xThisFacturador.cpe_show=true;xLLamarPrintFac();}}
 function xNuevoFac(){xThisFacturador.cpe_show=false;_arrCliente=[];_arrItems=[];_arrTotal=[];const _compFindComprobante=document.getElementById('compFindComprobante');_compFindComprobante.reset();xThisFacturador.$.selectFormaPago.selectedIndex=0;xThisFacturador.isShowFechaPagoCredito=false;comprobanteFormaPago={forma_de_pago:'Contado',fecha_de_pago:''}
-xThisFacturador.arrItems=JSON.parse(JSON.stringify(_arrItems));xThisFacturador.arrTotales=JSON.parse(JSON.stringify(_arrTotal));xNuevoCliente();$('#contentClie').addClass('xInvisible');$('#form_pago_cliente_fac').reset();}
+xThisFacturador.arrItems=JSON.parse(JSON.stringify(_arrItems));xThisFacturador.arrTotales=JSON.parse(JSON.stringify(_arrTotal));xNuevoCliente();$('#contentClie').addClass('xInvisible');txt_ruc.value='';}
 function xLLamarPrintFac(){let xSetImpresora=xm_log_get('sede_generales');xSetImpresora[0].ip_print=impresoraSelect.ip;xSetImpresora[0].var_margen_iz=impresoraSelect.var_margen_iz;xSetImpresora[0].var_size_font=impresoraSelect.var_size_font
 xSetImpresora[0].local=impresoraSelect.local;xSetImpresora[0].num_copias=impresoraSelect.num_copias;xSetImpresora[0].papel_size=impresoraSelect.papel_size;xImprimirComprobanteAhoraPrintPreSelect(rptDoc,itemsConEstructuraPrint,_arrTotal,arr_comprobante,_arrCliente,xSetImpresora,function(rpt_print){if(rpt_print==false){return false;}
 xPopupLoad.titulo="Imprimiendo...";xPopupLoad.xopen();setTimeout(function(){xPopupLoad.xclose()},3000);xPopupLoad.xclose();});}
@@ -193,5 +197,5 @@ function fact_getAllImpresoras(){$.ajax({type:'POST',url:'../../bdphp/log_002.ph
 dtValues=$.parseJSON(dtValues);dtValues.datos.map(x=>_arrPrint.push(x));_arrPrint.push({idimpresora:-1,descripcion:'MOSTRAR EN PDF'})
 xThisFacturador.listImpresoras=JSON.parse(JSON.stringify(_arrPrint));impresoraSelect=_arrPrint[0];console.log(xThisFacturador.listImpresoras);});}
 function showMsjTelefono(obj){xThisFacturador.isShowMsjTelefono=obj.value!=='';}
-Polymer({is:'x-facturador',properties:{arrItems:[],arrTotales:[],listImpresoras:[],formValid:boolean=false,modificarCliente:boolean=false,cpe_show:boolean=false,fecha_manual:boolean=false,isShowSearchSunat:Boolean,isShowFechaPagoCredito:Boolean,isShowCpeFactura:Boolean,isShowMsjTelefono:Boolean,},attached:function(){this.isShowSearchSunat=false;this.isShowFechaPagoCredito=false;this.isShowCpeFactura=false
-this.isShowMsjTelefono=false;xThisFacturador=this;xIniFacturador();_cpSocketOpen();}})/*]]>*/</script>
+Polymer({is:'x-facturador',properties:{arrItems:[],arrTotales:[],listImpresoras:[],formValid:boolean=false,modificarCliente:boolean=false,cpe_show:boolean=false,fecha_manual:boolean=false,isShowSearchSunat:Boolean,isShowFechaPagoCredito:Boolean,isShowCpeFactura:Boolean,isShowMsjTelefono:Boolean,isShowMsjBoletaRequireDNI:Boolean},attached:function(){this.isShowSearchSunat=false;this.isShowFechaPagoCredito=false;this.isShowCpeFactura=false
+this.isShowMsjTelefono=false;this.isShowMsjBoletaRequireDNI=false;xThisFacturador=this;xIniFacturador();_cpSocketOpen();}})/*]]>*/</script>

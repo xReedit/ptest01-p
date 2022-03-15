@@ -45,6 +45,7 @@
 <link rel=import href=../web_components/x-pago/x-pago.html>
 <link rel=stylesheet href=../../css/micss.css>
 <link rel=stylesheet href=../../css/font-awesome-4.7.0/css/font-awesome.min.css>
+<link rel=import href=../x-componentes/x-comp-meta-venta/x-comp-meta-venta.html>
 <link rel=stylesheet href="https://cdnjs.cloudflare.com/ajax/libs/animate.css/4.1.1/animate.min.css"/>
 <link type=image/x-icon href=../../images/logo_app.png rel="shortcut icon" />
 <style is=custom-style>body{width:100%;margin:0;padding:0;background-color:white}paper-toolbar{--paper-toolbar-background:#1e88e5;top:0;left:0;right:0;height:60px}paper-drawer-panel{height:100%;overflow-y:auto;--paper-drawer-panel-left-drawer-container:{background-color:#303030;color:#e0e0e0;position:fixed;height:100%;overflow-y:auto}}.xHeadertoolbar{background-color:#212121}.xBtnPanel{display:block;text-align:left;margin-bottom:90px}.xBtnPanel paper-button{width:100%;margin-left:0;padding:5px;text-align:left;display:block}.xBtnPanel paper-button:hover{background:#383838}.xMarginAlinear{margin-right:4%}#Titulo_page{font-size:19px}#dialog_us{border-radius:5px;width:250px;position:fixed;top:10px;right:10px}.paper-drawer-panel-0{background:#f1f1f3}</style>
@@ -73,6 +74,10 @@
 <div class="xCentrado div-active-service-delivery">
 <span class=pr-5 title="Activa para recibir pedidos desde Papaya Express">En linea</span>
 <paper-toggle-button id=toogleOnline class=x-toogle onclick=xActivarDeliveryApp(this)></paper-toggle-button>
+</div>
+<div class="d-flexx p-3 bg-dark justify-content-around">
+<span class="pr-5 text_puntos"><i class="fa fa-flag pr-1"></i>Meta Diaria de Venta</span>
+<x-comp-meta-venta fontsize=fs-17 class=text-right></x-comp-meta-venta>
 </div>
 <div class=xLineaSombra></div>
 <div class=ul_menu2>

@@ -1,4 +1,4 @@
-class socketService{dataSocket={};_socket=_socketSuperMaster;_idConexSocket;isSocketConnectSource=new rxjs.BehaviorSubject(false);isSocketConnect$=this.isSocketConnectSource.asObservable();constructor(){}
+class socketService{dataSocket={};_socket=_socketSuperMaster;_idConexSocket;isSocketConnectSource=new rxjs.BehaviorSubject(false);isSocketConnect$=this.isSocketConnectSource.asObservable();isRegistroVentaSource=new rxjs.BehaviorSubject(false);isRegistroVenta$=this.isRegistroVentaSource.asObservable();constructor(){}
 connectSocket(){this._idConexSocket=localStorage.getItem('app3_us_skt')||'';this.getDataClient();if(this._socket&&this._socket.connected){return this._socket;}
 this._socket=io.connect(URL_SOCKET,{query:this.dataSocket});this.whenSocketIsConnect();this.isSocketConnectSource.next(true);}
 whenSocketIsConnect(){this.listenStatus();console.log('socket master connect');_socketSuperMaster=this._socket;}
