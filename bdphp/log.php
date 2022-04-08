@@ -1912,6 +1912,11 @@
 				$condicion='p.numpedido='.$numpedido;
 			}
 
+			// para abrir cuentas anteriores al ultmo idcorrelativo cierre
+			if ($numpedido < $lastIdPedido) {
+				$lastIdPedido = $numpedido > 0 ? $numpedido - 300 : $numpedido;
+			}
+
 			// $sql="
 			// 	SELECT p.*,
 			// 		SUBSTRING_INDEX(u.nombres, ' ', 1) AS nom_usuario,p.referencia, p.subtotales_tachados,

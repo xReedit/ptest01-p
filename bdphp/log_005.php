@@ -843,7 +843,7 @@
 
 			switch ($rango) {
 				case 'fecha':
-					$fecha = $fecha == 0 ? " pb.fecha_cierre = ''" : " STR_TO_DATE(pb.fecha_cierre, '%Y-%m-%d') = STR_TO_DATE('$fecha', '%d/%m/%Y')";
+					$fecha = $fecha == 0 ? " pb.fecha = ''" : " pb.fecha = '$fecha'";
 					break;
 				
 				case 'semana':

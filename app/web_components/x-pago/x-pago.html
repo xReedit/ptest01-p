@@ -33,18 +33,14 @@
 </paper-progress>
 </div>
 <div id="datos_cliente" hidden=[[hidden_container_cliente]]>
-<x-comp-find-input-cliente id="clie_nombres" label="Nombres | Razon Social" required="[[ComprobanteRequiereCliente]]" class="xPasarEnter2">
+<x-comp-find-input-cliente id="clie_nombres" label="Nombres | Razon Social | Buscar" required="[[ComprobanteRequiereCliente]]" class="xPasarEnter2">
 </x-comp-find-input-cliente>
 <paper-textarea autofocus label="Direccion" max-rows="2" id="clie_direccion" onChange="conMayusculas(this)" class="xPasarEnter2 clie_direccion"></paper-textarea>
 <div>
 <paper-textarea autofocus label="Telefono WhatsApp" max-rows="1" id="clie_telefono" onChange="conMayusculas(this)" class="xPasarEnter2"></paper-textarea>
 </div>
 <div class="d-flexx align-items-center justify-content-between">
-<p style="line-height:18px">Se enviara el comprobante al <br> WhatsApp de este número.</p>
-<div>
-<div hidden="[[!isBtnPrinterCpe]]" class="btn btn-sm border btn-print-cpe" style="background:lightgray" id="btn-print-no" onclick="xSetisPrinterCpe(true)"> <i class="fa fa-check fs-15 text-success fs-600 mr-1"></i>Imprimir Comprobante</div>
-<div hidden$="[[isBtnPrinterCpe]]" class="btn btn-sm btn-warning border btn-print-cpe" id="btn-print-si" onclick="xSetisPrinterCpe(false)"> <i class="fa fa-close fs-15 text-danger fs-600 mr-1"></i>Imprimir Comprobante</div>
-</div>
+<p style="line-height:18px;display:flex;align-items:center">Se enviara el comprobante al WhatsApp de este número. <img src="../../../images/whatsapp.png" width="16px"></p>
 </div>
 </div>
 </form>
