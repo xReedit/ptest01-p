@@ -41,6 +41,10 @@
 </div>
 <div class="d-flexx align-items-center justify-content-between">
 <p style="line-height:18px;display:flex;align-items:center">Se enviara el comprobante al WhatsApp de este número. <img src="../../../images/whatsapp.png" width="16px"></p>
+<div>
+<div hidden="[[!isBtnPrinterCpe]]" class="btn btn-sm border btn-print-cpe" style="background:lightgray" id="btn-print-no" onclick="xSetisPrinterCpe(true)"> <i class="fa fa-check fs-15 text-success fs-600 mr-1"></i>Imprimir Comprobante</div>
+<div hidden$="[[isBtnPrinterCpe]]" class="btn btn-sm btn-warning border btn-print-cpe" id="btn-print-si" onclick="xSetisPrinterCpe(false)"> <i class="fa fa-close fs-15 text-danger fs-600 mr-1"></i>Imprimir Comprobante</div>
+</div>
 </div>
 </div>
 </form>
