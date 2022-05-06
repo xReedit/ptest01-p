@@ -86,7 +86,8 @@ favor regrese y registre o seleccione un cliente.</p><br>
 $('.xPasarEnter2').on('keyup',function(e){var code=e.which;if(code==13||code==186){var inputs=$('input');var a=inputs.index(document.activeElement);if(inputs[a+1]!==null){var nextBox=inputs[a+1];if(nextBox.disabled){nextBox=inputs[a+2]}
 nextBox.focus();}
 return false;}});$("#txt_pago_cliente").on('change',function(){xSumarTotales_row();})
-$(document.body).on('keydown',function(e){var evt=e;if(evt.keyCode==121){if(!xThisPago.modoSoloComprobante){if(!xThisPago.hidden_container_pago&&!xThisPago.tipoPagoRequiereCliente){if(!xThisPago.valid_form_cliente_pago){return}
+$(window).on('keydown',function(e){var evt=e;if(evt.keyCode==121){if(xThisPago.importe_total_cobrar===0){return;}
+if(!xThisPago.modoSoloComprobante){if(!xThisPago.hidden_container_pago&&!xThisPago.tipoPagoRequiereCliente){if(!xThisPago.valid_form_cliente_pago){return}
 xListoRegistraPago();}else{if(!xThisPago.valid_form_cliente_pago){return}
 xThisPago.setVisibleContainerPago();}}else{xVerContainerPago();}}
 e.stopPropagation();e.stopImmediatePropagation();});xtipoP=[];var xdif_text='',xPase=0;xCompTableFP=document.getElementById('comp-table-fp');xCompTableFP.addEventListener('xCompTableChange',function(e){const evento=e.detail.evento;xtipoP=e.detail.datos;const xsuma_total=e.target.valImporteRestante;if(xsuma_total<=0){xdif_text='Vuelto: '+xMoneda((xsuma_total*-1));$("#pdif").removeClass('pdif_rojo');$("#pdif").addClass('pdif_verde');xPase=1;xThisPago.change_monto_pago_valid=true;}else{xdif_text='Falta: '+xMoneda(xsuma_total);$("#pdif").removeClass('pdif_verde');$("#pdif").addClass('pdif_rojo');xPase=0;if(xsuma_total>0){xThisPago.change_monto_pago_valid=false;}}
@@ -118,7 +119,7 @@ const _clienteRptBD=xThisPago.changeDatosClienteSave;let is_update_cliente=true;
 if(xThisPago.tipoComprovanteSelecionado==={}){xSelectedTpComprobante();}
 xRpts.push({'ok':xPase,'valid':xDatosValidos,'cliente':xThisPago.clienteModel,'comprobante':xThisPago.tipoComprovanteSelecionado,'idcliente':xIdCliente_pago,'nota_compra':nom_nota,'nomcliente':nom_nota,'xtipo_pagos':xtipoP,'paseEnterTxt':xEnterTxtImporte,'is_printer_cpe':xThisPago.isBtnPrinterCpe,'is_update_cliente':is_update_cliente});if(xPase==0){xThisPago.valid_monto_pago=false;}else{xThisPago.valid_monto_pago=true;}
 xThisPago.fire('xSend',{xRpts});}
-function xResetValuesInit(){xRpts=[];_inputAutocompleteObj.inputValue='';xThisPago.clienteModel={};}
+function xResetValuesInit(){xRpts=[];_inputAutocompleteObj.inputValue='';xThisPago.clienteModel={};xThisPago.importe_total_cobrar=0;}
 function xLoadTipoPago(){$.ajax({type:'POST',url:'../../bdphp/log.php?op=6'}).done(function(dtTp){var dtTp=$.parseJSON(dtTp);dtTp=dtTp.datos;xThisPago.dt_tp=dtTp;xSel_tp=[];for(var i=0;i<dtTp.length;i++){var xidtp=dtTp[i].idtipo_pago;xSel_tp[xidtp]={'des':dtTp[i].descripcion,'limite':dtTp[i].limite,'reqcliente':dtTp[i].requiere_cliente,'visible':true}};xAddTipoPago();xThisPago.hidden_container_pago=true;xThisPago.fire('xContainerPagoVisible',xThisPago.hidden_container_pago);})}
 function xResetOpSel(){for(i in xSel_tp){xSel_tp[i].visible=true;};}
 function xArmarSelectTP(){var xcadena_tp='';for(i in xSel_tp){if(xSel_tp[i].visible==false){continue;}

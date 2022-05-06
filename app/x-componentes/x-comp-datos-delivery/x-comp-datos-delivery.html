@@ -31,7 +31,7 @@
 </div>
 <div hidden$="{{showapigoogle}}">
 <div hidden$="{{!showInputDirNoMap}}">
-<input type="text" class="xMiInput xPasarEnter2" placeholder="DIRECCION" onChange="conMayusculas(this)" id="txt_delivery_direccion" espaciar required$="{{ !showapigoogle }}">
+<input type="text" class="xMiInput xPasarEnter2" placeholder="DIRECCION" onChange="conMayusculas(this)" onkeyup="removeSpecialCharObj(this)" id="txt_delivery_direccion" espaciar required$="{{ !showapigoogle }}">
 </div>
 <div class="list-direccion-cliente" hidden$="{{showInputDirNoMap}}">
 <div style="width:100%">
@@ -53,9 +53,9 @@
 <div class="xFondoRowIndigo btn-add-dir xCursor" onclick="nuevaDireccion()"><span class="fs-10">+Add</span></div>
 </div>
 </div>
-<input type="text" class="xMiInput xPasarEnter2" placeholder="REFRENCIA" onChange="conMayusculas(this)" id="txt_delivery_referencia" espaciar required>
-<input type="text" class="xMiInput xPasarEnter2" placeholder="TELEFONO" onChange="conMayusculas(this)" id="txt_delivery_telefono" espaciar>
-<input type="text" class="xMiInput xPasarEnter2" placeholder="PAGA CON" onChange="conMayusculas(this)" id="txt_delivery_paga" espaciar>
+<input type="text" class="xMiInput xPasarEnter2" placeholder="REFRENCIA" onChange="conMayusculas(this)" onkeyup="removeSpecialCharObj(this)" id="txt_delivery_referencia" espaciar required>
+<input type="text" class="xMiInput xPasarEnter2" placeholder="TELEFONO" onChange="conMayusculas(this)" onkeyup="removeSpecialCharObj(this)" id="txt_delivery_telefono" espaciar>
+<input type="text" class="xMiInput xPasarEnter2" placeholder="PAGA CON" onChange="conMayusculas(this)" onkeyup="removeSpecialCharObj(this)" id="txt_delivery_paga" espaciar>
 </form>
 <br>
 <div class="div-footer-delivery">
