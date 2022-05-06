@@ -1742,6 +1742,10 @@
 			$sql="update impresora set papel_size=".$_POST['papel']." where idimpresora=".$_POST['id'];
 			$bd->xConsulta($sql);
 			break;
+		case 40103://guardar impresora por tipo de consumo
+			$sql="update tipo_consumo set idimpresora=".$_POST['idprint']." where idtipo_consumo=".$_POST['id'];
+			$bd->xConsulta($sql);
+			break;
 		case 4011://load config otros documentos
 			// $sql="SELECT s.conf_print_otros, s.idtipo_otro, ifnull(i.idimpresora,0)AS idimpresora,ifnull(i.descripcion,'Ninguno') as descripcion FROM conf_print_otros AS s left JOIN impresora AS i using(idimpresora) WHERE (s.idorg=".$g_ido." AND s.idsede=".$g_idsede.") AND s.idtipo_otro<0";
 			$sql="
@@ -1914,7 +1918,7 @@
 
 			// para abrir cuentas anteriores al ultmo idcorrelativo cierre
 			if ($numpedido < $lastIdPedido) {
-				$lastIdPedido = $numpedido > 0 ? $numpedido - 300 : $numpedido;
+				$lastIdPedido = $numpedido > 0 ? $numpedido - 500 : $numpedido;
 			}
 
 			// $sql="
