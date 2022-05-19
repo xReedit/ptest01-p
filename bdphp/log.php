@@ -1138,7 +1138,7 @@
 			$sql="update conf_print set logo='".$_POST['d']."' where idconf_print=".$_POST['i'];
 
 			// 081220 quitamos la img64 no se utiliza y hace mas largo el json
-			$sqlLogo64 = "; update sede set logo64 = '".$_POST['logo']."' where idsede=".$g_idsede;			
+			$sqlLogo64 = "; update sede set logo64 = '".$_POST['logo']."' where idsede=".$g_idsede;
 			$bd->xMultiConsulta($sql.$sqlLogo64);
 
 			// $bd->xConsulta($sql);
@@ -3458,9 +3458,7 @@ function encode_dataUS(){
 					'generales'=> xDtUS(307),
 					'datos_org_sede'=> xDtUS(3012), // datos org y sede // facturacion
 					'datos_org_all_sede'=> xDtUS(3013) // datos org y sede // facturacion
-				]
-	];  
-	/*,
+				]];  /*,
 		,
 	];/*
 	$data = [
@@ -3552,8 +3550,7 @@ function xDtUS($op_us){
 					where se.idorg = ".$g_ido." and se.idsede = ".$g_idsede;
 			break;
 		case 3013: // load datos del org sede 
-			$sql_us = "SELECT idsede, idorg, nombre, ciudad, direccion, telefono, eslogan, mesas, maximo_pedidos_x_hora, authorization_api_comprobante, id_api_comprobante, facturacion_e_activo, '' logo64, ubigeo, codigo_del_domicilio_fiscal, sys_local, ip_server_local, finicio, tipo, sufijo, pwa, pwa_time_limit, url_api_fac, estado, latitude, longitude, pwa_msj_ini, pwa_time_min_despacho, pwa_time_max_despacho, pwa_requiere_gps, pwa_delivery_img, provincia, departamento, codigo_postal, tiempo_aprox_entrega, dias_atienden, pwa_habilitar_delivery_app, pwa_comercio_afiliado, pwa_delivery_importe_min, pwa_delivery_servicio_propio, pwa_delivery_comercio_online, pwa_delivery_habilitar_recojo_local, pwa_delivery_acepta_yape, pwa_delivery_hablitar_calc_costo_servicio, pwa_delivery_comercio_solidaridad, pwa_delivery_acepta_tarjeta, pwa_delivery_comision_fija_no_afiliado, pwa_min_despacho, pwa_delivery_comercio_paga_entrega, pwa_delivery_habilitar_llamar_repartidor_papaya, pwa_delivery_telefono_notifica_pedido, pwa_delivery_monto_acumla, pwa_delivery_habilitar_pedido_programado, pwa_delivery_reparto_solo_app, last_date_pago, comsion_entrega, costo_restobar_fijo_mensual, pwa_habilitar_busqueda_mapa, calificacion, isprinter_socket, pwa_delivery_habilitar_calc_costo_servicio_solo_app, pwa_pedido_programado_solo_del_dia, pwa_orden_pagado, email_cierre, pwa_acepta_reservas, pwa_show_item_view_mercado, pwa_acepta_reserva_desde, c_dias, uf_pago, mostar_alert_pago, idsede_plan_contratado, umf_pago, num_dias_facturacion, tipo_contribuyente, img_mini, metodo_pago_aceptados, speech_disabled, simbolo_moneda, nick_carta, link_carta FROM sede where idsede=".$g_idsede." and estado=0";
-			// $sql_us = "SELECT * FROM sede where idsede=".$g_idsede." and estado=0";
+			$sql_us = "SELECT * from sede where idsede=".$g_idsede." and estado=0";
 			break;
 		case 3014: // load sys const
 			$sql_us = "SELECT * FROM sys_const where estado=0 and llave in ('URL_COMPROBANTE', 'URL_COMPROBANTE_DOWNLOAD_FILE')";
