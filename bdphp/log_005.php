@@ -728,19 +728,21 @@
 			$hoy = "if (rp.fecha_cierre = '', 1, 0 )";
 			$columm_add = '';
 			$rango = $_POST['rango'];
+
+			$idsede = $idsede == 0 ? $g_idsede : $idsede;
 			
 
 			switch ($rango) {
 				case 'fecha':
-						
-					if ( $fecha == 0 ) {
+					$lastIdRegistroPago = $bd->xDevolverUnDato("select COALESCE (min(idregistro_pago), 0) d1 from registro_pago where idsede = $idsede and STR_TO_DATE(fecha, '%d/%m/%Y') >= date_sub(curdate(), INTERVAL 2 day) limit 2");	
+					// if ( $fecha == 0 ) {
 						// $fecha = " and (STR_TO_DATE(rp.fecha_cierre, '%d/%m/%Y') =  DATE_ADD(CURDATE(), INTERVAL -1 DAY))";
-						$fecha = " and (rp.cierre = 0 and STR_TO_DATE(rp.fecha_cierre, '%d/%m/%Y') BETWEEN DATE_SUB(NOW(), INTERVAL 2 DAY) AND NOW()";
-						$hoy = "if (rp.fecha_cierre = '', 1, 0 )";
-					} else {
-						$hoy = "if (STR_TO_DATE(rp.fecha, '%d/%m/%Y') = STR_TO_DATE('$fecha', '%d/%m/%Y'), 1, 0 )";				
-						$fecha = " and (STR_TO_DATE(rp.fecha, '%d/%m/%Y') BETWEEN  DATE_ADD(STR_TO_DATE('$fecha', '%d/%m/%Y'), INTERVAL -1 DAY) and STR_TO_DATE('$fecha', '%d/%m/%Y'))";
-					}
+						$fecha = " and rp.idregistro_pago >= $lastIdRegistroPago and rp.cierre = 0"; //(rp.cierre = 0 and STR_TO_DATE(rp.fecha, '%d/%m/%Y') BETWEEN DATE_SUB(CURDATE(), INTERVAL 2 DAY) AND CURDATE())";
+						$hoy = "if (STR_TO_DATE(rp.fecha, '%d/%m/%Y') = curdate(), 1, 0 )";
+					// } else {
+					// 	$hoy = "if (STR_TO_DATE(rp.fecha, '%d/%m/%Y') = STR_TO_DATE('$fecha', '%d/%m/%Y'), 1, 0 )";				
+					// 	$fecha = " and (STR_TO_DATE(rp.fecha, '%d/%m/%Y') BETWEEN  DATE_ADD(STR_TO_DATE('$fecha', '%d/%m/%Y'), INTERVAL -1 DAY) and STR_TO_DATE('$fecha', '%d/%m/%Y'))";
+					// }
 
 					$columm_add = '';
 					break;
@@ -752,12 +754,41 @@
 						, DAYOFWEEK(STR_TO_DATE(rp.fecha, '%d/%m/%Y')) num_dia";
 					break;
 				case 'mes':
+					$option = $_POST['option'];
+					$mm = $option['num_mm'];
+					$yy = $option['num_yy'];
+					$first_day_month = $option['value'].'-01'; // el primer dia mes
+					
+
+					$_sql = "select concat(min(rp.idregistro_pago),',',max(rp.idregistro_pago)) from registro_pago rp where idsede=$idsede and STR_TO_DATE(rp.fecha, '%d/%m/%Y') BETWEEN date_sub('$first_day_month',INTERVAL 1 MONTH) and LAST_DAY('$first_day_month')";
+					$minMaxID = $bd->xDevolverUnDato($_sql);					
+					$minMaxID = explode(",", $minMaxID);
+					$lastIdRegistroPago = $minMaxID[1];
+					$firstIdRegistroPago = $minMaxID[0];
+
 					$columm_add = ", MONTHNAME(STR_TO_DATE(rp.fecha, '%d/%m/%Y')) nom_mes
 					, MONTH(STR_TO_DATE(rp.fecha, '%d/%m/%Y')) num_mes";
 					
-					$fecha = $fecha == 0 ? 'now()' : "STR_TO_DATE('$fecha', '%d/%m/%Y')";
-					$hoy = "if(MONTH(STR_TO_DATE(rp.fecha, '%d/%m/%Y')) = MONTH($fecha), 1 ,if(MONTH(STR_TO_DATE(rp.fecha, '%d/%m/%Y')) < MONTH($fecha) - 1, 2, 0 ))";
-					$fecha = " and STR_TO_DATE(rp.fecha, '%d/%m/%Y') between date_sub($fecha,INTERVAL 2 MONTH) and $fecha";					
+					// $fecha = $fecha == 0 ? 'now()' : "STR_TO_DATE('$fecha', '%d/%m/%Y')";
+					// $hoy = "if(MONTH(STR_TO_DATE(rp.fecha, '%d/%m/%Y')) = MONTH($fecha), 1 ,if(MONTH(STR_TO_DATE(rp.fecha, '%d/%m/%Y')) < MONTH($fecha) - 1, 2, 0 ))";
+					$hoy = "if(MONTH(STR_TO_DATE(rp.fecha, '%d/%m/%Y')) = $mm, 1 ,if(MONTH(STR_TO_DATE(rp.fecha, '%d/%m/%Y')) < $mm - 1, 2, 0 ))";
+					$fecha = " and (rp.idregistro_pago between $firstIdRegistroPago and $lastIdRegistroPago)"; // and  STR_TO_DATE(rp.fecha, '%d/%m/%Y') between date_sub($fecha,INTERVAL 2 MONTH) and $fecha";					
+					break;
+				
+				case 'rango':
+					$option = $_POST['option'];					
+					$date1 = $option['value1'];
+					$date2 = $option['value2'];					
+
+					$_sql = "select concat(min(rp.idregistro_pago),',',max(rp.idregistro_pago)) from registro_pago rp where idsede=$idsede and STR_TO_DATE(rp.fecha, '%d/%m/%Y') BETWEEN cast('$date1' as date) and cast('$date2' as date)";
+					$minMaxID = $bd->xDevolverUnDato($_sql);					
+					$minMaxID = explode(",", $minMaxID);
+					$lastIdRegistroPago = $minMaxID[1];
+					$firstIdRegistroPago = $minMaxID[0];
+
+					$columm_add = '';
+					$hoy = "1";
+					$fecha = " and (rp.idregistro_pago between $firstIdRegistroPago and $lastIdRegistroPago)";
 					break;
 			}
 			
@@ -773,7 +804,7 @@
 			// 	where p.idsede= $idsede and p.estado!=3 and pd.estado = 0 and STR_TO_DATE(p.fecha, '%d/%m/%Y') = $fecha";
 			// $bd->xConsulta($sql);
 
-			$idsede = $idsede == 0 ? $g_idsede : $idsede;
+			
 
 			$sql = "SELECT rpd.*, STR_TO_DATE(rp.fecha, '%d/%m/%Y') fecha, DATE_FORMAT(STR_TO_DATE(rp.fecha, '%d/%m/%Y %H:%i:%s %p'), '%H %p') hora, rp.estado, rp.fecha_cierre, tp.descripcion des_tp, tc.idtipo_comprobante, tc.descripcion comprobante, rp.correlativo 
 				, $hoy hoy, tp.img, tpc.descripcion destpc
@@ -787,6 +818,7 @@
 				 where rp.idsede = $idsede $fecha
 			 order by rpd.idregistro_pago desc";
 			 
+			// echo $sql;
 			$bd->xConsulta($sql);
 			break;
 		
@@ -797,28 +829,61 @@
 			$rango = $_POST['rango'];
 			$hoy = "if (p.cierre = '', 1, 0 )";
 
+			$idsede = $idsede == 0 ? $g_idsede : $idsede;
+
 			switch ($rango) {
 				case 'fecha':
-						if ( $fecha == 0 ) { 				
+						$_sql = "select COALESCE (min(idpedido), 0) d1 from pedido where idsede = $idsede and STR_TO_DATE(fecha, '%d/%m/%Y') >= date_sub(curdate(), INTERVAL 1 day) limit 2";
+						$firstIdPedidoToDay = $bd->xDevolverUnDato($_sql);
+						// if ( $fecha == 0 ) { 				
 							$hoy = "if (p.cierre = '', 1, 0 )";
-							$fecha = " and STR_TO_DATE(p.fecha , '%d/%m/%Y') BETWEEN DATE_ADD(CURDATE(), INTERVAL -1 DAY) and CURDATE()";
-						} else {
-							$hoy = "if (STR_TO_DATE(p.fecha, '%d/%m/%Y') = STR_TO_DATE('$fecha', '%d/%m/%Y'), 1, 0 )";
-							$fecha = " and (STR_TO_DATE(p.fecha, '%d/%m/%Y') BETWEEN  DATE_ADD(STR_TO_DATE('$fecha', '%d/%m/%Y'), INTERVAL -1 DAY) and STR_TO_DATE('$fecha', '%d/%m/%Y'))";
-						}
+							$fecha = " and p.idpedido >= $firstIdPedidoToDay ";
+						// } else {
+							// $hoy = "if (STR_TO_DATE(p.fecha, '%d/%m/%Y') = STR_TO_DATE('$fecha', '%d/%m/%Y'), 1, 0 )";
+							// $fecha = " and (STR_TO_DATE(p.fecha, '%d/%m/%Y') BETWEEN  DATE_ADD(STR_TO_DATE('$fecha', '%d/%m/%Y'), INTERVAL -1 DAY) and STR_TO_DATE('$fecha', '%d/%m/%Y'))";
+						// }
 					break;
 				case 'semana':
 						$hoy = "if(WEEK(STR_TO_DATE(p.fecha, '%d/%m/%Y')) = WEEK(now()), 1 ,0)";
 						$fecha = " and STR_TO_DATE(p.fecha, '%d/%m/%Y') between date_sub(now(),INTERVAL 2 WEEK) and now()";					
 					break;
 				case 'mes':
-						$fecha = $fecha == 0 ? 'now()' : "STR_TO_DATE('$fecha', '%d/%m/%Y')";
-						$hoy = "if(MONTH(STR_TO_DATE(p.fecha, '%d/%m/%Y')) = MONTH($fecha), 1 ,if(MONTH(STR_TO_DATE(p.fecha, '%d/%m/%Y')) < MONTH($fecha) - 1, 2, 0 ))";
-						$fecha = " and STR_TO_DATE(p.fecha, '%d/%m/%Y') between date_sub($fecha,INTERVAL 2 MONTH) and $fecha";					
+						$option = $_POST['option'];
+						$mm = $option['num_mm'];
+						$yy = $option['num_yy'];
+						$first_day_month = $option['value'].'-01'; // el primer dia mes
+
+						$_sql = "select concat(min(rp.idpedido),',',max(rp.idpedido)) from pedido rp where idsede=$idsede and STR_TO_DATE(rp.fecha, '%d/%m/%Y') BETWEEN date_sub('$first_day_month',INTERVAL 1 MONTH) and LAST_DAY('$first_day_month')";
+						$minMaxID = $bd->xDevolverUnDato($_sql);					
+						$minMaxID = explode(",", $minMaxID);
+						$lastIdRegistroPago = $minMaxID[1];
+						$firstIdRegistroPago = $minMaxID[0];
+
+						// $fecha = $fecha == 0 ? 'now()' : "STR_TO_DATE('$fecha', '%d/%m/%Y')";
+						// $hoy = "if(MONTH(STR_TO_DATE(p.fecha, '%d/%m/%Y')) = MONTH($fecha), 1 ,if(MONTH(STR_TO_DATE(p.fecha, '%d/%m/%Y')) < MONTH($fecha) - 1, 2, 0 ))";						
+						// $fecha = " and STR_TO_DATE(p.fecha, '%d/%m/%Y') between date_sub($fecha,INTERVAL 2 MONTH) and $fecha";					
+
+						$hoy = "if(MONTH(STR_TO_DATE(p.fecha, '%d/%m/%Y')) = $mm, 1 ,if(MONTH(STR_TO_DATE(p.fecha, '%d/%m/%Y')) < $mm - 1, 2, 0 ))";
+						$fecha = " and (p.idpedido between $firstIdRegistroPago and $lastIdRegistroPago)";
+					break;
+
+				case 'rango':
+						$option = $_POST['option'];					
+						$date1 = $option['value1'];
+						$date2 = $option['value2'];					
+
+						$_sql = "select concat(min(rp.idpedido),',',max(rp.idpedido)) from pedido rp where idsede=$idsede and STR_TO_DATE(rp.fecha, '%d/%m/%Y') BETWEEN cast('$date1' as date) and cast('$date2' as date)";
+						$minMaxID = $bd->xDevolverUnDato($_sql);					
+						$minMaxID = explode(",", $minMaxID);
+						$lastIdRegistroPago = $minMaxID[1];
+						$firstIdRegistroPago = $minMaxID[0];
+
+						$hoy = "1";
+						$fecha = " and (p.idpedido between $firstIdRegistroPago and $lastIdRegistroPago)";
 					break;
 			}
 
-			$idsede = $idsede == 0 ? $g_idsede : $idsede;
+			
 
 			$sql = "select p.idpedido, p.estado, p.fecha_hora, p.total_r importe, pd.estado anulado 
 				, $hoy hoy, pd.ptotal_r importe_item
@@ -843,15 +908,43 @@
 
 			switch ($rango) {
 				case 'fecha':
-					$fecha = $fecha == 0 ? " pb.fecha = ''" : " pb.fecha = '$fecha'";
+					// $fecha = $fecha == 0 ? " pb.fecha = ''" : " pb.fecha = '$fecha'";
+					$fecha = " STR_TO_DATE(pb.fecha, '%d/%m/%Y') = curdate() ";
 					break;
 				
 				case 'semana':
 					$fecha = "STR_TO_DATE(pb.fecha, '%d/%m/%Y') between date_sub(now(),INTERVAL 1 WEEK) and now()";
 					break;
 				case 'mes':
-					$fecha = $fecha == 0 ? 'now()' : "STR_TO_DATE('$fecha', '%d/%m/%Y')";
-					$fecha = " and STR_TO_DATE(pb.fecha, '%d/%m/%Y') between date_sub($fecha,INTERVAL 1 MONTH) and $fecha";
+					$option = $_POST['option'];
+					$mm = $option['num_mm'];
+					$yy = $option['num_yy'];
+					$first_day_month = $option['value'].'-01'; // el primer dia mes
+
+					$_sql = "select concat(min(pb.idpedido_borrados),',',max(pb.idpedido_borrados)) from pedido_borrados pb INNER JOIN pedido p on p.idpedido = pb.idpedido where p.idsede=$idsede and STR_TO_DATE(pb.fecha, '%d/%m/%Y') BETWEEN cast('$first_day_month' as date) and LAST_DAY('$first_day_month')";
+					$minMaxID = $bd->xDevolverUnDato($_sql);					
+					$minMaxID = explode(",", $minMaxID);
+					$lastIdRegistroPago = $minMaxID[1];
+					$firstIdRegistroPago = $minMaxID[0];
+
+					$fecha = " (pb.idpedido_borrados between $firstIdRegistroPago and $lastIdRegistroPago)";
+
+
+					// $fecha = $fecha == 0 ? 'now()' : "STR_TO_DATE('$fecha', '%d/%m/%Y')";
+					// $fecha = " and STR_TO_DATE(pb.fecha, '%d/%m/%Y') between date_sub($fecha,INTERVAL 1 MONTH) and $fecha";
+					break;
+				case 'rango':
+					$option = $_POST['option'];
+					$date1 = $option['value1'];
+					$date2 = $option['value2'];
+
+					$_sql = "select concat(min(pb.idpedido_borrados),',',max(pb.idpedido_borrados)) from pedido_borrados pb INNER JOIN pedido p on p.idpedido = pb.idpedido where p.idsede=$idsede and STR_TO_DATE(pb.fecha, '%d/%m/%Y') BETWEEN cast('$date1' as date) and cast('$date2' as date)";
+					$minMaxID = $bd->xDevolverUnDato($_sql);					
+					$minMaxID = explode(",", $minMaxID);
+					$lastIdRegistroPago = $minMaxID[1];
+					$firstIdRegistroPago = $minMaxID[0];
+
+					$fecha = " (pb.idpedido_borrados between $firstIdRegistroPago and $lastIdRegistroPago)";
 					break;
 			}
 
@@ -861,7 +954,7 @@
 				inner join usuario u on u.idusuario = pb.idusuario_permiso
 				inner join item i on i.iditem = pb.iditem
 				where u.idsede = $idsede 
-				and $fecha GROUP by pb.idpedido_borrados";
+				and $fecha GROUP by pb.idpedido_borrados";			
 			$bd->xConsulta($sql);
 			break;
 		
@@ -874,15 +967,31 @@
 
 			switch ($rango) {
 				case 'fecha':
-					$fecha = $fecha == 0 ? " ic.cierre = 0 and STR_TO_DATE(ic.fecha, '%d/%m/%Y') BETWEEN DATE_SUB(NOW(), INTERVAL 2 DAY) AND NOW()" : " STR_TO_DATE(ic.fecha, '%d/%m/%Y') = STR_TO_DATE('$fecha', '%d/%m/%Y')";
+					// $fecha = $fecha == 0 ? " ic.cierre = 0 and STR_TO_DATE(ic.fecha, '%d/%m/%Y') BETWEEN DATE_SUB(NOW(), INTERVAL 2 DAY) AND NOW()" : " STR_TO_DATE(ic.fecha, '%d/%m/%Y') = STR_TO_DATE('$fecha', '%d/%m/%Y')";
+					$fecha = " ic.cierre = 0 and STR_TO_DATE(ic.fecha, '%d/%m/%Y') BETWEEN DATE_SUB(NOW(), INTERVAL 2 DAY) AND NOW()";
+					// $fecha = " STR_TO_DATE(ic.fecha, '%d/%m/%Y') = curdate() ";
 					break;
 				
 				case 'semana':
 					$fecha = "STR_TO_DATE(ic.fecha, '%d/%m/%Y') between date_sub(now(),INTERVAL 1 WEEK) and now()";
 					break;
 				case 'mes':
-					$fecha = $fecha == 0 ? 'now()' : "STR_TO_DATE('$fecha', '%d/%m/%Y')";
-					$fecha = "STR_TO_DATE(ic.fecha, '%d/%m/%Y') between date_sub($fecha,INTERVAL 1 MONTH) and $fecha";
+					// $fecha = $fecha == 0 ? 'now()' : "STR_TO_DATE('$fecha', '%d/%m/%Y')";
+					// $fecha = "STR_TO_DATE(ic.fecha, '%d/%m/%Y') between date_sub($fecha,INTERVAL 1 MONTH) and $fecha";
+
+					$option = $_POST['option'];
+					$mm = $option['num_mm'];
+					$yy = $option['num_yy'];
+					$first_day_month = $option['value'].'-01'; // el primer dia mes
+
+					$fecha = "STR_TO_DATE(ic.fecha, '%d/%m/%Y') between cast('$first_day_month' as date) and LAST_DAY('$first_day_month')";					
+					break;
+				case 'rango':
+					$option = $_POST['option'];
+					$date1 = $option['value1'];
+					$date2 = $option['value2'];
+
+					$fecha = "STR_TO_DATE(ic.fecha, '%d/%m/%Y') between cast('$date1' as date) and cast('$date2' as date)";
 					break;
 			}
 
@@ -907,15 +1016,45 @@
 			switch ($rango) {
 				case 'fecha':
 					// se agrega que solo muestre los pedidos que no fueron cerrados en los 2 ultimos dias
-					$fecha = $fecha == 0 ? " p.cierre = 0 and STR_TO_DATE(p.fecha, '%d/%m/%Y') BETWEEN DATE_SUB(NOW(), INTERVAL 2 DAY) AND NOW() " : " STR_TO_DATE(p.fecha, '%d/%m/%Y') = STR_TO_DATE('$fecha', '%d/%m/%Y')";
+					// $fecha = $fecha == 0 ? " p.cierre = 0 and STR_TO_DATE(p.fecha, '%d/%m/%Y') BETWEEN DATE_SUB(NOW(), INTERVAL 2 DAY) AND NOW() " : " STR_TO_DATE(p.fecha, '%d/%m/%Y') = STR_TO_DATE('$fecha', '%d/%m/%Y')";
+					$_sql = "select COALESCE (min(idpedido), 0) d1 from pedido where idsede = $idsede and STR_TO_DATE(fecha, '%d/%m/%Y') >= date_sub(curdate(), INTERVAL 2 day) limit 2";
+					$firstIdPedidoToDay = $bd->xDevolverUnDato($_sql);
+					$fecha = " p.cierre = 0 and p.idpedido >= $firstIdPedidoToDay";
 					break;
 				
 				case 'semana':
 					$fecha = "STR_TO_DATE(p.fecha, '%d/%m/%Y') between date_sub(now(),INTERVAL 1 WEEK) and now()";
 					break;
 				case 'mes':
-					$fecha = $fecha == 0 ? 'now()' : "STR_TO_DATE('$fecha', '%d/%m/%Y')";
-					$fecha = "STR_TO_DATE(p.fecha, '%d/%m/%Y') between date_sub($fecha,INTERVAL 1 MONTH) and $fecha";
+					// $fecha = $fecha == 0 ? 'now()' : "STR_TO_DATE('$fecha', '%d/%m/%Y')";
+					// $fecha = "STR_TO_DATE(p.fecha, '%d/%m/%Y') between date_sub($fecha,INTERVAL 1 MONTH) and $fecha";
+
+					$option = $_POST['option'];
+					$mm = $option['num_mm'];
+					$yy = $option['num_yy'];
+					$first_day_month = $option['value'].'-01'; // el primer dia mes
+
+					$_sql = "select concat(min(rp.idpedido),',',max(rp.idpedido)) from pedido rp where idsede=$idsede and STR_TO_DATE(rp.fecha, '%d/%m/%Y') BETWEEN date_sub('$first_day_month',INTERVAL 1 MONTH) and LAST_DAY('$first_day_month')";
+					$minMaxID = $bd->xDevolverUnDato($_sql);					
+					$minMaxID = explode(",", $minMaxID);
+					$lastIdRegistroPago = $minMaxID[1];
+					$firstIdRegistroPago = $minMaxID[0];
+
+					$fecha = " (p.idpedido between $firstIdRegistroPago and $lastIdRegistroPago)";
+					break;
+				case 'rango':
+						$option = $_POST['option'];					
+						$date1 = $option['value1'];
+						$date2 = $option['value2'];					
+
+						$_sql = "select concat(min(rp.idpedido),',',max(rp.idpedido)) from pedido rp where idsede=$idsede and STR_TO_DATE(rp.fecha, '%d/%m/%Y') BETWEEN cast('$date1' as date) and cast('$date2' as date)";
+						$minMaxID = $bd->xDevolverUnDato($_sql);					
+						$minMaxID = explode(",", $minMaxID);
+						$lastIdRegistroPago = $minMaxID[1];
+						$firstIdRegistroPago = $minMaxID[0];
+
+						// $hoy = "1";
+						$fecha = " (p.idpedido between $firstIdRegistroPago and $lastIdRegistroPago)";
 					break;
 			}
 
@@ -954,15 +1093,46 @@
 
 			switch ($rango) {
 				case 'fecha':
-					$fecha = $fecha == 0 ? " p.cierre = 0 and STR_TO_DATE(p.fecha, '%d/%m/%Y') BETWEEN DATE_SUB(NOW(), INTERVAL 2 DAY) AND NOW()" : " STR_TO_DATE(p.fecha, '%d/%m/%Y') = STR_TO_DATE('$fecha', '%d/%m/%Y')";
+					// $fecha = $fecha == 0 ? " p.cierre = 0 and STR_TO_DATE(p.fecha, '%d/%m/%Y') BETWEEN DATE_SUB(NOW(), INTERVAL 2 DAY) AND NOW()" : " STR_TO_DATE(p.fecha, '%d/%m/%Y') = STR_TO_DATE('$fecha', '%d/%m/%Y')";
+					
+					$_sql = "select COALESCE (min(idpedido), 0) d1 from pedido where idsede = $idsede and STR_TO_DATE(fecha, '%d/%m/%Y') >= date_sub(curdate(), INTERVAL 2 day) limit 2";
+					$firstIdPedidoToDay = $bd->xDevolverUnDato($_sql);
+					$fecha = " p.cierre = 0 and p.idpedido >= $firstIdPedidoToDay";
 					break;
 				
 				case 'semana':
 					$fecha = "STR_TO_DATE(p.fecha, '%d/%m/%Y') between date_sub(now(),INTERVAL 1 WEEK) and now()";
 					break;
 				case 'mes':
-					$fecha = $fecha == 0 ? 'now()' : "STR_TO_DATE('$fecha', '%d/%m/%Y')";
-					$fecha = "STR_TO_DATE(p.fecha, '%d/%m/%Y') between date_sub($fecha,INTERVAL 1 MONTH) and $fecha";
+					// $fecha = $fecha == 0 ? 'now()' : "STR_TO_DATE('$fecha', '%d/%m/%Y')";
+					// $fecha = "STR_TO_DATE(p.fecha, '%d/%m/%Y') between date_sub($fecha,INTERVAL 1 MONTH) and $fecha";
+
+					$option = $_POST['option'];
+					$mm = $option['num_mm'];
+					$yy = $option['num_yy'];
+					$first_day_month = $option['value'].'-01'; // el primer dia mes
+
+					$_sql = "select concat(min(rp.idpedido),',',max(rp.idpedido)) from pedido rp where idsede=$idsede and STR_TO_DATE(rp.fecha, '%d/%m/%Y') BETWEEN date_sub('$first_day_month',INTERVAL 1 MONTH) and LAST_DAY('$first_day_month')";
+					$minMaxID = $bd->xDevolverUnDato($_sql);					
+					$minMaxID = explode(",", $minMaxID);
+					$lastIdRegistroPago = $minMaxID[1];
+					$firstIdRegistroPago = $minMaxID[0];
+
+					$fecha = " (p.idpedido between $firstIdRegistroPago and $lastIdRegistroPago)";
+					break;
+				case 'rango':
+						$option = $_POST['option'];					
+						$date1 = $option['value1'];
+						$date2 = $option['value2'];					
+
+						$_sql = "select concat(min(rp.idpedido),',',max(rp.idpedido)) from pedido rp where idsede=$idsede and STR_TO_DATE(rp.fecha, '%d/%m/%Y') BETWEEN cast('$date1' as date) and cast('$date2' as date)";
+						$minMaxID = $bd->xDevolverUnDato($_sql);					
+						$minMaxID = explode(",", $minMaxID);
+						$lastIdRegistroPago = $minMaxID[1];
+						$firstIdRegistroPago = $minMaxID[0];
+
+						// $hoy = "1";
+						$fecha = " (p.idpedido between $firstIdRegistroPago and $lastIdRegistroPago)";
 					break;
 			}
 
@@ -990,15 +1160,47 @@
 
 			switch ($rango) {
 				case 'fecha':
-					$fecha = $fecha == 0 ? " rp.cierre = 0 and STR_TO_DATE(p.fecha, '%d/%m/%Y') BETWEEN DATE_SUB(NOW(), INTERVAL 2 DAY) AND NOW()" : " STR_TO_DATE(rp.fecha, '%d/%m/%Y') = STR_TO_DATE('$fecha', '%d/%m/%Y')";
+					// $fecha = $fecha == 0 ? " rp.cierre = 0 and STR_TO_DATE(p.fecha, '%d/%m/%Y') BETWEEN DATE_SUB(NOW(), INTERVAL 2 DAY) AND NOW()" : " STR_TO_DATE(rp.fecha, '%d/%m/%Y') = STR_TO_DATE('$fecha', '%d/%m/%Y')";
+					$lastIdRegistroPago = $bd->xDevolverUnDato("select COALESCE (min(idregistro_pago), 0) d1 from registro_pago where idsede = $idsede and STR_TO_DATE(fecha, '%d/%m/%Y') >= date_sub(curdate(), INTERVAL 2 day) limit 2");	
+					$fecha = " rp.idregistro_pago >= $lastIdRegistroPago and rp.cierre = 0";
 					break;
 				
 				case 'semana':
 					$fecha = "STR_TO_DATE(rp.fecha, '%d/%m/%Y') between date_sub(now(),INTERVAL 1 WEEK) and now()";
 					break;
 				case 'mes':
-					$fecha = $fecha == 0 ? 'now()' : "STR_TO_DATE('$fecha', '%d/%m/%Y')";
-					$fecha = "STR_TO_DATE(rp.fecha, '%d/%m/%Y') between date_sub($fecha,INTERVAL 1 MONTH) and $fecha";
+					// $fecha = $fecha == 0 ? 'now()' : "STR_TO_DATE('$fecha', '%d/%m/%Y')";
+					// $fecha = "STR_TO_DATE(rp.fecha, '%d/%m/%Y') between date_sub($fecha,INTERVAL 1 MONTH) and $fecha";
+
+					$option = $_POST['option'];
+					$mm = $option['num_mm'];
+					$yy = $option['num_yy'];
+					$first_day_month = $option['value'].'-01'; // el primer dia mes
+					
+
+					$_sql = "select concat(min(rp.idregistro_pago),',',max(rp.idregistro_pago)) from registro_pago rp where idsede=$idsede and STR_TO_DATE(rp.fecha, '%d/%m/%Y') BETWEEN cast('$first_day_month' as date) and LAST_DAY('$first_day_month')";
+					$minMaxID = $bd->xDevolverUnDato($_sql);					
+					$minMaxID = explode(",", $minMaxID);
+					$lastIdRegistroPago = $minMaxID[1];
+					$firstIdRegistroPago = $minMaxID[0];
+
+					$fecha = " (rp.idregistro_pago between $firstIdRegistroPago and $lastIdRegistroPago)";
+					break;
+
+				case 'rango':
+					$option = $_POST['option'];					
+					$date1 = $option['value1'];
+					$date2 = $option['value2'];					
+
+					$_sql = "select concat(min(rp.idregistro_pago),',',max(rp.idregistro_pago)) from registro_pago rp where idsede=$idsede and STR_TO_DATE(rp.fecha, '%d/%m/%Y') BETWEEN cast('$date1' as date) and cast('$date2' as date)";
+					$minMaxID = $bd->xDevolverUnDato($_sql);					
+					$minMaxID = explode(",", $minMaxID);
+					$lastIdRegistroPago = $minMaxID[1];
+					$firstIdRegistroPago = $minMaxID[0];
+
+					$columm_add = '';
+					$hoy = "1";
+					$fecha = " (rp.idregistro_pago between $firstIdRegistroPago and $lastIdRegistroPago)";
 					break;
 			}
 
@@ -1018,9 +1220,22 @@
 				$idsede = $idsede == 0 ? $g_idsede : $idsede;			
 	
 				if ($rango == 'fecha') {
-					$fecha = $fecha == 0 ? " STR_TO_DATE(fecha, '%d/%m/%Y') = CURDATE()" : " STR_TO_DATE(fecha, '%d/%m/%Y') = STR_TO_DATE('$fecha', '%d/%m/%Y')";
+					$fecha = " STR_TO_DATE(fecha, '%d/%m/%Y') = CURDATE()";
+					
 					$sql = "SELECT * from print_server_detalle where idsede = $idsede and idprint_server_estructura = 4 and $fecha";
 					$bd->xConsulta($sql);	
+				} else if ($rango == 'rango'){
+					$option = $_POST['option'];					
+					$date1 = $option['value1'];
+					$date2 = $option['value2'];	
+
+					if ($date1 == $date2 ) {
+						$fecha = " STR_TO_DATE(fecha, '%d/%m/%Y') = STR_TO_DATE($date1, '%d/%m/%Y') ";
+					
+						$sql = "SELECT * from print_server_detalle where idsede = $idsede and idprint_server_estructura = 4 and $fecha";
+						$bd->xConsulta($sql);	
+					}
+
 				} else {
 					echo false;
 				}
@@ -1038,14 +1253,42 @@
 
 			switch ($rango) {
 				case 'fecha':
-					$fecha = $fecha == 0 ? " STR_TO_DATE(ce.fecha, '%d/%m/%Y') = CURDATE()" : " STR_TO_DATE(ce.fecha, '%d/%m/%Y') = STR_TO_DATE('$fecha', '%d/%m/%Y')";
+					// $fecha = $fecha == 0 ? " STR_TO_DATE(ce.fecha, '%d/%m/%Y') = CURDATE()" : " STR_TO_DATE(ce.fecha, '%d/%m/%Y') = STR_TO_DATE('$fecha', '%d/%m/%Y')";
+					$fecha = " STR_TO_DATE(ce.fecha, '%d/%m/%Y') = CURDATE()";
 					break;				
 				case 'semana':
 					$fecha = "STR_TO_DATE(ce.fecha, '%d/%m/%Y') between date_sub(now(),INTERVAL 1 WEEK) and now()";
 					break;
-					case 'mes':
-					$fecha = $fecha == 0 ? 'now()' : "STR_TO_DATE('$fecha', '%d/%m/%Y')";
-					$fecha = "STR_TO_DATE(ce.fecha, '%d/%m/%Y') between date_sub($fecha,INTERVAL 1 MONTH) and $fecha";
+				case 'mes':
+					// $fecha = $fecha == 0 ? 'now()' : "STR_TO_DATE('$fecha', '%d/%m/%Y')";
+					// $fecha = "STR_TO_DATE(ce.fecha, '%d/%m/%Y') between date_sub($fecha,INTERVAL 1 MONTH) and $fecha";
+
+					$option = $_POST['option'];
+					$mm = $option['num_mm'];
+					$yy = $option['num_yy'];
+					$first_day_month = $option['value'].'-01'; // el primer dia mes
+
+					$_sql = "select concat(min(rp.idce),',',max(rp.idce)) from ce rp where idsede=$idsede and STR_TO_DATE(rp.fecha, '%d/%m/%Y') BETWEEN cast('$first_day_month' as date) and LAST_DAY('$first_day_month')";
+					$minMaxID = $bd->xDevolverUnDato($_sql);					
+					$minMaxID = explode(",", $minMaxID);
+					$lastIdRegistroPago = $minMaxID[1];
+					$firstIdRegistroPago = $minMaxID[0];
+
+					$fecha = " (ce.idce between $firstIdRegistroPago and $lastIdRegistroPago)";
+					break;
+
+				case 'rango':
+						$option = $_POST['option'];					
+						$date1 = $option['value1'];
+						$date2 = $option['value2'];					
+
+						$_sql = "select concat(min(rp.idce),',',max(rp.idce)) from ce rp where idsede=$idsede and STR_TO_DATE(rp.fecha, '%d/%m/%Y') BETWEEN cast('$date1' as date) and cast('$date2' as date)";
+						$minMaxID = $bd->xDevolverUnDato($_sql);					
+						$minMaxID = explode(",", $minMaxID);
+						$lastIdRegistroPago = $minMaxID[1];
+						$firstIdRegistroPago = $minMaxID[0];
+
+						$fecha = " (ce.idce between $firstIdRegistroPago and $lastIdRegistroPago)";
 					break;
 			}
 

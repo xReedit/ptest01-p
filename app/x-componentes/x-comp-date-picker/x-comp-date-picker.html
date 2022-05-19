@@ -1,0 +1,111 @@
+<!-- <link rel="import" href="../../web_components/polymer/polymer.html"> -->
+<dom-module id="x-comp-date-picker">
+	<template is="dom">
+        <paper-dialog id="dialog_comp_date_picker" class="dialog_redondo animate__animated animate__fadeIn animate__faster" modal="true" entry-animation="scale-up-animation" exit-animation="fade-out-animation" modal>
+            <div class="text-center">
+
+                <!-- mes -->
+                <div id="input-date-mes" >
+                    <div class="d-flexx justify-content-between align-content-center">
+                        <p class="title-date-comp">Mes</p>
+                        <input type="month" class="xMiInput input-date-comp" id="comp_date_month">
+                    </div>
+                </div>
+
+
+                <!-- rango -->
+                <div id="input-date-rango" class="xInvisible">
+                    <div class="d-flexx justify-content-between align-content-center">
+                        <p class="title-date-comp">Desde</p>
+                        <input type="date" class="xMiInput input-date-comp" id="comp_date_desde">
+                    </div>
+                    <br>
+                    <div class="d-flexx justify-content-between align-content-center">
+                        <p class="title-date-comp">Hasta</p>
+                        <input type="date" class="xMiInput input-date-comp" id="comp_date_hasta">
+                    </div>
+    
+                </div>
+
+                <!-- accion -->
+                <div class="pt-4">
+                    <button class="btn btn-danger" dialog-dismiss> Cerrar </button>
+                    <button class="btn btn-success" onclick="compAplicarDate()"> Aplicar </button>
+                </div>
+            </div>
+        </paper-dialog>                
+    </template>
+
+    <style>
+        .title-date-comp {
+            background: #cdcdcd;
+            padding: 6px;
+            border-radius: 3px 0px 0px 3px;
+            margin: 0px;
+            width: 60px;
+        }
+        .input-date-comp {
+            padding: 4px;
+            border: 1px solid #ccc;
+        }
+    </style>
+</dom-module>
+<script>
+
+    var xThisCompDatePicker;
+
+    function xIniCompDatePicker() {
+        comp_date_month.valueAsDate = new Date();
+    }
+
+    function compAplicarDate() {
+        var _rpt;
+        switch (xThisCompDatePicker.option_view) {
+            case 1: // mes
+                const _datePart = comp_date_month.value.split('-');
+                _rpt = {
+                    option: 'month',
+                    value: comp_date_month.value,
+                    num_mm: parseInt(_datePart[1]),
+                    num_yy: _datePart[0]
+                }
+                break;
+            case 2: // rango
+                _rpt = {
+                    option: 'range',
+                    value1: comp_date_desde.value,
+                    value2: comp_date_hasta.value
+                }
+                break;
+        }
+
+        xThisCompDatePicker.fire('getDateSelected', _rpt);
+        dialog_comp_date_picker.close();
+    }
+
+
+    Polymer({
+			is: 'x-comp-date-picker',
+			properties: {		
+                option_view: Number		                            
+			},
+			attached: function () {
+				xThisCompDatePicker = this;				
+				xIniCompDatePicker();
+			},
+            xopen: (option) => {
+                xThisCompDatePicker.option_view = option;
+                switch (option) {
+                    case 1:
+                        $('#input-date-mes').removeClass('xInvisible');
+                        $('#input-date-rango').addClass('xInvisible');
+                        break;
+                    case 2:
+                        $('#input-date-rango').removeClass('xInvisible');
+                        $('#input-date-mes').addClass('xInvisible');
+                        break;
+                }
+                dialog_comp_date_picker.open();
+            }
+		})
+</script>
