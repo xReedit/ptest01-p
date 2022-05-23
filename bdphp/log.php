@@ -265,7 +265,7 @@
 										$_SESSION['rol']=$obj["us"]->rol;
 										$_SESSION['ciudad']=$obj["us"]->ciudad;
 										$_SESSION['nuevo']=$obj["us"]->nuevo;
-										// $_SESSION['dataUs']=$data_cliente;										
+										$_SESSION['dataUs']=$data_cliente;										
 										
 										$rpt="1";
 									}
