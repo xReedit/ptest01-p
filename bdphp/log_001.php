@@ -154,7 +154,8 @@
 				
 				//
 				$idItem2 = isset($subitem['iditem2']) ? $subitem['iditem2'] : $subitem['iditem'];
-				$pwa = isset($subitem['pwa']) ? $subitem['pwa'] : 0;				
+				// $pwa = isset($subitem['pwa']) ? $subitem['pwa'] : 0;				
+				$pwa = isset($subitem['pwa']) ? $subitem['pwa'] : 1; // 22052022 todo socket entonces no dispara el trigger restando o sumando 2 veces
 				$subItemSelect = json_encode($subitem['subitems_view'], true);
 				// $subItemSelect = null;
 				
@@ -494,7 +495,8 @@
 				
 				//
 				$idItem2 = isset($subitem['iditem2']) ? $subitem['iditem2'] : $subitem['iditem'];
-				$pwa = isset($subitem['pwa']) ? $subitem['pwa'] : 0;				
+				// $pwa = isset($subitem['pwa']) ? $subitem['pwa'] : 0;
+				$pwa = isset($subitem['pwa']) ? $subitem['pwa'] : 1; // 22052022 todo socket entonces no dispara el trigger restando o sumando 2 veces				
 				$subItemSelect = json_encode($subitem['subitems_view'], true);
 				// $subItemSelect = null;
 				

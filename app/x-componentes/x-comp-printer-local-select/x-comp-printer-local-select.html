@@ -1,0 +1,117 @@
+<dom-module id="x-comp-printer-local-select">
+	<template is="dom">
+        <paper-dialog id="dialog_comp_printer_local" style="max-width: 350px;" class="dialog_redondo animate__animated animate__fadeIn animate__faster" modal="true" entry-animation="scale-up-animation" exit-animation="fade-out-animation" modal>
+            <div>
+                <p class="fw-600 fs-15">Seleccione su impresora local</p>
+                <hr>
+                <table class="w-100">
+                    <template is="dom-repeat" items="{{listPrinterLocal}}" as="item">
+                        <tr>
+                            <td>
+                                <div class="text-uppercase p-2 xCursor" data-id="[[index]]" onclick="goSelectedPrinterLocal(this)">
+                                    <i class="fa fa-print pr-1"></i>
+                                    {{ item.descripcion }}
+                                    <i hidden$="{{!item.selected}}" class="fa fa-check text-success ml-1"></i>
+                                </div>
+                            </td>
+                        </tr>
+                    </template>
+                </table>
+                <br>
+                <paper-checkbox 
+                    id="checkPrinterLocalCopia" 
+					onchange="updatePrinterLocalCopia()"> Imprimir una copia del pedido.</paper-checkbox>
+                
+                <br><br>
+                <div>
+                    <button class="btn btn-success mr-1" onclick="saveCompPrinterLocal()">Listo Guardar</button>
+                    <button class="btn btn-secondary" dialog-dismiss>Cerrar</button>
+                </div>
+            </div>
+        </paper-dialog>
+
+        <div class="xDivCompImpresora" onclick="xListOpenPrinterSelect()" hidden$="[[!isShowListPrinteLocal]]"">
+            <p class="text-warning">Mi Impresora</p>
+            <p class="fw-600 text-uppercase">{{printerLocalSelected.descripcion}}</p>
+        </div>
+    </template>
+</dom-module>
+<style>
+    .xDivCompImpresora {
+		border: 1px solid;
+		border-radius: 5px;
+		padding: 5px;
+		background: #385f72;
+		color: white;
+		width: 100px;
+		text-align: center;
+		cursor: pointer;
+	}
+</style>
+<script>
+
+    var xThisComPrinterLocalSelect;
+
+    function xIniCompPrinterLocalSelect() {
+        const _listPrinter = xm_log_get('app3_woIpPrint');
+        xThisComPrinterSelect.listPrinterLocal = _listPrinter.filter(i => i.local == 1).map(x => {x.selected = false; return x;});
+        xThisComPrinterSelect.isShowListPrinteLocal = xThisComPrinterSelect.listPrinterLocal.length > 0;
+        // console.log('¿_listPrinter', xThisComPrinterSelect.listPrinterLocal);
+
+        xThisComPrinterSelect.printerLocalSelected = JSON.parse(localStorage.getItem('::app3_woIpPrintLo'));
+        if ( !xThisComPrinterSelect.printerLocalSelected ) {
+            xThisComPrinterSelect.printerLocalSelected = {'descripcion': 'Ninguno'}
+        } else {
+            const itemPrintSelected = xThisComPrinterSelect.listPrinterLocal.filter(x => x.idimpresora == xThisComPrinterSelect.printerLocalSelected.idimpresora)[0];
+            if ( itemPrintSelected ) {
+                itemPrintSelected.selected = true;
+                xThisComPrinterSelect.printerLocalSelected.selected = true;
+                checkPrinterLocalCopia.checked = xThisComPrinterSelect.printerLocalSelected.copia_local == 1;
+            }
+        }        
+    }
+
+    function xListOpenPrinterSelect() {
+        dialog_comp_printer_local.open();
+    }
+
+    function goSelectedPrinterLocal(obj) {
+        const _id = obj.dataId;
+
+        xThisComPrinterSelect.listPrinterLocal.map(x => {x.selected = false; return x;})        
+        xThisComPrinterSelect.printerLocalSelected = xThisComPrinterSelect.listPrinterLocal[_id];
+        xThisComPrinterSelect.printerLocalSelected.selected = true;
+
+        xThisComPrinterSelect.listPrinterLocal = JSON.parse(JSON.stringify(xThisComPrinterSelect.listPrinterLocal));
+
+        checkPrinterLocalCopia.checked = false;
+    }
+
+    function updatePrinterLocalCopia() {
+        xThisComPrinterSelect.printerLocalSelected.copia_local = 1;
+    }
+
+    function saveCompPrinterLocal() {
+        const _imprimirCopia = checkPrinterLocalCopia.checked ? 1 : 0;
+        $.ajax({ type: 'POST', url: '../../bdphp/log.php?op=-105101', data: { copia_local: _imprimirCopia, id: xThisComPrinterSelect.printerLocalSelected.idimpresora } });
+
+        localStorage.setItem('::app3_woIpPrintLo', JSON.stringify(xThisComPrinterSelect.printerLocalSelected));
+        localStorage.setItem('::app3_woIpPrintLoC', xThisComPrinterSelect.printerLocalSelected.descripcion);
+
+        dialog_comp_printer_local.close();
+    }
+
+    Polymer({
+			is: 'x-comp-printer-local-select',
+			properties: {				
+                listPrinterLocal: [],
+                printerLocalSelected: [],
+                isShowListPrinteLocal: Boolean
+			},
+			attached: function () {
+                this.isShowListPrinteLocal = false;
+				xThisComPrinterSelect = this;				
+				xIniCompPrinterLocalSelect();
+			}
+		})
+</script>

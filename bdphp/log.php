@@ -184,8 +184,14 @@
 			$bd->xConsulta($sql);
 			break;
 		case -1051: //actualiza el copia_local a todas las impresoras locales
-			$copial_local = $_POST['copia_local'];
+			$copial_local = $_POST['copia_local'];						
 			$sql="update impresora set copia_local=".$copial_local." where (idorg=".$g_ido." AND idsede=".$g_idsede.") and local=1 and estado=0";
+			$bd->xConsulta($sql);
+			break;
+		case -105101: //actualiza el copia_local a todas las impresoras locales
+			$copial_local = $_POST['copia_local'];
+			$id = $_POST['id'];
+			$sql="update impresora set copia_local=".$copial_local." where idsede=".$g_idsede." and idimpresora=$id";
 			$bd->xConsulta($sql);
 			break;
 		case -104://verificar session
@@ -230,7 +236,8 @@
 			$rpt="0";
 			$dataUs = !empty($_SESSION['dataUs']) ? $_SESSION['dataUs'] : "-1";
 
-			if(isset($_SESSION['usuario'])){//SI HAY UNA SESSION ABIERTA
+			// if(isset($_SESSION['usuario'])){//SI HAY UNA SESSION ABIERTA
+			if(isset($_SESSION['idusuario'])){//SI HAY UNA SESSION ABIERTA
 				switch ($data_cliente) {//evalua el data del cliente
 					case "undefined": //si esta iniciando session
 							$rpt="0";
@@ -258,7 +265,7 @@
 										$_SESSION['rol']=$obj["us"]->rol;
 										$_SESSION['ciudad']=$obj["us"]->ciudad;
 										$_SESSION['nuevo']=$obj["us"]->nuevo;
-										$_SESSION['dataUs']=$data_cliente;										
+										// $_SESSION['dataUs']=$data_cliente;										
 										
 										$rpt="1";
 									}
@@ -267,7 +274,10 @@
 									}
 								}
 								else{//si existe data session devuelve esta al cliente
-									if($dataUs===$data_cliente){ // comprueba que los datos del cliente sean iguales al los datos de session
+									// if($dataUs===$data_cliente){ // comprueba que los datos del cliente sean iguales al los datos de session
+
+									// 190522  solo evalua usuario si acaso cambio privilegios
+									if($dataUs['us']===$data_cliente['us']){ // comprueba que los datos del cliente sean iguales al los datos de session										
 										$rpt="1";//nada normal sigue
 									}else{
 										$rpt=$dataUs;
@@ -3007,7 +3017,7 @@
 					WHERE ii.iditem=".$iditem.";
 				";
 			}
-			echo $sql;
+			
 			$bd->xConsulta($sql);
 			break;
 		case 1902://pedidos por hora // en el intervalo de 60min
@@ -3507,7 +3517,7 @@ function xDtUS($op_us){
 			// WHERE (cp.idorg=".$g_ido." AND cp.idsede=".$g_idsede.")"; s.logo64
 			$sql_us="
 			SELECT cp.var_size_font_tall_comanda, cp.ip_print, cp.num_copias, cp.pie_pagina, cp.pie_pagina_comprobante, cp.logo, '' as logo64, s.nombre AS des_sede, s.eslogan, s.mesas, s.ciudad
-				,isprint_subtotales_comanda, isprint_copy_short, isprint_all_delivery
+				,isprint_subtotales_comanda, isprint_copy_short, isprint_all_short, isprint_all_delivery
 			FROM conf_print AS cp
             	INNER JOIN sede AS s ON cp.idsede = s.idsede
 			WHERE (cp.idorg=".$g_ido." AND cp.idsede=".$g_idsede.")";
@@ -3550,7 +3560,8 @@ function xDtUS($op_us){
 					where se.idorg = ".$g_ido." and se.idsede = ".$g_idsede;
 			break;
 		case 3013: // load datos del org sede 
-			$sql_us = "SELECT * from sede where idsede=".$g_idsede." and estado=0";
+			// $sql_us = "SELECT * from sede where idsede=".$g_idsede." and estado=0";
+			$sql_us = "SELECT idsede, idorg, nombre, ciudad, direccion, telefono, eslogan, mesas, maximo_pedidos_x_hora, authorization_api_comprobante, id_api_comprobante, facturacion_e_activo, ubigeo, codigo_del_domicilio_fiscal, sys_local, ip_server_local, finicio, tipo, sufijo, pwa, pwa_time_limit, url_api_fac, estado, latitude, longitude, pwa_msj_ini, pwa_time_min_despacho, pwa_time_max_despacho, pwa_requiere_gps, pwa_delivery_img, provincia, departamento, codigo_postal, tiempo_aprox_entrega, dias_atienden, pwa_habilitar_delivery_app, pwa_comercio_afiliado, pwa_delivery_importe_min, pwa_delivery_servicio_propio, pwa_delivery_comercio_online, pwa_delivery_habilitar_recojo_local, pwa_delivery_acepta_yape, pwa_delivery_hablitar_calc_costo_servicio, pwa_delivery_comercio_solidaridad, pwa_delivery_acepta_tarjeta, pwa_delivery_comision_fija_no_afiliado, pwa_min_despacho, pwa_delivery_comercio_paga_entrega, pwa_delivery_habilitar_llamar_repartidor_papaya, pwa_delivery_telefono_notifica_pedido, pwa_delivery_monto_acumla, pwa_delivery_habilitar_pedido_programado, pwa_delivery_reparto_solo_app, last_date_pago, comsion_entrega, costo_restobar_fijo_mensual, pwa_habilitar_busqueda_mapa, calificacion, isprinter_socket, pwa_delivery_habilitar_calc_costo_servicio_solo_app, pwa_pedido_programado_solo_del_dia, pwa_orden_pagado, email_cierre, pwa_acepta_reservas, pwa_show_item_view_mercado, pwa_acepta_reserva_desde, c_dias, uf_pago, mostar_alert_pago, idsede_plan_contratado, umf_pago, num_dias_facturacion, tipo_contribuyente, img_mini, metodo_pago_aceptados, speech_disabled, simbolo_moneda, nick_carta, link_carta FROM sede where idsede=".$g_idsede." and estado=0";
 			break;
 		case 3014: // load sys const
 			$sql_us = "SELECT * FROM sys_const where estado=0 and llave in ('URL_COMPROBANTE', 'URL_COMPROBANTE_DOWNLOAD_FILE')";

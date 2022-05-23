@@ -1,4 +1,5 @@
 <dom-module id="x-caja">
+<link rel="import" href="../../x-componentes/x-comp-printer-local-select/x-comp-printer-local-select.html">
 <link rel="preload" href="../../../images/_msj_envio_sunat.gif" as="image" media="(max-width: 600px)">
 <template>
 <paper-dialog class="dialog_redondo" id="dialog_permiso_remoto" style="max-width:500px" modal entry-animation="scale-up-animation" exit-animation="fade-out-animation">
@@ -58,6 +59,10 @@
 <br><br>
 <iron-pages selected="{{selected}}">
 <div id="ingreso_caja">
+<div class="xDivImpresora">
+<x-comp-printer-local-select></x-comp-printer-local-select>
+</div>
+<div>
 <br>
 <form id="form_ingreso" onsubmit="return false">
 <select class="xTextRow2 xfont18 xCursor" id="selecie" style="width:200px">
@@ -121,6 +126,7 @@
 </template>
 </tbody>
 </table>
+</div>
 </div>
 </div>
 <div id="cierre_caja">
@@ -198,7 +204,7 @@
 </div>
 </template>
 </dom-module>
-<style>paper-button[raised].colorful{background:#4285f4;color:#fff}paper-button[raised].xverde{background:#43a047;color:#fff}paper-button[raised].xnegro{background:#424242;color:#fff}.xEpaciarInputCierre input{margin-bottom:20px;font-size:18px}.xTxtRojo{color:#F00}</style>
+<style>paper-button[raised].colorful{background:#4285f4;color:#fff}paper-button[raised].xverde{background:#43a047;color:#fff}paper-button[raised].xnegro{background:#424242;color:#fff}.xEpaciarInputCierre input{margin-bottom:20px;font-size:18px}.xTxtRojo{color:#F00}.xDivImpresora{float:right}</style>
 <script type="text/javascript" src="./cocinar.resumen.boletas.js"></script>
 <script type="text/javascript" src="../../view/config.const.js"></script>
 <script type="text/javascript" src="../../view/xm_all.js"></script>

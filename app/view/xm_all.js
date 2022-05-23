@@ -52,9 +52,12 @@ function setClearLocalStorage(){var printL=window.localStorage.getItem('::app3_w
 if(touchVR){window.localStorage.setItem('::app3_sys_vr_touch',touchVR);}
 if(lasIdSede){window.localStorage.setItem('::app3_sys_last_s',lasIdSede);}
 document.location.href='../../logueese.html';};function getCookie(name){var value="; "+document.cookie;var parts=value.split("; "+name+"=");if(parts.length==2)return parts.pop().split(";").shift();}
-function xm_LogIni(responde){$.ajax({type:'POST',url:'../../bdphp/log.php?op=-1111'}).done(function(dt){if(dt=="0"){xVerificarSession();responde(false);}else{window.localStorage.setItem("::app3_woDUS",dt);responde(true);}})}
-function xm_LogChequea(responde){var xdt_log=window.localStorage.getItem("::app3_woDUS");if(xdt_log===null){xdt_log="undefined";}
-$.ajax({type:'POST',url:'../../bdphp/log.php?op=-1112',data:{d:xdt_log}}).done(function(rpt){switch(rpt){case"0":xm_LogIni(function(a){if(a){responde(true)}});break;case"1":responde(true)
+function xm_LogIni(responde){$.ajax({type:'POST',url:'../../bdphp/log.php?op=-1111'}).done(function(dt){console.log('-1111 dt ===> ',dt)
+if(dt=="0"){xVerificarSession();responde(false);}else{window.localStorage.setItem("::app3_woDUS",dt);responde(true);}})}
+function xm_LogChequea(responde){var xdt_log=window.localStorage.getItem("::app3_woDUS");var _xdt_log=xdt_log
+if(_xdt_log===null){_xdt_log="undefined";}else{_xdt_log={us:xm_log_get('app3_us')}
+_xdt_log=btoa(JSON.stringify(_xdt_log));}
+$.ajax({type:'POST',url:'../../bdphp/log.php?op=-1112',data:{d:_xdt_log}}).done(function(rpt){console.log('-1112 ==> xm_LogChequea == rpt ',rpt);switch(rpt){case"0":xm_LogIni(function(a){if(a){responde(true)}});break;case"1":responde(true)
 break;case"2":xVerificarSession();break;default:window.localStorage.setItem("::app3_woDUS",rpt);return responde(true);break;}})}
 function xm_log_get(seccion){var xdt_log=window.localStorage.getItem("::app3_woDUS"),xdt_rpt;try{xdt_log=window.atob(xdt_log);xdt_log=JSON.parse(xdt_log)}catch(error){console.log(error);return;}
 switch(seccion){case'app3_us':xdt_rpt=xdt_log.us;break;case'ini_us':xIdOrg=xdt_log.us.ido;xIdSede=xdt_log.us.idsede;xIdUsuario=xdt_log.us.idus;xNomU=xdt_log.us.nombre;xNomUsario=xdt_log.us.nomus;xCargoU=xdt_log.us.cargo;xUsAc_Ini=xdt_log.us.acc;break;case'app3_Us_home':xdt_rpt=xdt_log.sistema.url;break;case'app3_sys_const':xdt_rpt=xdt_log.sistema.constantes;break;case'app3_woA':xdt_rpt=xdt_log.us.acc;break;case'app3_woIpPrint':xdt_rpt=xdt_log.dispositivos.dispositivo;break;case'app3_woIpPrintO':xdt_rpt=xdt_log.dispositivos.otros_print_doc;break;case'sede_generales':xdt_rpt=xdt_log.sede.generales;break;case'sede_otros_datos':xdt_rpt=xdt_log.sede.otros_datos;break;case'categorias':xdt_rpt=xdt_log.carta.categorias;break;case'carta_subtotales':xdt_rpt=xdt_log.carta.subtotales;break;case'estructura_pedido':xdt_rpt=xdt_log.carta.estructura_pedido;break;case'reglas_de_carta':xdt_rpt=xdt_log.carta.regla_carta;break;case'datos_org_sede':xdt_rpt=xdt_log.sede.datos_org_sede;break;case'datos_org_all_sede':xdt_rpt=xdt_log.sede.datos_org_all_sede;break;}
