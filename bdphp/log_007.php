@@ -16,9 +16,10 @@
 		case '1': //lista sede
 			$u=$_SESSION['idusuario'];
 			$sql="
-			SELECT s.* 
+			SELECT s.*, se.habilita_verificacion_cpe 
 				from us_cpc_sedes as s
-					INNER join us_cpc as u on s.idus_cpc=u.idus_cpc
+				INNER join us_cpc as u on s.idus_cpc=u.idus_cpc
+				inner join sede se on se.id_api_comprobante = s.userid
 				where u.idusuario=$u and s.estado=0
 				ORDER BY razonsocial, nomsede, ciudad
 			";
