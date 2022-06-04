@@ -118,6 +118,7 @@
 		case -108://verificar si tiene acceso a esta pagina //si no encuentra regresa a la pagina anterior
 			//verifica si el usuario tiene permiso para acceder a esta pagina
 
+
 				$_u_pas_rl = isset($_SESSION['u_pas_rl']) ? isset($_SESSION['u_pas_rl']) : '';
 				// if(!isset($_SESSION['u_pas_rl'])){
 				if($_u_pas_rl == ''){
@@ -265,7 +266,7 @@
 										$_SESSION['rol']=$obj["us"]->rol;
 										$_SESSION['ciudad']=$obj["us"]->ciudad;
 										$_SESSION['nuevo']=$obj["us"]->nuevo;
-										// $_SESSION['dataUs']=$data_cliente;										
+										$_SESSION['dataUs'] = $data_cliente;										
 										
 										$rpt="1";
 									}
@@ -274,10 +275,9 @@
 									}
 								}
 								else{//si existe data session devuelve esta al cliente
-									// if($dataUs===$data_cliente){ // comprueba que los datos del cliente sean iguales al los datos de session
-
+									if($dataUs===$data_cliente){ // comprueba que los datos del cliente sean iguales al los datos de session
 									// 190522  solo evalua usuario si acaso cambio privilegios
-									if($dataUs['us'] === $data_cliente['us']){ // comprueba que los datos del cliente sean iguales al los datos de session										
+									// if($dataUs['us'] === $data_cliente['us']){ // comprueba que los datos del cliente sean iguales al los datos de session										
 										$rpt="1";//nada normal sigue
 									}else{
 										$rpt=$dataUs;

@@ -55,8 +55,8 @@ if(redirec){document.location.href='../../logueese.html';}};function getCookie(n
 function xm_LogIni(responde){$.ajax({type:'POST',url:'../../bdphp/log.php?op=-1111'}).done(function(dt){console.log('-1111 dt ===> ',dt)
 if(dt=="0"){xVerificarSession();responde(false);}else{window.localStorage.setItem("::app3_woDUS",dt);responde(true);}})}
 function xm_LogChequea(responde){var xdt_log=window.localStorage.getItem("::app3_woDUS");var _xdt_log=xdt_log
-if(_xdt_log===null){_xdt_log="undefined";}else{_xdt_log={us:xm_log_get('app3_us')}
-_xdt_log=btoa(JSON.stringify(_xdt_log));}
+if(_xdt_log===null){_xdt_log="undefined";}else{}
+console.log('xdt_log ',xdt_log)
 $.ajax({type:'POST',url:'../../bdphp/log.php?op=-1112',data:{d:_xdt_log}}).done(function(rpt){console.log('-1112 ==> xm_LogChequea == rpt ',rpt);switch(rpt){case"0":xm_LogIni(function(a){if(a){responde(true)}});break;case"1":responde(true)
 break;case"2":xVerificarSession();break;default:window.localStorage.setItem("::app3_woDUS",rpt);return responde(true);break;}})}
 function xm_log_get(seccion){var xdt_log=window.localStorage.getItem("::app3_woDUS"),xdt_rpt;try{xdt_log=window.atob(xdt_log);xdt_log=JSON.parse(xdt_log)}catch(error){console.log(error);return;}
