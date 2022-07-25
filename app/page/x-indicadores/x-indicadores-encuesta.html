@@ -1,0 +1,173 @@
+<dom-module id="x-indicadores-encuesta">
+    <template is="dom">    
+        <br><br>
+
+        <div class="d-flexx align-items-end">
+            <div class="mr-1">
+                <p>Encuestas activas:</p>
+                <select class="selected-template-1" onchange="selectOptionEncuestaSelected(this)">
+                    <template is="dom-repeat" items="{{listEncuestaActiva}}" as="item">
+                        <option value="[[index]]">[[item.fecha_creacion]] - [[item.nombre]] </option>
+                    </template>
+                </select>  
+            </div>
+            <div>
+                <button class="btn btn-sm btn-info"><i class="fa fa-plus mr-1"></i> Crear Encuenta</button>                
+            </div>
+        </div>
+
+        <table width="100%">
+            <thead>
+                <th>Pregunta</th>
+                <template is="dom-repeat" items="{{listDataPreguntas}}" as="item">
+                    <th>
+                        <div class="text-center">
+                            <img class="img-encuesta" src="{{item.img}}" alt="">
+                            <p class="fs-11">{{item.descripcion}}</p>
+                        </div>
+                    </th>
+                </template>
+            </thead>
+            <tbody>
+                <template is="dom-repeat" items="{{listDataEncuesta}}" as="item">
+                    <tr>
+                        <td>{{ item.pregunta }}</td>
+                        <template is="dom-repeat" items="{{item.listRpt}}" as="rpt">
+                            <td align="center"><span class$="{{rpt.classCantidad}} fw-600">{{rpt.cantidad}}</span></td>
+                        </template>
+                    </tr>
+                </template>
+            </tbody>
+        </table>
+    </template>
+
+    
+    <style>
+        .img-encuesta {
+            width: 32px;
+        }    
+    </style>
+</dom-module>
+<script>
+    var xThisI2Encuensta,dataEncuesta, dataOpCalificacion;
+    async function loadDataI2Encuesta() {
+        xPopupLoad.xopen();
+
+        // cargar lista de respuestas
+        dataOpCalificacion = await $.ajax({
+				type: 'POST',
+				url: '../../bdphp/log_005.php?op=2201'                
+			});
+            
+            dataOpCalificacion = JSON.parse(dataOpCalificacion).datos;		
+            xThisI2Encuensta.listDataPreguntas = dataOpCalificacion.map(x => {
+                x.img = '../../images/'+x.img;
+                return x;
+            });
+
+
+
+        // encuestas activas
+        const _rptE = await $.ajax({
+				type: 'POST',
+				url: '../../bdphp/log_005.php?op=2202'
+			})
+
+        xThisI2Encuensta.listEncuestaActiva = JSON.parse(_rptE).datos;
+        console.log('xThisI2Encuensta.listEncuestaActiva',xThisI2Encuensta.listEncuestaActiva );
+
+        xThisI2Encuensta.isShowEncuestas = xThisI2Encuensta.listEncuestaActiva.length > 0;
+
+        if ( xThisI2Encuensta.isShowEncuestas ) {
+            loadDataEncuestaSelected(xThisI2Encuensta.listEncuestaActiva[0].idencuesta_sede_conf);
+        }
+    }
+
+
+    function loadDataEncuestaSelected(_idEncuesta) {
+         
+
+                // data encuesta
+                $.ajax({
+                        type: 'POST',
+                        url: '../../bdphp/log_005.php?op=22',
+                        data: {'idencuesta': _idEncuesta}
+                    })
+                    .done(function (res) {
+                        
+                        dataEncuesta = JSON.parse(res).datos;		
+
+                        const _classCantidad = ['text-danger', 'text-danger', 'text-warning', 'text-success', 'text-info'];
+                        var listPregunta = [];
+                        dataEncuesta.map((x, i) => {
+                            var _laPregunta = listPregunta.find(p => p.idpregunta === x.idencuesta_pregunta);
+                            if ( !_laPregunta ) {
+                                _laPregunta = {
+                                    idpregunta: x.idencuesta_pregunta,
+                                    pregunta: x.pregunta,
+                                    listRpt: []
+                                }
+                                
+                                
+                                // filtrar respuestas
+                                dataOpCalificacion.map( (r, i) => {
+                                    const _rowList = dataEncuesta.find(x => x.idencuesta_pregunta  === _laPregunta.idpregunta && r.idencuesta_respuesta === x.idencuesta_respuesta)                                                                
+
+                                    _rowListRpt = {
+                                        cantidad: _rowList? _rowList.cantidad : 0,
+                                        idencuesta_respuesta: r.idencuesta_respuesta,
+                                        classCantidad: _classCantidad[i]
+                                    }
+                                    
+                                    _laPregunta.listRpt.push(_rowListRpt);
+
+                                });
+
+                                listPregunta.push(_laPregunta)
+                            } 
+
+
+                        });
+
+
+                        console.log('listPregunta', listPregunta);
+                        xThisI2Encuensta.listDataEncuesta = listPregunta;
+                        
+                        // dataIECaja.map(x => {
+                        //     x.class_row = x.numtipo === '2' ? 'fw-600 text-danger' : 'fw-600 text-success';
+                        // });
+                       
+                        xPopupLoad.xclose();
+        
+                    });            
+    }
+
+    function selectOptionEncuestaSelected(obj) {
+        const index = obj.selectedIndex;
+        loadDataEncuestaSelected(xThisI2Encuensta.listEncuestaActiva[index].idencuesta_sede_conf);
+    }
+
+    Polymer({
+		is: 'x-indicadores-encuesta',
+		properties: {            
+            listDataEncuesta: [],
+            listDataPreguntas: [],
+            listEncuestaActiva: [],
+            isShowEncuestas: Boolean
+		},
+		attached: function () {
+            this.isShowEncuestas = false;
+			xThisI2Encuensta = this;
+			loadDataI2Encuesta();
+		},
+        changeRango: (val) => {
+            // console.log('change rango', val);
+        },
+        showData: () => {
+            loadDataI2Encuesta();
+        },
+		detached:function(){
+			// grafico_meta_diaria = null;			
+		}
+	})
+</script>

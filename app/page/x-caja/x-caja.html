@@ -285,7 +285,7 @@ $.ajax({type:'POST',url:'../../bdphp/log_005.php?op=1703',data:{idprint:_cpe}}).
 _cpSocketprinterOnly(_dataPrint);setTimeout(()=>{xPopupLoad.xclose()},1500);});}
 function recibirAdelanto(obj){const indexList=obj.dataId;const item=xThisCaja.listAdelantoOrden[indexList];item.fecha_guardar=xDevolverFecha()+' '+xDevolverHora();$.ajax({type:'POST',url:'../../bdphp/log_004.php?op=1501',data:{data:item}}).done(function(res){xLoadResumenIS();});}
 function xOpenDialogPermisoRemotoUs(){txt_total_tengo.value=txt_total_caja.value;dialog_permiso_remoto.open();}
-function xLoadUsAdminPermiso(){$.ajax({type:'POST',url:'../../bdphp/log.php?op=70112'}).done(function(res){console.log('xLoadUsAdminPermiso',JSON.parse(res));xThisCaja.listUsAdmin=JSON.parse(res).datos;selectedUsAdmin(null,0);});}
+function xLoadUsAdminPermiso(){$.ajax({type:'POST',url:'../../bdphp/log.php?op=70112'}).done(function(res){xThisCaja.listUsAdmin=JSON.parse(res).datos;selectedUsAdmin(null,0);});}
 function selectedUsAdmin(obj,index=null){if(index!==null){idUsAdminPermiso=xThisCaja.listUsAdmin[index].idusuario;return;}
 idUsAdminPermiso=xThisCaja.listUsAdmin[obj.selectedIndex].idusuario;}
 function xEnviarPermisoRemoto(){$.ajax({type:'POST',url:'../../bdphp/log.php?op=70113',data:{idus:idUsAdminPermiso,importe:txt_total_tengo.value}}).done(function(res){$('#div_espera_rpt').removeClass('xInvisible');dialog_permiso_remoto.close();});}

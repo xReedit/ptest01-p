@@ -3,6 +3,7 @@
 <dom-module id="x-historial_venta">
 <script type="text/javascript" src="../view/socket.master.service.js"></script>
 <script type="text/javascript" src="../view/socket.service.p.js"></script>
+<script type="text/javascript" src="../view/export.excel.js"></script>
 <template>
 <x-pass id="pass_us" titulo="Usuario autorizado" valor="Pe1"></x-pass>
 <paper-dialog id="dialog_motivo_anular_historial" style="min-width:320px" entry-animation="scale-up-animation" exit-animation="fade-out-animation" with-backdrop>
@@ -107,14 +108,44 @@
 </div>
 </div>
 </div>
+<div class="w-100 border-bottom" style="padding:20px;box-sizing:border-box;background:cornsilk">
+<div class="d-flexx justify-content-between">
+<input type="text" class="xMiInput" width="80%" placeholder="Buscar ..." onkeyup="buscarEnLista(this.value)">
+<button class="xBoton2 xVerde" onclick="xGenerarReporteExcelRegistroPago()" title="Exportar a excel"><img src="../../images/excel.png" alt=""></button>
+</div>
+</div>
 <div class="xContentCard border-bottom" style="padding:20px">
 <div class="div-content-grid">
-<div class="w-100">
-<div class="w-100">
-<input type="text" class="xMiInput" width="100%" placeholder="Buscar ..." onkeyup="buscarEnLista(this.value)">
-</div>
-</div>
 <br>
+<div class="xInvisible">
+<table width="100%" id="tbRegistroPago">
+<thead>
+<th>#</th>
+<th>Fecha</th>
+<th>Hora</th>
+<th>Canal</th>
+<th>Cliente</th>
+<th>Comprobante</th>
+<th>T. Pago</th>
+<th align="right" style="min-width:100px">importe</th>
+<th></th>
+</thead>
+<tbody>
+<template is="dom-repeat" items="[[listRegistro]]" as="item">
+<tr>
+<td>{{item.num}}</td>
+<td>{{item.fecha_des}}</td>
+<td>{{item.hora}}</td>
+<td>{{item.des_consumo}}</td>
+<td>{{item.nom_cliente}}</td>
+<td>{{item.des_comprobante}}</td>
+<td>{{item.des_pago}}</td>
+<td>S/. {{ item.total }}</td>
+</tr>
+</template>
+</tbody>
+</table>
+</div>
 <table width="100%">
 <thead>
 <th>#</th>
@@ -230,5 +261,6 @@ _cpSocketprinterOnly(_dataPrint);setTimeout(()=>{xPopupLoad.xclose()},1500);});}
 function buscarEnLista(val){val=val.toLowerCase();const _listBusqueda=listRegistroMaster.filter(x=>x.charbusqueda.indexOf(val)>-1)
 var _numRegisterBusqueda=_listBusqueda.length+1||0;var importeTotalRegistrado=0,numTotalComprobantes=0,listTipoPago=[];_listBusqueda.map(x=>{_numRegisterBusqueda--;x.num=xCeroIzq(_numRegisterBusqueda);x.des_pago.split(',').map(t=>{const ishayTP=listTipoPago.length===0?null:listTipoPago.filter(x=>x.id.toLowerCase()===t.toLowerCase())[0];if(ishayTP){ishayTP.cantidad++;}else{const _rowTPC={id:primeraConMayusculas(t.toLowerCase()),cantidad:1};listTipoPago.push(_rowTPC);}});const _importeTotalRegistro=x.anulado?0:parseFloat(x.total);importeTotalRegistrado=importeTotalRegistrado+_importeTotalRegistro;numTotalComprobantes+=x.comprobante!==''?1:0;})
 xThisHistVenta.listRegistro=_listBusqueda;xThisHistVenta.listCantidadPagos=listTipoPago;xThisHistVenta.importeTotalRegistrado=numeroConComas(importeTotalRegistrado.toFixed(2));xThisHistVenta.numComprobantesEmitidos=xCeroIzq(numTotalComprobantes,5);}
+function xGenerarReporteExcelRegistroPago(){tableToExcel('tbRegistroPago','Registro de Pago');}
 Polymer({is:'x-historial_venta',properties:{xdtPedDet:Object,isCierreCaja:Boolean,xYaTieneComprobante:boolean=true,xYaPedidoCerrado:boolean=true,xIsPuedeReimprimirCPE:boolean=false,listRegistro:[],importeTotalRegistrado:Number,numComprobantesEmitidos:Number,listCantidadPagos:[]},attached:function(){this.xIsPuedeReimprimirCPE=false;this.xYaTieneComprobante=true;this.xYaPedidoCerrado=true;this.isCierreCaja=false;xThisHistVenta=this;xIniHistVenta();setTimeout(()=>{_cpSocketOpen();},1000);},detached:function(){_cpSocketClose();},displayIndex:function(index){return xCeroIzq(index+1,1);}})/*]]>*/</script>
 </dom-module>

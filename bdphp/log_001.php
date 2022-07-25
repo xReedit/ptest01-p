@@ -395,7 +395,7 @@
 		
 		// $correlativo_dia, 'correlativo_comprobante' => '' para que no me mande generar factura
 		// $x_respuesta = json_encode(array('idpedido' => $id_pedido, 'numpedido' => $numpedido, 'correlativo_dia' => $correlativo_dia, 'correlativo_comprobante' => '', 'sql_pedido_detalle' => $sql_pedido_detalle, 'sqlPedido' => $sqlPedido));
-		$x_respuesta = json_encode(array('idpedido' => $id_pedido, 'numpedido' => $numpedido, 'correlativo_dia' => $correlativo_dia, 'correlativo_comprobante' => ''));
+		$x_respuesta = json_encode(array('idpedido' => $id_pedido, 'numpedido' => $numpedido, 'correlativo_dia' => $correlativo_dia, 'correlativo_comprobante' => '', 'sql_detalle' => $sql_pedido_detalle));
 
 
 		// SI ES PAGO TOTAL
@@ -1623,6 +1623,12 @@
 		
 		// $x_arr_cliente = $_POST['p_cliente'];
 		// $datos_cliente = $x_arr_cliente['cliente'];
+
+		if ( !isset($_POST['p_cliente']) ) {
+			echo null;
+			return;
+		}
+
 		$datos_cliente = $_POST['p_cliente'];
 		$datos_cliente = is_object($datos_cliente) || is_array($datos_cliente) ? $datos_cliente : json_decode($datos_cliente, true);
 
@@ -1633,7 +1639,7 @@
 		$referencia=$datos_cliente['referencia'];
 		$direccion_delivery_no_map=$datos_cliente['direccion_delivery_no_map'];
 		$f_nac=$datos_cliente['f_nac'];
-		$telefono=array_key_exists('telefono', $datos_cliente) ? $datos_cliente['telefono'] : '';
+		$telefono=is_array($datos_cliente) && array_key_exists('telefono', $datos_cliente) ? $datos_cliente['telefono'] : '';
 		$update_telefono = $telefono != '' ? ", telefono = '".$telefono."'" : "";
 
 		$direccion_delivery_no_map_save = isset($direccion_delivery_no_map) ? json_encode($direccion_delivery_no_map) : '[]';
@@ -1667,7 +1673,7 @@
 		// $sql="update pedido set idcliente=".$idclie." where idpedido in (".$idpedidos.")";
 		
 		$x_idcliente = $idclie;
-		$x_idpedido = $idpedidos;
+		// $x_idpedido = $idpedidos;
 
 		echo $idclie;
 

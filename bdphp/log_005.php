@@ -1457,5 +1457,45 @@
 				$sql= "call procedure_guardar_mod_procion('$dtSend')";
 				$bd->xConsulta($sql);
 				break;
+				
+			case 22: // encuestas
+				$idencuesta = $_POST['idencuesta'];
+				$sql = "select esc.idencuesta_sede_conf,erd.idencuesta_pregunta, ep.pregunta,  erd.idencuesta_respuesta, count(erd.idencuesta_respuesta) cantidad
+				from encuesta_resultados_detalle erd 
+					inner join encuesta_resultados er on erd.idencuesta_resultados = erd.idencuesta_resultados 
+					inner join encuesta_pregunta ep on erd.idencuesta_pregunta = ep.idencuesta_pregunta 
+					inner join encuesta_sede_conf esc on esc.idencuesta_sede_conf = er.idencuesta_sede_conf 
+				where esc.idencuesta_sede_conf=$idencuesta and esc.estado = 0  
+				GROUP by erd.idencuesta_pregunta, erd.idencuesta_respuesta
+				order by ep.idencuesta_pregunta asc";
+				$bd->xConsulta($sql);
+				break;
+
+			case 2201: // encuestas - repuestas
+				$sql = 'select * from encuesta_respuesta';
+				$bd->xConsulta($sql);
+				break;
+
+			case 2202: // lista de encuestas activas
+				$sql="select esc.idencuesta_sede_conf, esc.nombre, esc.fecha_creacion from encuesta_sede_conf esc where idsede = 1 and estado = 0";
+				$bd->xConsulta($sql);
+				break;
+		
+			case 2203: // comentarios
+				$idencuesta = $_POST['idencuesta'];
+				$pagination = $_POST['pagination'];
+				$sql="select esc.idencuesta_sede_conf, erd.comentario
+				from encuesta_resultados_detalle erd 
+					inner join encuesta_resultados er on erd.idencuesta_resultados = erd.idencuesta_resultados 
+					inner join encuesta_pregunta ep on erd.idencuesta_pregunta = ep.idencuesta_pregunta 
+					inner join encuesta_sede_conf esc on esc.idencuesta_sede_conf = er.idencuesta_sede_conf 
+				where esc.idencuesta_sede_conf = $idencuesta and esc.estado = 0 and erd.comentario != ''
+				order by ep.idencuesta_pregunta asc";
+
+
+				$sqlCount = "SELECT count(idsede_calificacion) as d1 from sede_calificacion where idsede = 13";
+				
+				$bd->xConsulta($sql);
+				break;
 	}
 ?>

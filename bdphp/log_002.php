@@ -181,7 +181,7 @@
             }
             break;
         case '3': // consulta de boletas que fueron registradas pero no aceptadas(por cualquier motivo), devuelve fechas no aceptadas
-            $sql = "SELECT * from ce where (idorg=".$_SESSION['ido']." and idsede=".$_SESSION['idsede'].") and str_to_date(fecha, '%d/%m/%Y') between DATE_SUB( CURDATE() , INTERVAL 10 DAY ) AND CURDATE() and estado_api=0 and (estado_sunat != 0 or msj='Registrado') and anulado=0";            
+            $sql = "SELECT * from ce where (idorg=".$_SESSION['ido']." and idsede=".$_SESSION['idsede'].") and str_to_date(fecha, '%d/%m/%Y') between DATE_SUB( CURDATE() , INTERVAL 8 DAY ) AND CURDATE() and estado_api=0 and (estado_sunat != 0 or msj='Registrado') and anulado=0";            
             $bd->xConsulta($sql);
             break;
         case '301': // lista documentos no registrados - documnentos que no fueron enviados al servicio api por algun error de conexion
@@ -191,15 +191,15 @@
             $bd->xConsulta_NoReturn($sql);
             
             // 050221 // actualiza las boletas o facturas no enviados > 15, para que no siga notificando            
-            $sql = "update ce set estado_api = 0 where idsede = ".$_SESSION['idsede']." and str_to_date(fecha, '%d/%m/%Y') < DATE_SUB( CURDATE() , INTERVAL 10 DAY ) and estado_api = 1 and anulado=0";
+            $sql = "update ce set estado_api = 0 where idsede = ".$_SESSION['idsede']." and str_to_date(fecha, '%d/%m/%Y') < DATE_SUB( CURDATE() , INTERVAL 8 DAY ) and estado_api = 1 and anulado=0";
             $bd->xConsulta_NoReturn($sql);
 
             // $sql = "SELECT * from ce where (idorg=".$_SESSION['ido']." and idsede=".$_SESSION['idsede'].") and estado_api = 1 and anulado=0";
-            $sql = "SELECT * from ce where idsede = ".$_SESSION['idsede']." and str_to_date(fecha, '%d/%m/%Y') between DATE_SUB( CURDATE() , INTERVAL 10 DAY ) AND CURDATE() and estado_api = 1 and anulado=0";
+            $sql = "SELECT * from ce where idsede = ".$_SESSION['idsede']." and str_to_date(fecha, '%d/%m/%Y') between DATE_SUB( CURDATE() , INTERVAL 8 DAY ) AND CURDATE() and estado_api = 1 and anulado=0";
             $bd->xConsulta($sql);
             break;
         case '3011': // facturas// lista documentos no registrados en suant - documnentos que no fueron enviados a sunat por algun error de conexion
-            $sql = "SELECT * from ce where (idsede=".$_SESSION['idsede'].") and str_to_date(fecha, '%d/%m/%Y') between DATE_SUB( CURDATE() , INTERVAL 10 DAY ) AND CURDATE() and estado_api = 0 and (estado_sunat != 0 or msj='Registrado') and anulado=0";
+            $sql = "SELECT * from ce where (idsede=".$_SESSION['idsede'].") and str_to_date(fecha, '%d/%m/%Y') between DATE_SUB( CURDATE() , INTERVAL 8 DAY ) AND CURDATE() and estado_api = 0 and (estado_sunat != 0 or msj='Registrado') and anulado=0";
 
             // facturas y boletas, a las boletas revisa si esta sin registrar y las registra
             // $sql = "SELECT tcs.idtipo_comprobante, ce.* from ce

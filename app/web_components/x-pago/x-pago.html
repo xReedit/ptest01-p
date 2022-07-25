@@ -17,8 +17,10 @@
 <br>
 <div class="container-cliente-comprobante" hidden="[[!hidden_container_pago]]">
 <div id="container-cliente">
-<label for="xsel_tp_doc" class="xfont11 xColorRow_Plomo2">Comprobante a imprimir: </label>
+<div>
+<label for="xsel_tp_doc" class="xfont12 xColorRow_Plomo">Comprobante a imprimir: </label>
 <x-comp-find-comprobante apply-class="xTextRow2 xfont16 xCursor" id="comp_sel_comprobante" onchange="xSelectedTpComprobante(comprobantes)"></x-comp-find-comprobante>
+</div>
 <form action="" id="form_pago_cliente" is="iron-form" style="line-height:.2">
 <paper-icon-button style="float:right;bottom:-10px" src="../../../images/_add_cliente.png" alt="clienteadd" title="Agregar cliente" onclick="xThisPago.hidden_container_cliente=false">
 </paper-icon-button>
@@ -42,8 +44,8 @@
 <div class="d-flexx align-items-center justify-content-between">
 <p style="line-height:18px;display:flex;align-items:center">Se enviara el comprobante <br>al WhatsApp de este número. <img src="../../../images/whatsapp.png" width="16px"></p>
 <div>
-<div hidden="[[!isBtnPrinterCpe]]" class="btn btn-sm border btn-print-cpe" style="background:lightgray" id="btn-print-no" onclick="xSetisPrinterCpe(true)"> <i class="fa fa-check fs-15 text-success fs-600 mr-1"></i>Imprimir Comprobante</div>
-<div hidden$="[[isBtnPrinterCpe]]" class="btn btn-sm btn-warning border btn-print-cpe" id="btn-print-si" onclick="xSetisPrinterCpe(false)"> <i class="fa fa-close fs-15 text-danger fs-600 mr-1"></i>Imprimir Comprobante</div>
+<div hidden="[[!isBtnPrinterCpe]]" class="btn btn-sm border btn-print-cpe" style="background:lightgray" id="btn-print-no" onclick="xSetisPrinterCpe(true)"> <i class="fa fa-check fs-15 text-success fs-600 mr-1"></i>Si Imprimir</div>
+<div hidden$="[[isBtnPrinterCpe]]" class="btn btn-sm btn-warning border btn-print-cpe" id="btn-print-si" onclick="xSetisPrinterCpe(false)"> <i class="fa fa-close fs-15 text-danger fs-600 mr-1"></i>No Imprimir</div>
 </div>
 </div>
 </div>
@@ -82,7 +84,8 @@ favor regrese y registre o seleccione un cliente.</p><br>
 </template>
 <style type="text/css">.xEnca_pago{background:#23369e;text-align:center;padding:10px;border-radius:5px 5px 0 0}.xEnca_pago .ptotal{color:#FFF}.xEnca_pago .pdif{font-size:18px}.xsel_tp{float:left;margin-top:3px}.pdif_rojo{color:#ffea00}.pdif_verde{color:#76ff03}.container-cliente-comprobante{padding:5px;margin-top:-10px;background-color:#fdfcdc}.ancho_ini{width:100%}:root{--font-size:12px;--paper-input-container-input:{font-size:var(--font-size)}--paper-input-container-label:{font-size:13px}}@media screen and (max-width:720px){.ancho_ini{width:100%}}</style>
 </dom-module>
-<script>/*<![CDATA[*/var xThisPago,xdialoag_pago,xDiferencia=0,xtotal_recibido=0,xtb_tp,xSel_tp=[],xSel_tp_comprobante=[],xdif_limite=0,xsuma_total=0,xsuma_diferencia=0,xIdCliente_pago='',xObjContent,xEnterTxtImporte=0,xDatosValidos=false,tipoComprovanteSelecionado={},modoSoloComprobante=false,modoSoloProveedor=false,btnDisabledInitModoComprobante=true,registrando=false,_inputAutocomplete,_inputAutocompleteObj,objSelComprobante,xtipoP=[],xCompTableFP;function xIiniPago(){xtb_tp=$("#tb_tp");xLoadTipoPago();xEnterTxtImporte=0;xGetIsPrinterCpe();_inputAutocomplete=document.getElementById('clie_nombres');_inputAutocompleteObj=_inputAutocomplete.$.input_clie_nombres_auto;_inputAutocomplete.addEventListener('input-autocomplete-selected',(event)=>{const cliente=event.detail;xThisPago.clienteModel=cliente;xThisPago.tipoPagoRequiereCliente=false;xIdCliente_pago=cliente.idcliente;$("#sel_cliente").val(cliente.ruc);$("#clie_direccion").val(cliente.direccion);$("#clie_telefono").val(cliente.telefono);EmitirValidacionFormCliente();});objSelComprobante=document.getElementById('comp_sel_comprobante');$('#form_pago_cliente #clie_nombres').on('keyup',function(e){var code=e.which;if(code==13||code==186){xThisPago.$.clie_direccion.$.input.$.textarea.select();xThisPago.$.clie_direccion.$.input.$.textarea.focus();}})
+<script>/*<![CDATA[*/var xThisPago,xdialoag_pago,xDiferencia=0,xtotal_recibido=0,xtb_tp,xSel_tp=[],xSel_tp_comprobante=[],xdif_limite=0,xsuma_total=0,xsuma_diferencia=0,xIdCliente_pago='',xObjContent,xEnterTxtImporte=0,xDatosValidos=false,tipoComprovanteSelecionado={},modoSoloComprobante=false,modoSoloProveedor=false,btnDisabledInitModoComprobante=true,registrando=false,_inputAutocomplete,_inputAutocompleteObj,objSelComprobante,xtipoP=[],xCompTableFP;function xIiniPago(){xtb_tp=$("#tb_tp");xLoadTipoPago();xEnterTxtImporte=0;xGetIsPrinterCpe();_inputAutocomplete=document.getElementById('clie_nombres');_inputAutocompleteObj=_inputAutocomplete.$.input_clie_nombres_auto;_inputAutocomplete.addEventListener('input-autocomplete-selected',(event)=>{const cliente=event.detail;xThisPago.clienteModel=cliente;xThisPago.tipoPagoRequiereCliente=false;xIdCliente_pago=cliente.idcliente;$("#sel_cliente").val(cliente.ruc);$("#clie_direccion").val(cliente.direccion);$("#clie_telefono").val(cliente.telefono);EmitirValidacionFormCliente();});objSelComprobante=document.getElementById('comp_sel_comprobante');objSelComprobante.addEventListener('_onchange',(e)=>{xSelectedTpComprobante(e.detail);e.stopPropagation();e.stopImmediatePropagation();})
+$('#form_pago_cliente #clie_nombres').on('keyup',function(e){var code=e.which;if(code==13||code==186){xThisPago.$.clie_direccion.$.input.$.textarea.select();xThisPago.$.clie_direccion.$.input.$.textarea.focus();}})
 $('.xPasarEnter2').on('keyup',function(e){var code=e.which;if(code==13||code==186){var inputs=$('input');var a=inputs.index(document.activeElement);if(inputs[a+1]!==null){var nextBox=inputs[a+1];if(nextBox.disabled){nextBox=inputs[a+2]}
 nextBox.focus();}
 return false;}});$("#txt_pago_cliente").on('change',function(){xSumarTotales_row();})
@@ -108,7 +111,7 @@ _inputAutocompleteObj.inputValue='';$("#clie_direccion").val('');$("#clie_telefo
 function xVerContainerPago(){if(!xThisPago.modoSoloComprobante){xThisPago.tipoPagoRequiereCliente=_inputAutocompleteObj.inputValue==''&&xThisPago.tipoPagoRequiereCliente?true:false;xThisPago.hidden_container_pago=!xThisPago.hidden_container_pago;if(!xThisPago.hidden_container_pago){if(isSynOsWinOrMac()){$('table#table_op_fp input.xmonto').last().focus();$('table#table_op_fp input.xmonto').last().select();}}
 xThisPago.fire('xContainerPagoVisible',xThisPago.hidden_container_pago);xFireSend(true);}else{xFireSend(true);xListoRegistraPago();}}
 function EmitirValidacionFormCliente(){var validForm=!xThisPago.ComprobanteRequiereCliente;if(xThisPago.ComprobanteRequiereCliente){if(xThisPago.tipoComprovanteSelecionado.codsunat==='01'){validForm=xThisPago.$.sel_cliente.value.length===11&&clie_nombres.$.input_clie_nombres_auto.$.input.value!=''&&clie_nombres.$.input_clie_nombres_auto.$.input.value.length>4?true:false;}else if(xThisPago.tipoComprovanteSelecionado.codsunat==='03'){validForm=clie_nombres.$.input_clie_nombres_auto.$.input.value!=''&&clie_nombres.$.input_clie_nombres_auto.$.input.value.length>4?true:false;}}
-if(xThisPago.tipoComprovanteSelecionado){if(xThisPago.tipoComprovanteSelecionado.codsunat==='03'){validForm=clie_nombres.$.input_clie_nombres_auto.$.input.value===''||clie_nombres.$.input_clie_nombres_auto.$.input.value.length>4?true:false;}}
+if(xThisPago.tipoComprovanteSelecionado&&!xThisPago.ComprobanteRequiereCliente){if(xThisPago.tipoComprovanteSelecionado.codsunat==='03'){validForm=clie_nombres.$.input_clie_nombres_auto.$.input.value===''||clie_nombres.$.input_clie_nombres_auto.$.input.value.length>4?true:false;}}
 xThisPago.valid_form_cliente_pago=validForm;xThisPago.fire('xFormClienteValid',validForm);}
 function EmitirValidacionFormMontoPago(val){}
 function xCancelarCerrar(){xThisPago.fire('xCancelarCerrar',true);}

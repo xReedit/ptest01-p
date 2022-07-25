@@ -29,8 +29,10 @@
 			break;		
 		case '101': //lista sede sergun org
 			$idorg = $_POST['idorg'];
-			$sql="SELECT * FROM sede WHERE idorg=".$idorg." and estado=0";
+			$sql="select * from sede where idorg=$idorg and estado=0";			
 			$bd->xConsulta($sql);
+			// echo $sql;
+			// $bd->xConsulta($sql);
 			break;
 		case '102': //load usuario implementador
 			$idorg = $_POST['idorg'];

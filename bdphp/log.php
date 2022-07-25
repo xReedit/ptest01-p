@@ -133,7 +133,8 @@
 				$u_per=explode('?', $u_per);
 				$u_per= isset($u_per[0]) ? $u_per[0] : null;
 
-				$pos = isset($_SESSION['u_pas_rl']) ? strpos($_SESSION['u_pas_rl'], $u_per) : false;
+				$pos = !empty($_SESSION['u_pas_rl']) ? strpos($_SESSION['u_pas_rl'], $u_per) : false;
+				// $pos = isset($_SESSION['u_pas_rl']) ? strpos($_SESSION['u_pas_rl'], $u_per) : false;
 				// $pos = isset($_SESSION['u_pas_rl']) ? strpos($_u_pas_rl, $u_per) : false;
 				// echo '$_u_pas_rl = '.$_u_pas_rl."  session_u_pas_rl=".$_SESSION['u_pas_rl']."  u_per = ".$u_per. "   pos = ".$pos."   u_pas_rl=".$_SESSION['u_pas_rl'];
 				if ($pos=== false) {
@@ -1831,7 +1832,7 @@
 			// 	WHERE (p.idorg=".$g_ido." AND p.idsede=".$g_idsede.") and (p.estado=0) and p.nummesa=0
 			// 	GROUP BY p.idpedido
 			// ";
-			$arrItemPedido = $_POST['objPedido'];	
+			$arrItemPedido = isset($_POST['objPedido']) ? $_POST['objPedido'] : 0;	
 			$arrItemPedido = isset($arrItemPedido) ? $arrItemPedido == 0 ? 'null' : "'".json_encode($arrItemPedido)."'" : 'null';
 
 			$sql="CALL procedure_refresh_mesas_501(".$g_ido.",".$g_idsede.", ".$arrItemPedido.");";
@@ -3571,12 +3572,15 @@ function xDtUS($op_us){
 	$results=$bd->xConsulta2($sql_us);
 
 	// 230721
-	if ( strrpos($results, 'error') === false ) {
+	if (  is_string($results) != 1 ) { // tiene error devuelve cadena
 
-		while($row = $results->fetch_object()){
-			$rows[]=$row;
-			}
-
+		// if ( strrpos($results, 'error') === false ) {
+	
+			while($row = $results->fetch_object()){
+				$rows[]=$row;
+				}
+	
+		// }
 	}
 
 	return $rows;
