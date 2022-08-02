@@ -910,7 +910,9 @@
 
 		$x_respuesta = json_encode(array(
 			'correlativo_comprobante' => $correlativo_comprobante,
-			'idregistro_pago' => $idregistro_pago));
+			'idregistro_pago' => $idregistro_pago
+			// 'sql_pago_pedido' => $sql_pago_pedido
+		));
 		// print $x_respuesta.'|';
 
 		if ( $rpt_cocina_pedido !== '') {			
