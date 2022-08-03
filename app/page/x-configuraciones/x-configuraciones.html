@@ -675,7 +675,7 @@ Esto se utiliza en el escenario de que cada caja tenga su impresora, por ejemplo
 </thead>
 <tr data-id="" class="xSinBorde">
 <td><x-comp-find-sede id="compFindSede" onchange="_getSede(sedes)"></x-comp-find-sede></td>
-<td><x-comp-find-comprobante id="compFindComprobante" op="2" onchange="_getComprobante(comprobantes)"></x-comp-find-comprobante></td>
+<td><x-comp-find-comprobante id="compFindComprobante" showicons="[[showIconsListCPE]]" op="2" onchange="_getComprobante(comprobantes)"></x-comp-find-comprobante></td>
 <td><input type="text" autocomplete="off" class="xMiInput" placeholder="Serie" onChange="conMayusculas(this)" name="serie" id="serie" required></td>
 <td><input class="xMiInput" placeholder="Correlativo" type="number" min="0" pattern="[0-9]+([\.,][0-9]+)?" step="any" name="correlativo" id="correlativo" required></td>
 <td><paper-fab icon="add" onclick="config_comprobante_add()" title="Guardar" tabindex="0"></paper-fab></td>
@@ -839,4 +839,4 @@ dialog_img_ico_carta.close();xPopupLoad.xclose();})}
 function xloadMetodosPagos(){$.ajax({type:'POST',url:'../../bdphp/log_004.php?op=11'}).done(function(res){res=JSON.parse(res);const metodosPagosIds=xm_log_get('datos_org_sede')[0]?.metodo_pago_aceptados||'';const aceptados=metodosPagosIds.split(',');let listMetodoPagosAceptados=[];xThisConfig.listMetodoPagos=[];res.datos.map(x=>{x.aceptado=!!aceptados.filter(t=>parseInt(t)===parseInt(x.idtipo_pago))[0];x.aceptado_a=x.aceptado?1:0;listMetodoPagosAceptados.push(x);});xThisConfig.listMetodoPagos=listMetodoPagosAceptados;});}
 function updateMetodoPagoAceptado(){let idAceptados='';$('.checkTP').each((i,e)=>{idAceptados+=e.checked?`${e.dataIdt},`:'';});$.ajax({type:'POST',url:'../../bdphp/log_004.php?op=1101',data:{ids:idAceptados}});}
 function checkboxChanged(event){if(event.target.checked){console.log(event.target.value);}}
-Polymer({is:'x-configuraciones',properties:{xt_org:Number,xt_idsede:Number,xt_idus:Number,dt_sede:Object,dt_cat:Object,dt_impr:Object,listIconSeccion:[],listMetodoPagos:{type:Object,notify:true},listCanalConsumo:[],},attached:function(){this.selected_conf=0;xThisConfig=this;xIniConf();},detached:function(){}})/*]]>*/</script>
+Polymer({is:'x-configuraciones',properties:{xt_org:Number,xt_idsede:Number,xt_idus:Number,dt_sede:Object,dt_cat:Object,dt_impr:Object,listIconSeccion:[],listMetodoPagos:{type:Object,notify:true},listCanalConsumo:[],showIconsListCPE:Boolean},attached:function(){this.selected_conf=0;this.showIconsListCPE=false;xThisConfig=this;xIniConf();},detached:function(){}})/*]]>*/</script>

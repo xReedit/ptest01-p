@@ -4,7 +4,12 @@
 <dom-module id="x-comp-find-comprobante">
 <template>
 <div>
-<div style="background:#e6e4cb;padding:10px;border-radius:8px;display:inline-block">
+<select hidden$="[[showicons]]" id="compFindListComprobante" class$="[[applyClass]]" onchange="selectOptionComprobante()">
+<template is="dom-repeat" items="{{list}}" as="comprobante">
+<option value="[[index]]">[[comprobante.descripcion]] </option>
+</template>
+</select>
+<div hidden$="[[!showicons]]" style="background:#e6e4cb;padding:10px;border-radius:8px;display:inline-block">
 <div class="content_div_op_pago" style="display:flex">
 <template is="dom-repeat" items="{{list}}" as="comprobante">
 <div class="xMiBoton_icon_option" data-index="{{index}}" selected$="{{comprobante.seleccionado}}" onclick="selectOptionComprobanteTouch(this)">
@@ -22,5 +27,5 @@ function selectOptionComprobante(obj){const index=xThisComComprobante.$.compFind
 function selectOptionComprobanteTouch(obj){const index=obj.dataIndex;xThisComComprobante.comprobantes=xThisComComprobante.list[index];$(obj).parent().find('.xMiBoton_icon_option').each((i,e)=>{e.dataIndex===index?$(e).attr('selected',true):$(e).removeAttr('selected');});xSelectViewOptionTC(index);}
 function xSelectViewOptionTC(_index){xThisComComprobante.list.map(x=>{x.seleccionado=false;return x;});xThisComComprobante.comprobantes=xThisComComprobante.list[_index];xThisComComprobante.comprobantes.seleccionado=true;xThisComComprobante.fire('_onchange',xThisComComprobante.comprobantes);}
 function resetListComprobante(){xThisComComprobante.$.compFindListComprobante.selectedIndex=0;xThisComComprobante.comprobantes=xThisComComprobante.list[0];xSelectViewOptionTC(0);}
-Polymer({is:'x-comp-find-comprobante',properties:{applyClass:{type:String,value:'xTextRow2 xCursor'},op:{type:Number,value:1},list:[],comprobantes:{type:Object,reflectToAttribute:true,notify:true,observer:'comprobanteNameChanged'},},comprobanteNameChanged:function(comprobante){return comprobante;},ready:function(){xThisComComprobante=this;getAllComprobantes();},getValorIncial:function(comprobante){this.fire('getValorIncialx',{values:comprobante});},getValorSelecionado:()=>{return xThisComComprobante.comprobantes;},reloadAllComprobantes:()=>{getAllComprobantes();},reset:()=>{resetListComprobante()}})</script>
+Polymer({is:'x-comp-find-comprobante',properties:{applyClass:{type:String,value:'xTextRow2 xCursor'},op:{type:Number,value:1},list:[],comprobantes:{type:Object,reflectToAttribute:true,notify:true,observer:'comprobanteNameChanged'},showicons:{type:Boolean,value:true,reflectToAttribute:true,notify:true,}},comprobanteNameChanged:function(comprobante){return comprobante;},ready:function(){xThisComComprobante=this;getAllComprobantes();},getValorIncial:function(comprobante){this.fire('getValorIncialx',{values:comprobante});},getValorSelecionado:()=>{return xThisComComprobante.comprobantes;},reloadAllComprobantes:()=>{getAllComprobantes();},reset:()=>{resetListComprobante()}})</script>
 </dom-module>
