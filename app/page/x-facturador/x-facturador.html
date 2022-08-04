@@ -17,7 +17,6 @@
 <p>Emite comprobantes electronicos personalizados. Es decir el concepto y los montos no tienen que ser previamente registrados. <img ondblclick="xSeeFechaManual()" class="xDerecha" src="../../../images/candado.png" width="16px"></p>
 </div>
 <div class="xContentCard" style="height:100%">
-<input type="date" class="xMiInput xfont17 xDerecha" hidden$="[[!fecha_manual]]" style="width:200px" id="txt_fecha" enlinea>
 <p class="bold xColorRow_Plomo">Comprobante</p>
 <div class="container-cliente">
 <div id="form_pago_cliente_fac">
@@ -189,8 +188,8 @@ async function xMandarCocinarImpresionComprobante(correlativo,_idregistro){if(!x
 if(rptDoc.ok=false){alert(rptDoc.msj);return;}
 if(impresoraSelect.idimpresora===-1){const hash=rptDoc[0]?rptDoc[0].hash:rptDoc.hash;if(hash==='www.papaya.com.pe'){xPopupLoad.xclose();alert('Error con la conexion al servicio de Sunat. No puede descargar el pdf. Pero si puede imprimirlo. Este comprobante sera enviado a sunat al cerrar caja.');return;}
 xThisFacturador.cpe_show=true;xSoapSunat_DownloadFile('pdf',rptDoc[0].external_id);xPopupLoad.xclose();return;}else{xThisFacturador.cpe_show=true;xLLamarPrintFac();}}
-function xNuevoFac(){xThisFacturador.cpe_show=false;_arrCliente=[];_arrItems=[];_arrTotal=[];const _compFindComprobante=document.getElementById('compFindComprobante');_compFindComprobante.reset();xThisFacturador.$.selectFormaPago.selectedIndex=0;xThisFacturador.isShowFechaPagoCredito=false;comprobanteFormaPago={forma_de_pago:'Contado',fecha_de_pago:''}
-xThisFacturador.arrItems=JSON.parse(JSON.stringify(_arrItems));xThisFacturador.arrTotales=JSON.parse(JSON.stringify(_arrTotal));xNuevoCliente();$('#contentClie').addClass('xInvisible');txt_ruc.value='';}
+function xNuevoFac(){xThisFacturador.cpe_show=false;_arrCliente=[];_arrItems=[];_arrTotal=[];xThisFacturador.$.selectFormaPago.selectedIndex=0;xThisFacturador.isShowFechaPagoCredito=false;comprobanteFormaPago={forma_de_pago:'Contado',fecha_de_pago:''}
+xThisFacturador.arrItems=JSON.parse(JSON.stringify(_arrItems));xThisFacturador.arrTotales=JSON.parse(JSON.stringify(_arrTotal));xNuevoCliente();txt_ruc.value='';}
 function xLLamarPrintFac(){let xSetImpresora=xm_log_get('sede_generales');xSetImpresora[0].ip_print=impresoraSelect.ip;xSetImpresora[0].var_margen_iz=impresoraSelect.var_margen_iz;xSetImpresora[0].var_size_font=impresoraSelect.var_size_font
 xSetImpresora[0].local=impresoraSelect.local;xSetImpresora[0].num_copias=impresoraSelect.num_copias;xSetImpresora[0].papel_size=impresoraSelect.papel_size;xImprimirComprobanteAhoraPrintPreSelect(rptDoc,itemsConEstructuraPrint,_arrTotal,arr_comprobante,_arrCliente,xSetImpresora,function(rpt_print){if(rpt_print==false){return false;}
 xPopupLoad.titulo="Imprimiendo...";xPopupLoad.xopen();setTimeout(function(){xPopupLoad.xclose()},3000);xPopupLoad.xclose();});}
