@@ -21,6 +21,7 @@
 				INNER join us_cpc as u on s.idus_cpc=u.idus_cpc
 				left join sede se on se.id_api_comprobante = s.userid
 				where u.idusuario=$u and s.estado=0
+				GROUP by s.idus_cpc_sedes
 				ORDER BY razonsocial, nomsede, ciudad
 			";
 			$bd->xConsulta($sql);
