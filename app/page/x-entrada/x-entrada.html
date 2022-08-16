@@ -1,0 +1,254 @@
+<dom-module id="x-entrada">
+    <script src="../../view/item_pedido_print_comprobante.js"></script>
+    <script rel="prefetch" type="text/javascript" src="../../view/socket.service.p.js"></script>
+
+	<template is="dom-bind">        
+        <div class="content-ticket-rapido mt-2">
+            <div class="d-flexx justify-content-between align-items-center">
+                <p class="fw-600 fs-16 text-center">Ticket Rápido</p>
+                <select id="selSeccionesTicket" class="selected-template-1" style="max-width: 170px;" onchange="xChangeSeccionTicket(this)">
+                    <template is="dom-repeat" items="{{listSeccionesTicket}}" as="item">
+                        <option value="[[index]]">[[item.descripcion]] </option>
+                    </template>				
+                </select>
+            </div>
+            <br><div class="xLinea2"></div><br>
+
+            <div>
+                <template is="dom-repeat" items="{{listItemsTicketEntrada}}" as="item">
+                    <div class="item-ticket">
+                        <div data-index="[[index]]" onclick="xAddItemTicket(this, 1)" class="w-100">
+                            <p class="pl-2 noselect">{{item.descripcion}} | {{item.precio}}</p>
+                        </div>
+                        <div class="cantidad-ticket">                            
+                            <div class="btn-ticket menos noselect" data-index="[[index]]" onclick="xAddItemTicket(this, 0)">-</div>
+                            <div class="pl-1 pr-1 noselect">{{ item.cantidad_seleccionada }}</div>
+                            <div class="btn-ticket mas noselect" data-index="[[index]]" onclick="xAddItemTicket(this, 1)">+</div>
+                        </div>
+                    </div>
+                </template>			
+
+                <!-- total -->                
+                <div class="total-ticket">
+                    <div class="importe-total">
+                        <p class="text-secondary mr-2 fs-18 noselect">Total</p>
+                        <p class="fw-600 fs-26 noselect"> {{importeTotalTicketEntrada}}</p>
+                    </div>
+                </div>	
+                <br><div class="xLinea2"></div><br>
+
+                <!-- boton accion -->
+                <div class="text-right">
+                    <button class="btn btn-success fs-18" disabled$="[[ !isShowBtnTicketEntrada ]]" onclick="xSaveTicketEntrada()">Listo Registrar</button>
+                </div>
+            </div>
+        </div>
+	</template>
+    <style>
+        .content-ticket-rapido {
+            max-width: 450px;
+            margin: 0 auto;
+            padding: 10px;
+            height: calc(100vh - 110px);
+            background: #e8e8e8;
+        }
+        .item-ticket {
+            font-size: 12px;
+            display: flex;
+            justify-content: space-between;
+            background: #f6f6f6;
+            border-radius: 5px;
+            margin-bottom: 3px;
+            font-weight: 600;
+            align-items: center;
+            cursor: pointer;
+        }
+
+        .item-ticket:hover {
+            background: #fafaa4;
+        }
+
+        .item-ticket .cantidad-ticket {
+            display: flex;
+            justify-content: space-between;
+            font-size: 25px;
+            align-items: center;
+        }
+
+        .cantidad-ticket .btn-ticket{
+            padding: 10px;
+        }
+
+        .cantidad-ticket .btn-ticket.menos:hover{
+            background: #ffaaaa;
+        }
+
+        .cantidad-ticket .btn-ticket.mas{
+            border-radius: 0px 5px 5px 0px;
+        }
+
+        .cantidad-ticket .btn-ticket.mas:hover{
+            background: #9ef3b4;
+        }
+
+        .total-ticket {
+            display: flex;
+            flex-direction: row-reverse;
+            align-items: center;
+        }
+
+        .total-ticket .importe-total {
+            display: flex;
+            padding: 10px;            
+            background: #d0d0d0;
+            border-radius: 5px;
+            margin-top: 5px;
+        }
+
+    </style>
+	<script>
+		var xThisEntrada;
+
+		function xIniTicketEntrada() {
+			$.ajax({
+					type: 'POST',
+					url: '../../bdphp/log_componentes.php?op=2002'					
+				})
+				.done(function (dtValues) {
+					dtValues = JSON.parse(dtValues);
+                    xThisEntrada.listSeccionesTicket = dtValues.datos;
+
+                    let _indexSelectedInit = 0;
+                    let _seccionEntradaTicket = null;
+                    xThisEntrada.listSeccionesTicket.map((x, i) => {
+                        if ( x.descripcion.toLowerCase() === 'ticket entrada' ) {                           
+                            _indexSelectedInit = i;
+                            _seccionEntradaTicket = x;
+                            return;
+                        }
+                    });
+
+                    setTimeout(() => {                    
+                        if ( _seccionEntradaTicket ) {
+                            xThisEntrada.seccionSelectedInti = _seccionEntradaTicket;
+                            selSeccionesTicket.selectedIndex = _indexSelectedInit;                            
+                            xGetItemsSeccionTicket(_seccionEntradaTicket.idseccion);
+                        }
+                    }, 700);
+				});
+		}
+
+
+        function xChangeSeccionTicket() {
+            const index = xThisEntrada.$.selSeccionesTicket.value;
+			const _seccionSelectedTicket = xThisEntrada.listSeccionesTicket[index];
+            xGetItemsSeccionTicket(_seccionSelectedTicket.idseccion);
+        }
+
+        function xGetItemsSeccionTicket(_idseccion) {
+            $.ajax({
+					type: 'POST',
+					url: '../../bdphp/log_componentes.php?op=22',
+                    data: {idseccion: _idseccion}
+				})
+                .done(res => {
+                    res = JSON.parse(res);
+                    xThisEntrada.listItemsTicketEntrada = res.datos;
+                    xNewListTicketEntrada();
+                });
+        }
+
+        function xNewListTicketEntrada() {
+            xThisEntrada.listItemsTicketEntrada.map( x => {
+                x.cantidad_seleccionada = 0;
+                x.total = 0;
+            });
+
+            xThisEntrada.importeTotalTicketEntrada = 0;
+            xThisEntrada.isShowBtnTicketEntrada = false;
+
+            xThisEntrada.listItemsTicketEntrada = JSON.parse(JSON.stringify(xThisEntrada.listItemsTicketEntrada));         
+        }
+
+        function xAddItemTicket(obj, suma) {                        
+            let itemTicketSelected = xThisEntrada.listItemsTicketEntrada[obj.dataIndex];
+            if ( suma == 1 ) {
+                itemTicketSelected.cantidad_seleccionada++;
+            } else {
+                itemTicketSelected.cantidad_seleccionada = itemTicketSelected.cantidad_seleccionada === 0 ? 0 : itemTicketSelected.cantidad_seleccionada - 1;
+            }
+            xThisEntrada.listItemsTicketEntrada = JSON.parse(JSON.stringify(xThisEntrada.listItemsTicketEntrada));         
+            xSumTotalTicketEntrada();
+        }    
+        
+        function xSumTotalTicketEntrada() {
+            xThisEntrada.listItemsTicketEntrada = xThisEntrada.listItemsTicketEntrada.map(x => {
+                x.total = parseFloat(x.precio) * parseFloat(x.cantidad_seleccionada); 
+                return x;
+            })            
+            xThisEntrada.importeTotalTicketEntrada = parseFloat(xThisEntrada.listItemsTicketEntrada.map(x => x.total).reduce((a,b) => a + b , 0)).toFixed(2);            
+            xThisEntrada.isShowBtnTicketEntrada = xThisEntrada.importeTotalTicketEntrada > 0;
+        }
+
+        function xSaveTicketEntrada() {          
+            const _listSend = xThisEntrada.listItemsTicketEntrada.filter(x => x.cantidad_seleccionada > 0);
+            xPopupLoad.xopen();            
+            $.ajax({
+					type: 'POST',
+					url: '../../bdphp/log_componentes.php?op=2201',
+                    data: {items: _listSend, total: xThisEntrada.importeTotalTicketEntrada}
+				})
+                .done(res => {
+                    res = JSON.parse(res)
+                    const _correlativo = res.datos[0].correlativo;
+                    xCocinarImpresionTicketEntrada(_correlativo);
+
+                    setTimeout(() => {
+                        xPopupLoad.xclose();                                                
+                    }, 700);
+                });
+        }
+
+        function xCocinarImpresionTicketEntrada(_correlativo) {
+            const _listSend = xThisEntrada.listItemsTicketEntrada.filter(x => x.cantidad_seleccionada > 0);
+            const _arrTotales = [{descripcion: 'Total', importe: xThisEntrada.importeTotalTicketEntrada }];
+            
+            const printer = xgetImpresoraById(xThisEntrada.seccionSelectedInti.idimpresora);                        
+            if ( !printer ) {return; }
+            const _dataPrintD = {
+                lista : _listSend,
+                impresora: printer,
+                subtotales: _arrTotales,
+                encabezado: {
+                    correlativo_dia: xCeroIzq(_correlativo,5),
+                }
+            }
+
+            xImprimirCualquierLista(_dataPrintD, 7, 'ticket');
+
+            xNewListTicketEntrada();
+        }
+
+
+		Polymer({
+			is: 'x-entrada',
+			properties: {
+				listSeccionesTicket: [],
+                seccionSelectedInti: [],
+                listItemsTicketEntrada:[],
+                importeTotalTicketEntrada: Number,
+                isShowBtnTicketEntrada: Boolean
+			},
+			attached: function () {
+                this.isShowBtnTicketEntrada = false;
+				xThisEntrada = this;
+				xIniTicketEntrada();
+                _cpSocketOpen(); // conectamos para mandar a imprimir
+			},
+            detached: () => {
+                _cpSocketClose();
+            }
+		})
+	</script>
+
+</dom-module>

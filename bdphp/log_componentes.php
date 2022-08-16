@@ -14,6 +14,7 @@
 
     $g_ido = isset($_SESSION['ido']) ? $_SESSION['ido'] : 0;
     $g_idsede = isset($_SESSION['idsede']) ? $_SESSION['idsede'] : 0;
+    $g_idusuario = isset($_SESSION['idusuario']) ? $_SESSION['idusuario'] : 0;
     
     switch($_GET['op'])
     {
@@ -226,6 +227,22 @@
         
         case 21: // componente meta
             $sql = "call procedure_get_meta($g_idsede)";
+            $bd->xConsulta($sql);
+            break;
+
+        // ticket rapidos
+        case 22:
+            $idseccion = $_POST["idseccion"];
+            $sql="select i.iditem, cl.idcarta_lista, i.descripcion, cl.precio, cl.cantidad from carta_lista cl 
+            inner join item i on cl.iditem = i.iditem
+            where idseccion = $idseccion and i.estado = 0 and cl.estado = 0";
+            $bd->xConsulta($sql);
+            break;
+
+        case 2201: // guarda ticket rapido
+            $items = json_encode($_POST["items"]);
+            $total = $_POST["total"];
+            $sql="call procedure_ticket_rapido($g_idsede, $g_idusuario, $total, '$items')";
             $bd->xConsulta($sql);
             break;
     }
