@@ -1477,7 +1477,7 @@
 				break;
 
 			case 2202: // lista de encuestas activas
-				$sql="select esc.idencuesta_sede_conf, esc.nombre, esc.fecha_creacion from encuesta_sede_conf esc where idsede = 1 and estado = 0";
+				$sql="select esc.idencuesta_sede_conf, esc.nombre, esc.fecha_creacion from encuesta_sede_conf esc where idsede = $g_idsede and estado = 0";
 				$bd->xConsulta($sql);
 				break;
 		
@@ -1493,7 +1493,7 @@
 				order by ep.idencuesta_pregunta asc";
 
 
-				$sqlCount = "SELECT count(idsede_calificacion) as d1 from sede_calificacion where idsede = 13";
+				$sqlCount = "SELECT count(idsede_calificacion) as d1 from sede_calificacion where idsede = $g_idsede";
 				
 				$bd->xConsulta($sql);
 				break;
