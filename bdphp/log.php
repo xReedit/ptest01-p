@@ -1501,6 +1501,7 @@
 			// no aumenta porque borramos el procedimiento almacenado
 			// 19102018 -- estara en la pagina pedido borrados - para restablecer o no stock
 			$arrIE=$_POST['xarr'];
+			$isRecuperarStock = isset($_POST['xisRecuperarStock']) ? $_POST['xisRecuperarStock'] : '0';
 
 			$tabla_procede=$arrIE['procede'];
 			$idpedido_detalle=$arrIE['idpedido_detalle'];
@@ -1509,13 +1510,21 @@
 			$iditem=$arrIE['iditem'];
 			$idcarta_lista=$arrIE['idcarta_lista'];
 			$precio_total_item=$arrIE['precio_total'];
-			$precio_unitario_item=$arrIE['precio_unitario'];
+			$precio_unitario_item=$arrIE['precio_unitario'];			
 
 			$sql_pedido='';
 			$sql_pedido_detalle='';
 
 			//registra pedido borrado
-			$sqlpedido_borrado="insert into pedido_borrados (idpedido,idpedido_detalle,iditem,idcarta_lista,idusuario,idusuario_permiso,importe,fecha,hora,procede_tabla, fecha_cierre) values(".$idpedido.",".$idpedido_detalle.",".$iditem.",".$idcarta_lista.",".$_POST["u"].",".$_SESSION['idusuario'].",".$precio_unitario_item.",'".$fecha_now."','".$hora_now."',".$tabla_procede.", ''); ";
+			$sqlpedido_borrado="insert into pedido_borrados (idpedido,idpedido_detalle,iditem,idcarta_lista,idusuario,idusuario_permiso,importe,fecha,hora,procede_tabla, fecha_cierre, cantidad) 
+											values(".$idpedido.",".$idpedido_detalle.",".$iditem.",".$idcarta_lista.",".$_POST["u"].",".$_SESSION['idusuario'].",".$precio_unitario_item.",'".$fecha_now."','".$hora_now."',".$tabla_procede.", '', 1); ";
+
+			$lastIdPedidoBorrado = $bd->xConsulta_UltimoId($sqlpedido_borrado);
+
+			if ( $isRecuperarStock == '1' ) { // si se recupera stock 160822
+				$sql_recuperar = "update pedido_borrados set estado=2 where idpedido_borrados = $lastIdPedidoBorrado";
+				$bd->xConsulta_NoReturn($sql_recuperar);
+			}
 
 			//descuenta en pedido_detalle
 			$campo_precio='';
@@ -1530,9 +1539,11 @@
 			//descuenta
 			//ejecutar
 			//$sql_ejecuta=$sql_pedido.$sql_pedido_detalle.$sql_porcion.$sq_carta_lista.$sql_almacen;
-			$sql_ejecuta=$sql_pedido.$sql_pedido_detalle.$sqlpedido_borrado; //.$sql_porcion.$sq_carta_lista.$sql_almacen;
+			$sql_ejecuta=$sql_pedido.$sql_pedido_detalle; //.$sqlpedido_borrado; //.$sql_porcion.$sq_carta_lista.$sql_almacen;
 			// print $sql_ejecuta;
 			$bd->xMultiConsulta($sql_ejecuta);
+
+			// echo $sql_recuperar;
 
 			break;
 		case 305:	//load pedido desde mi pedido
@@ -2121,6 +2132,8 @@
 			$sql_pdt='';
 			$id_pedidos_anular='';
 			$motivo_anular=$_POST['xMotivo'];
+			$isRecuperarStock = isset($_POST['xisRecuperarStock']) ? $_POST['xisRecuperarStock'] : '0';
+
 
 			//$count_filas_item=count($xarray_pe_anular);
 			if($xarray_pe_anular==='' || $xarray_pe_anular == []){//anular todos los pedidos
@@ -2142,10 +2155,20 @@
 			}
 
 			//registrar en pedidos_borrados.// en este caso los sub item se borran de los pedidos seleccionados
-			$sqlpedido_borrado="insert into pedido_borrados (idpedido,idpedido_detalle,iditem,idcarta_lista,idusuario,idusuario_permiso,importe,fecha,hora,procede_tabla) SELECT idpedido,idpedido_detalle,iditem,idcarta_lista,".$_SESSION["idusuario"].",".$_POST['u'].",IF(ptotal*1=0,ptotal_r,ptotal),'".$fecha_now."','".$hora_now."', procede_tabla FROM pedido_detalle WHERE ".$condicion_pdb."; ";
+			$sqlpedido_borrado="insert into pedido_borrados (idpedido,idpedido_detalle,iditem,idcarta_lista,idusuario,idusuario_permiso,importe,fecha,hora,procede_tabla, cantidad) 
+													SELECT idpedido,idpedido_detalle,iditem,idcarta_lista,".$_SESSION["idusuario"].",".$_POST['u'].",IF(ptotal*1=0,ptotal_r,ptotal),'".$fecha_now."','".$hora_now."', procede_tabla, cantidad 
+													FROM pedido_detalle WHERE ".$condicion_pdb."; ";
+
+			$bd->xConsulta_NoReturn($sqlpedido_borrado);
+			
+			
+			if ( $isRecuperarStock == '1' ) { // si se recupera stock 160822
+				$sql_recuperar = "update pedido_borrados set estado=2 where idpedido in ($id_pedidos_anular)";
+				$bd->xConsulta_NoReturn($sql_recuperar);
+			}
 
 			//print $sql_todos.$sql_change_de.$sql_pdt.$sqlpedido_borrado.$sql_historial_rp;
-			$bd->xMultiConsulta($sql_todos.$sql_change_de.$sql_pdt.$sqlpedido_borrado.$sql_historial_rp);
+			$bd->xMultiConsulta($sql_todos.$sql_change_de.$sql_pdt.$sql_historial_rp);
 			/////////
 			break;
 		///////////////
@@ -2809,9 +2832,9 @@
 				SELECT i.iditem, concat(IFNULL(s.descripcion,'----'),' | ',i.descripcion) AS descripcion, i.precio, i.costo, format(i.precio-i.costo,2) as rentabilidad
 				FROM item as i
 					left JOIN carta_lista AS cl using(iditem)
-					left JOIN seccion AS s using(idseccion)
-				WHERE (i.idorg=".$g_ido." AND i.idsede=".$g_idsede.") and i.estado=0
-				ORDER BY IFNULL(s.descripcion,'----'),i.descripcion
+					inner JOIN seccion AS s using(idseccion)
+				WHERE (i.idsede=".$g_idsede.") and i.estado=0
+				ORDER BY s.descripcion,i.descripcion
 			";
 			$bd->xConsulta($sql);
 			break;
