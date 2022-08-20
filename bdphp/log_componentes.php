@@ -245,4 +245,16 @@
             $sql="call procedure_ticket_rapido($g_idsede, $g_idusuario, $total, '$items')";
             $bd->xConsulta($sql);
             break;
+        case 2202: //resumen ticket
+            $sql = "select i.descripcion, i.precio, sum(trd.cantidad) cantidad, format(sum(trd.total), 2) total  from ticket_rapido tr 
+            inner join ticket_rapido_detalle trd on tr.idticket_rapido = trd.idticket_rapido 
+            inner join item i on trd.iditem = i.iditem 
+            where tr.idsede = $g_idsede and tr.idusuario = $g_idusuario and tr.cierre = '0'
+            GROUP BY trd.iditem";
+            $bd->xConsulta($sql);
+            break;
+        case 2203: //cerrar resumen
+            $sql = "update ticket_rapido tr set tr.cierre = '1', fecha_cierre = now() where tr.idsede = $g_idsede and tr.idusuario = $g_idusuario and tr.cierre = '0'";
+            $bd->xConsulta($sql);
+            break;
     }
