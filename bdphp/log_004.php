@@ -342,6 +342,37 @@
 			$sql = "select idsede from sede where link_carta = '$nomCarta' and estado = 0";
 			$bd->xConsulta($sql);
 			break;
+		
+		case 17: // recibir tickes entrada caja
+			$sql = "select tt.fecha, tt.idusuario, tt.usuario, total total, CAST(CONCAT('[',GROUP_CONCAT(tt.lista),']') as json) as lista, '' fecha_guardar 
+			from (
+				select DATE_FORMAT(tr.fecha, '%d/%m/%Y') fecha, tr.idusuario, u.nombres usuario, sum(tr.total) total
+				,JSON_OBJECT('descripcion', i.descripcion , 'cantidad', sum(trd.cantidad), 'total', format(sum(trd.total),2)) lista
+				from ticket_rapido tr 
+					inner join ticket_rapido_detalle trd on tr.idticket_rapido = trd.idticket_rapido 
+					inner join item i on trd.iditem = i.iditem
+					inner join usuario u on tr.idusuario = u.idusuario				
+				where tr.idsede = $g_idsede and tr.asignada_caja = '0' and trd.iditem 
+				GROUP by DATE_FORMAT(tr.fecha, '%d/%m/%Y'), tr.idusuario, trd.iditem
+			) as tt
+			GROUP by tt.fecha, tt.usuario";
+			$bd->xConsulta($sql);
+			break;
+
+		case 1701: // aceptar pago tickes entrada
+			$data = $_POST['data'];
+			$sql = "update ticket_rapido set asignada_caja = '1' 
+					where DATE_FORMAT(fecha, '%d/%m/%Y')='".$data['fecha']."' and idusuario=".$data['idusuario'];
+			$bd->xConsulta_NoReturn($sql);
+
+			// insertamos como ingreso a caja
+			$motivo = "Tickets de Entrada - ".$data['usuario'];
+			$sql_c = "insert into ie_caja(idorg,idsede,idusuario,tipo,motivo,fecha,monto,fecha_cierre)
+					values($g_idorg, $g_idsede, $g_idusuario,1,'".$motivo."','".$data['fecha_guardar']."','".$data['total']."','')";
+
+			$bd->xConsulta($sql_c);
+			// echo $sql;
+			break;
 	}
 
 ?>

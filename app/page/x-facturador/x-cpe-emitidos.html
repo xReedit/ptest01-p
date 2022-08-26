@@ -3,6 +3,8 @@
 <dom-module id="x-cpe-emitidos">
 <script type="text/javascript" src="../../view/socket.master.service.js"></script>
 <script type="text/javascript" src="../../view/socket.service.p.js"></script>
+<script src="../../view/xApiConsultaSunat.js"></script>
+<script src="../../view/httpFech.js"></script>
 <template is="dom">
 <paper-dialog class="dialog_redondo" id="dialog_enviando_sunat" style="width:245px" modal entry-animation="scale-up-animation" exit-animation="fade-out-animation">
 <div style="text-align:center">
@@ -72,7 +74,7 @@ que se emitieron en modo offline ó los que por algún motivo en su momento no s
 Sunat.<br>Este proceso es el mismo que se realiza al cierre de caja.</p>
 <div class="d-flexx">
 <button class="xBoton2 xAzul mr-2" onclick="xEnviarResumenBoletas()">Enviar Resumen de boletas</button>
-<button class="xBoton2 xVerde" onclick="xGenerarReporteExcel()" title="Bajar a excel"><img src="../../../images/excel.png" alt=""></button>
+<button class="xBoton2 xVerde" onclick="downloadReporteCPEEmitidos()" title="Bajar a excel"><img src="../../../images/excel.png" alt=""></button>
 </div>
 <p id="xTituloRpt" class="xColorRow_Rojo"></p>
 </div>
@@ -219,13 +221,12 @@ Sunat.<br>Este proceso es el mismo que se realiza al cierre de caja.</p>
 <div id="reporte" class="xInvisible">
 <table id="testTable" width="100%">
 <caption>
-<h1>[[nom_sede]]</h1>
-<h2>Reporte de comprobantes emitidos</h2>
+<h1>{{selEstablecimientoCpe.nomsede}} | {{selEstablecimientoCpe.ciudad}}</h1>
+<h2>Reporte de comprobantes electronicos - {{selMesCPE}}</h2>
 </caption>
 <thead>
 <th width="45px">#</th>
 <th width="15%">f. Emision</th>
-<th width="15%">H. Emision</th>
 <th>Tipo</th>
 <th>Numero</th>
 <th width="35%">Cliente</th>
@@ -233,22 +234,22 @@ Sunat.<br>Este proceso es el mismo que se realiza al cierre de caja.</p>
 <th align="right">Sub total</th>
 <th align="right">I.G.V</th>
 <th align="right">Total</th>
-<th>Estado</th>
+<th>Estado Sistema</th>
 </thead>
 <tbody>
 <template is="dom-repeat" items="{{ListReporte}}" as="row">
 <tr>
 <td>{{displayIndex(index)}}</td>
-<td>{{row.fecha}}</td>
-<td>{{row.hora}}</td>
-<td>{{row.nom_comprobante}}</td>
-<td>{{row.numero }}</td>
-<td>{{row.nomcliente}}</td>
-<td>{{row.ruc}}</td>
-<td>{{row.subtotal}}</td>
-<td>{{row.igv}}</td>
-<td>{{row.total}}</td>
-<td style$="{{row.style_reporte}}">{{row.nom_estado}}</td>
+<td style$="{{row.style_td}}">{{row.fecha}}</td>
+<td style$="{{row.style_td}}">{{row.tipo_doc}}</td>
+<td style$="{{row.style_td}}">{{row.num_doc }}</td>
+<td style$="{{row.style_td}}">{{row.nom_cliente}}</td>
+<td style$="{{row.style_td}}">{{row.ruc}}</td>
+<td style$="{{row.style_td}}">{{row.subtotal}}</td>
+<td style$="{{row.style_td}}">{{row.igv}}</td>
+<td style$="{{row.style_td}}">{{row.total}}</td>
+<td style$="{{row.style_reporte}}">{{row.estado}}</td>
+<td style$="{{row.style_estado_sunat}}">{{row.estadoCp}}</td>
 </tr>
 </template>
 </tbody>
@@ -264,8 +265,8 @@ Sunat.<br>Este proceso es el mismo que se realiza al cierre de caja.</p>
 <script rel="preload" type="text/javascript" src="../../view/xSOAPSunat.js"></script>
 <script rel="preload" type="text/javascript" src="../../view/cpe_interno.js"></script>
 <script type="text/javascript" src="../../view/export.excel.js"></script>
-<script>/*<![CDATA[*/var xThisCpe,lastPos=0,xPopupLoad,p_upadate=true,p_rows_re=0,p_rows=0,p_fecha='',p_filter='',p_desde=0,data_pagination={},data_pagination_re={},xdebounce,xe_debounce=false,index_anular;var cpe_mes_anterior='',cpe_yy_actual='',_us_cpe='',external_id_cpe;function xExportarExcel(){tableToExcel('testTable','Comprobantes');}
-function xIniCpe(){xThisCpe.ListCpe=[];xThisCpe.ListCpeResumen=[];xCPE_getMesYYActual();xCPEValidUs();xLoadCpeEmitidos('6');xIniPagination();setTimeout(()=>{$('body').addClass('loaded');txt_fecha.valueAsDate=new Date();},500);xThisCpe.$.paginator.addEventListener('page-limit-change',(e)=>{data_pagination=e.detail.value;p_desde=data_pagination.pageDesde;lastPos=$(window).scrollTop();xApplyFilterDate();});$("#txt_fecha").on('change',function(){xThisCpe.$.paginator.currentPage=1;xApplyFilterDate();});$("#tab_cpe").on('iron-select',function(){switch(xThisCpe.selected){}});xListRe_ini();}
+<script>/*<![CDATA[*/var xThisCpe,lastPos=0,xPopupLoad,p_upadate=true,p_rows_re=0,p_rows=0,p_fecha='',p_filter='',p_desde=0,data_pagination={},data_pagination_re={},xdebounce,xe_debounce=false,index_anular;var cpe_mes_anterior='',cpe_yy_actual='',_us_cpe='',external_id_cpe,_apiConsultaCpeCPE,listCpeSuccessCPE=[];function xExportarExcel(){tableToExcel('testTable','Comprobantes');setTimeout(()=>{xPopupLoad.xclose();},500);}
+function xIniCpe(){xThisCpe.ListCpe=[];xThisCpe.ListCpeResumen=[];xCPE_getMesYYActual();xCPEValidUs();xLoadCpeEmitidos('6');xIniPagination();_apiConsultaCpeCPE=new apiConsulaCpe();setTimeout(()=>{$('body').addClass('loaded');txt_fecha.valueAsDate=new Date();},500);xThisCpe.$.paginator.addEventListener('page-limit-change',(e)=>{data_pagination=e.detail.value;p_desde=data_pagination.pageDesde;lastPos=$(window).scrollTop();xApplyFilterDate();});$("#txt_fecha").on('change',function(){xThisCpe.$.paginator.currentPage=1;xApplyFilterDate();});$("#tab_cpe").on('iron-select',function(){switch(xThisCpe.selected){}});xListRe_ini();}
 function xApplyFilterDate(){var d=$(txt_fecha).val().split('-');p_fecha=d[1]===undefined?'':'01/'+d[1]+'/'+d[0];xLoadCpeEmitidos('6');xResumenMesTotaleCpe();}
 function xResumenMesTotaleCpe(){$.ajax({type:'POST',url:'../../bdphp/log_002.php',data:{op:'602',fecha_mes:p_fecha}}).done(function(res){res=JSON.parse(res);xThisCpe.listResumenCpeEmitidos=res.datos;const _totalImporteCpe=xThisCpe.listResumenCpeEmitidos.map(x=>parseFloat(x.total.replace(/,/g,''))).reduce((a,b)=>a+b,0);xThisCpe.listResumenCpeEmitidosTotal=numeroConComas(_totalImporteCpe.toFixed(2));});}
 function xIniPagination(){xThisCpe.$.paginator.currentPage=1;xThisCpe.$.paginator.pageRows=p_rows;xThisCpe.$.paginator.listRows=[10,20,30,40];}
@@ -299,4 +300,12 @@ function openSendWhatsApp(obj){const index=obj.parentElement.dataId;external_id_
 $('#div-btns-wsp').removeClass('xInvisible');txt_wtp.value='';dialog_send_whatsapp.open();}
 function xChangeNumWhatsApp(obj){xThisCpe.showBtnSendWhatsapp=obj.value.length>8;}
 function sendCPEWhatsApp(){const _payloadPdf={telefono:txt_wtp.value,external_id:external_id_cpe,numero_comprobante:xThisCpe.numComprobanteSelected,comercio:xm_log_get('datos_org_sede')[0].sedenombre};$(dgl_loading_whatsapp).removeClass('xInvisible');$('#div-btns-wsp').addClass('xInvisible');setTimeout(()=>{$(dgl_loading_whatsapp).addClass('xInvisible');dialog_send_whatsapp.close();_cpSocketComprobanteWhatApp(_payloadPdf);},3000);}
-Polymer({is:'x-cpe-emitidos',properties:{ListCpe:[],ListCpeResumen:[],ListReporte:[],listSedeUsContador:[],listResumenCpeEmitidos:[],listResumenCpeEmitidosTotal:Number,nom_sede:'',isContador:false,isReenviandoLoading:false,showBtnSendWhatsapp:false,numComprobanteSelected:String,},attached:function(){this.selected=0,this.isReenviandoLoading=false;this.showBtnSendWhatsapp=false;this.listResumenCpeEmitidosTotal=0;xThisCpe=this;xIniCpe();setTimeout(()=>{_cpSocketOpen();},1000);},detached:function(){_cpSocketClose();},displayIndex:function(index){return xCeroIzq(parseInt(p_desde)+(index+1),1);},_isEqualTo:(item)=>{return item.nom_estado==='Registrado'&&item?.json_xml?.length>1;},_isEqualToSinRegistrar:(item)=>{return item.nom_estado==='Sin Registrar'&&item?.json_xml?.length>1;},_isEqualToLoading:(item)=>{return item.isReenviandoLoading;},})/*]]>*/</script>
+async function downloadReporteCPEEmitidos(obj){const _selMes=xThisCpe.$.txt_fecha.value.split('-');var selEstablecimiento=xm_log_get('datos_org_sede')[0];xThisCpe.selMesCPE=xDesMes(parseInt(_selMes[1])-1)+' '+_selMes[0];selEstablecimiento.nomsede=selEstablecimiento.sedenombre;selEstablecimiento.ciudad=selEstablecimiento.sedeciudad;selEstablecimiento.userid=selEstablecimiento.id_api_comprobante;xThisCpe.selEstablecimientoCpe=selEstablecimiento;const _data={establecimiento:selEstablecimiento,m:_selMes[1],y:_selMes[0]}
+const rptApiToken=await _apiConsultaCpeCPE.getToken();const _apiToken=rptApiToken.access_token;var countCpeSuccess=0;xPopupLoad.titulo='Descargando...';xPopupLoad.xopen();dataListReporte=[];xThisCpe.ListReporte=[];$.ajax({type:'POST',url:'../../bdphp/log_007.php?op=2',data:{item:_data}}).done(async(res)=>{res=JSON.parse(res);if(res.error){console.log(res.error);return;}
+console.log(res.data);listCpeSuccessCPE=[];const ruc_emisor=selEstablecimiento.ruc;const _numRows=res.data.length;for(let index=0;index<_numRows;index++){var x=res.data[index];x.estado=x.tipo_doc==='FACTURA'&&parseInt(x.ruc)===0?'ANULADO':x.estado;x.style_reporte=x.estado==='ANULADO'?'color: red':'color: green';x.style_td=x.estado==='ANULADO'?'color: red':'';try{const cpeVerificado=listCpeSuccessCPE.find(c=>c.id===x.id);if(!cpeVerificado){const codComp=x.series.indexOf('F')>-1?'01':'03';const num_doc=parseInt(x.num_doc.split('-')[1]);const monto=x.total.replace(/,/g,'');const payload={header:{ruc_receptor:x.ruc,access_token:_apiToken},body:{"numRuc":ruc_emisor,"codComp":codComp,"numeroSerie":x.series,"numero":num_doc,"fechaEmision":x.fecha,"monto":monto}}
+if(selEstablecimiento.habilita_verificacion_cpe==1){const rptApiConsulta=await _apiConsultaCpeCPE.getConsulta(payload);let estado_cpe;if(rptApiConsulta?.success===true){x.success_sunat=1;estado_cpe=xEstadoCpeApi(rptApiConsulta.data.estadoCp);x.estadoCp=estado_cpe.titulo;x.style_estado_sunat='color: '+estado_cpe.color;countCpeSuccess++;listCpeSuccessCPE.push(x);}else{countCpeError++;x.success_sunat=0;x.estadoCp='Sin Respuesta';x.style_estado_sunat='color: black';xThisAdmContador.showRowsNoResponse=true;}}else{countCpeSuccess++;listCpeSuccessCPE.push(x);}}else{x=cpeVerificado;countCpeSuccess++;}
+dataListReporte.push(x);}catch(error){return;}}
+setDataListReporteCpe(dataListReporte);});}
+function setDataListReporteCpe(list){xThisCpe.ListReporte=list?list:dataListReporte
+setTimeout(()=>{xExportarExcel();},500);}
+Polymer({is:'x-cpe-emitidos',properties:{ListCpe:[],ListCpeResumen:[],ListReporte:[],listSedeUsContador:[],listResumenCpeEmitidos:[],listResumenCpeEmitidosTotal:Number,nom_sede:'',isContador:false,isReenviandoLoading:false,showBtnSendWhatsapp:false,numComprobanteSelected:String,selEstablecimientoCpe:Object,selMesCPE:String},attached:function(){this.selected=0,this.isReenviandoLoading=false;this.showBtnSendWhatsapp=false;this.listResumenCpeEmitidosTotal=0;xThisCpe=this;xIniCpe();setTimeout(()=>{_cpSocketOpen();},1000);},detached:function(){_cpSocketClose();},displayIndex:function(index){return xCeroIzq(parseInt(p_desde)+(index+1),1);},_isEqualTo:(item)=>{return item.nom_estado==='Registrado'&&item?.json_xml?.length>1;},_isEqualToSinRegistrar:(item)=>{return item.nom_estado==='Sin Registrar'&&item?.json_xml?.length>1;},_isEqualToLoading:(item)=>{return item.isReenviandoLoading;},})/*]]>*/</script>

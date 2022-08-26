@@ -127,6 +127,46 @@
 </tbody>
 </table>
 </div>
+<div hidden$="[[ !isShowListaTicketEntrada ]]">
+<br><br>
+<div class="xLinea2"></div>
+<br>
+<h3>Tickets de Entrada</h3>
+<span>Recibe este ingreso en tu caja</span>
+<br><br>
+<table>
+<thead>
+<th>Fecha</th>
+<th>Usuario</th>
+<th>Detalle</th>
+<th align="right">Total</th>
+<th></th>
+</thead>
+<tbody>
+<template is="dom-repeat" items="{{listTicketEntrada}}" as="item">
+<tr>
+<td>{{ item.fecha }}</td>
+<td>{{ item.usuario }}</td>
+<td>
+<table class="w-100 border-0">
+<template is="dom-repeat" items="{{item.lista}}" as="row">
+<tr class="border-0">
+<td class="border-0">{{ row.cantidad }}</td>
+<td class="border-0">{{ row.descripcion }}</td>
+<td align="right" class="fw-600 border-0">{{ row.total }}</td>
+</tr>
+</template>
+</table>
+</td>
+<td align="right" class="fw-600 fs-18">S/. {{ item.total }}</td>
+<td>
+<button class="btn btn-sm btn-success" data-id="[[index]]" onclick="recibirTicketEntrada(this)">Recibir</button>
+</td>
+</tr>
+</template>
+</tbody>
+</table>
+</div>
 </div>
 </div>
 <div id="cierre_caja">
@@ -232,7 +272,7 @@ function xGetDataCierre(idBitacora){$.ajax({type:'POST',url:'../../bdphp/log.php
 const arrData=JSON.parse(res.datos[0]['data']);const arrTitulo=JSON.parse(res.datos[0]['titulo']);var keyTitulo='',cIndex=0,arrX=[],arrRpt=[];arrData.map((x,i)=>{keyTitulo=Object.keys(x)[0];arrX=JSON.parse(x[keyTitulo]);if(arrX){arrRpt.push({des:arrTitulo[i].des,t1:arrTitulo[i].t1,t2:arrTitulo[i].t2,t3:arrTitulo[i].t3,visible:0,});arrX.map((z,q)=>{arrRpt[cIndex][q]=z;});cIndex++;}});xArrayCierrePrint=arrRpt;xEscribirDatosHtml();xPopupLoad.xclose();$("#btns_cierre").html('<paper-button tabindex="0" raised class="xverde" onclick="xCerrarSessionAll();"><iron-icon icon="close"></iron-icon>Cerrar terminal</paper-button>');xPermisoSupervisor=0;xIniArraysPrint();if(!isPrintCierreCaja){xVerificaSiFacturacionE();}
 xImprimirCierre(xArrayEncabezadoCierre,xArrayCierrePrint);});}
 function xLoadResumenIS(){$("#tb_resumen_ie .row").remove();$("#tb_resumen_ie").append('<tr class="row"><td colspan="5"><paper-spinner active></paper-spinner></td></tr>').trigger('create');$.ajax({type:'POST',url:'../../bdphp/log.php?op=70011'}).done(function(dtIE){var xdtIE=$.parseJSON(dtIE);var xcadena_resumen_ie='';var xCuentaRow=0;var xClassTipo='';xdtIE=xdtIE.datos;for(var i=0;i<xdtIE.length;i++){xCuentaRow++;xClassTipo='';if(xdtIE[i].tipo!=1){xClassTipo='xColorRow_Rojo';}
-xcadena_resumen_ie=String(xcadena_resumen_ie+'<tr class="row '+xClassTipo+'"><td>'+xCeroIzq(xCuentaRow,2)+'</td><td>'+xdtIE[i].fecha+'</td><td>'+xdtIE[i].des_tipo+'</td><td>'+xdtIE[i].motivo+'</td><td align="right">'+xdtIE[i].monto+'</td></tr>');};$("#tb_resumen_ie .row").remove();$("#tb_resumen_ie").append(xcadena_resumen_ie).trigger('create');});xLoadAdelantoOrdenPedido();}
+xcadena_resumen_ie=String(xcadena_resumen_ie+'<tr class="row '+xClassTipo+'"><td>'+xCeroIzq(xCuentaRow,2)+'</td><td>'+xdtIE[i].fecha+'</td><td>'+xdtIE[i].des_tipo+'</td><td>'+xdtIE[i].motivo+'</td><td align="right">'+xdtIE[i].monto+'</td></tr>');};$("#tb_resumen_ie .row").remove();$("#tb_resumen_ie").append(xcadena_resumen_ie).trigger('create');});xLoadAdelantoOrdenPedido();xLoadTicketsEntradaCaja();}
 function xLoadAdelantoOrdenPedido(){$.ajax({type:'POST',url:'../../bdphp/log_004.php?op=15'}).done(function(resAdelanto){const _resAdelanto=JSON.parse(resAdelanto).datos;xThisCaja.listAdelantoOrden=_resAdelanto;xThisCaja.isShowListaAdelantoOrden=xThisCaja.listAdelantoOrden.length>0;});}
 function xSumarTotal(){xMontoTotalCaja=0;$('.xTxtCierreCajaContenedor').find('input:text').each(function(index,element){var xValElement=$(element).val();if(xValElement!=""&&$(element).attr('data-valor')!="total"){xMontoTotalCaja+=parseFloat(xValElement);}});$('#TxtTotal').val(xMoneda(xMontoTotalCaja));}
 function xVerificar(){xMontoTotalCaja=txt_total_caja.value;$('#xTituloRpt').html('<paper-spinner active></paper-spinner>').trigger('create');const datos={totalcaja:parseFloat(xMontoTotalCaja),idusuario_supervisor:id_supervisor||0,}
@@ -284,11 +324,14 @@ function reImprimirCierreHistory(obj){const _cpe=obj.dataId;xPopupLoad.xopen()
 $.ajax({type:'POST',url:'../../bdphp/log_005.php?op=1703',data:{idprint:_cpe}}).done(function(res){var _detalle_json=JSON.parse(res).datos;_detalle_json=_detalle_json.length>0?_detalle_json[0]:_detalle_json;const _dataPrint={detalle_json:_detalle_json.detalle_json,idprint_server_detalle:_detalle_json.idprint_server_detalle+new Date().getMilliseconds(),hora:xDevolverHora(),nomUs:'Caja',nom_documento:"cuadre-caja"}
 _cpSocketprinterOnly(_dataPrint);setTimeout(()=>{xPopupLoad.xclose()},1500);});}
 function recibirAdelanto(obj){const indexList=obj.dataId;const item=xThisCaja.listAdelantoOrden[indexList];item.fecha_guardar=xDevolverFecha()+' '+xDevolverHora();$.ajax({type:'POST',url:'../../bdphp/log_004.php?op=1501',data:{data:item}}).done(function(res){xLoadResumenIS();});}
+function recibirTicketEntrada(obj){const indexList=obj.dataId;const item=xThisCaja.listTicketEntrada[indexList];item.fecha_guardar=xDevolverFecha()+' '+xDevolverHora();$.ajax({type:'POST',url:'../../bdphp/log_004.php?op=1701',data:{data:item}}).done(function(res){xLoadResumenIS();});}
 function xOpenDialogPermisoRemotoUs(){txt_total_tengo.value=txt_total_caja.value;dialog_permiso_remoto.open();}
+function xLoadTicketsEntradaCaja(){$.ajax({type:'POST',url:'../../bdphp/log_004.php?op=17'}).done(function(res){const _resListTickes=JSON.parse(res).datos;xThisCaja.isShowListaTicketEntrada=_resListTickes?_resListTickes.length>0:false;xThisCaja.listTicketEntrada=_resListTickes.map(x=>{x.lista=JSON.parse(x.lista);x.total=parseFloat(x.total).toFixed(2)
+return x;});});}
 function xLoadUsAdminPermiso(){$.ajax({type:'POST',url:'../../bdphp/log.php?op=70112'}).done(function(res){xThisCaja.listUsAdmin=JSON.parse(res).datos;selectedUsAdmin(null,0);});}
 function selectedUsAdmin(obj,index=null){if(index!==null){idUsAdminPermiso=xThisCaja.listUsAdmin[index].idusuario;return;}
 idUsAdminPermiso=xThisCaja.listUsAdmin[obj.selectedIndex].idusuario;}
 function xEnviarPermisoRemoto(){$.ajax({type:'POST',url:'../../bdphp/log.php?op=70113',data:{idus:idUsAdminPermiso,importe:txt_total_tengo.value}}).done(function(res){$('#div_espera_rpt').removeClass('xInvisible');dialog_permiso_remoto.close();});}
 function xCajaResPermisoRemoto(res){if(res.idusuario_solicita!==xIdUsuario){return;}
 xThisCaja.rowRptSolicitud=res;$('#div_espera_rpt').addClass('xInvisible');$('#div_rpt_solicitud').removeClass('xInvisible');}
-Polymer({is:'x-caja',properties:{xt_org:Number,xt_idsede:Number,xt_idus:Number,winchaCierre:[],listCierres:[],listUsAdmin:[],isShowLastCierres:Boolean,listAdelantoOrden:[],isShowListaAdelantoOrden:Boolean,isShowEsperaRptSolicitudCierre:Boolean,isShowRptSolicitudCierre:Boolean,rowRptSolicitud:[]},attached:function(){this.selected=0;this.isShowLastCierres=false;this.isShowListaAdelantoOrden=false;this.isShowEsperaRptSolicitudCierre=false;this.isShowRptSolicitudCierre=false;xThisCaja=this;xIniCaja();setTimeout(()=>{_cpSocketOpen();},1000);},detached:function(){_cpSocketClose();}})/*]]>*/</script>
+Polymer({is:'x-caja',properties:{xt_org:Number,xt_idsede:Number,xt_idus:Number,winchaCierre:[],listCierres:[],listUsAdmin:[],isShowLastCierres:Boolean,listAdelantoOrden:[],listTicketEntrada:[],isShowListaAdelantoOrden:Boolean,isShowEsperaRptSolicitudCierre:Boolean,isShowRptSolicitudCierre:Boolean,isShowListaTicketEntrada:Boolean,rowRptSolicitud:[]},attached:function(){this.selected=0;this.isShowLastCierres=false;this.isShowListaAdelantoOrden=false;this.isShowEsperaRptSolicitudCierre=false;this.isShowRptSolicitudCierre=false;this.isShowListaTicketEntrada=false;xThisCaja=this;xIniCaja();setTimeout(()=>{_cpSocketOpen();},1000);},detached:function(){_cpSocketClose();}})/*]]>*/</script>
