@@ -1,6 +1,7 @@
 <?php
 session_start(); 
 header("Cache-Control: no-cache,no-store"); 
+header('Content-Type: text/html; charset=UTF-8');
 include 'ManejoBD.php';
 include 'excel_reader.php';     // include the class
 
@@ -45,7 +46,7 @@ function sheetDataProductos($sheet) {
 
   $idorg = $_SESSION['ido'];
   $idsede = $_SESSION['idsede'];
-  
+
 
   while($x <= $sheet['numRows']) {      
     $y = 1;
@@ -62,8 +63,11 @@ function sheetDataProductos($sheet) {
       // echo $cell;
 
       if($cell!=''){        
-        $cell=utf8_decode($cell);
-        $cell=str_replace('?','N',$cell);        
+        // $cell=utf8_encode($cell);
+        $cell= eliminar_tildes($cell);
+        $cell=str_replace("'","",$cell);        
+
+        // $cell = utf8_encode(utf8_decode($cell));
       }      
       //verificar producto si existe actualiza, en almacen central
       if($y==1){
@@ -85,21 +89,21 @@ function sheetDataProductos($sheet) {
       }      
       //verificar familia
       if($y==2){        
-        $sql="select idproducto_familia as d1 from producto_familia where descripcion='".$cell."' and estado=0 and (idorg=".$idorg." and idsede=".$idsede.")";                
+        $sql="select idproducto_familia as d1 from producto_familia where descripcion='".$cell."' and estado=0 and (idsede=".$idsede.")";                
         $idt=$bdP->xDevolverUnDato($sql);        
-        //echo ' | verificar_famimila :'.$sql."  |  rspt".$idt;
+        // echo ' | verificar_famimila :'.$sql."  |  rspt".$idt;
         if($idt==''){
-          $sql="insert into producto_familia(descripcion,idorg,idsede)value('".$cell."',".$idorg.",".$idsede.")";                    
+          $sql="insert into producto_familia(descripcion,idorg,idsede, img)value('".$cell."',".$idorg.",".$idsede.", '')";                    
           $bdP->xConsulta_NoReturn($sql); 
     //$idt=$bdP->xConsulta_NoReturn($sql);    
           // $idt=$bdP->xConsulta_UltimoId($sql);     
           
           // 191118 -- el id es char ej: f1
-          $sql="select idproducto_familia as d1 from producto_familia where descripcion='".$cell."' and estado=0 and (idorg=".$idorg." and idsede=".$idsede.")";                
+          $sql="select idproducto_familia as d1 from producto_familia where descripcion='".$cell."' and estado=0 and (idsede=".$idsede.")";                
           $idt=$bdP->xDevolverUnDato($sql);  
           
           $cell = $idt;
-          //echo ' | insert familia :'.$sql."  |  rspt".$idt;
+          // echo ' | insert familia :'.$sql."  |  rspt".$idt;
         } else {
           $cell = $idt;
         }
@@ -170,12 +174,20 @@ function sheetDataProductos($sheet) {
       // $reDP=$reDP.'('.$IdAlmacen.','.$idProducto.','.$row_cant_almacem.','.$fecha_actual.'),';        
       // $sqlProductoDetalle=$sqlProductoDetalle."INSERT INTO producto_stock (idproducto, idalmacen, stock ) VALUES (".$idProducto.",".$IdAlmacen.",".$row_cant_almacem."); ";
       // $rowInsertProductoSock = $rowInsertProductoSock."(".$idProducto.",".$IdAlmacen.",".$row_cant_almacem."),"
-      $sqlProductoDetalleNew = $sqlProductoDetalleNew. "(".$idProducto.",".$IdAlmacen.",".$row_cant_almacem."),";
+      // $sqlProductoDetalleNew = $sqlProductoDetalleNew. "(".$idProducto.",".$IdAlmacen.",".$row_cant_almacem."),";
+      $sqlProductoDetalleNew = "(".$idProducto.",".$IdAlmacen.",".$row_cant_almacem.")";
+      // $sqlProductoDetalleNew = substr($sqlProductoDetalleNew, 0, -1); 
+      $sqlProductoDetalleNew = "INSERT INTO producto_stock (idproducto, idalmacen, stock ) VALUES ".$sqlProductoDetalleNew.";";
+      $bdP->xConsulta_NoReturn($sqlProductoDetalleNew);
     }else{
-      $sqlProductoUpdate=$sqlProductoUpdate."update producto set ".$sqlProductoUpdateRow." where idproducto=".$idProNewUp."; ";
+      // $sqlProductoUpdate=$sqlProductoUpdate."update producto set ".$sqlProductoUpdateRow." where idproducto=".$idProNewUp."; ";
+      $sqlProductoUpdate = "update producto set ".$sqlProductoUpdateRow." where idproducto=".$idProNewUp."; ";
+      $bdP->xConsulta_NoReturn($sqlProductoUpdate);
       //if($idProDtNewUp==''){//si no existe en el alamcen indicado ingresa nuevo        
         //$reDP=$reDP.'('.$IdAlmacen.','.$idProNewUp.','.$row_cant_almacem.','.$fecha_actual.'),';
-        $sqlProductoDetalle=$sqlProductoDetalle."INSERT INTO producto_stock (idproducto_stock,idproducto, idalmacen, stock ) VALUES ((SELECT ps.idproducto_stock FROM producto_stock AS ps WHERE ps.idproducto = ".$idProNewUp." AND ps.idalmacen = ".$IdAlmacen."),".$idProNewUp.",".$IdAlmacen.",".$row_cant_almacem.") ON DUPLICATE KEY UPDATE stock=stock+".$row_cant_almacem."; ";
+        // $sqlProductoDetalle=$sqlProductoDetalle."INSERT INTO producto_stock (idproducto_stock,idproducto, idalmacen, stock ) VALUES ((SELECT ps.idproducto_stock FROM producto_stock AS ps WHERE ps.idproducto = ".$idProNewUp." AND ps.idalmacen = ".$IdAlmacen."),".$idProNewUp.",".$IdAlmacen.",".$row_cant_almacem.") ON DUPLICATE KEY UPDATE stock=stock+".$row_cant_almacem."; ";
+        $sqlProductoDetalle = "INSERT INTO producto_stock (idproducto_stock,idproducto, idalmacen, stock ) VALUES ((SELECT ps.idproducto_stock FROM producto_stock AS ps WHERE ps.idproducto = ".$idProNewUp." AND ps.idalmacen = ".$IdAlmacen."),".$idProNewUp.",".$IdAlmacen.",".$row_cant_almacem.") ON DUPLICATE KEY UPDATE stock=stock+".$row_cant_almacem."; ";
+        $bdP->xConsulta_NoReturn($sqlProductoDetalle);
         //$sqlProductoDetalle=$sqlProductoDetalle."UPDATE producto_stock SET stock = stock + ".$row_cant_almacem." WHERE idproducto = ".$IdAlmacen." and idalmacen=".$IdAlmacen."; ";
       //}else{
         //$sqlProductoUpdate=$sqlProductoUpdate."update producto_detalle set ".$sqlProductoDetalleUpdateRow." where idproducto_detalle=".$idProDtNewUp."; ";
@@ -196,19 +208,75 @@ function sheetDataProductos($sheet) {
     //$sql=$sql."INSERT INTO producto_stock (idproducto_stock,idproducto, idalmacen, stock ) VALUES ((SELECT ps.idproducto_stock FROM producto_stock AS ps WHERE ps.idproducto = ".$item['idproducto']." AND ps.idalmacen = ".$item['idalmacen_a']."),".$item['idproducto'].",".$item['idalmacen_a'].",".$item['cantidad'].") ON DUPLICATE KEY UPDATE stock=stock+".$item['cantidad']."; ";
   // }
 
-  if ( $sqlProductoDetalleNew != "") {
-    $sqlProductoDetalleNew = substr($sqlProductoDetalleNew, 0, -1); 
-    $sqlProductoDetalleNew = "INSERT INTO producto_stock (idproducto, idalmacen, stock ) VALUES ".$sqlProductoDetalleNew.";";
-  }
+
+
+  // $bdP->xMultiConsulta($sqlProductoUpdate); 
+
+  // if ( $sqlProductoDetalleNew != "") {
+  //   $sqlProductoDetalleNew = substr($sqlProductoDetalleNew, 0, -1); 
+  //   $sqlProductoDetalleNew = "INSERT INTO producto_stock (idproducto, idalmacen, stock ) VALUES ".$sqlProductoDetalleNew.";";
+
+  //   $bdP->xMultiConsulta($sqlProductoDetalleNew);
+  //   echo $sqlProductoUpdate.' | '.$sqlProductoDetalleNew;
+  // }
+
+  // if ( $sqlProductoDetalle != "") {
+  //   $sqlProductoDetalle = substr($sqlProductoDetalle, 0, -1); 
+  //   $bdP->xMultiConsulta($sqlProductoDetalle);
+
+  //   echo $sqlProductoUpdate.' | '.$sqlProductoDetalle;
+
+  // }
 
 
 
   // echo $sqlProductoUpdate;
   // return;
 
-  $bdP->xMultiConsulta($sqlProductoUpdate);  
-  $bdP->xMultiConsulta($sqlProductoDetalleNew);
-  echo $sqlProductoUpdate.' | '.$sqlProductoDetalleNew;
+  // $bdP->xMultiConsulta($sqlProductoUpdate);  
+  // $bdP->xMultiConsulta($sqlProductoDetalleNew);
+  echo $sqlProductoUpdate.' | '.$sqlProductoDetalleNew.' | '.$sqlProductoDetalle;
+}
+
+function eliminar_tildes($cadena){
+
+  //Codificamos la cadena en formato utf8 en caso de que nos de errores
+  $cadena = utf8_encode($cadena);
+
+  //Ahora reemplazamos las letras
+  $cadena = str_replace(
+      array('á', 'à', 'ä', 'â', 'ª', 'Á', 'À', 'Â', 'Ä'),
+      array('a', 'a', 'a', 'a', 'a', 'A', 'A', 'A', 'A'),
+      $cadena
+  );
+
+  $cadena = str_replace(
+      array('é', 'è', 'ë', 'ê', 'É', 'È', 'Ê', 'Ë'),
+      array('e', 'e', 'e', 'e', 'E', 'E', 'E', 'E'),
+      $cadena );
+
+  $cadena = str_replace(
+      array('í', 'ì', 'ï', 'î', 'Í', 'Ì', 'Ï', 'Î'),
+      array('i', 'i', 'i', 'i', 'I', 'I', 'I', 'I'),
+      $cadena );
+
+  $cadena = str_replace(
+      array('ó', 'ò', 'ö', 'ô', 'Ó', 'Ò', 'Ö', 'Ô'),
+      array('o', 'o', 'o', 'o', 'O', 'O', 'O', 'O'),
+      $cadena );
+
+  $cadena = str_replace(
+      array('ú', 'ù', 'ü', 'û', 'Ú', 'Ù', 'Û', 'Ü'),
+      array('u', 'u', 'u', 'u', 'U', 'U', 'U', 'U'),
+      $cadena );
+
+  // $cadena = str_replace(
+  //     array('ñ', 'Ñ', 'ç', 'Ç'),
+  //     array('n', 'N', 'c', 'C'),
+  //     $cadena
+  // );
+
+  return $cadena;
 }
 
 ?>
