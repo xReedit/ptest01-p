@@ -952,7 +952,7 @@
 				, WEEK(STR_TO_DATE(pb.fecha_cierre, '%d/%m/%Y')) num_semana, if(WEEK(STR_TO_DATE(pb.fecha_cierre, '%d/%m/%Y')) = WEEK(now()), 1 ,0) semana_actual
 				from pedido_borrados pb 
 				inner join usuario u on u.idusuario = pb.idusuario_permiso
-				inner join item i on i.iditem = pb.iditem
+				inner join pedido_detalle i on i.idpedido_detalle = pb.idpedido_detalle 
 				where u.idsede = $idsede 
 				and $fecha GROUP by pb.idpedido_borrados";			
 			$bd->xConsulta($sql);
