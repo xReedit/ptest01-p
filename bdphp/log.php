@@ -2187,7 +2187,15 @@
 			break;
 		case 602://buscar cliente		
 			// $sql="SELECT * FROM cliente where ruc='".$_POST['doc']."' and estado=0 order by nombres";
-			$sql="SELECT * FROM cliente where ruc='".$_POST['doc']."' and estado=0 order by idcliente desc"; // para que agarre el 
+			// $sql="SELECT * FROM cliente where ruc='".$_POST['doc']."' and nombres != '' and estado=0 order by idcliente desc"; // para que agarre el 
+			// 13092022 telefono local
+			$sql = "SELECT 
+					c.idcliente, c.idorg, c.calificacion, c.credito, c.direccion, c.direccion_delivery_no_map, c.dni_num_verificador
+					,c.email, c.estado, c.f_nac, c.f_registro, c.nombres, c.pwa_code_verification, c.pwa_data_session, c.pwa_data_usuario, c.pwa_id
+					,c.pwa_last_pedido_calificar, c.pwa_sede_register, c.referencia, c.ruc, cs.telefono 
+				FROM cliente c 
+					left join cliente_sede cs on c.idcliente = cs.idcliente 
+				where c.ruc='".$_POST['doc']."' and c.nombres != '' and c.estado=0 order by c.idcliente desc";
 			$bd->xConsulta($sql);
 			break;
 		case 603://Load tipo comprobante		
@@ -2247,41 +2255,65 @@
 			$ido=$g_ido;
 			$idsede=$_SESSION['idsede'];
 			$idus=$_SESSION['idusuario'];
-			$sql="
-				SELECT tp.descripcion AS descripcion,'' as t1, '' as t2, format(SUM(rpd.importe),2) AS t3
-				FROM registro_pago AS rp
-					INNER JOIN registro_pago_detalle AS rpd using(idregistro_pago)
-					INNER JOIN tipo_pago AS tp using(idtipo_pago)
-				WHERE (rp.idorg=".$ido." AND rp.idsede=".$idsede." AND rp.idusuario=".$idus.") AND (rp.estado=0 AND rpd.estado=0) AND rp.cierre=0
-				GROUP BY rpd.idtipo_pago
-				";
-			/*$sql="
-				SELECT tp.descripcion AS descripcion, SUM(rpd.importe) AS importe, ('+') AS operacion1, IF(tp.idtipo_pago=1,'+','') AS operacion2
-				FROM registro_pago AS rp
-					INNER JOIN registro_pago_detalle AS rpd using(idregistro_pago)
-					INNER JOIN tipo_pago AS tp using(idtipo_pago)
-				WHERE (rp.idorg=".$ido." AND rp.idsede=".$idsede." AND rp.idusuario=".$idus.") AND (rp.estado=0 AND rpd.estado=0) AND rp.cierre=0
-				GROUP BY rpd.idtipo_pago
-				UNION all
-				SELECT IF(ie.tipo=1,'INGRESO','SALIDA') AS descripcion,sum(monto)  AS importe, ('')AS operacion1 , (IF(ie.tipo=1,'+','-')) AS operacion2
-				FROM ie_caja AS ie
-				WHERE (ie.idorg=".$ido." AND ie.idsede=".$idsede." AND ie.idusuario=".$idus.") AND ie.estado=0 AND ie.cierre=0
-				GROUP BY ie.tipo
-				";*/
+
+			// $sql="
+			// 	SELECT tp.descripcion AS descripcion,'' as t1, '' as t2, format(SUM(rpd.importe),2) AS t3
+			// 	FROM registro_pago AS rp
+			// 		INNER JOIN registro_pago_detalle AS rpd using(idregistro_pago)
+			// 		INNER JOIN tipo_pago AS tp using(idtipo_pago)
+			// 	WHERE (rp.idorg=".$ido." AND rp.idsede=".$idsede." AND rp.idusuario=".$idus.") AND (rp.estado=0 AND rpd.estado=0) AND rp.cierre=0
+			// 	GROUP BY rpd.idtipo_pago
+			// 	";
+
+			//  igual bitacora 07092022
+			$sql="SELECT rpda.tipo_pago AS descripcion,'' as t1, '' as t2, IFNULL(format(SUM(rpda.importe), 2), 0) as t3
+			from registro_pago_detalle rpd2 
+			inner join (SELECT rpd.importe, rpd.idregistro_pago_detalle, tp.descripcion tipo_pago
+									FROM registro_pago AS rp
+										INNER JOIN registro_pago_detalle AS rpd on rpd.idregistro_pago = rp.idregistro_pago
+										INNER JOIN registro_pago_pedido AS rpdp on rpdp.idregistro_pago = rp.idregistro_pago
+										INNER JOIN tipo_pago AS tp using(idtipo_pago)
+									WHERE (rp.idusuario=".$idus." AND rp.cierre=0) AND (rp.estado=0 AND rpd.estado=0)
+									GROUP BY rp.fecha -- agrupamos por fecha porque hay registros que se duplican, se identifica por la misma hora
+						) rpda on rpda.idregistro_pago_detalle = rpd2.idregistro_pago_detalle 
+			GROUP by rpd2.idtipo_pago";
+
+
+			$bd->xConsulta($sql);
+			break;
+		case 7003: // ingresos varios
+			$idus=$_SESSION['idusuario'];
+			$sql = "select tp.descripcion, '' t1, '' t2, format(SUM(iv.importe),2) as t3 
+			from ingreso_varios AS iv
+				INNER JOIN tipo_pago AS tp using(idtipo_pago)
+			WHERE (iv.idusuario=$idus AND iv.cierre=0) and iv.estado=0
+			GROUP BY iv.idtipo_pago";
 			$bd->xConsulta($sql);
 			break;
 		case 7001://verificar caja
 			$ido=$g_ido;
 			$idsede=$_SESSION['idsede'];
 			$idus=$_SESSION['idusuario'];
-			$sql="
-				SELECT SUM(rpd.importe) as d1
-				FROM registro_pago AS rp
-					INNER JOIN registro_pago_detalle AS rpd using(idregistro_pago)
-					INNER JOIN tipo_pago AS tp using(idtipo_pago)
-				WHERE (rp.idorg=".$ido." AND rp.idsede=".$idsede." AND rp.idusuario=".$idus.") AND (rp.estado=0 AND rpd.estado=0) AND rp.cierre=0 AND tp.idtipo_pago=1
-				GROUP BY rpd.idtipo_pago
-			";
+			// $sql="
+			// 	SELECT SUM(rpd.importe) as d1
+			// 	FROM registro_pago AS rp
+			// 		INNER JOIN registro_pago_detalle AS rpd using(idregistro_pago)
+			// 		INNER JOIN tipo_pago AS tp using(idtipo_pago)
+			// 	WHERE (rp.idorg=".$ido." AND rp.idsede=".$idsede." AND rp.idusuario=".$idus.") AND (rp.estado=0 AND rpd.estado=0) AND rp.cierre=0 AND tp.idtipo_pago=1
+			// 	GROUP BY rpd.idtipo_pago
+			// ";
+
+			$sql = "SELECT SUM(rpda.importe) as d1
+				from registro_pago_detalle rpd2 
+				inner join (SELECT rpd.importe, rpd.idregistro_pago_detalle, tp.descripcion tipo_pago
+									FROM registro_pago AS rp
+										INNER JOIN registro_pago_detalle AS rpd on rpd.idregistro_pago = rp.idregistro_pago
+										INNER JOIN registro_pago_pedido AS rpdp on rpdp.idregistro_pago = rp.idregistro_pago
+										INNER JOIN tipo_pago AS tp using(idtipo_pago)
+									WHERE (rp.idusuario=".$idus." AND rp.cierre=0) AND (rp.estado=0 AND rpd.estado=0) AND tp.idtipo_pago=1
+									GROUP BY rp.fecha
+						) rpda on rpda.idregistro_pago_detalle = rpd2.idregistro_pago_detalle 
+				GROUP by rpd2.idtipo_pago";
 			$ef1=$bd->xDevolverUnDato($sql);
 
 			$sql="
@@ -2290,6 +2322,7 @@
 				WHERE (ie.idorg=".$ido." AND ie.idsede=".$idsede." AND ie.idusuario=".$idus.") AND ie.estado=0 AND ie.cierre=0 AND ie.tipo=1
 			";
 			$val_ingreso=$bd->xDevolverUnDato($sql);
+			
 
 			$sql="
 				SELECT sum(monto) AS d1
@@ -2298,7 +2331,10 @@
 			";
 			$val_salida=$bd->xDevolverUnDato($sql);
 
-			$rpt=($ef1+$val_ingreso)-$val_salida;
+			$sql="select sum(importe) from ingreso_varios where idusuario=$idus and idtipo_pago = 1 and cierre=0 and estado=0";
+			$val_ingresos_varios=$bd->xDevolverUnDato($sql);
+
+			$rpt=($ef1+$val_ingreso + $val_ingresos_varios)-$val_salida;
 			print $rpt;
 			break;
 		case 70012://cerrar seccion = cierre=1 pedido, registro_pago, ie_caja //el ultimo es para cerrar pedidos anulados
@@ -3540,7 +3576,7 @@ function xDtUS($op_us){
 			// 	LEFT JOIN sede AS s ON s.idorg=cp.idorg AND s.idsede=cp.idsede
 			// WHERE (cp.idorg=".$g_ido." AND cp.idsede=".$g_idsede.")"; s.logo64
 			$sql_us="
-			SELECT cp.var_size_font_tall_comanda, cp.ip_print, cp.num_copias, cp.pie_pagina, cp.pie_pagina_comprobante, cp.logo, '' as logo64, s.nombre AS des_sede, s.eslogan, s.mesas, s.ciudad
+			SELECT cp.var_size_font_tall_comanda, cp.ip_print, cp.num_copias, cp.pie_pagina, cp.pie_pagina_comprobante,cp.pie_pagina_precuenta, cp.logo, '' as logo64, s.nombre AS des_sede, s.eslogan, s.mesas, s.ciudad
 				,isprint_subtotales_comanda, isprint_copy_short, isprint_all_short, isprint_all_delivery
 			FROM conf_print AS cp
             	INNER JOIN sede AS s ON cp.idsede = s.idsede
@@ -3589,7 +3625,7 @@ function xDtUS($op_us){
 			$sql_us = "SELECT idsede, idorg, nombre, ciudad, direccion, telefono, eslogan, mesas, maximo_pedidos_x_hora, authorization_api_comprobante, id_api_comprobante, facturacion_e_activo, ubigeo, codigo_del_domicilio_fiscal, sys_local, ip_server_local, finicio, tipo, sufijo, pwa, pwa_time_limit, url_api_fac, estado, latitude, longitude, pwa_msj_ini, pwa_time_min_despacho, pwa_time_max_despacho, pwa_requiere_gps, pwa_delivery_img, provincia, departamento, codigo_postal, tiempo_aprox_entrega, dias_atienden, pwa_habilitar_delivery_app, pwa_comercio_afiliado, pwa_delivery_importe_min, pwa_delivery_servicio_propio, pwa_delivery_comercio_online, pwa_delivery_habilitar_recojo_local, pwa_delivery_acepta_yape, pwa_delivery_hablitar_calc_costo_servicio, pwa_delivery_comercio_solidaridad, pwa_delivery_acepta_tarjeta, pwa_delivery_comision_fija_no_afiliado, pwa_min_despacho, pwa_delivery_comercio_paga_entrega, pwa_delivery_habilitar_llamar_repartidor_papaya, pwa_delivery_telefono_notifica_pedido, pwa_delivery_monto_acumla, pwa_delivery_habilitar_pedido_programado, pwa_delivery_reparto_solo_app, last_date_pago, comsion_entrega, costo_restobar_fijo_mensual, pwa_habilitar_busqueda_mapa, calificacion, isprinter_socket, pwa_delivery_habilitar_calc_costo_servicio_solo_app, pwa_pedido_programado_solo_del_dia, pwa_orden_pagado, email_cierre, pwa_acepta_reservas, pwa_show_item_view_mercado, pwa_acepta_reserva_desde, c_dias, uf_pago, mostar_alert_pago, idsede_plan_contratado, umf_pago, num_dias_facturacion, tipo_contribuyente, img_mini, metodo_pago_aceptados, speech_disabled, simbolo_moneda, link_carta FROM sede where idsede=".$g_idsede." and estado=0";
 			break;
 		case 3014: // load sys const
-			$sql_us = "SELECT * FROM sys_const where estado=0 and llave in ('URL_COMPROBANTE', 'URL_COMPROBANTE_DOWNLOAD_FILE')";
+			$sql_us = "SELECT * FROM sys_const where estado=0 and llave in ('URL_COMPROBANTE', 'URL_COMPROBANTE_DOWNLOAD_FILE', 'NUM_DAYS_ANULACION_CPE') order by orden";
 			break;
 	}
 	$rows = [];

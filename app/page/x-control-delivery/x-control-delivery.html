@@ -1,0 +1,115 @@
+<dom-module id="x-control-delivery">    
+    <template is="dom-bind">
+        <div class="p-3">
+            <h4>Pedidos Delivery</h4>
+            <table class="w-100">
+                <thead>
+                    <th align="left">#</th>
+                    <th align="left">ID</th>
+                    <th align="left">Fecha</th>
+                    <th align="left">Cliente</th>                    
+                    <th align="right">Importe</th>
+                    <th align="center">Usuario</th>
+                    <th align="left">Repartidor</th>
+                    <th align="left">Estado</th>
+                    <th></th>
+                </thead>
+                <tbody>
+                    <template is="dom-repeat" items="{{listDeliveryPedido}}" as="item">
+                        <tr>
+                            <td class="fw-700">{{item.num}}</td>
+                            <td class="fw-700">{{item.idpedido}}</td>
+                            <td>
+                                <p>{{item.fecha}}</p>
+                                <p>{{item.hora}}</p>
+                            </td>
+                            <td>
+                                <p>{{item.nom_cliente}}</p>                                                            
+                                <div class="d-flexx xCursor" title="Escribir al WhastApp">
+                                    <p class="fw-700 text-info">{{item.tel_cliente}}</p>
+                                    <p class="text-success fs-14 ml-1">                                         
+                                        <i class="fa fa-whatsapp"></i>
+                                    </p>                                
+                                </div>
+                            </td>                            
+                            <td align="right">
+                                <p>{{item.total}}</p>
+                                <p>{{item.paga_con}}</p>
+                            </td>
+                            <td align="center">
+                                <p hidden$="[[ item.showApp ]]">{{item.usuario}}</p>
+                                <p hidden$="[[ !item.showApp ]]" class="badge badge-success">APP</p>
+                            </td>
+                            <td>
+                                <p>{{item.nom_repartidor}}</p>
+                                <p>{{item.tel_repartidor}}</p>
+                                <button class="btn btn-sm btn-success">Escribir <i class="fa fa-whatsapp"></i></button>
+                            </td>
+                            <td></td>
+                            <td></td>
+                        </tr>
+                    </template>
+                </tbody>
+            </table>
+        </div>
+    </template>
+    <style>
+        .btn-row-delivery {
+            border: 0;
+            border-radius: 5px;
+            color: white;
+            cursor: pointer;
+            font-size: 11px;
+        }
+    </style>
+</dom-module>    
+
+<script>
+var xThisCDelivery;
+
+function xIniControlDelivery () {
+    xPopupLoad.xopen();
+    $.ajax({ type: 'POST', url: '../../bdphp/log_009.php?op=7'})
+	    .done( function (res) {            
+            res = JSON.parse(res);
+            
+            var _nunRows = res.datos.length;            
+            xThisCDelivery.listDeliveryPedido = res.datos.map(x => {
+                x.json_datos_delivery = JSON.parse(x.json_datos_delivery);
+                const _datosDelivery = x.json_datos_delivery.p_header.arrDatosDelivery; 
+                x.direccion_cliente = _datosDelivery.direccion;
+                x.paga_con = _datosDelivery.metodoPago.descripcion;
+                x.idmetodoPago = _datosDelivery.metodoPago.idtipo_pago;
+                
+                x.nom_cliente = toTitleCase(x.nom_cliente);
+                x.tel_cliente = _datosDelivery.telefono;
+                
+                x.showApp = x.flag_is_cliente == 1;
+
+                x.num = _nunRows;
+                _nunRows--;
+                return x;
+            });
+            console.log(xThisCDelivery.listDeliveryPedido);
+            
+            xPopupLoad.xclose();
+            // xLoadPedidosBorradosData();
+        })
+}
+
+Polymer({
+        is: 'x-control-delivery',
+        properties: {   
+            listDeliveryPedido: []             
+        },
+        attached: function () {
+            
+            xThisCDelivery = this;
+            xIniControlDelivery();
+            // _cpSocketOpen();
+        },
+        detached:function(){
+            // _cpSocketClose();
+        }
+    })
+</script>

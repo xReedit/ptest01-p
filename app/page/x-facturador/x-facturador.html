@@ -3,6 +3,14 @@
 <dom-module id="x-facturador">
 <script src="../../view/xm_all.js"></script>
 <template is="dom-bind">
+<paper-dialog id="dialog_tipo_pago_cpe_facturador" class="dialog_redondo" modal entry-animation="scale-up-animation">
+<div class="text-center">
+<p class="fw-600 fs-18">Elige el metodo de pago</p><br>
+<x-comp-find-tipo-pago-option class="tpf_option_cpe_fac"></x-comp-find-tipo-pago-option><br>
+<button class="xBoton2 xAzul">Listo, registrar</button>
+<button class="xBoton2 xPlomo" dialog-dismiss>Cancelar</button>
+</div>
+</paper-dialog>
 <paper-dialog id="dialog_erro_print" modal style="min-width:330px" modal entry-animation="scale-up-animation" exit-animation="fade-out-animation">
 <h4>Error en impresora</h4>
 <p id="print_error"></p>
@@ -93,6 +101,8 @@
 </table>
 </div>
 <div class="xPieCard">
+<div class="d-flexx justify-content-between align-items-center">
+<div>
 <div style="width:200px" hidden$="[[ !isShowCpeFactura ]]">
 <br>
 <label for="selectFormaPago" class="xColorRow_Plomo"> Forma de Pago: </label>
@@ -114,6 +124,20 @@
 <option value="[[index]]"> {{ impresora.descripcion }} </option>
 </template>
 </select>
+</div>
+</div>
+<div>
+<div class="xMiBoton_icon_option" selected$="{{ isShowIngresaCaja }}" onclick="selectOptionIngresarCaja()">
+<div class="d-flexx mb-2">
+<div>
+<i hidden$="[[!isShowIngresaCaja]]" class="fa fa-check text-success pl-1"></i>
+<i hidden$="[[isShowIngresaCaja]]" class="fa fa-close text-danger pl-2"></i>
+</div>
+<img src="../../../images/_caja.png" width="32px" class="mb-1">
+</div>
+<p>Ingresa a Caja</p>
+</div>
+</div>
 </div>
 <br>
 <button class="xBoton2 xAzul" onclick="xProcesarComprobante()" disabled="[[!formValid]]" hidden="[[cpe_show]]">Listo, emitir comprobante</button>
@@ -139,22 +163,23 @@
 <script type="text/javascript" src="../../view/cpe_interno.js"></script>
 <style type="text/css">:root{--font-size:12px;--paper-input-container-input:{font-size:var(--font-size)}--paper-input-container-label:{font-size:13px}}.tt_row td{font-weight:600;font-size:15px}</style>
 </dom-module>
-<script>/*<![CDATA[*/var xThisFacturador,xPopupLoad,_arrCliente=[],_arrTotal=[],_arrItems=[],cnf_ComprobanteSel,xIdCliente_pago,_listValid=false,_formValid=false,_modificarCliente=false;var impresoraSelect={},IdTpConsumo=0,rptDoc,itemsConEstructuraPrint,arr_comprobante=[],_idregistro,txt_fecha_cpe_manual='',isSocket=true,_inputAutocompleteFac,xCartaSubtotales,comprobanteFormaPago,compItemProductoFac,_labelElemetFind='';function xIniFacturador(){xPopupLoad=document.getElementById('xLoad');xThisFacturador.formValid=false;_listValid=false;_formValid=false;xThisFacturador.modificarCliente=false;xThisFacturador.arrItems=[];xThisFacturador.arrTotales=[];xThisFacturador.listImpresoras=[];xThisFacturador.cpe_show=false;xThisFacturador.fecha_manual=false
+<script>/*<![CDATA[*/var xThisFacturador,xPopupLoad,_arrCliente=[],_arrTotal=[],_arrItems=[],cnf_ComprobanteSel,xIdCliente_pago,_listValid=false,_formValid=false,_modificarCliente=false;var impresoraSelect={},IdTpConsumo=0,rptDoc,itemsConEstructuraPrint,arr_comprobante=[],_idregistro,txt_fecha_cpe_manual='',isSocket=true,_inputAutocompleteFac,xCartaSubtotales,comprobanteFormaPago,compItemProductoFac,_labelElemetFind='',itemOptionTpSelectedCPE;function xIniFacturador(){xPopupLoad=document.getElementById('xLoad');xThisFacturador.formValid=false;_listValid=false;_formValid=false;xThisFacturador.modificarCliente=false;xThisFacturador.arrItems=[];xThisFacturador.arrTotales=[];xThisFacturador.listImpresoras=[];xThisFacturador.cpe_show=false;xThisFacturador.fecha_manual=false
 comprobanteFormaPago={forma_de_pago:'Contado',fecha_de_pago:''}
 const arrEstructura=xm_log_get('estructura_pedido');xCartaSubtotales=xm_log_get('carta_subtotales');IdTpConsumo=arrEstructura[0].idtipo_consumo;fact_getAllImpresoras();$('body').addClass('loaded');$("#Titulo_page").text("Facturador");_inputAutocompleteFac=document.getElementById('clie_nombres_fac');_inputAutocompleteFacObj=_inputAutocompleteFac.$.input_clie_nombres_auto;_inputAutocompleteFac.addEventListener('input-autocomplete-selected',(event)=>{const cliente=event.detail;if(!cliente.nombres){xValidarBtnProcesar();return;}
-console.log('cliente',cliente);xIdCliente_pago=cliente.idcliente;$("#txt_ruc").val(cliente.ruc);$("#txt_direccion").val(cliente.direccion);$("#txt_nombres").val(cliente.nombres);$("#txt_telefono").val(cliente.telefono);xThisFacturador.isShowMsjTelefono=cliente.telefono!=='';validarDocumentoCliente(null,null,true,false,false);});compItemProductoFac=document.getElementById('compItemProductoFac');compItemProductoFac.removespecialchart=true;compItemProductoFac.addEventListener('elementSeleted',(e)=>{console.log('elementSeleted',e.detail);var elementItemProdcutoSeleted=e.detail;_labelElemetFind=elementItemProdcutoSeleted.label?elementItemProdcutoSeleted.label.split('|')[elementItemProdcutoSeleted.label.split('|').length-1]:e.target.valueInput;elementItemProdcutoSeleted.descripcion=_labelElemetFind.trim();punitario.value=elementItemProdcutoSeleted.precio||0;verificarInputInteger(punitario);xCalcTotal();});$('.xPasarEnter2').on('keyup',function(e){var code=e.which;if(code==13||code==186){var inputs=$('input');var a=inputs.index(document.activeElement);if(inputs[a+1]!==null){var nextBox=inputs[a+1];if(nextBox===undefined){return}
+xIdCliente_pago=cliente.idcliente;$("#txt_ruc").val(cliente.ruc);$("#txt_direccion").val(cliente.direccion);$("#txt_nombres").val(cliente.nombres);$("#txt_telefono").val(cliente.telefono);xThisFacturador.isShowMsjTelefono=cliente.telefono!=='';validarDocumentoCliente(null,null,true,false,false);});compItemProductoFac=document.getElementById('compItemProductoFac');compItemProductoFac.removespecialchart=true;compItemProductoFac.addEventListener('elementSeleted',(e)=>{var elementItemProdcutoSeleted=e.detail;_labelElemetFind=elementItemProdcutoSeleted.label?elementItemProdcutoSeleted.label.split('|')[elementItemProdcutoSeleted.label.split('|').length-1]:e.target.valueInput;elementItemProdcutoSeleted.descripcion=_labelElemetFind.trim();punitario.value=elementItemProdcutoSeleted.precio||0;verificarInputInteger(punitario);xCalcTotal();});$('.xPasarEnter2').on('keyup',function(e){var code=e.which;if(code==13||code==186){var inputs=$('input');var a=inputs.index(document.activeElement);if(inputs[a+1]!==null){var nextBox=inputs[a+1];if(nextBox===undefined){return}
 if(nextBox.disabled){nextBox=inputs[a+2]}
 if(nextBox==undefined){return;}
 nextBox.focus();nextBox.select();}
 event.stopPropagation();e.stopPropagation();e.stopImmediatePropagation()
 return false;}});$(".punitario").on('keyup',function(e){var code=e.which;xCalcTotal();if(code==13||code==186){$("#punitario").val(xMoneda(this.value));$("#ptotal").focus();}});$(".xprecio").on('keyup',function(e){var code=e.which;if(code==13||code==186){xAddItem();}});$("#txt_fecha").on('change',function(){var d=$(this).val().split('-');txt_fecha_cpe_manual=d[1]===undefined?'':$(this).val();})
-$('#selectFormaPago').on('change',(e)=>{console.log('e',e);xThisFacturador.isShowFechaPagoCredito=e.target.selectedIndex===1;comprobanteFormaPago.forma_de_pago=e.target.options[e.target.selectedIndex].text;if(xThisFacturador.isShowFechaPagoCredito){comprobanteFormaPago.fecha_de_pago=fechaPagoCredito.value;}else{comprobanteFormaPago.fecha_de_pago='';}
+$('#selectFormaPago').on('change',(e)=>{xThisFacturador.isShowFechaPagoCredito=e.target.selectedIndex===1;comprobanteFormaPago.forma_de_pago=e.target.options[e.target.selectedIndex].text;if(xThisFacturador.isShowFechaPagoCredito){comprobanteFormaPago.fecha_de_pago=fechaPagoCredito.value;}else{comprobanteFormaPago.fecha_de_pago='';}
 if(xThisFacturador.isShowFechaPagoCredito&&comprobanteFormaPago.fecha_de_pago===''){xThisFacturador.formValid=false;}else{xValidarBtnProcesar();}
-console.log('comprobanteFormaPago',comprobanteFormaPago);var today=new Date().toISOString().split('T')[0];document.getElementsByName("fechaPagoCredito")[0].setAttribute('min',today);});$('#fechaPagoCredito').on('change',(evt)=>{comprobanteFormaPago.fecha_de_pago=evt.target.value;if(xThisFacturador.isShowFechaPagoCredito&&comprobanteFormaPago.fecha_de_pago===''){xThisFacturador.formValid=false;}else{xValidarBtnProcesar();}});setTimeout(()=>{xNuevoFac();},500);const _compFindComprobante=document.getElementById('compFindComprobante');_compFindComprobante.addEventListener('_onchange',(e)=>{_getComprobante(e.detail);e.stopPropagation();e.stopImmediatePropagation();})}
+var today=new Date().toISOString().split('T')[0];document.getElementsByName("fechaPagoCredito")[0].setAttribute('min',today);});$('#fechaPagoCredito').on('change',(evt)=>{comprobanteFormaPago.fecha_de_pago=evt.target.value;if(xThisFacturador.isShowFechaPagoCredito&&comprobanteFormaPago.fecha_de_pago===''){xThisFacturador.formValid=false;}else{xValidarBtnProcesar();}});setTimeout(()=>{xNuevoFac();},500);const _compFindComprobante=document.getElementById('compFindComprobante');_compFindComprobante.addEventListener('_onchange',(e)=>{_getComprobante(e.detail);e.stopPropagation();e.stopImmediatePropagation();})
+$(document).on('getValorIncial','.tpf_option_cpe_fac',function(e){itemOptionTpSelectedCPE=e.detail.values;});}
 function verificarInputInteger(obj){const _val=parseFloat(obj.value);obj.value=_val>0?_val:_val*-1;}
 function removeChartSpecial(obj){obj.value=removeSpecialChar(obj.value);}
 function xSeeFechaManual(){xThisFacturador.fecha_manual=!xThisFacturador.fecha_manual;}
-function _getComprobante($event){cnf_ComprobanteSel=$event;xNuevoCliente();if(cnf_ComprobanteSel.codsunat==='0'){$("#contentClie").addClass('xInvisible');}else{$("#contentClie").removeClass('xInvisible');}
+function _getComprobante($event){cnf_ComprobanteSel=$event;xNuevoCliente();if(cnf_ComprobanteSel.idtipo_comprobante==='0'){$("#contentClie").addClass('xInvisible');}else{$("#contentClie").removeClass('xInvisible');}
 xThisFacturador.modificarCliente=cnf_ComprobanteSel.codsunat==='01'?false:true;xThisFacturador.isShowCpeFactura=cnf_ComprobanteSel.codsunat==='01';}
 function validarDocumentoCliente(valor,e,btnBuscar=false,buscarSoloSunat=false,newCliente=true){if(!btnBuscar){if(e.keyCode!==13)return;}
 valor=valor?valor:txt_ruc.value;if(newCliente){xNuevoCliente();}
@@ -171,20 +196,23 @@ if(parseFloat(xPUnitario)<=0){return;}
 if(parseFloat(xCan_item)<=0){return;}
 if(parseFloat(xPTotal)<=0){return;}
 const _importeTotal=(xCan_item*xPUnitario).toFixed(2);if(parseFloat(_importeTotal)!==parseFloat(xPTotal)){return;}
-const id=xCeroIzq(_arrItems.length+1,3);const item={'id':id,'iditem':id,'idtipo_consumo':IdTpConsumo,'des_seccion':'ITEMS','cantidad':xCan_item,'descripcion':xDes_item,'punitario':xPUnitario,'precio':xPUnitario,'ptotal':xPTotal,'precio_total_calc':xPTotal};_arrItems.push(item);xThisFacturador.arrItems=JSON.parse(JSON.stringify(_arrItems));console.log(xThisFacturador.arrItems);xCalcularTotal();xNuevoItem();}
-function xBorrarItemLocalArr(obj){const i=obj.parentElement.parentElement.dataValue;_arrItems.splice(i,1);xThisFacturador.arrItems=JSON.parse(JSON.stringify(_arrItems));xCalcularTotal();}
+const id=Date.now().toString().slice(-6);const item={'id':id,'iditem':id,'idtipo_consumo':IdTpConsumo,'des_seccion':'ITEMS','cantidad':xCan_item,'descripcion':xDes_item,'punitario':xPUnitario,'precio':xPUnitario,'ptotal':xPTotal,'precio_total_calc':xPTotal};_arrItems.push(item);xThisFacturador.arrItems=JSON.parse(JSON.stringify(_arrItems));xCalcularTotal();xNuevoItem();}
+function xBorrarItemLocalArr(obj){const i=obj.parentElement.parentElement.dataValue;const itemRemove=_arrItems[i];_arrItems=_arrItems.filter(x=>x.id!==itemRemove.id);xThisFacturador.arrItems=JSON.parse(JSON.stringify(_arrItems));xCalcularTotal();}
 function xNuevoItem(){$("#cant_item").val('');$("#des_item").val('');$("#punitario").val('');$("#ptotal").val('');$("#cant_item").focus();compItemProductoFac.resetText();}
 function xValidarBtnProcesar(){if(_arrTotal.length>0){if(!cnf_ComprobanteSel){return;}
 if(cnf_ComprobanteSel.codsunat==="03"&&_listValid&&parseFloat(_arrTotal[2].importe)<=700){xThisFacturador.formValid=true;xThisFacturador.modificarCliente=true;xThisFacturador.isShowMsjBoletaRequireDNI=false;validNomClienteFac();return;}
 if(cnf_ComprobanteSel.codsunat==="03"&&parseFloat(_arrTotal[2].importe)>=700){xThisFacturador.isShowMsjBoletaRequireDNI=true;}
+if(cnf_ComprobanteSel.idtipo_comprobante==="1"){xThisFacturador.formValid=true;xThisFacturador.modificarCliente=true;return;}
 validNomClienteFac();}
 xThisFacturador.formValid=_listValid&&_formValid;}
 function xCalcularTotal(){_arrTotal=[];const SumaLista=this._arrItems.map(x=>parseFloat(x.ptotal)).reduce((a,b)=>a+b,0);_listValid=parseInt(SumaLista)===0?false:true;_arrTotal.push({'descripcion':'Sub Total','importe':xMoneda(SumaLista)});xCartaSubtotales.map(x=>{if(x.es_impuesto.toString()==='1'){const impuesto=parseFloat(x.monto);const importeCalc=x.activo==='0'?parseFloat(SumaLista*(impuesto/100)).toFixed(2):'0.00';_arrTotal.push({'descripcion':x.descripcion,'importe':importeCalc});}});const total=_arrTotal.map(x=>parseFloat(x.importe)).reduce((a,b)=>a+b,0);_arrTotal.push({'descripcion':'Total','importe':xMoneda(total)});xThisFacturador.arrTotales=JSON.parse(JSON.stringify(_arrTotal));xValidarBtnProcesar();}
 async function xProcesarComprobante(){if(xThisFacturador.cpe_show){xMandarCocinarImpresionComprobante(arr_comprobante.correlativo,_idregistro);return;}
-xPopupLoad.xopen();arr_comprobante=cnf_ComprobanteSel;if(_arrCliente.length===0){var nombres_cliente=$("#txt_nombres").val();const direccion_cliente=$("#txt_direccion").val();_arrCliente={};_arrCliente.idcliente=0;_arrCliente.num_doc='00000000';nombres_cliente=nombres_cliente===''?_inputAutocompleteFacObj.inputValue:nombres_cliente;_arrCliente.nombres=nombres_cliente===''?'PUBLICO EN GENERAL':nombres_cliente;_arrCliente.direccion=direccion_cliente;_arrCliente.telefono=$("#txt_telefono").val();}else{_arrCliente.direccion=$("#txt_direccion").val();_arrCliente.telefono=$("#txt_telefono").val();_arrCliente.idcliente=await ClienteService_Guardar(_arrCliente);}
-arr_comprobante.correlativo='#';const arrCpeFac={idcliente:_arrCliente.idcliente,idcomprobante:arr_comprobante.idtipo_comprobante,idtipo_comprobante_serie:arr_comprobante?.idtipo_comprobante_serie||null,num_comprobante:arr_comprobante.correlativo,subtotal:_arrTotal[0].importe,igv:_arrTotal[1].importe,total:_arrTotal[2].importe,}
+arr_comprobante=cnf_ComprobanteSel;if(_arrCliente.length===0){var nombres_cliente=$("#txt_nombres").val();const direccion_cliente=$("#txt_direccion").val();_arrCliente={};_arrCliente.idcliente=0;_arrCliente.num_doc='00000000';nombres_cliente=nombres_cliente===''?_inputAutocompleteFacObj.inputValue:nombres_cliente;_arrCliente.nombres=nombres_cliente===''?'PUBLICO EN GENERAL':nombres_cliente;_arrCliente.direccion=direccion_cliente;_arrCliente.telefono=$("#txt_telefono").val();}else{_arrCliente.direccion=$("#txt_direccion").val();_arrCliente.telefono=$("#txt_telefono").val();_arrCliente.idcliente=await ClienteService_Guardar(_arrCliente);}
+arr_comprobante.correlativo='#';const arrCpeFac={idcliente:_arrCliente.idcliente,idcomprobante:arr_comprobante.idtipo_comprobante,idtipo_comprobante_serie:arr_comprobante?.idtipo_comprobante_serie||null,num_comprobante:arr_comprobante.correlativo,subtotal:_arrTotal[0].importe,igv:_arrTotal[1].importe,total:_arrTotal[2].importe,concepto:xThisFacturador.arrItems[0].descripcion,idtipo_pago:itemOptionTpSelectedCPE.idtipo_pago,nombres_cliente:nombres_cliente}
+if(xThisFacturador.isShowIngresaCaja){const rptIngresaCaja=await xShowIngresoVarios(arrCpeFac);if(!rptIngresaCaja){console.log('nada cancelo');return;}}
+xPopupLoad.xopen();if(cnf_ComprobanteSel.idtipo_comprobante==='1'){xMandarCocinarImpresionComprobante(arr_comprobante.correlativo,null);return;}
 $.ajax({type:'POST',url:'../../bdphp/log_002.php',data:{op:'102',data:arrCpeFac,arrItems:_arrItems}}).done(function(ultimoIdCpeFac){_idregistro=[0,ultimoIdCpeFac];xMandarCocinarImpresionComprobante(arr_comprobante.correlativo,_idregistro);});}
-async function xMandarCocinarImpresionComprobante(correlativo,_idregistro){if(!xThisFacturador.cpe_show){arr_comprobante.fecha_manual=txt_fecha_cpe_manual;arr_comprobante=cnf_ComprobanteSel;arr_comprobante.correlativo=correlativo;arr_comprobante.forma_de_pago=comprobanteFormaPago;itemsConEstructuraPrint=xCargarDatosAEstructuraImpresion(xThisFacturador.arrItems);rptDoc=await xCocinarImprimirComprobante(itemsConEstructuraPrint,_arrTotal,arr_comprobante,_arrCliente,_idregistro,-2,false)}
+async function xMandarCocinarImpresionComprobante(correlativo,_idregistro){if(!xThisFacturador.cpe_show){arr_comprobante.fecha_manual=txt_fecha_cpe_manual;arr_comprobante=cnf_ComprobanteSel;arr_comprobante.correlativo=correlativo;arr_comprobante.forma_de_pago=comprobanteFormaPago;itemsConEstructuraPrint=xCargarDatosAEstructuraImpresion(xThisFacturador.arrItems);itemsConEstructuraPrint=itemsConEstructuraPrint.filter(x=>x);rptDoc=await xCocinarImprimirComprobante(itemsConEstructuraPrint,_arrTotal,arr_comprobante,_arrCliente,_idregistro,-2,false)}
 if(rptDoc.ok=false){alert(rptDoc.msj);return;}
 if(impresoraSelect.idimpresora===-1){const hash=rptDoc[0]?rptDoc[0].hash:rptDoc.hash;if(hash==='www.papaya.com.pe'){xPopupLoad.xclose();alert('Error con la conexion al servicio de Sunat. No puede descargar el pdf. Pero si puede imprimirlo. Este comprobante sera enviado a sunat al cerrar caja.');return;}
 xThisFacturador.cpe_show=true;xSoapSunat_DownloadFile('pdf',rptDoc[0].external_id);xPopupLoad.xclose();return;}else{xThisFacturador.cpe_show=true;xLLamarPrintFac();}}
@@ -194,10 +222,15 @@ function xLLamarPrintFac(){let xSetImpresora=xm_log_get('sede_generales');xSetIm
 xSetImpresora[0].local=impresoraSelect.local;xSetImpresora[0].num_copias=impresoraSelect.num_copias;xSetImpresora[0].papel_size=impresoraSelect.papel_size;xImprimirComprobanteAhoraPrintPreSelect(rptDoc,itemsConEstructuraPrint,_arrTotal,arr_comprobante,_arrCliente,xSetImpresora,function(rpt_print){if(rpt_print==false){return false;}
 xPopupLoad.titulo="Imprimiendo...";xPopupLoad.xopen();setTimeout(function(){xPopupLoad.xclose()},3000);xPopupLoad.xclose();});}
 function xReImprimirFac(){dialog_erro_print.close();xPopupLoad.titulo="Enviando...";xPopupLoad.xopen();xLLamarPrintFac();}
-function fact_selectOptionCategoria(){const index=xThisFacturador.$.listPrint.value;impresoraSelect=xThisFacturador.listImpresoras[index];console.log(impresoraSelect);}
+function fact_selectOptionCategoria(){const index=xThisFacturador.$.listPrint.value;impresoraSelect=xThisFacturador.listImpresoras[index];}
 function fact_getAllImpresoras(){$.ajax({type:'POST',url:'../../bdphp/log_002.php',data:{op:'5'}}).done(function(dtValues){var _arrPrint=[]
 dtValues=$.parseJSON(dtValues);dtValues.datos.map(x=>_arrPrint.push(x));_arrPrint.push({idimpresora:-1,descripcion:'MOSTRAR EN PDF'})
-xThisFacturador.listImpresoras=JSON.parse(JSON.stringify(_arrPrint));impresoraSelect=_arrPrint[0];console.log(xThisFacturador.listImpresoras);});}
+xThisFacturador.listImpresoras=JSON.parse(JSON.stringify(_arrPrint));impresoraSelect=_arrPrint[0];});}
 function showMsjTelefono(obj){xThisFacturador.isShowMsjTelefono=obj.value!=='';}
-Polymer({is:'x-facturador',properties:{arrItems:[],arrTotales:[],listImpresoras:[],formValid:boolean=false,modificarCliente:boolean=false,cpe_show:boolean=false,fecha_manual:boolean=false,isShowSearchSunat:Boolean,isShowFechaPagoCredito:Boolean,isShowCpeFactura:Boolean,isShowMsjTelefono:Boolean,isShowMsjBoletaRequireDNI:Boolean},attached:function(){this.isShowSearchSunat=false;this.isShowFechaPagoCredito=false;this.isShowCpeFactura=false
-this.isShowMsjTelefono=false;this.isShowMsjBoletaRequireDNI=false;xThisFacturador=this;xIniFacturador();_cpSocketOpen();}})/*]]>*/</script>
+function selectOptionIngresarCaja(){xThisFacturador.isShowIngresaCaja=!xThisFacturador.isShowIngresaCaja;if(xThisFacturador.isShowIngresaCaja){showAlertSwalOk('info','Ingresa a caja','Estas operaciones sumaran a tu caja, en la sección ingresos varios.','Listo')}else{}}
+async function xShowIngresoVarios(_arrCpeFac){const _swalAlertValues=paramsSwalAlert;_swalAlertValues.title='<p class="fw-600 fs-18">Elige el metodo de pago</p>';_swalAlertValues.html=`<div class="pb-2"style="display: inline-flex;"><x-comp-find-tipo-pago-option class="tpf_option_cpe_fac"></x-comp-find-tipo-pago-option></div>`;_swalAlertValues.confirmButtonText='Listo, registrar';_swalAlertValues.showCancelButton=true;return await showAlertSwalHtmlDecision(_swalAlertValues,0).then(res=>{if(res.isConfirmed){_arrCpeFac.idtipo_pago=itemOptionTpSelectedCPE.idtipo_pago
+$.ajax({type:'POST',url:'../../bdphp/log_002.php',data:{op:'11',data:_arrCpeFac}}).done(res=>{console.log('ok');})}
+return res.isConfirmed;})}
+function xSaveIngresoVarios(){}
+Polymer({is:'x-facturador',properties:{arrItems:[],arrTotales:[],listImpresoras:[],formValid:boolean=false,modificarCliente:boolean=false,cpe_show:boolean=false,fecha_manual:boolean=false,isShowSearchSunat:Boolean,isShowFechaPagoCredito:Boolean,isShowCpeFactura:Boolean,isShowMsjTelefono:Boolean,isShowMsjBoletaRequireDNI:Boolean,isShowIngresaCaja:Boolean,subscription$:Object},attached:function(){this.isShowSearchSunat=false;this.isShowFechaPagoCredito=false;this.isShowCpeFactura=false
+this.isShowMsjTelefono=false;this.isShowMsjBoletaRequireDNI=false;this.isShowIngresaCaja=false;xThisFacturador=this;xIniFacturador();_cpSocketOpen();this.subscription$=onStatusSetUsChangeSede().subscribe(res=>{if(res==true){xIniFacturador();}});},detached:function(){this.subscription$.unsubscribe();},})/*]]>*/</script>

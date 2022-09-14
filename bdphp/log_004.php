@@ -373,6 +373,14 @@
 			$bd->xConsulta($sql_c);
 			// echo $sql;
 			break;
+		
+		case 1702: // lista ingresos varios
+			$sql="select DATE_FORMAT(iv.fecha, '%d/%m/%Y %H:%i:%s') fecha, tp.descripcion tipo_pago, iv.nom_cliente, iv.importe, iv.concepto
+			from ingreso_varios iv 
+				inner join tipo_pago tp on tp.idtipo_pago = iv.idtipo_pago 	
+			where iv.idusuario =$g_idusuario and iv.cierre=0 and iv.estado=0";
+			$bd->xConsulta($sql);
+			break;
 	}
 
 ?>

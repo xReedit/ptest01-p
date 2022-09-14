@@ -13,7 +13,7 @@
 <div class="content_div_op_pago" style="display:flex">
 <template is="dom-repeat" items="{{list}}" as="comprobante">
 <div class="xMiBoton_icon_option" data-index="{{index}}" selected$="{{comprobante.seleccionado}}" onclick="selectOptionComprobanteTouch(this)">
-<img src="{{comprobante.img}}" width="32px">
+<img src="{{comprobante.img}}" width="32px" class="mb-1">
 <p>{{comprobante.descripcion}}</p>
 </div>
 </template>

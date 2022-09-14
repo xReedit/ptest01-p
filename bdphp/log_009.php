@@ -112,5 +112,11 @@
                 where cpr.idusuario_admin = $g_us order by cpr.idcierre_permiso_remoto desc limit 15";
             $bd->xConsulta($sql);
             break;
+        case 7: // control de delivery - control pedidos
+            $arrItemPedido=$_POST['obj'];
+            $arrItemPedido = isset($arrItemPedido) ? $arrItemPedido == 0 ? 'null' : "'".json_encode($arrItemPedido)."'" : 'null';
+            $sql="call procedure_refresh_delivery($g_idsede, $arrItemPedido)";
+            $bd->xConsulta($sql);
+            break;
     }
 ?>    

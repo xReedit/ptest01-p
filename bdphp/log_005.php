@@ -1497,5 +1497,10 @@
 				
 				$bd->xConsulta($sql);
 				break;
+			
+			case 23: // verifica si hay cajas abiertas - control de pedidos
+				$sql = "select count(idregistro_pago) cant from registro_pago rp where idsede = $g_idsede and STR_TO_DATE(fecha, '%d/%m/%Y') = CURDATE() and idusuario!=$g_idusuario and cierre=0 order by idregistro_pago desc limit 1";
+				$bd->xConsulta($sql);
+				break;
 	}
 ?>

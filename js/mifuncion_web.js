@@ -6,7 +6,8 @@ function numeroConComas(x){return x.toString().replace(/\B(?=(\d{3})+(?!\d))/g,"
 function xCeroIzq(Num,CantidadCeros){const isNum=parseInt(Num);if(isNaN(isNum)){return Num;}
 Num=Num.toString();while(Num.length<CantidadCeros)Num="0"+Num;return Num;}
 function xCeroIzqNumComprobante(Num){if(!Num)return;Num=Num.toString();while(Num.length<7)Num="0"+Num;return Num;}
-function conMayusculas(field){field.value=field.value.toUpperCase();};function primeraConMayusculas(field){return field?field.toLowerCase().replace(/\b(\w)/g,s=>s.toUpperCase()):field;};function getUrlParameter(sParam,simbolo){var sPageURL=window.location.href;sPageURL=sPageURL.replace('-',' ');var sURLVariables=sPageURL.split(simbolo);for(var i=0;i<sURLVariables.length;i++)
+function conMayusculas(field){field.value=field.value.toUpperCase();};function primeraConMayusculas(field){return field?field.toLowerCase().replace(/\b(\w)/g,s=>s.toUpperCase()):field;};function toTitleCase(str){return str.replace(/\w\S*/g,function(txt){return txt.charAt(0).toUpperCase()+txt.substr(1).toLowerCase();});}
+function getUrlParameter(sParam,simbolo){var sPageURL=window.location.href;sPageURL=sPageURL.replace('-',' ');var sURLVariables=sPageURL.split(simbolo);for(var i=0;i<sURLVariables.length;i++)
 {var sParameterName=sURLVariables[i].split('=');if(sParameterName[0]==sParam){return sParameterName[1];}}}
 function xRemoverDOM(xContenedor,xChild){$(xContenedor).find(xChild).remove().trigger('create');}
 function xxCalcularTotal(xTablaCal,xClass){xPrecioTT=0;xTablaCal.find(xClass).each(function(index,element){xPrecioTT=parseFloat(xPrecioTT)+parseFloat($(element).text());});return xPrecioTT;}

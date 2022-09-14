@@ -94,6 +94,33 @@
 <th align="right">Importe</th>
 </thead>
 </table>
+<div hidden$="[[ !isShowIngresoVarios ]]">
+<br><br>
+<div class="xLinea2"></div>
+<br>
+<h3>Ingresos Varios</h3>
+<br>
+<table>
+<thead>
+<th align="left">Fecha</th>
+<th align="left">Metodo</th>
+<th align="left">Cliente</th>
+<th align="left">Concepto</th>
+<th align="right">Importe</th>
+</thead>
+<tbody>
+<template is="dom-repeat" items="{{listIngresosVarios}}" as="item">
+<tr>
+<td>{{ item.fecha }}</td>
+<td>{{ item.tipo_pago }}</td>
+<td>{{ item.nom_cliente }}</td>
+<td>{{ item.concepto }}</td>
+<td align="right">{{ item.importe }}</td>
+</tr>
+</template>
+</tbody>
+</table>
+</div>
 <div hidden$="[[ !isShowListaAdelantoOrden ]]">
 <br><br>
 <div class="xLinea2"></div>
@@ -239,8 +266,8 @@
 <tr id="Seccion_resumen_vendido"></tr>
 </table>
 </div>
-<div class="xInvisible">
-<div id="div_datos" style="max-width:500px">
+<div id="pdf_cierre" class="xInvisible border-0" style="max-width:300px;background:white">
+<div id="div_datos_cierre_caja"></div>
 </div>
 </template>
 </dom-module>
@@ -269,10 +296,10 @@ guadandoIngresoSalida=true;xvalidateFormInput('form_ingreso',function(a){if(a===
 var xvalIE=$("#form_ingreso #selecie").val();xPopupLoad.xopen();$("#form_ingreso #fecha").val(xDevolverFecha()+' '+xDevolverHora());$("#form_ingreso #monto").val(xMoneda($("#form_ingreso #monto").val()))
 $("#form_ingreso #tipo").val(xvalIE);$.post("../../bdphp/ManejoBD_IUD.php?tb=ie_caja",$("#form_ingreso").serialize(),function(aa){xPopupLoad.xclose();$("#form_ingreso #motivo").val('');$("#form_ingreso #monto").val('');xLoadResumenIS();guadandoIngresoSalida=false;})})}
 function xGetDataCierre(idBitacora){$.ajax({type:'POST',url:'../../bdphp/log.php?op=7000',data:{id:idBitacora}}).done(function(res){res=JSON.parse(res);if(!res.success){console.log(res);xPopupLoad.xclose();return;}
-const arrData=JSON.parse(res.datos[0]['data']);const arrTitulo=JSON.parse(res.datos[0]['titulo']);var keyTitulo='',cIndex=0,arrX=[],arrRpt=[];arrData.map((x,i)=>{keyTitulo=Object.keys(x)[0];arrX=JSON.parse(x[keyTitulo]);if(arrX){arrRpt.push({des:arrTitulo[i].des,t1:arrTitulo[i].t1,t2:arrTitulo[i].t2,t3:arrTitulo[i].t3,visible:0,});arrX.map((z,q)=>{arrRpt[cIndex][q]=z;});cIndex++;}});xArrayCierrePrint=arrRpt;xEscribirDatosHtml();xPopupLoad.xclose();$("#btns_cierre").html('<paper-button tabindex="0" raised class="xverde" onclick="xCerrarSessionAll();"><iron-icon icon="close"></iron-icon>Cerrar terminal</paper-button>');xPermisoSupervisor=0;xIniArraysPrint();if(!isPrintCierreCaja){xVerificaSiFacturacionE();}
-xImprimirCierre(xArrayEncabezadoCierre,xArrayCierrePrint);});}
+const arrData=JSON.parse(res.datos[0]['data']);const arrTitulo=JSON.parse(res.datos[0]['titulo']);var keyTitulo='',cIndex=0,arrX=[],arrRpt=[];arrData.map((x,i)=>{keyTitulo=Object.keys(x)[0];arrX=JSON.parse(x[keyTitulo]);if(arrX){arrRpt.push({des:arrTitulo[i].des,t1:arrTitulo[i].t1,t2:arrTitulo[i].t2,t3:arrTitulo[i].t3,visible:0,});arrX.map((z,q)=>{arrRpt[cIndex][q]=z;});cIndex++;}});xArrayCierrePrint=arrRpt;xPopupLoad.xclose();$("#btns_cierre").html('<paper-button tabindex="0" raised class="xverde" onclick="xCerrarSessionAll();"><iron-icon icon="close"></iron-icon>Cerrar terminal</paper-button>');xPermisoSupervisor=0;xIniArraysPrint();if(!isPrintCierreCaja){xVerificaSiFacturacionE();}
+xImprimirCierre(xArrayEncabezadoCierre,xArrayCierrePrint);xEscribirDatosHtml();});}
 function xLoadResumenIS(){$("#tb_resumen_ie .row").remove();$("#tb_resumen_ie").append('<tr class="row"><td colspan="5"><paper-spinner active></paper-spinner></td></tr>').trigger('create');$.ajax({type:'POST',url:'../../bdphp/log.php?op=70011'}).done(function(dtIE){var xdtIE=$.parseJSON(dtIE);var xcadena_resumen_ie='';var xCuentaRow=0;var xClassTipo='';xdtIE=xdtIE.datos;for(var i=0;i<xdtIE.length;i++){xCuentaRow++;xClassTipo='';if(xdtIE[i].tipo!=1){xClassTipo='xColorRow_Rojo';}
-xcadena_resumen_ie=String(xcadena_resumen_ie+'<tr class="row '+xClassTipo+'"><td>'+xCeroIzq(xCuentaRow,2)+'</td><td>'+xdtIE[i].fecha+'</td><td>'+xdtIE[i].des_tipo+'</td><td>'+xdtIE[i].motivo+'</td><td align="right">'+xdtIE[i].monto+'</td></tr>');};$("#tb_resumen_ie .row").remove();$("#tb_resumen_ie").append(xcadena_resumen_ie).trigger('create');});xLoadAdelantoOrdenPedido();xLoadTicketsEntradaCaja();}
+xcadena_resumen_ie=String(xcadena_resumen_ie+'<tr class="row '+xClassTipo+'"><td>'+xCeroIzq(xCuentaRow,2)+'</td><td>'+xdtIE[i].fecha+'</td><td>'+xdtIE[i].des_tipo+'</td><td>'+xdtIE[i].motivo+'</td><td align="right">'+xdtIE[i].monto+'</td></tr>');};$("#tb_resumen_ie .row").remove();$("#tb_resumen_ie").append(xcadena_resumen_ie).trigger('create');});xLoadAdelantoOrdenPedido();xLoadTicketsEntradaCaja();xLoadIngresosVariosCaja();}
 function xLoadAdelantoOrdenPedido(){$.ajax({type:'POST',url:'../../bdphp/log_004.php?op=15'}).done(function(resAdelanto){const _resAdelanto=JSON.parse(resAdelanto).datos;xThisCaja.listAdelantoOrden=_resAdelanto;xThisCaja.isShowListaAdelantoOrden=xThisCaja.listAdelantoOrden.length>0;});}
 function xSumarTotal(){xMontoTotalCaja=0;$('.xTxtCierreCajaContenedor').find('input:text').each(function(index,element){var xValElement=$(element).val();if(xValElement!=""&&$(element).attr('data-valor')!="total"){xMontoTotalCaja+=parseFloat(xValElement);}});$('#TxtTotal').val(xMoneda(xMontoTotalCaja));}
 function xVerificar(){xMontoTotalCaja=txt_total_caja.value;$('#xTituloRpt').html('<paper-spinner active></paper-spinner>').trigger('create');const datos={totalcaja:parseFloat(xMontoTotalCaja),idusuario_supervisor:id_supervisor||0,}
@@ -316,9 +343,10 @@ function xReImprimirCierre(obj){dialog_erro_print.close();xPopupLoad.titulo="Env
 function xEscribirDatosHtml(){xArrayCierrePrint.map((i,index)=>{var sum_t1=0,sum_t2=0,sum_t3=0;for(const key in i){if(typeof i[key]==='object'){sum_t1+=isNaN(parseFloat(i[key].t1))?0:parseFloat(i[key].t1);sum_t2+=isNaN(parseFloat(i[key].t2))?0:parseFloat(i[key].t2);sum_t3+=isNaN(parseFloat(i[key].t3))?0:parseFloat(i[key].t3);}}
 xArraySumT[index]={'t1':sum_t1==0?'':sum_t1,'t2':sum_t2==0?'':sum_t2,'t3':sum_t3.toFixed(2)}});var xtabla_datos='',xtabla_encabezados='',xbody_datos='',count_row=0,xtabla_sum='';const sedeDatos=xm_log_get('datos_org_sede')[0];for(a in xArrayCierrePrint){xtabla_datos='';xtabla_encabezados='';count_row=0;xtabla_sum='';xtabla_encabezados='<thead><th align="left">'+xArrayCierrePrint[a].des+'</th><th align="right">'+xArrayCierrePrint[a].t1+'</th><th align="right">'+xArrayCierrePrint[a].t2+'</th><th align="right">'+xArrayCierrePrint[a].t3+'</th></thead>';$.map(xArrayCierrePrint[a],function(xn_p,z){if(typeof xn_p==="object"){count_row++;xtabla_datos=String(xtabla_datos+'<tr><td>'+xn_p.des+'</td><td align="right" class="t1">'+xn_p.t1+'</td><td class="t2" align="right">'+xn_p.t2+'</td><td class="t3" align="right">'+xn_p.t3+'</td><tr>');}})
 xtabla_sum=String('<tr><td></td><td align="right"><strong>'+xArraySumT[a].t1+'</strong></td><td align="right"><strong>'+xArraySumT[a].t2+'</strong></td><td align="right"><strong>'+xArraySumT[a].t3+'</strong></td></tr>');if(count_row===0){continue;}
-xbody_datos=String(xbody_datos+'<table class="xtable2 xMarginTop" width="100%">'+xtabla_encabezados+xtabla_datos+xtabla_sum+'</table><br><br>');};const _fechaNow=xDevolverFecha()+' | '+xDevolverHora();xbody_datos=`<div style="line-height: 1;"><h3>CIERRE DE CAJA-${_fechaNow}</h3><h3>Local:${sedeDatos.sedenombre}</h3><h3>Ciudad:${sedeDatos.sedeciudad}</h3><h4>Usuario:${xNomUsario}</h4><p>Intentos:<strong>${numImtentosUs}</strong></p><p>Supervisor:<trong>${nom_supervisor}</strong></p><br><br></div>${xbody_datos}<br><br><p>papaya.com.pe</p>`;$("#div_datos").append(xbody_datos).trigger('create');if(!sedeDatos.email_cierre){return;}
-const _msjSend={to:sedeDatos.email_cierre,asunto:'CIERRE DE CAJA | '+sedeDatos.sedenombre+' | '+xDevolverFecha(),titulo:'Cierre de caja',htmlContent:div_datos.outerHTML}
+xbody_datos=String(xbody_datos+'<table class="xMarginTop fs-11" width="100%">'+xtabla_encabezados+xtabla_datos+xtabla_sum+'</table><br><br>');};const _fechaNow=xDevolverFecha()+' | '+xDevolverHora();xbody_datos=`<div style="line-height: 1;"><h4>CIERRE DE CAJA-${_fechaNow}</h4><h4>Local:${sedeDatos.sedenombre}</h4><h4>Ciudad:${sedeDatos.sedeciudad}</h4><p>Usuario:${xNomUsario}</p><p>Intentos:<strong>${numImtentosUs}</strong></p><p>Supervisor:<trong>${nom_supervisor}</strong></p><br><br></div>${xbody_datos}<br><br><p>papaya.com.pe</p>`;$("#div_datos_cierre_caja").append(xbody_datos).trigger('create');setTimeout(()=>{xDownloadPdfCierre(_fechaNow,xNomUsario);},1500);if(!sedeDatos.email_cierre){return;}
+const _msjSend={to:sedeDatos.email_cierre,asunto:'CIERRE DE CAJA | '+sedeDatos.sedenombre+' | '+xDevolverFecha(),titulo:'Cierre de caja',htmlContent:div_datos_cierre_caja.outerHTML}
 xSendEmailClienteSES(_msjSend);}
+function xDownloadPdfCierre(_fecha,_nomusuariocierre){$('#pdf_cierre').removeClass('xInvisible');var nodeImgCierre=document.getElementById('pdf_cierre');const _heightMM=nodeImgCierre.scrollHeight/3.77;domtoimage.toPng(nodeImgCierre).then(function(dataUrl){var img=new Image();img.src=dataUrl;var doc=new jsPDF('p','mm',[90,_heightMM]);doc.addImage(img,'JPEG',5,5);doc.setProperties({title:"Cierre de caja - "+_nomusuariocierre+" "+_fecha});window.open(doc.output('bloburl'));$('#pdf_cierre').addClass('xInvisible');}).catch(function(error){console.error('ocurrio un error',error);});}
 function xloadLastCierres(){$.ajax({type:'POST',url:'../../bdphp/log_004.php?op=12'}).done(function(res){res=JSON.parse(res).datos;xThisCaja.listCierres=res;xThisCaja.isShowLastCierres=res.length>0;});}
 function reImprimirCierreHistory(obj){const _cpe=obj.dataId;xPopupLoad.xopen()
 $.ajax({type:'POST',url:'../../bdphp/log_005.php?op=1703',data:{idprint:_cpe}}).done(function(res){var _detalle_json=JSON.parse(res).datos;_detalle_json=_detalle_json.length>0?_detalle_json[0]:_detalle_json;const _dataPrint={detalle_json:_detalle_json.detalle_json,idprint_server_detalle:_detalle_json.idprint_server_detalle+new Date().getMilliseconds(),hora:xDevolverHora(),nomUs:'Caja',nom_documento:"cuadre-caja"}
@@ -329,9 +357,10 @@ function xOpenDialogPermisoRemotoUs(){txt_total_tengo.value=txt_total_caja.value
 function xLoadTicketsEntradaCaja(){$.ajax({type:'POST',url:'../../bdphp/log_004.php?op=17'}).done(function(res){const _resListTickes=JSON.parse(res).datos;xThisCaja.isShowListaTicketEntrada=_resListTickes?_resListTickes.length>0:false;xThisCaja.listTicketEntrada=_resListTickes.map(x=>{x.lista=JSON.parse(x.lista);x.total=parseFloat(x.total).toFixed(2)
 return x;});});}
 function xLoadUsAdminPermiso(){$.ajax({type:'POST',url:'../../bdphp/log.php?op=70112'}).done(function(res){xThisCaja.listUsAdmin=JSON.parse(res).datos;selectedUsAdmin(null,0);});}
+function xLoadIngresosVariosCaja(){$.ajax({type:'POST',url:'../../bdphp/log_004.php?op=1702'}).done((res)=>{xThisCaja.listIngresosVarios=JSON.parse(res).datos;xThisCaja.isShowIngresoVarios=xThisCaja.listIngresosVarios.length>0;});}
 function selectedUsAdmin(obj,index=null){if(index!==null){idUsAdminPermiso=xThisCaja.listUsAdmin[index].idusuario;return;}
 idUsAdminPermiso=xThisCaja.listUsAdmin[obj.selectedIndex].idusuario;}
 function xEnviarPermisoRemoto(){$.ajax({type:'POST',url:'../../bdphp/log.php?op=70113',data:{idus:idUsAdminPermiso,importe:txt_total_tengo.value}}).done(function(res){$('#div_espera_rpt').removeClass('xInvisible');dialog_permiso_remoto.close();});}
 function xCajaResPermisoRemoto(res){if(res.idusuario_solicita!==xIdUsuario){return;}
 xThisCaja.rowRptSolicitud=res;$('#div_espera_rpt').addClass('xInvisible');$('#div_rpt_solicitud').removeClass('xInvisible');}
-Polymer({is:'x-caja',properties:{xt_org:Number,xt_idsede:Number,xt_idus:Number,winchaCierre:[],listCierres:[],listUsAdmin:[],isShowLastCierres:Boolean,listAdelantoOrden:[],listTicketEntrada:[],isShowListaAdelantoOrden:Boolean,isShowEsperaRptSolicitudCierre:Boolean,isShowRptSolicitudCierre:Boolean,isShowListaTicketEntrada:Boolean,rowRptSolicitud:[]},attached:function(){this.selected=0;this.isShowLastCierres=false;this.isShowListaAdelantoOrden=false;this.isShowEsperaRptSolicitudCierre=false;this.isShowRptSolicitudCierre=false;this.isShowListaTicketEntrada=false;xThisCaja=this;xIniCaja();setTimeout(()=>{_cpSocketOpen();},1000);},detached:function(){_cpSocketClose();}})/*]]>*/</script>
+Polymer({is:'x-caja',properties:{xt_org:Number,xt_idsede:Number,xt_idus:Number,winchaCierre:[],listCierres:[],listUsAdmin:[],isShowLastCierres:Boolean,listAdelantoOrden:[],listTicketEntrada:[],isShowListaAdelantoOrden:Boolean,isShowEsperaRptSolicitudCierre:Boolean,isShowRptSolicitudCierre:Boolean,isShowListaTicketEntrada:Boolean,isShowIngresoVarios:Boolean,rowRptSolicitud:[],listIngresosVarios:[]},attached:function(){this.selected=0;this.isShowLastCierres=false;this.isShowListaAdelantoOrden=false;this.isShowEsperaRptSolicitudCierre=false;this.isShowRptSolicitudCierre=false;this.isShowListaTicketEntrada=false;this.isShowIngresoVarios=false;xThisCaja=this;xIniCaja();setTimeout(()=>{_cpSocketOpen();},1000);},detached:function(){_cpSocketClose();}})/*]]>*/</script>

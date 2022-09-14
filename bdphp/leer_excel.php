@@ -65,7 +65,7 @@ function sheetDataProductos($sheet) {
       if($cell!=''){        
         // $cell=utf8_encode($cell);
         $cell= eliminar_tildes($cell);
-        $cell=str_replace("'","",$cell);        
+        $cell=str_replace("'"," ",$cell);        
 
         // $cell = utf8_encode(utf8_decode($cell));
       }      

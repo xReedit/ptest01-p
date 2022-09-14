@@ -1651,22 +1651,24 @@
 			if($nomclie==''){//publico general
 				$idclie=0;
 			}else{
-				$sqlClienteNew="insert into cliente (idorg,nombres,direccion,ruc,f_nac, f_registro,telefono, direccion_delivery_no_map)values(".$_SESSION['ido'].",'".$nomclie."','".$direccion."','".$num_doc."','".$f_nac."',DATE_FORMAT(now(),'%d/%m/%Y'),'".$telefono."', '".$direccion_delivery_no_map_save."')";
+				// $sqlClienteNew="insert into cliente (idorg,nombres,direccion,ruc,f_nac, f_registro, direccion_delivery_no_map)values(".$_SESSION['ido'].",'".$nomclie."','".$direccion."','".$num_doc."','".$f_nac."',DATE_FORMAT(now(),'%d/%m/%Y'),'".$telefono."', '".$direccion_delivery_no_map_save."')";
+				$sqlClienteNew="insert into cliente (idorg,nombres,direccion,ruc,f_nac, f_registro, direccion_delivery_no_map)values(".$_SESSION['ido'].",'".$nomclie."','".$direccion."','".$num_doc."','".$f_nac."',DATE_FORMAT(now(),'%d/%m/%Y'),'".$direccion_delivery_no_map_save."')";
 				$idclie=$bd->xConsulta_UltimoId($sqlClienteNew);
 
 				// insertar en cliente_sede
-				$sql = "call procedure_registrar_cliente_sede(".$_SESSION['idsede'].",".$idclie.")";				
+				$sql = "call procedure_registrar_cliente_sede(".$_SESSION['idsede'].",".$idclie.", '".$telefono."')";				
 				$bd->xConsulta_NoReturn($sql);
 				
 			}
 		} else {
 			// insertar en cliente_sede
-			$sqlPredudereUpdate = "call procedure_registrar_cliente_sede(".$_SESSION['idsede'].",".$idclie.");";
+			$sqlPredudereUpdate = "call procedure_registrar_cliente_sede(".$_SESSION['idsede'].",".$idclie.", '".$telefono."');";
 			// $bd->xConsulta_NoReturn($sqlPredudereUpdate);
 			// echo $sqlPredudereUpdate;
 
 			// update cliente
-			$sqlUpdateClient="update cliente set nombres='".$nomclie."',ruc='".$num_doc."',referencia='".$referencia."',direccion='".$direccion."'".$update_telefono.", direccion_delivery_no_map = '". $direccion_delivery_no_map_save ."' where idcliente = ".$idclie.";";
+			// $sqlUpdateClient="update cliente set nombres='".$nomclie."',ruc='".$num_doc."',referencia='".$referencia."',direccion='".$direccion."'".$update_telefono.", direccion_delivery_no_map = '". $direccion_delivery_no_map_save ."' where idcliente = ".$idclie.";";
+			$sqlUpdateClient="update cliente set nombres='".$nomclie."',ruc='".$num_doc."',referencia='".$referencia."',direccion='".$direccion."', direccion_delivery_no_map = '". $direccion_delivery_no_map_save ."' where idcliente = ".$idclie.";";
 
 			$bd->xMultiConsultaNoReturn($sqlPredudereUpdate.$sqlUpdateClient);
 		}
@@ -1692,7 +1694,7 @@
 	// registra el cliente en la sede
 	function cocinar_registro_cliente_sede() {
 		$idclie = $_POST['idcliente'];
-		$sql = "call procedure_registrar_cliente_sede(".$_SESSION['idsede'].",".$idclie.")";				
+		$sql = "call procedure_registrar_cliente_sede(".$_SESSION['idsede'].",".$idclie.", '')";				
 		$bd->xConsulta_NoReturn($sql);
 		// echo $sql;
 	}

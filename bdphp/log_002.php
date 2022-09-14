@@ -264,9 +264,10 @@
             )) LIKE '%".$pagination['pageFilter']."%' ";
 
             $sql="
-                SELECT tp.descripcion as nom_comprobante, tp.codsunat , c.* from ce as c
+                SELECT tp.descripcion as nom_comprobante, tp.codsunat, cnc.numero nota_credito , c.* from ce as c
                     inner join tipo_comprobante_serie as tps on tps.idtipo_comprobante_serie=c.idtipo_comprobante_serie
                     inner join tipo_comprobante as tp on tp.idtipo_comprobante=tps.idtipo_comprobante   
+                    left join ce_nota_credito cnc on c.idce_nota_credito = cnc.idce_nota_credito
                 where (c.idorg=".$_SESSION['ido']." and c.idsede=".$_SESSION['idsede'].") ".$filtro." ".$filtroFecha." 
                 ORDER BY c.idce desc limit ".$pagination['pageLimit']." OFFSET ".$pagination['pageDesde'];
                       
@@ -366,6 +367,28 @@
         // regularizar comprobantes no enviados hace 2 dias
         case '9':
             break;
+
+        // registrar nota de credito
+        case '10':            
+            $arrItem = json_encode($_POST['data']);
+            $sql = "CALL procedure_cpe_registro_nc(".$g_idsede.",".$g_idusuario.",'".$arrItem."')";
+            $bd->xConsulta($sql);
+            break;
+        case '1001': // load notas de credito
+            $sql="select u.usuario, c.numero comprobante, cn.* from ce_nota_credito cn
+            inner join ce c on c.idce = cn.idce 
+            inner join usuario u on u.idusuario = cn.idusuario 
+            where cn.idsede = ".$g_idsede."
+            order by cn.idce_nota_credito desc";
+            $bd->xConsulta($sql);
+            break;
+            
+        case '11': // guarda ingreso varios        
+            $arrItem = json_encode($_POST['data']);    
+            $sql="call procedure_registra_ingreso_varios(".$g_idsede.",".$g_idusuario.",'".$arrItem."')";
+            $bd->xConsulta($sql);
+            break;
+
         default:
             # code...
             break;

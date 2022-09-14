@@ -16,18 +16,29 @@
 <button dialog-dismiss id="dlg_sunat_btn" class="xBoton2 xVerde xInvisible">Listo</button>
 </div>
 </paper-dialog>
-<paper-dialog id="dialog_motivo_anular_comprobante" style="min-width:320px" entry-animation="scale-up-animation" exit-animation="fade-out-animation" with-backdrop>
+<paper-dialog id="dialog_motivo_anular_comprobante" class="dialog_redondo" style="min-width:320px;max-width:600px" entry-animation="scale-up-animation" exit-animation="fade-out-animation" with-backdrop>
 <div class="xContent">
-<h4>ANULAR COMPROBANTE</h4>
-<hr>
-<p class="xColorRow_Rojo">Esta seguro de querer anular el comprobante? Una vez anulado no podra recuperarlo.</p>
+<div class="d-flexx align-items-center">
+<h3>ANULAR COMPROBANTE</h3> <span class="ml-2">[[ desDocCpe ]]</span>
+</div>
+<div class="xLinea2"></div><br>
+<p>
+<strong>El plazo para comunicar de baja o anular un comprobante de pago electrónico es de [[NumDaysAnularCpe]] días</strong>, contados desde el día que emites el comprobante. Si no cumples ese plazo, tendrás que generar una Nota de Crédito.
+</p>
+<div hidden$="[[isShoOpNotaCredito]]" class="mt-1">
+<p class="fw-600 text-success">El documento esta en el plazo para dar de baja.</p>
+</div>
+<div hidden$="[[!isShoOpNotaCredito]]" class="mt-1">
+<p class="fw-600 text-info">El documento NO cumple con el plazo, debes generar una Nota de Crédito.</p>
+</div>
 <br>
-<h4>Indique el motivo de anulacion</h4>
+<h4>Indique el motivo de anulación</h4>
 <div>
 <input type="text" class="xMiInput" placeholder="Motivo..." id="txt_motivo_anular" autofocus>
 </div>
 <br><br><br>
-<div class="xBoton2 xRojo" dialog-dismiss onclick="xAnularComprobante_confirma()">Listo</div>
+<div class="xBoton2 xRojo" dialog-dismiss hidden$="[[isShoOpNotaCredito]]" onclick="xAnularComprobante_confirma()">Listo, dar de baja</div>
+<div class="xBoton2 xAzul" dialog-dismiss hidden$="[[!isShoOpNotaCredito]]" onclick="xAnularComprobante_NotaCredito()">Listo, generar nota de crédito</div>
 <div class="xBoton2 xPlomo" dialog-dismiss>Cancelar</div>
 <br><br>
 </div>
@@ -61,6 +72,7 @@
 <paper-tabs selected="{{selected}}" id="tab_cpe">
 <paper-tab>Comprobantes</paper-tab>
 <paper-tab>Resumen de boletas</paper-tab>
+<paper-tab>Notas de Crédito</paper-tab>
 </paper-tabs>
 <div class="xLinea2"></div>
 <br><br>
@@ -115,6 +127,9 @@ Sunat.<br>Este proceso es el mismo que se realiza al cierre de caja.</p>
 <div id="rowitem">
 <div id="row_estado">
 <span class$={{item.class_estado}}>{{item.nom_estado}}</span>
+<div hidden$="{{!item.show_nc}}">
+<p class="badge badge-info fs-10">NC {{ item.nota_credito }}</p>
+</div>
 <template is="dom-if" if="{{_isEqualTo(item)}}">
 <button class="xBoton_flat_2 xCursor" data-id="{{index}}" onclick="reenviarComprobante(this)"> Reenviar</button>
 </template>
@@ -213,6 +228,46 @@ Sunat.<br>Este proceso es el mismo que se realiza al cierre de caja.</p>
 </div>
 <br><br>
 </div>
+<div id="div_notas_credito">
+<h3>Notas de Crédito</h3><br>
+<table width="100%" id="tb_list_nc">
+<thead>
+<th>#</th>
+<th>Fecha</th>
+<th>Usuario</th>
+<th>Nota Crédito</th>
+<th width="35%">Comprobante Afectado</th>
+<th>Estado</th>
+<th>.</th>
+</thead>
+<tbody>
+<template is="dom-repeat" items="{{ListCpeNC}}" as="item">
+<tr>
+<td><span>{{displayIndex(index)}}</span></td>
+<td>
+<p>{{item.fecha}}</p>
+<p>{{item.hora}}</p>
+</td>
+<td>{{item.usuario}}</td>
+<td>{{item.numero}}</td>
+<td>
+<p>{{item.comprobante}}</p>
+<p class="text-secondary">{{item.motivo}}</p>
+</td>
+<td><span class="badge badge-success">Aceptado</span></td>
+<td>
+<div data-id="{{index}}">
+<img class="xzoom-1 xCursor" onclick="verDocuemnto('pdf',this,true)" src="../../../images/001-pdf.png" width="16px" alt="">
+<img class="xzoom-1 xCursor" onclick="verDocuemnto('xml',this,true)" src="../../../images/002-xml.png" width="16px" alt="">
+<img class="xzoom-1 xCursor" onclick="verDocuemnto('cdr',this,true)" src="../../../images/003-cdr.png" width="16px" alt="">
+<img class="xzoom-1 xCursor" title="Enviar x WhatsApp" onclick="openSendWhatsApp(this,true)" src="../../../images/whatsapp.png" width="16px" alt="wts">
+</div>
+</td>
+</tr>
+</template>
+</tbody>
+</table>
+</div>
 </iron-pages>
 </div>
 </div>
@@ -262,27 +317,31 @@ Sunat.<br>Este proceso es el mismo que se realiza al cierre de caja.</p>
 <script rel="preload" type="text/javascript" src="../../view/xm_all.js"></script>
 <script rel="preload" type="text/javascript" src="./../x-caja/cocinar.resumen.boletas.js"></script>
 <script type="text/javascript" src="../../view/config.const.js"></script>
+<script rel="preload" type="text/javascript" src="../../view/xJsonSunat.js"></script>
 <script rel="preload" type="text/javascript" src="../../view/xSOAPSunat.js"></script>
 <script rel="preload" type="text/javascript" src="../../view/cpe_interno.js"></script>
 <script type="text/javascript" src="../../view/export.excel.js"></script>
 <script>/*<![CDATA[*/var xThisCpe,lastPos=0,xPopupLoad,p_upadate=true,p_rows_re=0,p_rows=0,p_fecha='',p_filter='',p_desde=0,data_pagination={},data_pagination_re={},xdebounce,xe_debounce=false,index_anular;var cpe_mes_anterior='',cpe_yy_actual='',_us_cpe='',external_id_cpe,_apiConsultaCpeCPE,listCpeSuccessCPE=[];function xExportarExcel(){tableToExcel('testTable','Comprobantes');setTimeout(()=>{xPopupLoad.xclose();},500);}
-function xIniCpe(){xThisCpe.ListCpe=[];xThisCpe.ListCpeResumen=[];xCPE_getMesYYActual();xCPEValidUs();xLoadCpeEmitidos('6');xIniPagination();_apiConsultaCpeCPE=new apiConsulaCpe();setTimeout(()=>{$('body').addClass('loaded');txt_fecha.valueAsDate=new Date();},500);xThisCpe.$.paginator.addEventListener('page-limit-change',(e)=>{data_pagination=e.detail.value;p_desde=data_pagination.pageDesde;lastPos=$(window).scrollTop();xApplyFilterDate();});$("#txt_fecha").on('change',function(){xThisCpe.$.paginator.currentPage=1;xApplyFilterDate();});$("#tab_cpe").on('iron-select',function(){switch(xThisCpe.selected){}});xListRe_ini();}
+function xIniCpe(){xThisCpe.ListCpe=[];xThisCpe.ListCpeResumen=[];xCPE_getMesYYActual();xCPEValidUs();xLoadCpeEmitidos('6');xIniPagination();xThisCpe.NumDaysAnularCpe=xm_log_get('app3_sys_const').find(x=>x.llave==='NUM_DAYS_ANULACION_CPE').value;_apiConsultaCpeCPE=new apiConsulaCpe();setTimeout(()=>{$('body').addClass('loaded');txt_fecha.valueAsDate=new Date();},500);xThisCpe.$.paginator.addEventListener('page-limit-change',(e)=>{data_pagination=e.detail.value;p_desde=data_pagination.pageDesde;lastPos=$(window).scrollTop();xApplyFilterDate();});$("#txt_fecha").on('change',function(){xThisCpe.$.paginator.currentPage=1;xApplyFilterDate();});$("#tab_cpe").on('iron-select',function(){console.log('xThisCpe.selected',xThisCpe.selected);switch(xThisCpe.selected){case 2:xLoadNotasCredito();break;}});xListRe_ini();}
 function xApplyFilterDate(){var d=$(txt_fecha).val().split('-');p_fecha=d[1]===undefined?'':'01/'+d[1]+'/'+d[0];xLoadCpeEmitidos('6');xResumenMesTotaleCpe();}
 function xResumenMesTotaleCpe(){$.ajax({type:'POST',url:'../../bdphp/log_002.php',data:{op:'602',fecha_mes:p_fecha}}).done(function(res){res=JSON.parse(res);xThisCpe.listResumenCpeEmitidos=res.datos;const _totalImporteCpe=xThisCpe.listResumenCpeEmitidos.map(x=>parseFloat(x.total.replace(/,/g,''))).reduce((a,b)=>a+b,0);xThisCpe.listResumenCpeEmitidosTotal=numeroConComas(_totalImporteCpe.toFixed(2));});}
 function xIniPagination(){xThisCpe.$.paginator.currentPage=1;xThisCpe.$.paginator.pageRows=p_rows;xThisCpe.$.paginator.listRows=[10,20,30,40];}
 function xfiltrarDatos(){if(xe_debounce)return;xe_debounce=true;clearTimeout(xdebounce);xdebounce=setTimeout(()=>{xLoadCpeEmitidos('6');xe_debounce=false;xThisCpe.$.paginator.currentPage=1;},900);}
 function xLoadCpeEmitidos(op){p_filter=xThisCpe.$.txt_buscar.value;data_pagination.pageFilter=p_filter;data_pagination.pageFecha=p_fecha;let xDataRes=[];$.ajax({type:'POST',url:'../../bdphp/log_002.php',data:{op:op,pagination:data_pagination}}).done(function(res){res=res.split('**');p_rows=res[1];res=$.parseJSON(res[0]);xDataRes=res.datos;xDataRes.map(x=>{let msj_estado='';let class_estado='';const boleta=x.codsunat==='03'?true:false;const e_api=parseInt(x.estado_api)===0?true:false;const e_sunat=parseInt(x.estado_sunat)===0?true:false;let estado_cpe;let btn_enviar=false;let btn_anular=false;let style_reporte='';if(parseInt(x.anulado)===0){if(e_api&&e_sunat)estado_cpe=0;if(!e_api&&!e_sunat)estado_cpe=1;if(boleta&&e_api&&!e_sunat)estado_cpe=2;if(!boleta&&e_api&&!e_sunat)estado_cpe=3;}else{estado_cpe=4;}
-switch(parseInt(estado_cpe)){case 0:msj_estado='Aceptado';class_estado='xColorRow_verde';btn_anular=true;style_reporte='color: green';break;case 1:msj_estado='Sin Registrar';class_estado='xColorRow_Amarillo';btn_enviar=true;style_reporte='color: yellow';break;case 2:msj_estado='Registrado';class_estado='xColorRow_Azul';style_reporte='color: blue';break;case 3:msj_estado='Registrado';class_estado='xColorRow_Azul';style_reporte='color: blue';break;case 4:msj_estado='Anulado';class_estado='xFondoRowRojo';style_reporte='color: red';break;}
+switch(parseInt(estado_cpe)){case 0:msj_estado='Aceptado';class_estado='badge badge-success xColorRow_verde';btn_anular=true;style_reporte='color: green';break;case 1:msj_estado='Sin Registrar';class_estado='badge badge-warning xColorRow_Amarillo';btn_enviar=true;style_reporte='color: yellow';break;case 2:msj_estado='Registrado';class_estado='badge badge-info xColorRow_Azul';style_reporte='color: blue';break;case 3:msj_estado='Registrado';class_estado='badge badge-info xColorRow_Azul';style_reporte='color: blue';break;case 4:msj_estado='Anulado';class_estado='badge badge-danger xFondoRowRojo';style_reporte='color: red';break;}
 if(x.totales_json!==''&&x.totales_json!==null){const _totales_json=JSON.parse(x.totales_json.replace('"{','{').replace('}"','}'))
 x.subtotal=_totales_json.total_valor;x.igv=_totales_json.total_igv;}else{x.subtotal=x.total;x.igv='0.00';}
-class_estado+=' xBold xfont11';x.ico_pdf=x.pdf==='1'?true:false;x.ico_xml=x.xml==='1'?true:false;x.ico_cdr=x.cdr==='1'?true:false;x.class_estado=class_estado;x.nom_estado=msj_estado;x.btn_enviar=btn_enviar;x.btn_anular=btn_anular;x.style_reporte=style_reporte;x.isReenviandoLoading=false;})
+class_estado+=' xBold xfont11';x.ico_pdf=x.pdf==='1'?true:false;x.ico_xml=x.xml==='1'?true:false;x.ico_cdr=x.cdr==='1'?true:false;x.class_estado=class_estado;x.nom_estado=msj_estado;x.btn_enviar=btn_enviar;x.btn_anular=btn_anular;x.show_nc=x.nota_credito?true:false;x.style_reporte=style_reporte;x.isReenviandoLoading=false;})
 p_upadate=false;xThisCpe.$.paginator.pageRows=p_rows;if(op==='6'){xThisCpe.ListCpe=[];xThisCpe.ListCpe=xDataRes;setTimeout(()=>{$(window).scrollTop(lastPos);},5);}else{xThisCpe.ListCpeResumen=[];xThisCpe.ListReporte=xDataRes;setTimeout(()=>{xExportarExcel();},100);}});}
 function xEnviarResumenBoletas(){xPopupLoad.xclose();dialog_enviando_sunat.open();setTimeout(()=>{const rpt=xCocinarResumenBoletas();if(rpt===''){xLoadCpeEmitidos('6');}},1000);}
-function verDocuemnto(tipo,obj){const index=obj.parentElement.dataId;const external_id=xThisCpe.ListCpe[index].external_id;xSoapSunat_DownloadFile(tipo,external_id)}
-function xAnularComprobante(obj){if(xThisCpe.isContador)return;index_anular=obj.parentElement.dataId;dialog_motivo_anular_comprobante.open();}
+function verDocuemnto(tipo,obj,isNotaCredito=false){const index=obj.parentElement.dataId;const external_id=!isNotaCredito?xThisCpe.ListCpe[index].external_id:xThisCpe.ListCpeNC[index].external_id;xSoapSunat_DownloadFile(tipo,external_id)}
+function xAnularComprobante(obj){if(xThisCpe.isContador)return;index_anular=obj.parentElement.dataId;const _cpeSelected=xThisCpe.ListCpe[index_anular];xThisCpe.desDocCpe=_cpeSelected.numero;xVerificarPlazoAnulacion(_cpeSelected);dialog_motivo_anular_comprobante.open();}
+function xVerificarPlazoAnulacion(cpeSelected){const _numDaysDiff=xDiasTranscurridos('',cpeSelected.fecha);xThisCpe.isShoOpNotaCredito=_numDaysDiff>=7;console.log('_numDaysDiff',_numDaysDiff);}
 async function xAnularComprobante_confirma(){const _external_id=xThisCpe.ListCpe[index_anular].external_id;const _codsunat=xThisCpe.ListCpe[index_anular].codsunat;const _fecha=xThisCpe.ListCpe[index_anular].fecha;const _motivo_anulacion=txt_motivo_anular.value;const dataAnulacion={codsunat:_codsunat,external_id:_external_id,motivo:_motivo_anulacion,fecha:_fecha}
 lastPos=$(window).scrollTop();xm_all_xToastOpen("Conectando con Sunat...");const res=await xSoapSunat_AnularComprobante(dataAnulacion);if(res){lastPos=$(window).scrollTop();xLoadCpeEmitidos('6');}
 xm_all_xToastClose();txt_motivo_anular.value='';}
+async function xAnularComprobante_NotaCredito(){const _cpeSelected=xThisCpe.ListCpe[index_anular];const rpt=await xCocinarJsonNotaCredito(_cpeSelected);if(rpt){lastPos=$(window).scrollTop();xLoadCpeEmitidos('6');}
+xm_all_xToastClose();}
 function xGenerarReporteExcel(){const org=xm_log_get('datos_org_sede');xThisCpe.nom_sede=org?org[0].sedenombre:'';xLoadCpeEmitidos('601');}
 function xGenerarReporteExcelMesAnterior(){const param_busqueda_mes_anterior=xCeroIzq(cpe_mes_anterior,2)+'/'+cpe_yy_actual;const org=xm_log_get('datos_org_sede');xThisCpe.nom_sede=org?org[0].sedenombre:'';xPopupLoad.titulo="Procesando..."
 xPopupLoad.xopen();txt_buscar.value=param_busqueda_mes_anterior;setTimeout(()=>{xLoadCpeEmitidos('601');xPopupLoad.xclose();},1500);}
@@ -296,7 +355,7 @@ _rowCpe.isReenviandoLoading=false;rowLoading.addClass('xInvisible');rowEstado.re
 async function reenviarComprobante(obj){const _idIndex=obj.dataId;const objRow=obj.parentElement.parentElement;const rowEstado=$(obj.parentElement.parentElement).find('#row_estado');const rowLoading=$(obj.parentElement.parentElement).find('#row_loading');var _rowCpe=xThisCpe.ListCpe[_idIndex];_rowCpe.isReenviandoLoading=true;rowEstado.addClass('xInvisible');rowLoading.removeClass('xInvisible');const rpt=await xSoapSunat_SendSunat(_rowCpe.external_id,_rowCpe.idce)
 if(rpt.ok){xLoadCpeEmitidos('6');}else{alert(rpt.msj_error);}
 _rowCpe.isReenviandoLoading=false;rowLoading.addClass('xInvisible');rowEstado.removeClass('xInvisible');}
-function openSendWhatsApp(obj){const index=obj.parentElement.dataId;external_id_cpe=xThisCpe.ListCpe[index].external_id;xThisCpe.numComprobanteSelected=xThisCpe.ListCpe[index].numero
+function openSendWhatsApp(obj,isNotaCredito=false){const index=obj.parentElement.dataId;external_id_cpe=!isNotaCredito?xThisCpe.ListCpe[index].external_id:xThisCpe.ListCpeNC[index].external_id;xThisCpe.numComprobanteSelected=!isNotaCredito?xThisCpe.ListCpe[index].numero:xThisCpe.ListCpeNC[index].numero
 $('#div-btns-wsp').removeClass('xInvisible');txt_wtp.value='';dialog_send_whatsapp.open();}
 function xChangeNumWhatsApp(obj){xThisCpe.showBtnSendWhatsapp=obj.value.length>8;}
 function sendCPEWhatsApp(){const _payloadPdf={telefono:txt_wtp.value,external_id:external_id_cpe,numero_comprobante:xThisCpe.numComprobanteSelected,comercio:xm_log_get('datos_org_sede')[0].sedenombre};$(dgl_loading_whatsapp).removeClass('xInvisible');$('#div-btns-wsp').addClass('xInvisible');setTimeout(()=>{$(dgl_loading_whatsapp).addClass('xInvisible');dialog_send_whatsapp.close();_cpSocketComprobanteWhatApp(_payloadPdf);},3000);}
@@ -308,4 +367,5 @@ dataListReporte.push(x);}catch(error){return;}}
 setDataListReporteCpe(dataListReporte);});}
 function setDataListReporteCpe(list){xThisCpe.ListReporte=list?list:dataListReporte
 setTimeout(()=>{xExportarExcel();},500);}
-Polymer({is:'x-cpe-emitidos',properties:{ListCpe:[],ListCpeResumen:[],ListReporte:[],listSedeUsContador:[],listResumenCpeEmitidos:[],listResumenCpeEmitidosTotal:Number,nom_sede:'',isContador:false,isReenviandoLoading:false,showBtnSendWhatsapp:false,numComprobanteSelected:String,selEstablecimientoCpe:Object,selMesCPE:String},attached:function(){this.selected=0,this.isReenviandoLoading=false;this.showBtnSendWhatsapp=false;this.listResumenCpeEmitidosTotal=0;xThisCpe=this;xIniCpe();setTimeout(()=>{_cpSocketOpen();},1000);},detached:function(){_cpSocketClose();},displayIndex:function(index){return xCeroIzq(parseInt(p_desde)+(index+1),1);},_isEqualTo:(item)=>{return item.nom_estado==='Registrado'&&item?.json_xml?.length>1;},_isEqualToSinRegistrar:(item)=>{return item.nom_estado==='Sin Registrar'&&item?.json_xml?.length>1;},_isEqualToLoading:(item)=>{return item.isReenviandoLoading;},})/*]]>*/</script>
+function xLoadNotasCredito(){xThisCpe.ListCpeNC=[];$.ajax({type:'POST',url:'../../bdphp/log_002.php',data:{op:'1001'}}).done((res)=>{const _list=JSON.parse(res);console.log('_list',_list);xThisCpe.ListCpeNC=_list.datos;});}
+Polymer({is:'x-cpe-emitidos',properties:{ListCpe:[],ListCpeResumen:[],ListReporte:[],listSedeUsContador:[],listResumenCpeEmitidos:[],listResumenCpeEmitidosTotal:Number,nom_sede:'',isContador:false,isReenviandoLoading:false,showBtnSendWhatsapp:false,numComprobanteSelected:String,selEstablecimientoCpe:Object,selMesCPE:String,NumDaysAnularCpe:Number,isShoOpNotaCredito:Boolean,desDocCpe:String,ListCpeNC:[],subscription$:Object},attached:function(){this.selected=0,this.isReenviandoLoading=false;this.showBtnSendWhatsapp=false;this.isShoOpNotaCredito=false;this.listResumenCpeEmitidosTotal=0;xThisCpe=this;xIniCpe();setTimeout(()=>{_cpSocketOpen();},1000);this.subscription$=onStatusSetUsChangeSede().subscribe(res=>{if(res==true){xIniCpe();}});},detached:function(){_cpSocketClose();this.subscription$.unsubscribe();},displayIndex:function(index){return xCeroIzq(parseInt(p_desde)+(index+1),1);},_isEqualTo:(item)=>{return item.nom_estado==='Registrado'&&item?.json_xml?.length>1;},_isEqualToSinRegistrar:(item)=>{return item.nom_estado==='Sin Registrar'&&item?.json_xml?.length>1;},_isEqualToLoading:(item)=>{return item.isReenviandoLoading;},})/*]]>*/</script>
