@@ -2274,7 +2274,7 @@
 										INNER JOIN registro_pago_pedido AS rpdp on rpdp.idregistro_pago = rp.idregistro_pago
 										INNER JOIN tipo_pago AS tp using(idtipo_pago)
 									WHERE (rp.idusuario=".$idus." AND rp.cierre=0) AND (rp.estado=0 AND rpd.estado=0)
-									GROUP BY rp.fecha -- agrupamos por fecha porque hay registros que se duplican, se identifica por la misma hora
+									GROUP BY rp.fecha, tp.idtipo_pago -- agrupamos por fecha porque hay registros que se duplican, se identifica por la misma hora
 						) rpda on rpda.idregistro_pago_detalle = rpd2.idregistro_pago_detalle 
 			GROUP by rpd2.idtipo_pago";
 
@@ -2336,6 +2336,39 @@
 
 			$rpt=($ef1+$val_ingreso + $val_ingresos_varios)-$val_salida;
 			print $rpt;
+			break;
+		
+		case 700101:// total efectivo esperado en caja
+			$idsede=$_SESSION['idsede'];
+			$idus=$_SESSION['idusuario'];
+			$sql = "select * from (
+				SELECT CONCAT('VENTAS EN ', rpda.tipo_pago) AS descripcion,'' as t1, '' as t2, IFNULL(format(SUM(rpda.importe), 2), 0) as t3
+							from registro_pago_detalle rpd2 
+							inner join (SELECT rpd.importe, rpd.idregistro_pago_detalle, tp.descripcion tipo_pago
+													FROM registro_pago AS rp
+														INNER JOIN registro_pago_detalle AS rpd on rpd.idregistro_pago = rp.idregistro_pago
+														INNER JOIN registro_pago_pedido AS rpdp on rpdp.idregistro_pago = rp.idregistro_pago
+														INNER JOIN tipo_pago AS tp using(idtipo_pago)
+													WHERE (rp.idusuario=$idus AND rp.cierre=0) AND (rp.estado=0 AND rpd.estado=0) and tp.idtipo_pago = 1
+													GROUP BY rp.fecha
+										) rpda on rpda.idregistro_pago_detalle = rpd2.idregistro_pago_detalle 
+							GROUP by rpd2.idtipo_pago) as a
+				UNION all select * from (					
+				select concat('OTROS INGRESOS EN ', tp.descripcion) AS descripcion, '' t1, '' t2, format(SUM(iv.importe),2) as t3 
+							from ingreso_varios AS iv
+								INNER JOIN tipo_pago AS tp using(idtipo_pago)
+							WHERE (iv.idusuario=$idus AND iv.cierre=0) and iv.estado=0 and tp.idtipo_pago = 1
+							GROUP BY iv.idtipo_pago	) as b
+				UNION all select * from (								
+				SELECT CONCAT('INGRESO - ',ie.motivo) AS descripcion ,'' as t1, '' as t2, format(ie.monto,2) as t3
+								FROM ie_caja AS ie WHERE (ie.idsede=$idsede AND ie.idusuario=$idus) AND ie.estado=0 AND ie.cierre=0 and ie.tipo=1
+								ORDER BY ie.tipo) as c
+				UNION all select * from (									
+				SELECT CONCAT('SALIDA - ', ie.motivo) AS descripcion ,'' as t1, '' as t2, format(-ie.monto, 2) as t3
+								FROM ie_caja AS ie WHERE (ie.idsede=$idsede AND ie.idusuario=$idus) AND ie.estado=0 AND ie.cierre=0 and ie.tipo=2
+								ORDER BY ie.tipo) as d";
+
+				$bd->xConsulta($sql);
 			break;
 		case 70012://cerrar seccion = cierre=1 pedido, registro_pago, ie_caja //el ultimo es para cerrar pedidos anulados
 			//UPDATE pedido AS p INNER JOIN registro_pago AS rp ON p.idregistro_pago=rp.idregistro_pago SET p.cierre=1 WHERE (p.idorg=".$g_ido." AND p.idsede=".$g_idsede.") and (p.cierre=0 AND rp.idusuario=".$_POST['i'].");
@@ -2525,35 +2558,75 @@
 			// 	order BY sum(rpp.total) desc
 			// ";
 
-			$sql = "
-			SELECT concat(i.descripcion, COALESCE(subIt.des, '')) descripcion, sum(rpp.cantidad) as t1
-							, if(cl.cantidad = 'SP', porcion.stock,IFNULL(cl.cantidad, 0)) as t2
-							, format(sum(rpp.total),2) as t3
-						FROM registro_pago as rp
-							inner join registro_pago_pedido as rpp ON rpp.idregistro_pago = rp.idregistro_pago
-							inner join pedido_detalle as pd on rpp.idpedido_detalle = pd.idpedido_detalle				
-							inner join pedido p on pd.idpedido = p.idpedido 
-							INNER JOIN seccion AS s ON pd.idseccion=s.idseccion
-							inner join item as i on pd.iditem = i.iditem
-							left JOIN carta_lista AS cl ON i.iditem=cl.iditem and cl.idseccion = s.idseccion
-							left JOIN (
-								SELECT i1.iditem, CAST((po.stock/ii.cantidad) AS SIGNED) AS stock 
-								FROM item AS i1 
-								INNER JOIN item_ingrediente AS ii using(iditem)
-								INNER JOIN porcion AS po ON ii.idporcion=po.idporcion
-								GROUP BY i1.iditem
-							) as porcion on pd.iditem=porcion.iditem
-							left join (select itcd.iditem,  isub.iditem_subitem, concat(' - ', isub.descripcion) des , isub.precio
-				                from item_subitem_content ic		
-				                    inner join item_subitem isub on isub.iditem_subitem_content = ic.iditem_subitem_content
-				                    inner join item_subitem_content_detalle itcd on ic.iditem_subitem_content = itcd.iditem_subitem_content and itcd.estado=0 -- and itcd.iditem = ic.iditem
-				                where itcd.controlable = 1 and ic.estado=0
-				                ) subIt on subIt.iditem = cl.iditem and subIt.iditem_subitem = pd.iditem_subitem
-							where (rp.idusuario=".$_SESSION['idusuario']." AND rp.cierre = 0) 
-								and p.estado!=3 and pd.estado = 0 
-								AND pd.procede_tabla!=0
-							GROUP BY pd.iditem, pd.iditem_subitem
-							order BY sum(rpp.total) desc";
+			// $sql = "
+			// SELECT concat(i.descripcion, COALESCE(subIt.des, '')) descripcion, sum(rpp.cantidad) as t1
+			// 				, if(cl.cantidad = 'SP', porcion.stock,IFNULL(cl.cantidad, 0)) as t2
+			// 				, format(sum(rpp.total),2) as t3
+			// 			FROM registro_pago as rp
+			// 				inner join registro_pago_pedido as rpp ON rpp.idregistro_pago = rp.idregistro_pago
+			// 				inner join pedido_detalle as pd on rpp.idpedido_detalle = pd.idpedido_detalle				
+			// 				inner join pedido p on pd.idpedido = p.idpedido 
+			// 				INNER JOIN seccion AS s ON pd.idseccion=s.idseccion
+			// 				inner join item as i on pd.iditem = i.iditem
+			// 				left JOIN carta_lista AS cl ON i.iditem=cl.iditem and cl.idseccion = s.idseccion
+			// 				left JOIN (
+			// 					SELECT i1.iditem, CAST((po.stock/ii.cantidad) AS SIGNED) AS stock 
+			// 					FROM item AS i1 
+			// 					INNER JOIN item_ingrediente AS ii using(iditem)
+			// 					INNER JOIN porcion AS po ON ii.idporcion=po.idporcion
+			// 					GROUP BY i1.iditem
+			// 				) as porcion on pd.iditem=porcion.iditem
+			// 				left join (select itcd.iditem,  isub.iditem_subitem, concat(' - ', isub.descripcion) des , isub.precio
+			// 	                from item_subitem_content ic		
+			// 	                    inner join item_subitem isub on isub.iditem_subitem_content = ic.iditem_subitem_content
+			// 	                    inner join item_subitem_content_detalle itcd on ic.iditem_subitem_content = itcd.iditem_subitem_content and itcd.estado=0 -- and itcd.iditem = ic.iditem
+			// 	                where itcd.controlable = 1 and ic.estado=0
+			// 	                ) subIt on subIt.iditem = cl.iditem and subIt.iditem_subitem = pd.iditem_subitem
+			// 				where (rp.idusuario=".$_SESSION['idusuario']." AND rp.cierre = 0) 
+			// 					and p.estado!=3 and pd.estado = 0 
+			// 					AND pd.procede_tabla!=0
+			// 				GROUP BY pd.iditem, pd.iditem_subitem
+			// 				order BY sum(rpp.total) desc";
+
+
+			$sql ="SELECT * FROM (SELECT i.descripcion AS descripcion, sum(rpp.cantidad) AS t1
+			, if(cl.cantidad = 'SP', porcion.stock,IFNULL(cl.cantidad, 0)) as t2 
+			, format(sum(rpp.total),2) as t3
+				FROM registro_pago_pedido AS rpp
+				INNER JOIN registro_pago AS rp ON rpp.idregistro_pago=rp.idregistro_pago
+				INNER JOIN pedido_detalle AS pd ON rpp.idpedido_detalle=pd.idpedido_detalle
+				inner join pedido p on pd.idpedido = p.idpedido 
+				INNER JOIN seccion AS s ON pd.idseccion=s.idseccion
+				inner join item as i on pd.iditem = i.iditem
+				left JOIN carta_lista AS cl ON i.iditem=cl.iditem and cl.idseccion = s.idseccion
+				left JOIN (
+							SELECT i1.iditem, CAST((po.stock/ii.cantidad) AS SIGNED) AS stock 
+							FROM item AS i1 
+							INNER JOIN item_ingrediente AS ii using(iditem)
+							INNER JOIN porcion AS po ON ii.idporcion=po.idporcion
+							GROUP BY i1.iditem
+						) as porcion on pd.iditem=porcion.iditem
+						left join (select itcd.iditem,  isub.iditem_subitem, concat(' - ', isub.descripcion) des , isub.precio
+							from item_subitem_content ic		
+								inner join item_subitem isub on isub.iditem_subitem_content = ic.iditem_subitem_content
+								inner join item_subitem_content_detalle itcd on ic.iditem_subitem_content = itcd.iditem_subitem_content and itcd.estado=0 -- and itcd.iditem = ic.iditem
+							where itcd.controlable = 1 and ic.estado=0
+							) subIt on subIt.iditem = i.iditem and subIt.iditem_subitem = pd.iditem_subitem
+				where (rp.idusuario=".$_SESSION['idusuario']." AND rp.cierre = 0) 
+					and p.estado!=3 and pd.estado = 0 
+					AND pd.procede_tabla!=0
+				GROUP BY pd.iditem, pd.iditem_subitem
+				order BY sum(rpp.total) desc ) a	
+	union all
+			select * from (
+				select upper(rps.descripcion) as descripcion, COUNT(rps.idregistro_pago_subtotal) t1, '' t2, format(SUM(rps.importe), 2) t3 from registro_pago_subtotal rps
+					inner join registro_pago rp on rps.idregistro_pago  = rp.idregistro_pago
+				where rp.idusuario  = ".$_SESSION['idusuario']." and rps.cierre = 0 and rps.tachado = 0	
+					AND UPPER(rps.descripcion)!= 'SUB TOTAL' 
+					AND UPPER(rps.descripcion)!= 'TOTAL'
+					AND UPPER(rps.descripcion)!= 'I.G.V'
+				GROUP by rps.descripcion
+			) c";
 
 			$bd->xConsulta($sql);
 			break;
@@ -2580,7 +2653,7 @@
 				ORDER BY pd.descripcion
 			";*/
 			$sql="
-				SELECT pd.descripcion,'' AS t1,sum(rpp.cantidad) AS t2,pos.stock AS t3
+			SELECT pd.descripcion,sum(rpp.cantidad) AS t1, pos.stock AS t2, format(sum(rpp.total), 2) as t3
 				FROM registro_pago_pedido AS rpp
 					INNER JOIN registro_pago AS rp ON rpp.idregistro_pago=rp.idregistro_pago
 					INNER JOIN pedido_detalle AS pd ON rpp.idpedido_detalle=pd.idpedido_detalle
@@ -2716,7 +2789,7 @@
 				select * from (
 					select upper(rps.descripcion) as descripcion, '' t1, COUNT(rps.idregistro_pago_subtotal) t2, format(SUM(rps.importe), 2) t3 from registro_pago_subtotal rps
 						inner join registro_pago rp on rps.idregistro_pago  = rp.idregistro_pago
-					where rp.idusuario  = 103 and rps.cierre = 0 and rps.tachado = 0	
+					where rp.idusuario  = ".$_SESSION['idusuario']." and rps.cierre = 0 and rps.tachado = 0	
 						AND UPPER(rps.descripcion)!= 'SUB TOTAL' 
 						AND UPPER(rps.descripcion)!= 'TOTAL'
 						AND UPPER(rps.descripcion)!= 'I.G.V'
