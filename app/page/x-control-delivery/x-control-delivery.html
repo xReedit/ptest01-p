@@ -1,115 +1,310 @@
-<dom-module id="x-control-delivery">    
-    <template is="dom-bind">
-        <div class="p-3">
-            <h4>Pedidos Delivery</h4>
-            <table class="w-100">
-                <thead>
-                    <th align="left">#</th>
-                    <th align="left">ID</th>
-                    <th align="left">Fecha</th>
-                    <th align="left">Cliente</th>                    
-                    <th align="right">Importe</th>
-                    <th align="center">Usuario</th>
-                    <th align="left">Repartidor</th>
-                    <th align="left">Estado</th>
-                    <th></th>
-                </thead>
-                <tbody>
-                    <template is="dom-repeat" items="{{listDeliveryPedido}}" as="item">
-                        <tr>
-                            <td class="fw-700">{{item.num}}</td>
-                            <td class="fw-700">{{item.idpedido}}</td>
-                            <td>
-                                <p>{{item.fecha}}</p>
-                                <p>{{item.hora}}</p>
-                            </td>
-                            <td>
-                                <p>{{item.nom_cliente}}</p>                                                            
-                                <div class="d-flexx xCursor" title="Escribir al WhastApp">
-                                    <p class="fw-700 text-info">{{item.tel_cliente}}</p>
-                                    <p class="text-success fs-14 ml-1">                                         
-                                        <i class="fa fa-whatsapp"></i>
-                                    </p>                                
-                                </div>
-                            </td>                            
-                            <td align="right">
-                                <p>{{item.total}}</p>
-                                <p>{{item.paga_con}}</p>
-                            </td>
-                            <td align="center">
-                                <p hidden$="[[ item.showApp ]]">{{item.usuario}}</p>
-                                <p hidden$="[[ !item.showApp ]]" class="badge badge-success">APP</p>
-                            </td>
-                            <td>
-                                <p>{{item.nom_repartidor}}</p>
-                                <p>{{item.tel_repartidor}}</p>
-                                <button class="btn btn-sm btn-success">Escribir <i class="fa fa-whatsapp"></i></button>
-                            </td>
-                            <td></td>
-                            <td></td>
-                        </tr>
-                    </template>
-                </tbody>
-            </table>
-        </div>
-    </template>
-    <style>
-        .btn-row-delivery {
-            border: 0;
-            border-radius: 5px;
-            color: white;
-            cursor: pointer;
-            font-size: 11px;
-        }
-    </style>
-</dom-module>    
-
-<script>
-var xThisCDelivery;
-
-function xIniControlDelivery () {
-    xPopupLoad.xopen();
-    $.ajax({ type: 'POST', url: '../../bdphp/log_009.php?op=7'})
-	    .done( function (res) {            
-            res = JSON.parse(res);
-            
-            var _nunRows = res.datos.length;            
-            xThisCDelivery.listDeliveryPedido = res.datos.map(x => {
-                x.json_datos_delivery = JSON.parse(x.json_datos_delivery);
-                const _datosDelivery = x.json_datos_delivery.p_header.arrDatosDelivery; 
-                x.direccion_cliente = _datosDelivery.direccion;
-                x.paga_con = _datosDelivery.metodoPago.descripcion;
-                x.idmetodoPago = _datosDelivery.metodoPago.idtipo_pago;
-                
-                x.nom_cliente = toTitleCase(x.nom_cliente);
-                x.tel_cliente = _datosDelivery.telefono;
-                
-                x.showApp = x.flag_is_cliente == 1;
-
-                x.num = _nunRows;
-                _nunRows--;
-                return x;
-            });
-            console.log(xThisCDelivery.listDeliveryPedido);
-            
-            xPopupLoad.xclose();
-            // xLoadPedidosBorradosData();
-        })
-}
-
-Polymer({
-        is: 'x-control-delivery',
-        properties: {   
-            listDeliveryPedido: []             
-        },
-        attached: function () {
-            
-            xThisCDelivery = this;
-            xIniControlDelivery();
-            // _cpSocketOpen();
-        },
-        detached:function(){
-            // _cpSocketClose();
-        }
-    })
-</script>
+<link rel="import" href="../../web_components/polymer/polymer.html">
+<link rel="import" href="../../x-componentes/x-comp-list-repartidor/x-comp-list-repartidor.html">
+<link rel="import" href="../../web_components/x-pago/x-pago.html">
+<dom-module id="x-control-delivery">
+<link rel="stylesheet" href="../../../css/searchableOptionList.css">
+<script src="../../../js/searchableOptionList.js"></script>
+<template is="dom-bind">
+<paper-dialog id="dialog_comprobante_delivery" class="dialog_redondo" style="min-width:320px" entry-animation="scale-up-animation" exit-animation="fade-out-animation" with-backdrop>
+<div class="xContent" style="padding:0 20px 0 5px" id="content_xpago_delivery">
+</div>
+</paper-dialog>
+<div class="p-3" style="max-width:1200px!important;margin:0 auto">
+<div class="d-flexx justify-content-between align-items-center mb-1">
+<h3>Control de Delivery</h3>
+<button class="btn btn-sm btn-secondary xInvisible" id="btn_vista_delivery" onclick="xVistaAnteriorDelivery()">Vista Anterior</button>
+</div>
+<div class="d-flexx w-100 justify-content-between flex-wrap">
+<div>
+<paper-tabs selected="{{selectedTab}}" id="select_tab_cd">
+<paper-tab selected="0"><i class="fa fa-list mr-1"></i> Pedidos</paper-tab>
+<paper-tab> <i class="fa fa-motorcycle mr-1"></i> Repartidores</paper-tab>
+</paper-tabs>
+<div class="xLinea2 w-100"></div>
+</div>
+<div class="div-info mb-1">
+<div class="div-border mr-1 text-center p-2">
+<p class="fw-600 fs-25">{{ arrInfo.num_pedidos }}</p>
+<p class="fs-12">Pedidos</p>
+</div>
+<div class="div-border mr-1 d-flexx text-center">
+<div class="p-2 text-center">
+<p class="fw-600 text-info fs-18">{{ arrInfo.num_asignados }}</p>
+<p class="fs-12">Asignados</p>
+</div>
+<div class="p-2 text-center">
+<p class="fw-600 fs-18">{{ arrInfo.num_asignar }}</p>
+<p class="fs-12">Sin Asignar</p>
+</div>
+</div>
+<div class="div-border mr-1 d-flexx text-center">
+<div class="p-2 text-center">
+<p class="fw-600 fs-18">{{ arrInfo.num_proceso }}</p>
+<p class="fs-12">En Proceso</p>
+</div>
+<div class="p-2 text-center">
+<p class="fw-600 fs-18 text-warning">{{ arrInfo.num_camino }}</p>
+<p class="fs-12">En Camino</p>
+</div>
+<div class="p-2 text-center">
+<p class="fw-600 fs-18 text-success">{{ arrInfo.num_entregados }}</p>
+<p class="fs-12">Entregados</p>
+</div>
+</div>
+<div class="div-border text-center p-2">
+<p class="fw-600 fs-25">S/. {{ arrInfo.importe }}</p>
+<p class="fs-12">Importe</p>
+</div>
+</div>
+</div>
+<iron-pages selected="{{selectedTab}}">
+<div id="lista">
+<div class="div-border div-filter">
+<div>
+<p class="fw-900">Buscar Cliente</p>
+<input type="text" placeholder="Nombre o teléfono" class="selected-template-1 w-100" onkeyup="xCDFilterCliente(this)">
+</div>
+<div style="width:95%">
+<p class="fw-900">Filtro</p>
+<div class="content-div-filtro">
+<select class="js-select2 selected-template-1" id="seletecFilter" multiple>
+<optgroup label="Tipo de Pago">
+<template is="dom-repeat" items="{{listTipoPagoFilter}}" as="item">
+<option value$="[[item]]">{{item.descripcion}}</option>
+</template>
+</optgroup>
+<optgroup label="Usuario">
+<template is="dom-repeat" items="{{listUsuarioFilter}}" as="item">
+<option value$="[[item]]">{{item.descripcion}}</option>
+</template>
+</optgroup>
+<optgroup label="Repartdior">
+<template is="dom-repeat" items="{{listRepartidorFilter}}" as="item">
+<option value$="[[item]]">{{item.nom_repartidor}}</option>
+</template>
+</optgroup>
+<optgroup label="Estado">
+<template is="dom-repeat" items="{{listEstadoFilter}}" as="item">
+<option value$="[[item]]">{{item.descripcion}}</option>
+</template>
+</optgroup>
+<optgroup label="Condición">
+<template is="dom-repeat" items="{{listCondicionFilter}}" as="item">
+<option value$="[[item]]">{{item.descripcion}}</option>
+</template>
+</optgroup>
+</select>
+</div>
+</div>
+</div>
+<table class="w-100 content-table-delivery">
+<thead>
+<th class="fw-900" align="center">#</th>
+<th class="fw-900" align="left">Fecha</th>
+<th class="fw-900" align="left">Cliente</th>
+<th class="fw-900" align="right" style="max-width:100px">Importe</th>
+<th class="fw-900" align="center">Usuario</th>
+<th class="fw-900" align="left">Repartidor</th>
+<th class="fw-900" align="left">Estado</th>
+<th class="fw-900" align="right">Acción</th>
+</thead>
+<tbody>
+<template is="dom-repeat" items="{{listDeliveryPedidoFilter}}" as="item">
+<tr data-id="[[item.idpedido]]" class$="[[item.classNewRow]]">
+<td class="fw-700 fs-18" align="center">{{item.num}}</td>
+<td>
+<p>{{item.fecha}}</p>
+<p>{{item.hora}}</p>
+<P class="fw-700 fs-11">ID: {{item.idpedido}}</P>
+</td>
+<td style="max-width:250px">
+<p class="fw-600">{{item.nom_cliente}}</p>
+<p>{{item.direccion_cliente}}</p>
+<div>
+<div class="d-inline-flex xCursor" title="Escribir al WhastApp" onclick="xCDGoWhastAppNumber(this,'cliente')">
+<p class="fw-700 text-info">{{item.tel_cliente}}</p>
+<p class="text-success fs-14 ml-1">
+<i class="fa fa-whatsapp"></i>
+</p>
+</div>
+</div>
+</td>
+<td align="right">
+<p class$="[[ item.classtp ]] fs-11"><span class="fw-100"> {{item.paga_con}} {{item.total}}</span></p><br>
+<button hidden$="[[item.isShowNumComprobante]]" class="btn btn-sm fs-12 btn-flat sky mt-1" onclick="xCDOpenEmitirComprobante(this)">Facturar</button>
+<p hidden$="[[!item.isShowNumComprobante]]"class="fw-600 fs-14"><i class="fa fa-file-text-o text-primary"></i> {{item.num_comprobante}}</p>
+</td>
+<td align="center">
+<p hidden$="[[ item.showApp ]]">{{item.usuario}}</p>
+<p hidden$="[[ !item.showApp ]]" class="badge badge-success">APP</p>
+</td>
+<td>
+<div hidden$="[[ item.showRepartidor ]]">
+<div hidden$="[[item.isShowLoaderSearchRepartor]]">
+<p class="badge badge-secondary">No Asignado</p><br>
+<button onclick="xCDLoaderSolicitaRepartidorPapaya(this)" hidden$="[[!item.isShowCallRepartidor]]" class="btn btn-sm fs-12 btn-flat green mt-1"><i class="fa fa-motorcycle"></i> Solicitar Repartidor</button>
+<button onclick="xCDOpenListRepartidor(this)" class="btn btn-sm fs-12 btn-flat sky mt-1"> Asignar</button>
+</div>
+<div hidden$="[[!item.isShowLoaderSearchRepartor]]" style="width:60px;line-height:1" class="text-center">
+<span class="fs-15"><i class="fa fa-motorcycle"></i></span>
+<p class="fw-600 m-0 fs-11">Buscando Repartidor</p>
+<paper-progress indeterminate class="w-100"></paper-progress>
+<button hidden$="[[!item.isShowBtnCancelarSolicitud]]" onclick="xCDCancelarSolicitarRepartidorPapaya(this)" class="btn btn-sm fs-9 fw-600 btn-flat red mt-1"> Cancelar</button>
+</div>
+</div>
+<div hidden$="[[ !item.showRepartidor ]]">
+<p class="fw-600">{{item.nom_repartidor}}</p>
+<p hidden$="[[!item.isRepartidorPapaya]]" class="badge bg-papaya">Papaya Express</p>
+<p hidden$="[[item.isRepartidorPapaya]]" class="badge badge-danger">Mi Red</p>
+<div>
+<div class="d-inline-flex xCursor" title="Escribir al WhastApp" onclick="xCDGoWhastAppNumber(this,'repartidor')">
+<p class="fw-700 text-info">{{item.tel_repartidor}}</p>
+<p class="text-success fs-14 ml-1">
+<i class="fa fa-whatsapp"></i>
+</p>
+</div>
+</div>
+</div>
+</td>
+<td>
+<p class$="[[ item.classEstado ]]">{{ item.labelEstado }}</p>
+<div hidden$="[[ !item.isShowPedidoCobrado ]]">
+<p class="badge badge-success"><i class="fa fa-check"></i> Pagado</p>
+</div>
+</td>
+<td align="right">
+<div hidden$="[[ item.isShowPedidoCobrado ]]">
+<button class="btn btn-sm fs-12 btn-flat sky" onclick="xCDOpenDetallePedido(this)">Abrir</button>
+</div>
+</td>
+</tr>
+</template>
+</tbody>
+</table>
+</div>
+<div id="repartidor" class="mb-2 div-border">
+<div class="p-5">
+<table style="margin:0 auto">
+<thead>
+<th>Repartidor</th>
+<th align="center">Pedidos</th>
+<th>Metodo Pago</th>
+<th align="right">Importe Total</th>
+<th align="right">
+<p>Costo Delivery</p>
+<p class="fs-9 text-secondary">Comisión para repartidor</p>
+</th>
+<th align="right">
+<p>Total</p>
+<p class="fs-9 text-secondary">Importe total - Costo Delivery</p>
+</th>
+</thead>
+<body>
+<template is="dom-repeat" items="{{listResumenDelivery}}" as="item">
+<tr>
+<td>
+<p class="fw-600">{{item.nom_repartidor}}</p>
+<p hidden$="[[!item.isRepartidorPapaya]]" class="badge bg-papaya">Papaya Express</p>
+<p hidden$="[[item.isRepartidorPapaya]]" class="badge badge-danger">Mi Red</p>
+<div>
+<div class="d-inline-flex xCursor" title="Escribir al WhastApp" onclick="xCDGoWhastAppNumber(this,'repartidor')">
+<p class="fw-700 text-info">{{item.tel_repartidor}}</p>
+<p class="text-success fs-14 ml-1">
+<i class="fa fa-whatsapp"></i>
+</p>
+</div>
+</div>
+</td>
+<td align="center"><p class="fw-600 fs-18">{{ item.cant_pedidos }}</p></td>
+<td>
+<template is="dom-repeat" items="{{item.pedidos.metodoPago}}" as="tp">
+<div class="d-flexx justify-content-between">
+<p class="mr-1">{{ tp.descripcion }}</p>
+<p>{{ convertRowFixed(tp.importe) }}</p>
+</div>
+</template>
+</td>
+<td align="right" class="fw-600 fs-18">{{ item.pedidos.importe_total }}</td>
+<td align="right" class="fw-600 fs-18">{{ item.pedidos.entrega }}</td>
+<td align="right" class="fw-600 fs-18">{{ item.pedidos.total }}</td>
+</tr>
+</template>
+<tr>
+<td colspan="3" class="p-3 fs-18">Total</td>
+<td align="right" class="fw-600 fs-18">{{convertRowFixed(listResumenDeliveryTotales.importe_total)}}</td>
+<td align="right" class="fw-600 fs-18">{{convertRowFixed(listResumenDeliveryTotales.entrega)}}</td>
+<td align="right" class="fw-600 fs-18">{{convertRowFixed(listResumenDeliveryTotales.total)}}</td>
+</tr>
+</body>
+</table>
+</div>
+</div>
+</iron-pages>
+</div>
+</template>
+<style>.btn-row-delivery{border:0;border-radius:5px;color:white;cursor:pointer;font-size:11px}.bg-papaya{background:#571c86;color:white}.btn-flat{opacity:.8}.btn-flat.blue{background:#d0e6f0;border:solid 1px #81d4fa}.btn-flat.green{background:#bfefc1;border:solid 1px #81fa8a}.btn-flat.sky{background:#b1eef8;border:solid 1px #46d9f2}.btn-flat.red{background:#f8c2c2;border:solid 1px #e66060}.btn-flat:hover{opacity:1}.content-table-delivery{padding:15px 0;background:white;border-radius:8px;border:1px solid #e0e0e0}.content-table-delivery tr>td{border-bottom:8px solid #e5e5e7}.container-list{border:2px solid #ccc;width:300px;height:auto;overflow-y:scroll;background:white}.sol-container{display:flex!important}.div-border{background:white;border-radius:8px;border:1px solid #e0e0e0}.div-filter{display:grid;grid-template-columns:40% 60%;column-gap:30px;padding:20px;margin-bottom:10px;align-items:center}.div-info{display:flex;justify-content:flex-end}</style>
+</dom-module>
+<script>/*<![CDATA[*/var xThisCDelivery,repartidorListSeleted,htmlDivPagoCP,xRpt_pagoCD,lastIdPedidoDeliverySearch=0;function xIniControlDelivery(){xThisCDelivery.arrSedeInfo=xm_log_get('datos_org_all_sede')[0];$(".js-select2").select2({placeholder:"Aplicar Filtro",allowHtml:true,allowClear:true,tags:true,width:"100%",});$(".js-select2").on("change",(e)=>{const _arrOpSelected=[...e.target.selectedOptions].map(i=>JSON.parse(i.value));xCDSetFilterList(_arrOpSelected);})
+xPopupLoad.xopen();$(document).on('selected','.comp-list-repartidor',function(e){repartidorListSeleted=e.detail;});$("#dialog_comprobante_delivery").on('iron-overlay-closed',function(){xbuscar_mesa=false;xCDRestaurarXPagoCP();});$("#dialog_detalle").on('iron-overlay-opened',function(){xbuscar_mesa=true;});$("#select_tab_cd").on('iron-select',function(e){switch(xThisCDelivery.selectedTab){case 1:xCDRepartidorResumen();break;}
+e.stopPropagation();e.stopImmediatePropagation();});xCDSearchAllPedidos();xCDgetAllRepartidor();}
+function xCDSearchAllPedidos(){$.ajax({type:'POST',url:'../../bdphp/log_009.php?op=7'}).done(function(res){res=JSON.parse(res);xThisCDelivery.listDeliveryPedido=xCDCocinarDataItemPedido(res.datos);xPopupLoad.xclose();xCDSetChangeListDelivery();});}
+function xCDSearchItemPedido(_idpedido){var objSend='';if(_idpedido){objSend={idpedido:_idpedido}}
+$.ajax({type:'POST',url:'../../bdphp/log_009.php?op=7',data:{obj:objSend}}).done(function(res){res=JSON.parse(res);const _rowItemAdd=xCDCocinarDataItemPedido(res.datos,true)
+xThisCDelivery.listDeliveryPedido.unshift(_rowItemAdd[0]);xCDSetChangeListDelivery();});}
+function xCDCocinarDataItemPedido(rowData,indexList=false){const _classTp=['badge badge-secondary','badge badge-primary','badge bg-papaya','badge','badge badge-warning','badge badge-info','badge badge-dark']
+var _nunRows=indexList?xThisCDelivery.listDeliveryPedido.length+1:rowData.length;const classNewRow=indexList?'animated fadeIn':'';const _isRepartoSoloApp=xThisCDelivery.arrSedeInfo.pwa_delivery_reparto_solo_app==='1';const _isRepartoPropio=xThisCDelivery.arrSedeInfo.pwa_delivery_servicio_propio==='1';const _isBusquedaMapa=xThisCDelivery.arrSedeInfo.pwa_habilitar_busqueda_mapa==='1';const _isShowBtnCallRepartidor=xThisCDelivery.arrSedeInfo.pwa_delivery_habilitar_llamar_repartidor_papaya==='1';var _isAutoCallRepartidor=_isBusquedaMapa&&!_isRepartoPropio;return rowData.map(x=>{var _datosDelivery;const isDataJson=x.json_datos_delivery||x.json_datos_delivery!==''?true:false;x.isDataJson=isDataJson;x.json_datos_delivery=isDataJson?JSON.parse(x.json_datos_delivery):[];_datosDelivery=isDataJson?x.json_datos_delivery.p_header.arrDatosDelivery:[];x.paga_con=isDataJson?_datosDelivery.metodoPago.descripcion:'--';x.idtipo_pago=isDataJson?_datosDelivery.metodoPago.idtipo_pago:1;x.classtp=_classTp[parseInt(x.idtipo_pago)-1];x.nom_cliente=toTitleCase(x.nom_cliente);x.direccion_cliente=isDataJson?toTitleCase(_datosDelivery.direccion):'--';x.tel_cliente=isDataJson?_datosDelivery.telefono:'--';x.showApp=x.flag_is_cliente==1;if(x.showApp&&!_isAutoCallRepartidor){_isAutoCallRepartidor=_isRepartoSoloApp;}
+if(_isAutoCallRepartidor){x.pwa_delivery_habilitar_llamar_repartidor_papaya='1';x.flag_solicita_repartidor_papaya='1';}
+x.showRepartidor=!!x.nom_repartidor;x.isRepartidorPapaya=x.sede_repartidor==='0';x.isRepartidorPapaya=x.idrepartidor?x.isRepartidorPapaya:null;x.nom_repartidor=x.showRepartidor?toTitleCase(x.nom_repartidor):'';x.isShowCallRepartidor=isDataJson?_isShowBtnCallRepartidor:false;x.isShowLoaderSearchRepartor=x.flag_solicita_repartidor_papaya=='1';x.isShowBtnCancelarSolicitud=false;x.isShowBtnCancelarSolicitudContador=0;var _labelEstado='En Proceso',classEstado='badge badge-secondary';switch(x.pwa_estado){case'R':_labelEstado='En Camino';classEstado='badge badge-warning';break;case'E':_labelEstado='Entregado';classEstado='badge badge-success';break;}
+x.classEstado=classEstado;x.labelEstado=_labelEstado;x.isShowPedidoCobrado=x.estado=='2';x.isShowPedidoCobrado=x.estado=='2';x.num_comprobante=isDataJson?x.json_datos_delivery.p_header.num_comprobante:null;x.isShowNumComprobante=!!x.num_comprobante;x.num=_nunRows;x.classNewRow=classNewRow;_nunRows--;return x;});}
+function xCDLoaderSolicitaRepartidorPapaya(obj){const _rowItem=xCDGetItemListDelivery(obj);_rowItem.flag_solicita_repartidor_papaya=1;_rowItem.isShowLoaderSearchRepartor=true;_rowItem.isShowBtnCancelarSolicitud=true;_rowItem.isShowBtnCancelarSolicitudContador=6;xCDSetChangeListDelivery(_rowItem);xCDTimerShowBtnCancelSOlicitudRepartidor(_rowItem.idpedido);}
+function xCDTimerShowBtnCancelSOlicitudRepartidor(_id){const _rowItem=xCDGetItemListDeliveryById(_id);const _contadorTimer=setInterval(()=>{_rowItem.isShowBtnCancelarSolicitudContador--;if(_rowItem.isShowBtnCancelarSolicitudContador===0){xCDSolicitarRepartidorPapaya(_rowItem.idpedido);xCDSetChangeListDelivery(_rowItem);clearInterval(_contadorTimer);}},1000);}
+async function xCDSolicitarRepartidorPapaya(_id){const _rowItem=xCDGetItemListDeliveryById(_id);if(!_rowItem.isShowLoaderSearchRepartor){return;}
+_rowItem.flag_solicita_repartidor_papaya=1;_rowItem.isShowLoaderSearchRepartor=true;_rowItem.isShowBtnCancelarSolicitud=false;xCDSetChangeListDelivery(_rowItem);const _data={op:8,opcion:1,idpedido:_rowItem.idpedido}
+const _rpt=await xCDUpdatePedidoDelivery(_data);if(_rpt.success){_cpSocketComercioLLamaRepartidorPapaya();}}
+function xCDCancelarSolicitarRepartidorPapaya(obj){const _rowItem=xCDGetItemListDelivery(obj);_rowItem.isShowLoaderSearchRepartor=false;xCDSetChangeListDelivery(_rowItem);}
+function xCDGetItemListDelivery(obj){const _id=$(obj).parents('tr').get(0).dataId;return xCDGetItemListMasterDeliveryById(_id);}
+function xCDGetItemListDeliveryById(_idPedido){const _row=xThisCDelivery.listDeliveryPedidoFilter.find(x=>x.idpedido.toString()===_idPedido.toString());if(_row){return xCDGetItemListMasterDeliveryById(_row.idpedido);}}
+function xCDGetItemListMasterDeliveryById(_idPedido){return xThisCDelivery.listDeliveryPedido.find(x=>x.idpedido.toString()===_idPedido.toString());}
+function xCDSetChangeListDelivery(objRow=null){xThisCDelivery.listDeliveryPedido=JSON.parse(JSON.stringify(xThisCDelivery.listDeliveryPedido));xThisCDelivery.listDeliveryPedidoFilter=xThisCDelivery.listDeliveryPedido;xCDGetListFilter();}
+async function xCDUpdatePedidoDelivery(_data){var _fetchApi=new httpFecht();return await _fetchApi.postJson('../../bdphp/log_009.php',_data);}
+function xCDUpdateViewItem(opcion,rpt,isRepartidorPapaya=true){const _rowItem=xCDFindItemListById(rpt.idpedido);switch(opcion){case'repartidor':_rowItem.idrepartidor=rpt.idrepartidor;_rowItem.nom_repartidor=toTitleCase(rpt.repartidor_nom);_rowItem.tel_repartidor=rpt.repartidor_telefono;_rowItem.isShowLoaderSearchRepartor=false;_rowItem.isRepartidorPapaya=isRepartidorPapaya;_rowItem.showRepartidor=true;_rowItem.pwa_estado='R';_rowItem.labelEstado='En Camino';_rowItem.classEstado='badge badge-warning';break;case'repartidor-entregado':_rowItem.pwa_estado='E';_rowItem.labelEstado='Entregado';_rowItem.classEstado='badge badge-success';break;default:break;}
+xCDSetChangeListDelivery(_rowItem);}
+function xCDFindItemListById(_id){return xThisCDelivery.listDeliveryPedido.find(x=>x.idpedido==_id);}
+async function xCDOpenListRepartidor(obj){const _paramsSwalAlert=paramsSwalAlert;_paramsSwalAlert.html=`<p class="fs-19 fw-600">Asignar A:</p><br><x-comp-list-repartidor class="comp-list-repartidor"id="compListRepartidor"></x-comp-list-repartidor>`;_paramsSwalAlert.showCancelButton=true;const _rptDialog=await showAlertSwalHtmlDecision(_paramsSwalAlert);if(_rptDialog.isConfirmed){const _rowItem=xCDGetItemListDelivery(obj);repartidorListSeleted.idpedido=_rowItem.idpedido;repartidorListSeleted.repartidor_nom=repartidorListSeleted.nombre;repartidorListSeleted.repartidor_telefono=repartidorListSeleted.telefono;xCDUpdateViewItem('repartidor',repartidorListSeleted,false);xCDAsignarRepartidorManual(repartidorListSeleted,_rowItem);}}
+function xCDAsignarRepartidorManual(_repartidor,_rowItemPedido){$.ajax({type:'POST',url:'../../bdphp/log_005.php?op=1301',data:{idrepartidor:_repartidor.idrepartidor,idpedido:_rowItemPedido.idpedido}}).done(function(res){_rowItemPedido.idrepartidor=_repartidor.idrepartidor;_cpSocketNoiticaRepartidorFromComercio(_rowItemPedido);try{const payloadRepartidor=[{nombre:_rowItemPedido.json_datos_delivery.p_header.arrDatosDelivery.nombres,telefono:_rowItemPedido.json_datos_delivery.p_header.arrDatosDelivery.telefono,establecimiento:_rowItemPedido.json_datos_delivery.p_header.arrDatosDelivery.establecimiento.nombre,idpedido:_rowItemPedido.idpedido,repartidor_nom:_repartidor.nombre,repartidor_telefono:_repartidor.telefono}];_cpSocketNoiticaClienteRepartidorAsignado(payloadRepartidor);}catch(error){console.log(error);}});}
+function xCDOpenDetallePedido(obj){const _rowItem=xCDGetItemListDelivery(obj);xThisCDelivery.lastObjBtnVer=$(obj).parents('tr');$(obj).attr('data-numpedido',_rowItem.numpedido);$(obj).attr('data-correlativo',_rowItem.correlativo_dia);$(obj).attr('data-idcat',_rowItem.idcategoria);$(obj).attr('data-from','control-delivery');$(obj).attr('data-isconfirmarpago','0');$(obj).attr('data-nummesa','0');xThisCDelivery.rowItemSeleted=_rowItem;xLoadDetallesPedido(obj);}
+function xCDOpenEmitirComprobante(obj){const _rowItem=xCDGetItemListDelivery(obj);xThisCDelivery.rowItemSeleted=_rowItem;$('#div_pago').empty();$('#content_xpago_delivery').html('<x-pago id="component_pago_delivery"></x-pago>').trigger('create');xPopupLoad.xopen();setTimeout(()=>{xbuscar_mesa=true;xComoPagoDelivery=document.getElementById('component_pago_delivery');xComoPagoDelivery.addEventListener('xSend',function(e){xRpt_pagoCD=e.detail.xRpts;});xComoPagoDelivery.addEventListener('xCancelarCerrar',function(e){dialog_comprobante_delivery.close()});xComoPagoDelivery.addEventListener('xListoRegistraPago',function(e){xCDGoEmitirComprobante();});xComoPagoDelivery.addEventListener('xSelectTipoComprobante',function(e){dialog_comprobante_delivery.center();});xComoPagoDelivery.addEventListener('xFormClienteValid',function(e){dialog_comprobante_delivery.center();});component_pago_delivery.setVal(xMoneda(parseFloat(_rowItem.total)));component_pago_delivery.setTelefonoCliente(_rowItem.tel_cliente);component_pago_delivery.setModoSoloComprobante();xPopupLoad.xclose();dialog_comprobante_delivery.open();},500);}
+function xCDRestaurarXPagoCP(){$('#content_xpago_delivery').empty();setTimeout(()=>{$('#div_pago').html('<x-pago id="component_pago"></x-pago>').trigger('create');},500);}
+function xCDGoEmitirComprobante(){var arr_cliente=xRpt_pagoCD[0].cliente;var arr_comprobante=xRpt_pagoCD[0].comprobante;const _pedido=xThisCDelivery.rowItemSeleted.json_datos_delivery.p_body;const _subTotales=xThisCDelivery.rowItemSeleted.json_datos_delivery.p_subtotales;const arrayItems=xEstructuraItemsJsonPedidoDelivery(_pedido);xPopupLoad.xopen();$.ajax({type:'POST',url:'../../bdphp/log_001.php',data:{p_from:'fe',p_comprobante:arr_comprobante,idregistro_pago:'0'}}).done(function(xrpt_correlativo){const _arrRpt=xm_all_SetResponseLog_001(xrpt_correlativo);arr_comprobante.correlativo=xCeroIzqNumComprobante(_arrRpt.correlativo_comprobante);xCocinarImprimirComprobante(arrayItems,_subTotales,arr_comprobante,arr_cliente,0,-2);const _rowItem=xCDGetItemListDeliveryById(xThisCDelivery.rowItemSeleted.idpedido);_rowItem.num_comprobante=`${arr_comprobante.descripcion.substr(0,1).toUpperCase()}${arr_comprobante.serie}-${_arrRpt.correlativo_comprobante}`;_rowItem.isShowNumComprobante=true;xCDSetChangeListDelivery(_rowItem);$.ajax({type:'POST',url:'../../bdphp/log_002.php',data:{op:'12',id:_rowItem.idpedido,num_comprobante:_rowItem.num_comprobante}})
+dialog_comprobante_delivery.close();xPopupLoad.xclose();});}
+function xCDRemoveItemRow(payload){const _rowItem=xCDGetItemListDeliveryById(payload.idpedido);if(!_rowItem){return;}
+_rowItem.estado=2;_rowItem.isShowPedidoCobrado=true;xCDSetChangeListDelivery(_rowItem);}
+function xCDAddItemRow(payload){if(lastIdPedidoDeliverySearch.toString()===payload.idpedido.toString())return;lastIdPedidoDeliverySearch=payload.idpedido;const _rowItem=xCDGetItemListDeliveryById(lastIdPedidoDeliverySearch);if(!_rowItem){xCDSearchItemPedido(lastIdPedidoDeliverySearch)}}
+function xCDgetAllRepartidor(){$.ajax({type:'POST',url:'../../bdphp/log_005.php?op=13'}).done(function(dtValues){dtValues=JSON.parse(dtValues);xThisCDelivery.listRepartidor=dtValues.datos;});}
+function xCDGoWhastAppNumber(obj,user){const _rowItem=xCDGetItemListDelivery(obj);var numTelefono,nombre,msj;if(user=='repartidor'){numTelefono=_rowItem.tel_repartidor;nombre=_rowItem.nom_repartidor;}
+if(user=='cliente'){numTelefono=_rowItem.nom_cliente;nombre=_rowItem.tel_cliente;}
+const _msm='Hola%20'+nombre+'%20';const _link='https://api.whatsapp.com/send?phone=51'+numTelefono+'&text='+_msm;window.open(_link).focus();}
+function xCDGetListFilter(){xThisCDelivery.listTipoPagoFilter=[];xThisCDelivery.listRepartidorFilter=[];xThisCDelivery.listUsuarioFilter=[];var _item;xThisCDelivery.listDeliveryPedido.map(i=>{_item=xThisCDelivery.listTipoPagoFilter.find(x=>x.idtipo_pago.toString()===i.idtipo_pago.toString())
+if(!_item){const _row={idtipo_pago:i.idtipo_pago,descripcion:i.paga_con,cod:`T-${i.idtipo_pago}`,key:'idtipo_pago',value:i.idtipo_pago}
+xThisCDelivery.listTipoPagoFilter.push(_row);}
+_item=xThisCDelivery.listRepartidorFilter.find(x=>x.idrepartidor==i.idrepartidor)
+if(!_item&&i.idrepartidor){const _nom_repartidor=i.nom_repartidor+(i.isRepartidorPapaya?' - Red Papaya':' - Mi Red');const _row={idrepartidor:i.idrepartidor,nom_repartidor:_nom_repartidor,red:i.isRepartidorPapaya,cod:`R-${i.idrepartidor}`,key:'idrepartidor',value:i.idrepartidor}
+xThisCDelivery.listRepartidorFilter.push(_row);}});xThisCDelivery.listRepartidorFilter.unshift({idrepartidor:0,nom_repartidor:'Red Papaya',key:'isRepartidorPapaya',value:true});xThisCDelivery.listRepartidorFilter.unshift({idrepartidor:0,nom_repartidor:'Mi Red',key:'isRepartidorPapaya',value:false});xThisCDelivery.listRepartidorFilter=JSON.parse(JSON.stringify(xThisCDelivery.listRepartidorFilter))
+xThisCDelivery.listTipoPagoFilter=JSON.parse(JSON.stringify(xThisCDelivery.listTipoPagoFilter))
+xThisCDelivery.listUsuarioFilter=[{id:0,descripcion:'Usuario',cod:'U-0',key:'flag_is_cliente',value:'0'},{id:1,descripcion:'APP',cod:'U-1',key:'flag_is_cliente',value:'1'}]
+xThisCDelivery.listEstadoFilter=[{descripcion:'En Proceso',key:'pwa_estado',value:'P'},{descripcion:'En Camino',key:'pwa_estado',value:'R'},{descripcion:'Entregado',key:'pwa_estado',value:'E'},{descripcion:'En Proceso',key:'pwa_estado',value:'P'},{descripcion:'Pagado',key:'isShowPedidoCobrado',value:true},]
+xThisCDelivery.listCondicionFilter=[{descripcion:'Asignados',key:'showRepartidor',value:true},{descripcion:'Sin Asignar',key:'showRepartidor',value:false},]
+xCDInfoResumen();xCDSetFilterList([...seletecFilter.selectedOptions].map(i=>JSON.parse(i.value)))}
+function xCDSetFilterList(_listFilter){var _list=xThisCDelivery.listDeliveryPedido;_listFilter.map(i=>{_list=xCDGetFilteredCodes(_list,i.key,i.value)})
+xThisCDelivery.listDeliveryPedidoFilter=JSON.parse(JSON.stringify(_list));xCDInfoResumen();}
+function xCDFilterCliente(obj){const _value=obj.value.toLowerCase();var _list=xThisCDelivery.listDeliveryPedido;_list=_value===''?_list:_list.filter((o)=>(o.nom_cliente+o.tel_cliente).toLowerCase().indexOf(_value)>-1);xThisCDelivery.listDeliveryPedidoFilter=JSON.parse(JSON.stringify(_list));}
+function xCDGetFilteredCodes(array,key,value){return array.filter((o)=>o[key]===value);}
+function xCDInfoResumen(){const _list=xThisCDelivery.listDeliveryPedidoFilter;const _numPedidos=_list.length
+const _numEntregados=_list.filter(x=>x.labelEstado.toLowerCase()==='entregado').length;const _numEnCamino=_list.filter(x=>x.labelEstado.toLowerCase()==='en camino').length;const _numEnProceso=_list.filter(x=>x.labelEstado.toLowerCase()==='en proceso').length;const _numAsignados=_list.filter(x=>x.idrepartidor).length;const _numSinAsignar=_list.filter(x=>!x.idrepartidor).length;const _importe=_list.map(x=>parseFloat(x.total)).reduce((a,b)=>a+b,0);const _arr={num_pedidos:_numPedidos,num_entregados:_numEntregados,num_camino:_numEnCamino,num_proceso:_numEnProceso,num_asignados:_numAsignados,num_asignar:_numSinAsignar,importe:numeroConComas(_importe.toFixed(2))}
+xThisCDelivery.arrInfo=JSON.parse(JSON.stringify(_arr))}
+function xCDRepartidorResumen(){const _list=xThisCDelivery.listDeliveryPedido;var _listRepartidor=[];var _listTotalesResumen={importe_total:0,entrega:0,total:0}
+_list.filter(x=>x.idrepartidor).map(x=>{if(!_listRepartidor.find(i=>i.idrepartidor===x.idrepartidor)){const _filterRepartidor=_list.filter(z=>z.idrepartidor===x.idrepartidor)
+const _costoEntrega=x.isRepartidorPapaya?_filterRepartidor.filter(z=>z.idtipo_pago!==2).map(z=>{try{return parseFloat(z.json_datos_delivery.p_header.arrDatosDelivery.costoTotalDelivery)}catch(error){return 0;}}).reduce((a,b)=>a+b,0):_filterRepartidor.map(z=>{try{const _subTotal=z.json_datos_delivery.p_subtotales;return _subTotal.filter(s=>s.descripcion.toLowerCase().indexOf('delivery')>-1).map(s=>parseFloat(s.importe)).reduce((a,b)=>a+b,0);}catch(error){return 0;}}).reduce((a,b)=>a+b,0)
+const _rowRepartidor={idrepartidor:x.idrepartidor,nom_repartidor:x.nom_repartidor,tel_repartidor:x.tel_repartidor,isRepartidorPapaya:x.isRepartidorPapaya,cant_pedidos:_filterRepartidor.length,pedidos:{metodoPago:[],importe_total:_filterRepartidor.map(z=>parseFloat(z.total)).reduce((a,b)=>a+b,0),entrega:isNaN(_costoEntrega)?0:_costoEntrega,total:0}};var _metodoPago=[];xThisCDelivery.listTipoPagoFilter.map(tp=>{const _row={idtipo_pago:tp.idtipo_pago,descripcion:tp.descripcion,importe:_filterRepartidor.filter(z=>z.idtipo_pago===tp.idtipo_pago).map(z=>parseFloat(z.total)).reduce((a,b)=>a+b,0)}
+_metodoPago.push(_row);});_rowRepartidor.pedidos.metodoPago=_metodoPago.filter(z=>z.importe>0);_rowRepartidor.pedidos.total=_rowRepartidor.pedidos.importe_total-_rowRepartidor.pedidos.entrega;_rowRepartidor.pedidos.total=_rowRepartidor.pedidos.total.toFixed(2);_rowRepartidor.pedidos.importe_total=_rowRepartidor.pedidos.importe_total.toFixed(2);_rowRepartidor.pedidos.entrega=_rowRepartidor.pedidos.entrega.toFixed(2);_listTotalesResumen.importe_total+=parseFloat(_rowRepartidor.pedidos.importe_total);_listTotalesResumen.entrega+=parseFloat(_rowRepartidor.pedidos.entrega);_listTotalesResumen.total+=parseFloat(_rowRepartidor.pedidos.total);_listRepartidor.push(_rowRepartidor);}});xThisCDelivery.listResumenDeliveryTotales=_listTotalesResumen;xThisCDelivery.listResumenDelivery=_listRepartidor;}
+Polymer({is:'x-control-delivery',properties:{listDeliveryPedido:[],listDeliveryPedidoFilter:[],listResumenDelivery:[],listResumenDeliveryTotales:[],selectedTab:Number,listRepartidor:[],listTipoPagoFilter:[],listUsuarioFilter:[],listEstadoFilter:[],listCondicionFilter:[],rowItemSeleted:[],arrInfo:[],arrSedeInfo:[],lastObjBtnVer:Object},attached:function(){this.selectedTab=0;_cpSocketOpen();xThisCDelivery=this;},detached:function(){_cpSocketClose();},ini:()=>{xIniControlDelivery();},convertRowFixed:(obj)=>{return obj.toFixed(2)}})/*]]>*/</script>

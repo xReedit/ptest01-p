@@ -389,6 +389,11 @@
             $bd->xConsulta($sql);
             break;
 
+        case '12': // guarda num comprobante en json delivery
+            $id = $_POST['id'];
+            $num = $_POST['num_comprobante'];
+            $sql = "update pedido set json_datos_delivery = JSON_SET(json_datos_delivery, '$.p_header.num_comprobante', '$num') where idpedido = $id";
+            $bd->xConsulta($sql);
         default:
             # code...
             break;

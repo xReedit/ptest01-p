@@ -474,7 +474,7 @@
 		case 1301:// asignar repartidor
 			$idrepartidor = $_POST['idrepartidor'];
 			$idpedido = $_POST['idpedido'];
-			$sql = "update pedido set idrepartidor = ".$idrepartidor." where idpedido = ".$idpedido;
+			$sql = "update pedido set idrepartidor = ".$idrepartidor.", pwa_estado='R' where idpedido = ".$idpedido;
 			$bd->xConsulta($sql);
 			break;
 		
@@ -722,7 +722,7 @@
 		
 
 		// estadisticas
-		case 40:
+		case 40: //ventas
 			$idsede = $_POST['idsede'];			
 			$fecha = $_POST['fecha'];
 			$hoy = "if (rp.fecha_cierre = '', 1, 0 )";
@@ -821,6 +821,85 @@
 			// echo $sql;
 			$bd->xConsulta($sql);
 			break;
+		
+		// estadisticas // otros ingresos
+		case 4000:
+			$idsede = $_POST['idsede'];
+			$fecha = $_POST['fecha'];
+			$rango = $_POST['rango'];
+			$hoy = "if (p.cierre = '', 1, 0 )";
+
+			$idsede = $idsede == 0 ? $g_idsede : $idsede;
+
+			switch ($rango) {
+				case 'fecha':
+						$_sql = "select COALESCE (min(idingreso_varios), 0) d1 from ingreso_varios where idsede = $idsede and fecha >= date_sub(curdate(), INTERVAL 1 day) limit 2";
+						$firstIdPedidoToDay = $bd->xDevolverUnDato($_sql);
+						// if ( $fecha == 0 ) { 				
+							$hoy = "if (p.cierre = '', 1, 0 )";
+							$fecha = " and p.idingreso_varios >= $firstIdPedidoToDay ";
+						// } else {
+							// $hoy = "if (STR_TO_DATE(p.fecha, '%d/%m/%Y') = STR_TO_DATE('$fecha', '%d/%m/%Y'), 1, 0 )";
+							// $fecha = " and (STR_TO_DATE(p.fecha, '%d/%m/%Y') BETWEEN  DATE_ADD(STR_TO_DATE('$fecha', '%d/%m/%Y'), INTERVAL -1 DAY) and STR_TO_DATE('$fecha', '%d/%m/%Y'))";
+						// }
+					break;
+				case 'semana':
+						$hoy = "if(WEEK(p.fecha) = WEEK(now()), 1 ,0)";
+						$fecha = " and p.fecha between date_sub(now(),INTERVAL 2 WEEK) and now()";					
+					break;
+				case 'mes':
+						$option = $_POST['option'];
+						$mm = $option['num_mm'];
+						$yy = $option['num_yy'];
+						$first_day_month = $option['value'].'-01'; // el primer dia mes
+
+						$_sql = "select concat(min(rp.idingreso_varios),',',max(rp.idingreso_varios)) from ingreso_varios rp where idsede=$idsede and rp.fecha BETWEEN date_sub('$first_day_month',INTERVAL 1 MONTH) and LAST_DAY('$first_day_month')";
+						
+						$minMaxID = $bd->xDevolverUnDato($_sql);					
+						$minMaxID = explode(",", $minMaxID);
+						$lastIdRegistroPago = $minMaxID[1];
+						$firstIdRegistroPago = $minMaxID[0];
+
+						// $fecha = $fecha == 0 ? 'now()' : "STR_TO_DATE('$fecha', '%d/%m/%Y')";
+						// $hoy = "if(MONTH(STR_TO_DATE(p.fecha, '%d/%m/%Y')) = MONTH($fecha), 1 ,if(MONTH(STR_TO_DATE(p.fecha, '%d/%m/%Y')) < MONTH($fecha) - 1, 2, 0 ))";						
+						// $fecha = " and STR_TO_DATE(p.fecha, '%d/%m/%Y') between date_sub($fecha,INTERVAL 2 MONTH) and $fecha";					
+
+						$hoy = "if(MONTH(p.fecha) = $mm, 1 ,if(MONTH(p.fecha) < $mm - 1, 2, 0 ))";
+						$fecha = " and (p.idingreso_varios between $firstIdRegistroPago and $lastIdRegistroPago)";
+					break;
+
+				case 'rango':
+						$option = $_POST['option'];					
+						$date1 = $option['value1'];
+						$date2 = $option['value2'];					
+
+						$_sql = "select concat(min(rp.idingreso_varios),',',max(rp.idingreso_varios)) from ingreso_varios rp where idsede=$idsede and rp.fecha BETWEEN cast('$date1' as date) and cast('$date2' as date)";
+						$minMaxID = $bd->xDevolverUnDato($_sql);					
+						$minMaxID = explode(",", $minMaxID);
+						$lastIdRegistroPago = $minMaxID[1];
+						$firstIdRegistroPago = $minMaxID[0];
+
+						$hoy = "1";
+						$fecha = " and (p.idingreso_varios between $firstIdRegistroPago and $lastIdRegistroPago)";
+					break;
+			}
+
+			$sql="select p.*, tp.descripcion as des_tp, tp.img, DATE_FORMAT(p.fecha, '%d/%m/%Y') fecha_show, $hoy from ingreso_varios p inner join tipo_pago tp on tp.idtipo_pago = p.idtipo_pago where p.idsede =$idsede $fecha";
+
+			// echo $sql;
+			// $sql = "select p.idpedido, p.estado, p.fecha_hora, p.total_r importe, pd.estado anulado 
+			// 	, $hoy hoy, pd.ptotal_r importe_item
+			// 	, WEEK(STR_TO_DATE(p.fecha, '%d/%m/%Y')) num_semana, if(WEEK(STR_TO_DATE(p.fecha, '%d/%m/%Y')) = WEEK(now()), 1 ,0) semana_actual
+			// 	, tc.descripcion destpc
+			// 	, p.flag_is_cliente as is_from_client_pwa
+			// from pedido p
+			// 	inner join pedido_detalle pd on p.idpedido = pd.idpedido 
+			// 	inner join tipo_consumo tc on tc.idtipo_consumo = p.idtipo_consumo
+			// where p.idsede = $idsede $fecha";
+			 
+			$bd->xConsulta($sql);
+			break;
+		
 		
 		// estadisticas // pedidos
 		case 4001:

@@ -209,6 +209,63 @@
 </div>
 <br>
 </div><br>
+<div class="xContentCard border-bottom" style="padding:20px" hidden$="[[!isShowDivOtrosIngresos]]">
+<p class="fs-18 text-secondary fw-600">Otros Ingresos</p><br>
+<div class="div-content-grid">
+<div class="p-3">
+<template is="dom-repeat" items="{{tablaTipoPagoIngresosVarios}}" as="tpc">
+<div class="tableDivIndicador">
+<p class="pb-2"> Ingresos con <span class="fw-600"> {{tpc.key}} </span> </p>
+<div class="d-flexx justify-content-between align-items-center">
+<div class="d-flexx align-items-center">
+<img src$="[[ tpc.img ]]" alt="">
+<p class="fs-21 color-text-principal fw-600 pl-2"> S/. {{ tpc.importe }}</p>
+</div>
+</div>
+</div>
+</template>
+</div>
+<div class="content-table-iv">
+<table width="100%" class="fs-14 fw-600 text-secondary">
+<thead>
+<th align="left">Fecha</th>
+<th align="left">Concepto</th>
+<th align="center">Tipo Pago</th>
+<th align="right">Importe</th>
+</thead>
+<tbody>
+<template is="dom-repeat" items="{{listTipoPagoIngresosVarios}}" as="item">
+<tr>
+<td>{{item.fecha_show}}</td>
+<td class="fw-100">{{item.concepto}}</td>
+<td>
+<img src$="../../images/[[ item.img ]]" alt="tpc" width="24px">
+</td>
+<td align="right" class="fw-600 color-text-principal">{{ item.importe }}</td>
+</tr>
+</template>
+</tbody>
+</table>
+</div>
+</div>
+</div>
+<div class="xContentCard border-bottom" style="padding:20px;background:#cff1f5">
+<p class="fs-18 text-secondary fw-600">Movimientos totales</p><br>
+<div class="div-columm-3">
+<div>
+<p class="pb-2 fw-600 fs-18"> Total Ventas</p>
+<p class="fs-28 color-text-principal fw-600 pl-2"> S/. {{ dtVentasHoy.sumImporteTotalHoyShow }}</p>
+</div>
+<div>
+<p class="pb-2 fw-600 fs-18"> Total Otros Ingresos</p>
+<p class="fs-28 color-text-principal fw-600 pl-2"> S/. {{ sumTotalIngresosVarios }}</p>
+</div>
+<div>
+<p class="pb-2 fw-600 fs-18"> Total</p>
+<p class="fs-30 color-text-principal fw-900 pl-2"> S/. {{ sumTotalMovimientos }}</p>
+</div>
+</div>
+</div>
 <div class="xContentCard border-bottom" style="padding:20px">
 <p class="fs-18 text-secondary fw-600">Canales de Consumo</p><br>
 <div class="div-content-grid align-items-center">
@@ -325,8 +382,8 @@
 <br><br>
 </template>
 </dom-module>
-<style>.border-header-e{border-radius:5px;border:1px solid #e0e0e0;background:aliceblue;margin-top:15px}.content-dato{display:inline-flex;background:#ff5252;padding:15px;border-radius:6px;color:white;align-items:center;margin-bottom:15px}.content-dato[entero]{background:#00d179}.content-dato[rojo]{background:#ff5252}.content-dato[ambar]{background:#ffd740}.content-dato[verde]{background:#00d179}.ico-dato-l{padding:10px;border-radius:5px;margin-right:10px;background:rgba(250,250,250,0.5)}.ico-dato-m{padding:8px 15px;border-radius:5px;background:rgba(250,250,250,0.5)}.ico-dato-m[rojo]{background:#f9d8d8;color:#f16471}.ico-dato-m[ambar]{background:#ffd740}.ico-dato-m[verde]{background:#c7f5d4;color:#00d179}.lblInfo[verde]{color:#00d179}.lblInfo[rojo]{color:#ff5252}.div-content-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(320px,1fr));grid-gap:1rem}.div-content-head-op{display:flex;flex-wrap:wrap;justify-content:space-between;align-items:flex-end;grid-gap:1rem}.h-tr-67{height:67px}.h-tr-50{height:50px}.xtableIndicadores th{font-size:12px;color:#6c757d!important}.xtableIndicadores tr{border:0;border-top:1px solid #dee2e6!important;margin-bottom:.5rem!important}.tableDivIndicador{padding-bottom:1rem;margin-bottom:.5rem;border-bottom:1px solid #dee2e6}.color-text-principal{color:#34c8ec;line-height:initial}</style>
-<script>/*<![CDATA[*/var xThisI2,_listOp,dataFiltro,dataMetdataVentasDia,crosVenta,metaDiaria,_dtVentasHoy,_dtPedidoTotales,_listTipoConsumo=[],rangoFecha='fecha',configParamsChart={},ctxChar,ctxCharConsumo,myBarChartPrincipal,pageIndicadoresCaja,pageIndicadoresTopProducto,pageIndicadoresTopColaboradores,pageIndicadoresVersus,data_pagination={},p_rows=0,p_desde=0,compOptionPeriodo;function initIndicadores2(){xThisI2.sedeCalificacion=xm_log_get('datos_org_all_sede')[0].calificacion;_listOp=[{descripcion:'Hoy',activo:true,value:0},{descripcion:'Semana',activo:false,value:1},{descripcion:'Mes',activo:false,value:2,openInputDate:true,optionCompDate:1},{descripcion:'Rango',activo:false,value:2,openInputDate:true,optionCompDate:2}]
+<style>.border-header-e{border-radius:5px;border:1px solid #e0e0e0;background:aliceblue;margin-top:15px}.content-dato{display:inline-flex;background:#ff5252;padding:15px;border-radius:6px;color:white;align-items:center;margin-bottom:15px}.content-dato[entero]{background:#00d179}.content-dato[rojo]{background:#ff5252}.content-dato[ambar]{background:#ffd740}.content-dato[verde]{background:#00d179}.ico-dato-l{padding:10px;border-radius:5px;margin-right:10px;background:rgba(250,250,250,0.5)}.ico-dato-m{padding:8px 15px;border-radius:5px;background:rgba(250,250,250,0.5)}.ico-dato-m[rojo]{background:#f9d8d8;color:#f16471}.ico-dato-m[ambar]{background:#ffd740}.ico-dato-m[verde]{background:#c7f5d4;color:#00d179}.lblInfo[verde]{color:#00d179}.lblInfo[rojo]{color:#ff5252}.div-content-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(320px,1fr));grid-gap:1rem}.div-content-head-op{display:flex;flex-wrap:wrap;justify-content:space-between;align-items:flex-end;grid-gap:1rem}.h-tr-67{height:67px}.h-tr-50{height:50px}.xtableIndicadores th{font-size:12px;color:#6c757d!important}.xtableIndicadores tr{border:0;border-top:1px solid #dee2e6!important;margin-bottom:.5rem!important}.tableDivIndicador{padding-bottom:1rem;margin-bottom:.5rem;border-bottom:1px solid #dee2e6}.content-table-iv{height:290px;overflow-y:auto}.div-columm-3{display:grid;grid-template-columns:repeat(3,1fr);grid-gap:20px}.color-text-principal{color:#34c8ec;line-height:initial}</style>
+<script>/*<![CDATA[*/var xThisI2,_listOp,dataFiltro,dataMetdataVentasDia,crosVenta,metaDiaria,_dtVentasHoy,_dtPedidoTotales,_listTipoConsumo=[],rangoFecha='fecha',configParamsChart={},ctxChar,ctxCharConsumo,myBarChartPrincipal,pageIndicadoresCaja,pageIndicadoresTopProducto,pageIndicadoresTopColaboradores,pageIndicadoresVersus,data_pagination={},p_rows=0,p_desde=0,compOptionPeriodo,dataIngresoVarios;function initIndicadores2(){xThisI2.sedeCalificacion=xm_log_get('datos_org_all_sede')[0].calificacion;_listOp=[{descripcion:'Hoy',activo:true,value:0},{descripcion:'Semana',activo:false,value:1},{descripcion:'Mes',activo:false,value:2,openInputDate:true,optionCompDate:1},{descripcion:'Rango',activo:false,value:2,openInputDate:true,optionCompDate:2}]
 xThisI2.listOpciones=_listOp;dataFiltro={idsede:0,rango:'fecha',intervalo:0}
 pageIndicadoresCaja=document.getElementById('cajaIndicadores');pageIndicadoresTopProducto=document.getElementById('topProductosIndicadores');pageIndicadoresTopColaboradores=document.getElementById('topColaboradoresIndicadores');pageIndicadoresVersus=document.getElementById('pageVersusIndicadores');xThisI2.rangoSelected=dataFiltro;xThisI2.selected_conf=0;loadMestasSede();$('body').addClass('loaded');$("#Titulo_page").text("Indicadores");ctxChar=document.getElementById('myChart').getContext('2d');ctxCharConsumo=document.getElementById('myChartCanalConsumo').getContext('2d');compOptionPeriodo=document.getElementById('compOptionPeriodo')
 compOptionPeriodo.addEventListener('getDateSelectedOption',(e)=>{changeOption(e.detail);})
@@ -339,7 +396,8 @@ function changeSede(val){dataFiltro.idsede=val.idsede;if(val.idsede!==-1){xThisI
 function changeFecha(val){dataFiltro.fecha=xDevolverFechaFormatInputDate(val.target.value);var nomMes=xDevolverFechaParte_Dada(dataFiltro.fecha,'mmmm');updatePageTab();xThisI2.ragoTitulo=rangoFecha==='mes'?primeraConMayusculas(nomMes.toLowerCase()):xThisI2.ragoSubTitulo;pageIndicadoresTopColaboradores.ragoTitulo=xThisI2.ragoTitulo;pageIndicadoresTopProducto.ragoTitulo=xThisI2.ragoTitulo;pageIndicadoresCaja.ragoTitulo=xThisI2.ragoTitulo;pageIndicadoresVersus.ragoTitulo=xThisI2.ragoTitulo;}
 function loadMestasSede(){$.ajax({type:'POST',url:'../../bdphp/log_005.php?op=15',data:dataFiltro}).done(function(res){dataMeta=JSON.parse(res).datos[0];if(dataMeta){metaDiaria=dataMeta.diaria;xloadDataVentas();}else{dialog_meta.open();}
 loadCalificacionCliente();});}
-function xloadDataVentas(){xPopupLoad.xopen();console.log('dataFiltro',dataFiltro);$.ajax({type:'POST',url:'../../bdphp/log_005.php?op=40',data:dataFiltro}).done(function(res){dataMetdataVentasDia=JSON.parse(res).datos;crosVenta=crossfilter(dataMetdataVentasDia);xDataVentas_tipo_pago();xloadDataPedidos();xloadDComprobantesEmitidos();});}
+function xloadDataVentas(){xPopupLoad.xopen();$.ajax({type:'POST',url:'../../bdphp/log_005.php?op=40',data:dataFiltro}).done(function(res){dataMetdataVentasDia=JSON.parse(res).datos;crosVenta=crossfilter(dataMetdataVentasDia);xDataVentas_tipo_pago();xloadDataPedidos();xloadDataOtrosIngresos();xloadDComprobantesEmitidos();});}
+function xloadDataOtrosIngresos(){xPopupLoad.xopen();$.ajax({type:'POST',url:'../../bdphp/log_005.php?op=4000',data:dataFiltro}).done(function(res){const dataIngresoVarios=JSON.parse(res).datos;tablaIngresoVariosTipoPago(dataIngresoVarios);});}
 function xloadDataPedidos(){$.ajax({type:'POST',url:'../../bdphp/log_005.php?op=4001',data:dataFiltro}).done(function(res){const _data=JSON.parse(res).datos;tablaInfoPedidos(_data);$.ajax({type:'POST',url:'../../bdphp/log_005.php?op=4002',data:dataFiltro}).done(function(res){const _data=JSON.parse(res).datos;tablaInfoPedidosAnulados(_data);xPopupLoad.xclose();});});}
 function xloadDComprobantesEmitidos(){$.ajax({type:'POST',url:'../../bdphp/log_005.php?op=4007',data:dataFiltro}).done(function(res){const _data=JSON.parse(res).datos;xThisI2.listComprobantes=_data;});}
 function xDataVentas_tipo_pago(){_dtVentasHoy={sumImporteTotalHoyShow:0,sumImporteTotalHoy:0,sumImporteTotalAyer:0,diferencia:0,porcentaje:0,entero:true,signo:'+',porcentaje_diaria:0,meta_diaria:0,m_rojo:false,m_ambar:false,m_verde:false,}
@@ -348,6 +406,8 @@ calcularPorcentajeMetaDiaria();tablaTipoPago(dataMetdataVentasDia);switch(dataFi
 function tablaTipoPago(dataMetdataVentasDia){var crosVentaHoy=crossfilter(dataMetdataVentasDia.filter(x=>x.hoy.toString()==="1"));var ddTp=crosVentaHoy.dimension(item=>item.des_tp+':'+item.img);let byTipoPago=ddTp.group().reduceSum(item=>parseFloat(item.importe));var _listTipoPago=byTipoPago.all().map(x=>{x.value=numeroConComas(x.value.toFixed(2));return x});var crosVentaAyer=crossfilter(dataMetdataVentasDia.filter(x=>x.hoy.toString()==="0"));ddTp=crosVentaAyer.dimension(item=>item.des_tp+':'+item.img);byTipoPago=ddTp.group().reduceSum(item=>parseFloat(item.importe));var _listTipoPagoAyer=byTipoPago.all().map(x=>{x.value=numeroConComas(x.value.toFixed(2));return x});var _dtTipoPago=[];_listTipoPago.map(tp=>{var importeHoy=parseFloat(tp.value.split(',').join(''));var importeAyer=_listTipoPagoAyer.filter(c=>c.key===tp.key)[0];importeAyer=importeAyer?parseFloat(importeAyer.value.split(',').join(''))*1:0;var _diferencia=importeHoy-importeAyer;var _porcentaje=Math.round((_diferencia/importeAyer)*100);var _entero=_porcentaje>0
 var des_icon=tp.key.split(':');var _item={key:des_icon[0].toLowerCase(),importe_hoy:numeroConComas(importeHoy.toFixed(2)),showAyer:importeAyer!==0,importe_ayer:importeAyer===0?'-':numeroConComas(importeAyer.toFixed(2)),importe_diferencia:_diferencia,porcentaje:_porcentaje,entero:_entero,img:'../../images/'+des_icon[1]}
 _dtTipoPago.push(_item);});xThisI2.listTipoPago=JSON.parse(JSON.stringify(_dtTipoPago));cocinarCanalConsumoHoy(crosVentaHoy);}
+function tablaIngresoVariosTipoPago(dataTipoPagoIV){xThisI2.isShowDivOtrosIngresos=dataTipoPagoIV.length>0;var crosVentaHoy=crossfilter(dataTipoPagoIV);var ddTp=crosVentaHoy.dimension(item=>item.des_tp+':'+item.img);let byTipoPago=ddTp.group().reduceSum(item=>parseFloat(item.importe));var _listTipoPago=byTipoPago.all().map(x=>{x.value=numeroConComas(x.value.toFixed(2));return x});var _dtTipoPagoIV=[];var sumTotalIV=0;_listTipoPago.map(tp=>{var importeHoy=parseFloat(tp.value.split(',').join(''));var des_icon=tp.key.split(':');sumTotalIV+=importeHoy;var _item={key:des_icon[0].toLowerCase(),importe:numeroConComas(importeHoy.toFixed(2)),img:'../../images/'+des_icon[1]}
+_dtTipoPagoIV.push(_item);});xThisI2.tablaTipoPagoIngresosVarios=JSON.parse(JSON.stringify(_dtTipoPagoIV));xThisI2.listTipoPagoIngresosVarios=JSON.parse(JSON.stringify(dataTipoPagoIV));xThisI2.sumTotalIngresosVarios=numeroConComas(sumTotalIV.toFixed(2));xThisI2.sumTotalMovimientos=numeroConComas((removeComas(sumTotalIV)+removeComas(_dtVentasHoy.sumImporteTotalHoyShow)).toFixed(2));}
 function tablaInfoPedidosAnulados(data){xThisI2.listpedidosBorrados=JSON.parse(JSON.stringify(data));var crosVentaAnuladas=crossfilter(data);var ddIdPedidoAnulados=crosVentaAnuladas.dimension(item=>item.idpedido_borrados);var countPedidosAnuladosHoy=ddIdPedidoAnulados.group().all().length;var importePedidosAnuladosHoy=ddIdPedidoAnulados.group().reduceSum(item=>parseFloat(item.importe));importePedidosAnuladosHoy=importePedidosAnuladosHoy.all().filter(x=>x.key).map(x=>x.value).reduce((a,b)=>a+b,0);_dtPedidoTotales.pedidos_anulados.hoy=xCeroIzq(countPedidosAnuladosHoy,2);_dtPedidoTotales.pedidos_anulados.importe_hoy=numeroConComas(importePedidosAnuladosHoy.toFixed(2));xThisI2.listPedidosTotales=JSON.parse(JSON.stringify(_dtPedidoTotales));}
 function tablaInfoPedidos(data){_dtPedidoTotales={pedidos_totales:{hoy:0,ayer:0,porcentaje:0,entero:false},ticket_promedio:{hoy:0,ayer:0,porcentaje:0,entero:false},pedidos_anulados:{hoy:0,ayer:0,porcentaje:0,entero:false,importe_hoy:0}}
 var crosVentaHoy=crossfilter(data.filter(x=>x.hoy.toString()==="1"));var ddIdPedido=crosVentaHoy.dimension(item=>item.idpedido);var lisPedidos=ddIdPedido.group().all();var cantidadPedidosHoy=lisPedidos.length;cocinarCanalConsumoHoyFromAPP(data);var importeTotalPedidosHoy=ddIdPedido.group().reduceSum(item=>parseFloat(item.importe_item));importeTotalPedidosHoy=importeTotalPedidosHoy.all().map(x=>x.value).reduce((a,b)=>a+b,0);var ddIdPedidoAnulados=crosVentaHoy.dimension(item=>item.anulado.toString()==="1");var countPedidosAnuladosHoy=ddIdPedidoAnulados.group().all().length;var importePedidosAnuladosHoy=ddIdPedidoAnulados.group().reduceSum(item=>parseFloat(item.importe_item));importePedidosAnuladosHoy=importePedidosAnuladosHoy.all().filter(x=>x.key).map(x=>x.value).reduce((a,b)=>a+b,0);var crosVentaAyer=crossfilter(data.filter(x=>x.hoy.toString()==="0"));ddIdPedido=crosVentaAyer.dimension(item=>item.idpedido);lisPedidos=ddIdPedido.group().all();var cantidadPedidosAyer=lisPedidos.length;var importeTotalPedidosAyer=ddIdPedido.group().reduceSum(item=>parseFloat(item.importe_item));importeTotalPedidosAyer=importeTotalPedidosAyer.all().map(x=>x.value).reduce((a,b)=>a+b,0);ddIdPedidoAnulados=crosVentaAyer.dimension(item=>item.anulado.toString()==="1");var countPedidosAnuladosAyer=ddIdPedidoAnulados.group().all().length;var importePedidosAnuladosAyer=ddIdPedidoAnulados.group().reduceSum(item=>parseFloat(item.importe_item));importePedidosAnuladosAyer=importePedidosAnuladosAyer.all().filter(x=>x.key).map(x=>x.value).reduce((a,b)=>a+b,0);_dtPedidoTotales.pedidos_totales.hoy=xCeroIzq(cantidadPedidosHoy,2);_dtPedidoTotales.pedidos_totales.ayer=xCeroIzq(cantidadPedidosAyer,2);_dtPedidoTotales.pedidos_totales.porcentaje=Math.round(((cantidadPedidosHoy-cantidadPedidosAyer)/cantidadPedidosHoy)*100);_dtPedidoTotales.pedidos_totales.entero=_dtPedidoTotales.pedidos_totales.porcentaje>0;_dtPedidoTotales.ticket_promedio.hoy=Math.round(importeTotalPedidosHoy/cantidadPedidosHoy);_dtPedidoTotales.ticket_promedio.ayer=Math.round(importeTotalPedidosAyer/cantidadPedidosAyer);_dtPedidoTotales.ticket_promedio.hoy=isNaN(_dtPedidoTotales.ticket_promedio.hoy)?0:_dtPedidoTotales.ticket_promedio.hoy;_dtPedidoTotales.ticket_promedio.ayer=isNaN(_dtPedidoTotales.ticket_promedio.ayer)?0:_dtPedidoTotales.ticket_promedio.ayer;_dtPedidoTotales.ticket_promedio.porcentaje=Math.round(((_dtPedidoTotales.ticket_promedio.hoy-_dtPedidoTotales.ticket_promedio.ayer)/_dtPedidoTotales.ticket_promedio.hoy)*100);_dtPedidoTotales.ticket_promedio.entero=_dtPedidoTotales.ticket_promedio.porcentaje>0;_dtPedidoTotales.ticket_promedio.hoy=_dtPedidoTotales.ticket_promedio.hoy!=0?numeroConComas(Math.round(importeTotalPedidosHoy/cantidadPedidosHoy).toFixed(2)):0;_dtPedidoTotales.ticket_promedio.ayer=_dtPedidoTotales.ticket_promedio.ayer!=0?numeroConComas(Math.round(importeTotalPedidosAyer/cantidadPedidosAyer).toFixed(2)):0;_dtPedidoTotales.pedidos_anulados.hoy=xCeroIzq(countPedidosAnuladosHoy,2);_dtPedidoTotales.pedidos_anulados.ayer=xCeroIzq(countPedidosAnuladosAyer,2);_dtPedidoTotales.pedidos_anulados.porcentaje=Math.round(((countPedidosAnuladosHoy-countPedidosAnuladosAyer)/countPedidosAnuladosHoy)*100);_dtPedidoTotales.pedidos_anulados.entero=_dtPedidoTotales.pedidos_anulados.porcentaje>0;_dtPedidoTotales.pedidos_anulados.importe_hoy=numeroConComas(importePedidosAnuladosHoy.toFixed(2));xThisI2.listPedidosTotales=JSON.parse(JSON.stringify(_dtPedidoTotales));}
@@ -376,4 +436,4 @@ if(_dtVentasHoy.porcentaje_diaria<30){_dtVentasHoy.m_rojo=true;}
 if(_dtVentasHoy.porcentaje_diaria>30&&_dtVentasHoy.porcentaje_diaria<80){_dtVentasHoy.m_ambar=true;}
 if(_dtVentasHoy.porcentaje_diaria>80){_dtVentasHoy.m_verde=true;}
 xThisI2.dtVentasHoy=JSON.parse(JSON.stringify(_dtVentasHoy));}
-Polymer({is:'x-indicadores2',properties:{listOpciones:Object,listTipoPago:Object,listPedidosTotales:Object,listCanalConsumoChart:[],listCanalConsumo:[],listpedidosBorrados:[],listComprobantes:[],listCalificacionCliente:[],sedeCalificacion:String,dtVentasHoy:Object,ragoSubTitulo:String,ragoTitulo:String,rangoSelected:String,selected_conf:Number,showVersus:Boolean,},attached:function(){this.ragoSubTitulo='Dia ';this.ragoTitulo='Hoy';this.selected_conf=0;this.showVersus=false;xThisI2=this;initIndicadores2();setTimeout(()=>{_cpSocketOpen();},1000);},detached:function(){_cpSocketClose();}})/*]]>*/</script>
+Polymer({is:'x-indicadores2',properties:{listOpciones:Object,listTipoPago:Object,listPedidosTotales:Object,listCanalConsumoChart:[],listCanalConsumo:[],listpedidosBorrados:[],listComprobantes:[],listCalificacionCliente:[],listTipoPagoIngresosVarios:[],tablaTipoPagoIngresosVarios:[],sedeCalificacion:String,dtVentasHoy:Object,ragoSubTitulo:String,ragoTitulo:String,rangoSelected:String,selected_conf:Number,showVersus:Boolean,sumTotalIV:Number,sumTotalMovimientos:Number,isShowDivOtrosIngresos:Boolean},attached:function(){this.ragoSubTitulo='Dia ';this.ragoTitulo='Hoy';this.selected_conf=0;this.showVersus=false;this.isShowDivOtrosIngresos=false;xThisI2=this;initIndicadores2();setTimeout(()=>{_cpSocketOpen();},1000);},detached:function(){_cpSocketClose();}})/*]]>*/</script>

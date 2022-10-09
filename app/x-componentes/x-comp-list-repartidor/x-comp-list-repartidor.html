@@ -1,0 +1,79 @@
+<dom-module id="x-comp-list-repartidor">
+	<template is="dom">        
+
+        <div>
+            <ul class="ul-content">
+                <template is="dom-repeat" items="{{listRepartidores}}" as="item">
+                    <li tabindex=1 data-id = "[[index]]" class="text-dark" onclick="seletectedRepartidor(this)">{{item.nombres}}</li>
+                </template>
+            </ul>                                   
+        </div>
+
+
+    </template>
+
+    <style>
+        .ul-content {
+            background: white;
+            border-radius: 5px;
+            border: 1px solid #e0e0e0;
+            /* list-style-type: none; */
+            margin: 0px;
+            padding: 0;
+        }
+
+        .ul-content>li {
+            border-top: 1px solid #e0e0e0;
+            padding: 5px;
+            cursor: pointer;        
+        }
+
+        .ul-content>li:focus {
+            background: #99d4ff;
+        }
+        
+
+        /* .ul-content>li:hover {
+            background: #E3F2FD;
+        } */
+    </style>
+
+</dom-module>
+
+<script>
+
+    var xThisComListRepartidor;
+
+    function xIniCompListRepartidor() {
+
+        // load
+        $.ajax({ type: 'POST', url: '../../bdphp/log_005.php?op=13'})
+	        .done( function (dtValues) {			
+                dtValues=JSON.parse(dtValues);	
+	    		xThisComListRepartidor.listRepartidores=dtValues.datos.map(x => {x.nombres = toTitleCase(x.nombre + ' '+ x.apellido); return x;});	
+            });        
+
+    }
+
+    function seletectedRepartidor(obj) {
+        const _index = obj.dataId;
+        const _itemRepartidor = xThisComListRepartidor.listRepartidores[_index];
+        // console.log('_itemRepartidor', _itemRepartidor);
+        xThisComListRepartidor.itemSelected = _itemRepartidor;
+        // xThisComListRepartidor.getItemSeleted(_itemRepartidor);
+        xThisComListRepartidor.fire('selected', _itemRepartidor);        
+    }
+
+
+    Polymer({
+			is: 'x-comp-list-repartidor',
+			properties: {
+                listRepartidores: [],
+                itemSelected: []						
+			},
+			attached: function () {
+				xThisComListRepartidor = this;				
+				xIniCompListRepartidor();
+			}         
+		})
+</script>

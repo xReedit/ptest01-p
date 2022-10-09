@@ -15,7 +15,7 @@
 <div>
 <div class="xtitulo-subitems">
 <div>
-<p class="xBold">{{contentSub.des}}</p>
+<p class="xBold">{{ labelUpperCase(contentSub.des) }}</p>
 <span class="fs-12 color-secundario">{{contentSub.des_cant_select}} {{contentSub.subitem_cant_select}}</span>
 <span class="txt-obligatorio" hidden$="[[!contentSub.isObligatorio]]">Obligatorio</span>
 </div>
@@ -43,7 +43,7 @@
 </div>
 <div class="xreferencia_item">
 <label for="txt_referencia" class="xBold">Instrucciones adicionales</label>
-<input type="text" autocomplete="on" placeholder="Agregue una nota (poco aji, sin arroz, etc.)" class="xMiTextReferencia" id="txt_referencia">
+<input type="text" autocomplete="on" placeholder="Agregue una nota (poco aji, sin arroz, etc.)" class="xMiTextReferencia text-primary fw-900" id="txt_referencia" onkeyup="xChangeIndicacionesItem()">
 <hr>
 </div>
 <br><br>
@@ -83,7 +83,8 @@ function addSubItem(obj){const idItemContentObj=obj.dataIdcontent;const index=ob
 const eIdContent=e.dataIdcontent
 if(idItemContentObj!=eIdContent){return;}
 if(__subitemChek===_subItem){e.checked=false;_subItem.selected=false;countSelectReq--;}});}});countOptionsCheks=listCheckContentSelect.filter((x)=>x.selected).length;if(contetnSubSelect.subitem_required_select===1){contetnSubSelect.isObligatorio=countOptionsCheks===contetnSubSelect.subitem_cant_select?false:true;}
-_indicaciones_subitem='';itemPedidos_objItemSelected.subitems_selected=[];xThisComSubItem.listContentSub.map(t=>t.opciones.filter((x)=>{if(x.selected){_indicaciones_subitem=x.des+', '+_indicaciones_subitem;listChecks.push(x);}}));itemPedidos_objItemSelected.subitems_selected=listChecks;$("#txt_referencia").val(_indicaciones_subitem);try{xArrayPedidoObj[xidTipoConsumo][itemPedidos_objItemSelected.idcarta_lista].indicaciones=_indicaciones_subitem;window.localStorage.setItem("::app3_sys_dta_pe",JSON.stringify(xArrayPedidoObj));}catch(error){}
+_indicaciones_subitem='';itemPedidos_objItemSelected.subitems_selected=[];xThisComSubItem.listContentSub.map(t=>t.opciones.filter((x)=>{if(x.selected){_indicaciones_subitem=x.des+', '+_indicaciones_subitem;listChecks.push(x);}}));itemPedidos_objItemSelected.subitems_selected=listChecks;try{const _itemObjPedido=xArrayPedidoObj[xidTipoConsumo][itemPedidos_objItemSelected.idcarta_lista];if(_itemObjPedido.cantidad===1){$("#txt_referencia").val(_indicaciones_subitem);}
+_itemObjPedido.indicaciones=_indicaciones_subitem;window.localStorage.setItem("::app3_sys_dta_pe",JSON.stringify(xArrayPedidoObj));}catch(error){}
 checkOptionObligario();compItemSumImporte(true);}
 function compItemSumImporte(fromToCheck=false){if(fromToCheck){var _importeChecks=0;xThisComSubItem.listContentSub.map(t=>{t.opciones.filter(o=>o.selected).map(o=>{_importeChecks+=parseFloat(o.precio);});});var _totalItemSelect=parseFloat(compGetTotalItemTPC());_totalItemSelect=_totalItemSelect===0?_precioProductoIni:_totalItemSelect;xThisComSubItem.precioProducto=parseFloat(_totalItemSelect+_importeChecks).toFixed(2);}else{xThisComSubItem.precioProducto=compGetTotalItemTPC();}}
 function compGetTotalItemTPC(){var _iditem=itemPedidos_objItemSelected.iditem,cantRpt=0,objTpc;$('#_xdlgBody').find('div.xmenu_item_2 .xpedir_row').each(function(a,element){xidTipoConsumoItem=$(element).attr("data-id");objTpc=xArrayPedidoObj[xidTipoConsumoItem][_iditem];if(objTpc!=null&&objTpc.cantidad!=0){xidTipoConsumo=xidTipoConsumoItem;cantRpt+=parseInt(objTpc.precio_total);}});cantRpt=cantRpt===0?parseInt(itemPedidos_objItemSelected.precio_unitario):cantRpt;return parseFloat(cantRpt).toFixed(2);}
@@ -92,4 +93,5 @@ xCadenaItem_des_foto+
 xCadenaTC+"</div></div>";const _idseccionIndex=xdtItem.idseccion_index.split(".")[0];xCadenaItem=String(xCadenaItem+'<div class="xmenu_item_2 xitem_seleccionado_pedido" '+'data-id="'+xdtItem.idcarta_lista+'" '+'data-item="'+xdtItem.iditem+'" '+'data-idseccion="'+xdtItem.idseccion+'" '+'data-desseccion="'+xdtItem.des_seccion+'" '+'data-idseccionindex="'+_idseccionIndex+'" '+'data-idbus="'+xdtItem.idseccion+'" '+'data-idimpresora="'+xdtItem.idimpresora+'" '+'data-idprocede="'+xdtItem.idprocede+'" '+'data-procede="'+xdtItem.procede+'" '+'data-procedeindex="'+xdtItem.procede_index+'" '+'data-imprimircomanda="'+xdtItem.imprimir_comanda+'" '+'data-iddescontar="'+xdtItem.idprocede+'" '+'data-cant_descontar="'+xdtItem.cant_descontar+'" '+'data-idalmacen_items="'+xdtItem.idalmacen_items+'">'+
 xCadenaItem_encabezado+
 xCadenaItem_Detalle);$("#_xdlgBody .spinner").remove();$("#_xdlgBody").html(xCadenaItem).trigger("create");$("#dlgBtn").removeClass("xInvisible");dialog_item_comp.center();$('#_xdlgBody').find('div.xmenu_item_2 .xpedir_row').each(function(a,element){xidTipoConsumoItem=$(element).attr("data-id");if(xArrayPedidoObj[xidTipoConsumoItem][xidItem]!=null){xidTipoConsumo=xidTipoConsumoItem;xCantArray=xArrayPedidoObj[xidTipoConsumo][xidItem].cantidad;xindicaciones=xArrayPedidoObj[xidTipoConsumo][xidItem].indicaciones;$(element).find(".xCant_item").text(xCeroIzq(xCantArray,2));}});dialog_item_comp.center();$("#txt_referencia").val(xindicaciones);}
-Polymer({is:'x-comp-item-subitems',properties:{item_select:Object,listContentSub:{type:Object,notify:true,reflectToAttribute:true},listSubItems:{type:Object,notify:true,reflectToAttribute:true},desProducto:String,detalleProducto:String,stockProducto:String,precioProducto:String,countTotalObligatorio:Number,countSelectObligatorio:Number,cantSubItemSelect:Number,isSubItemReq:Boolean,isExistSubItems:Boolean,isOptionRequeridosComplet:Boolean,isShowDetalleProducto:Boolean},attached:function(){xThisComSubItem=this;this.isShowDetalleProducto=false;xThisComSubItem.cantSubItemSelect=0;},openDialog:function(tpc,id){xOpenDlgItemVR_comp(tpc,id);},refreshSubItems:function(){xRefresSubItems_comp();},getSubtItemsItemById:(_id)=>{return new Promise((resolve,reject)=>{resolve(getSubtItemsItem(_id));});}})/*]]>*/</script>
+function xChangeIndicacionesItem(){xArrayPedidoObj[xidTipoConsumo][itemPedidos_objItemSelected.idcarta_lista].indicaciones=txt_referencia.value;window.localStorage.setItem("::app3_sys_dta_pe",JSON.stringify(xArrayPedidoObj));}
+Polymer({is:'x-comp-item-subitems',properties:{item_select:Object,listContentSub:{type:Object,notify:true,reflectToAttribute:true},listSubItems:{type:Object,notify:true,reflectToAttribute:true},desProducto:String,detalleProducto:String,stockProducto:String,precioProducto:String,countTotalObligatorio:Number,countSelectObligatorio:Number,cantSubItemSelect:Number,isSubItemReq:Boolean,isExistSubItems:Boolean,isOptionRequeridosComplet:Boolean,isShowDetalleProducto:Boolean},attached:function(){xThisComSubItem=this;this.isShowDetalleProducto=false;xThisComSubItem.cantSubItemSelect=0;},openDialog:function(tpc,id){xOpenDlgItemVR_comp(tpc,id);},refreshSubItems:function(){xRefresSubItems_comp();},getSubtItemsItemById:(_id)=>{return new Promise((resolve,reject)=>{resolve(getSubtItemsItem(_id));});},labelUpperCase:(val)=>{return val.toUpperCase();}})/*]]>*/</script>

@@ -114,8 +114,36 @@
             break;
         case 7: // control de delivery - control pedidos
             $arrItemPedido=$_POST['obj'];
-            $arrItemPedido = isset($arrItemPedido) ? $arrItemPedido == 0 ? 'null' : "'".json_encode($arrItemPedido)."'" : 'null';
+            $arrItemPedido = isset($arrItemPedido) ? "'".json_encode($arrItemPedido)."'" : 'null';
             $sql="call procedure_refresh_delivery($g_idsede, $arrItemPedido)";
+            $bd->xConsulta($sql);
+            break;
+        case 8: // control delivery
+            $data = $postBody;
+            $opcion = $data->opcion;
+            $idpedido = $data->idpedido;
+
+
+            switch ($opcion) {
+                case '1': // llamar repartidor
+                    $sql = "update pedido set flag_solicita_repartidor_papaya = 1 where idpedido = ".$idpedido;
+                    break;
+            }
+
+            $bd->xConsulta($sql);
+            break;
+        case 9: // pedidos anulados
+            $fecha = $_POST['f'];
+            $sql = "call procedure_show_pedidos_borrados($g_idsede, '$fecha')";
+            $bd->xConsulta($sql);
+            break;
+        case 901: //count pedidos borrados
+            $sql = "
+                    select COUNT(pb.idpedido_borrados) cant from pedido_borrados pb 
+                    inner join usuario u using(idusuario)
+                    inner join sede s using(idsede)
+                    where s.idsede = $g_idsede and pb.fecha_cierre = ''
+            ";
             $bd->xConsulta($sql);
             break;
     }

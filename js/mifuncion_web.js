@@ -3,6 +3,7 @@ return xvalReturn;}
 function xRetornaMoneda(xObj){var xVal=parseFloat($(xObj).val());if(isNaN(xVal)){xVal=0;}
 xObj.value=parseFloat(xVal).toFixed(2);}
 function numeroConComas(x){return x.toString().replace(/\B(?=(\d{3})+(?!\d))/g,",");}
+function removeComas(num){if(isNaN(num)){return parseFloat(num.replace(/,/g,''));}else{return parseFloat(num);}}
 function xCeroIzq(Num,CantidadCeros){const isNum=parseInt(Num);if(isNaN(isNum)){return Num;}
 Num=Num.toString();while(Num.length<CantidadCeros)Num="0"+Num;return Num;}
 function xCeroIzqNumComprobante(Num){if(!Num)return;Num=Num.toString();while(Num.length<7)Num="0"+Num;return Num;}
@@ -104,3 +105,4 @@ function PrintElemDiv(divId,titulo)
 {var printContents=document.getElementById(divId).innerHTML;var originalContents=document.body.innerHTML;document.body.innerHTML="<html><head><title></title></head><body>"+printContents+"</body>";window.print();document.body.innerHTML=originalContents;}
 function removeSpecialChar(_string){return _string.replace(/[&\/\\,~'"?]/g,'');}
 function removeSpecialCharObj(obj){obj.value=obj.value.replace(/[&\/\\,~'"?]/g,'');}
+const arrGroupBy=function(xs,key){return xs.reduce(function(rv,x){(rv[x[key]]=rv[x[key]]||[]).push(x);return rv;},{});};

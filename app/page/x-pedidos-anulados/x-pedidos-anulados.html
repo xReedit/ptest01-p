@@ -1,0 +1,140 @@
+<link rel="import" href="../../web_components/polymer/polymer.html">
+<dom-module id="x-pedidos-anulados">
+
+    <!-- <link rel="stylesheet" href="../../../css/picket-classic.css">
+    <link rel="stylesheet" href="../../../css/picket-classic.date.css">
+    <script src="../../../js/picket.legacy.js"></script>
+    <script src="../../../js/picket.js"></script>
+    <script src="../../../js/picket.date.js"></script> -->
+
+    <template is="dom-bind">
+    <div class="p-3" style="max-width: 1200px !important; margin: 0 auto;">
+        <div class="pl-2 mb-2">            
+            <h3>Pedidos Anulados</h3>
+            <input type="text" class="selected-template-1 xCursor" id="pick-date"  placeholder="Elige fecha">
+        </div>
+        <div>
+            <table class="w-100 content-table-delivery" style="min-width: 850px;">
+                <thead>
+                    <th align="center">#</th>
+                    <th align="left" style="max-width: 50px;">Fecha</th>
+                    <th align="left">Usuario</th>
+                    <th align="left">Motivo</th>
+                    <th align="left">Pedido</th>
+                    <th align="left">Detalle</th>
+                </thead>
+                <tbody>
+                    <template is="dom-repeat" items="{{listPedidosBorrados}}" as="item">
+                        <tr>
+                            <td align="center" class="fw-600 fs-18">{{item.num}}</td>
+                            <td style="max-width: 30px;">
+                                <p class="fw-600">{{ item.fecha }}</p>
+                                <p>{{ item.hora }}</p>
+                            </td>
+                            <td>
+                                <p>{{ item.usuario}}</p>
+                                <p title="Autorizo"> <i class="fa fa-key text-success fw-900"></i>  {{ item.usuario_autoriza }} </p>
+                            </td>
+                            <td>
+                                
+                                <p class="text-danger fw-600">{{ item.motivo_anular }}</p>
+                            </td>
+                            <td>
+                                <p>{{ item.idpedido }}</p>
+                                <p class="fw-900 ">{{ item.tp }}</p>
+                                <p hidden$="[[!item.isShowMesa]]" class="badge badge-primary"><span class="fs-15">MESA {{item.nummesa}}</span></p>
+                            </td>
+                            <td>
+                                <template is="dom-repeat" items="{{item.items}}" as="row">
+                                    <div class="d-flexx justify-content-between">
+                                        <p>{{ row.cantidad }}  {{ row.descripcion }}</p>
+                                        <p>{{ row.importe }}</p>
+                                    </div>
+                                </template>
+                            </td>
+                        </tr>
+                    </template>
+                    <tr>
+                        <td colspan="5" align="right" class="fw-600"></td>
+                        <td align="right" style="padding: 10px;"><span class="fw-600 fs-18">{{ convertRowFixed(importeTotal) }}</span></td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+    </div>
+    </template>
+
+    <style>
+        .content-table-delivery {
+            padding: 15px 0px;
+            background: white;
+            border-radius: 8px;
+            border: 1px solid #e0e0e0;
+        }
+
+        .content-table-delivery tr>td {
+            border-bottom: 8px solid #e5e5e7;
+        }
+    </style>
+
+    <script>
+        var xThisPB;
+
+        function xPBLoad() {
+            
+            $("#Titulo_page").text("Pedidos Anulados");
+
+            $('#pick-date').pickadate({
+                format: 'dd mmmm, yyyy',
+                today: 'Hoy',
+                clear: 'Borrar',
+                close: 'Cerrar',                
+                onSet: function(context) {                     
+                    const _fecha = context.select ? new Date(context.select).toLocaleDateString() : '';
+                    xPBGetData(_fecha);
+                }
+            });
+
+            xPBGetData('');
+
+        }
+
+        function xPBGetData(fecha) {
+            const _fecha = fecha;
+            var _importeTotal = 0;
+
+            $.ajax({ type: 'POST', url: '../../bdphp/log_009.php?op=9', data: {f: _fecha}})
+	        .done( function (res) { 
+                res = JSON.parse(res);
+                var _numrows = res.datos.length;                
+                xThisPB.listPedidosBorrados = res.datos.map(x => {
+                    x.num = _numrows;
+                    x.items = JSON.parse(x.items);
+                    x.isShowMesa = x.nummesa != 0;
+                    x.motivo_anular = x.motivo_anular ? x.motivo_anular : 'No indico';
+                    _importeTotal += x.items.map(z => parseFloat(z.importe)).reduce((a, b) => a + b, 0);
+                    _numrows--;
+                    return x;
+                });                
+
+
+                xThisPB.importeTotal = _importeTotal;
+            });
+        }
+        
+        Polymer({
+            is: 'x-pedidos-anulados',
+            properties: {   
+               listPedidosBorrados: [],
+               importeTotal: Number
+            },
+            attached: function () {                                
+                xThisPB = this;       
+                xPBLoad();     
+            },
+            convertRowFixed: (obj) => {
+                return obj.toFixed(2)
+            }
+        });
+    </script>
+</dom-module>

@@ -1,262 +1,89 @@
 <dom-module id="x-carta-virtual-mesas">
-    <script src="../../../../js/qrious.js"></script>
-    <template is="dom"> 
-
-        <paper-dialog oncontextmenu = "null" id="dialog_qr" modal class="dialog-redondo" entry-animation="scale-up-animation" exit-animation="fade-out-animation">			            
-            <p> {{ objQrSelected.titulo }} </p>            
-            <canvas id="qr-download"></canvas>
-            
-			<br>			            
-            <div style="display: flex;">
-                <div class="xBoton2 xVerde" onclick="copiarQr();">Copiar</div>
-                <div class="xBoton2 xPlomo" dialog-dismiss>Cerrar</div>
-            </div>
-		</paper-dialog>
-
-        <div>
-            <h3>Codigos QR para las mesas</h3>
-            <p>Toca para descargar.</p>
-            <div class="xLinea2"></div>
-            <br>
-            <div class="content-qr">
-                <template is="dom-repeat" items="{{objListMesasQr}}" as="item">
-                    <!-- <div class="codigo-qr xCursor" onclick="descarGarQR(this)" data-index = [[index]]> -->
-                    <div class="codigo-qr xCursor" onclick="generateQRCode(this, 1)" data-index = [[index]]>                        
-                        <!-- <a href="#" download="{{item.codigoDownload}}"> -->
-                            <img src="{{item.codigo}}" alt="">                            
-                            <span>{{item.nummesa}}</span>
-                        <!-- </a> -->
-                    </div>
-                </template>
-            </div>
-            <br><br>
-            <h3>Otros Codigos QR</h3>
-            <p>Toca para descargar.</p>
-            <div class="xLinea2"></div>
-            <div class="content-qr">
-                <template is="dom-repeat" items="{{objListOtherQr}}" as="item_o">
-                    <!-- <div class="codigo-qr xCursor" onclick="descargarOtroQR(this)" data-index = [[index]]>                         -->
-                    <div class="codigo-qr xCursor" onclick="generateQRCode(this, 0)" data-index = [[index]]>                        
-                        <img src="{{item_o.codigo}}" alt="">                        
-                        <span>{{item_o.titulo}}</span>
-                    </div>
-                </template>                
-            </div>
-            <br>
-            <br><br>
-            <div class="xLinea2"></div>
-                <br>
-                <h4>LINK DELIVERY para compartir.</h4>
-                <span>De clic en este link para copiarlo y compartirlo con sus clientes por sus redes sociales, los llevara directo a visualizar su carta.</span>
-                <p class="text-info xCursor" title="Copiar" onclick="copiarUrl()" id="urlcopy">{{url_delivery}}</p>
-                <br>
-                <span>Además puede acortar el enlaze con este servio: <a href="https://bitly.com/" target="_blank" class="text-info">Short URL</a></span>
-                <br>
-            <br><div class="xLinea2"></div>
-            <br>
-            <h3>Modelo de afiche</h3>
-            <p>Toca para descargar.</p>
-            <div class="xLinea2"></div>           
-            <a href="{{imgAfiche}}" download>
-                <img class="xCursor" src="{{imgAfiche}}" alt="" width="100">
-            </a>       
-            
-
-            
-            <br><br><br><br><br><br>
-        </div>
-    </template>
+<script src="../../../../js/qrious.js"></script>
+<link rel="import" href="../../../x-componentes/x-comp-img-upload/x-comp-img-upload-2.html">
+<template is="dom">
+<paper-dialog oncontextmenu="null" id="dialog_qr" modal class="dialog-redondo" entry-animation="scale-up-animation" exit-animation="fade-out-animation">
+<p> {{ objQrSelected.titulo }} </p>
+<canvas id="qr-download"></canvas>
+<br>
+<div style="display:flex">
+<div class="xBoton2 xVerde" onclick="copiarQr()">Copiar</div>
+<div class="xBoton2 xPlomo" dialog-dismiss>Cerrar</div>
+</div>
+</paper-dialog>
+<div>
+<h3>Logo</h3>
+<p>Logo que va en el diseño impreso.</p>
+<div class="xLinea2"></div>
+<x-comp-img-upload-2 id="compImgLogo" medidasimg="[[medidaLogo]]"></x-comp-img-upload-2>
+<br>
+<div class="xLinea2"></div>
+<br>
+<h3>Codigos QR para las mesas</h3>
+<p>Toca para descargar.</p>
+<div class="xLinea2"></div>
+<br>
+<div class="content-qr">
+<div class="div-copy-all">
+<template is="dom-repeat" items="{{objListMesasQr}}" as="item">
+<div class="codigo-qr content-bg-qr xCursor" onclick="xCopyQrCarta(this)" data-index=[[index]]>
+<div class="bg-qr-mesa">
+<div class="content-logo-qr">
+<img src$="[[imgLogoQr]]" alt="logo-qr">
+</div>
+<p class="fw-900 fs-25 num-mesa">{{item.nummesa}}</p>
+<img class="img-qr" src="{{item.codigo}}" alt="qr">
+</div>
+</div>
+</template>
+</div>
+<button class="btn btn-primary" onclick="xCopyAllQrCarta(this)"><i class="fa fa-copy"></i> Copiar Todo</button>
+</div>
+<br><br>
+<h3>Otros Codigos QR</h3>
+<p>Toca para descargar.</p>
+<div class="xLinea2"></div>
+<div class="content-qr">
+<template is="dom-repeat" items="{{objListOtherQr}}" as="item_o">
+<div class="codigo-qr xCursor" onclick="generateQRCode(this,0)" data-index=[[index]]>
+<img src="{{item_o.codigo}}" alt="">
+<span>{{item_o.titulo}}</span>
+</div>
+</template>
+</div>
+<br>
+<br><br>
+<div class="xLinea2"></div>
+<br>
+<h4>LINK DELIVERY para compartir.</h4>
+<span>De clic en este link para copiarlo y compartirlo con sus clientes por sus redes sociales, los llevara directo a visualizar su carta desde donde podrá realizar su pedido</span>
+<p class="text-info xCursor" title="Copiar" onclick="copiarUrl()" id="urlcopy">{{url_delivery}}</p>
+<br>
+<span>Además puede acortar el enlaze con este servicio: <a href="https://bitly.com/" target="_blank" class="text-info">Short URL</a></span>
+<br>
+<br><div class="xLinea2"></div>
+<br>
+<br><br>
+</div>
+</template>
 </dom-module>
-
-<style>
-    .content-qr {
-        display: inline-block;        
-    }
-
-    .codigo-qr {
-        display: inline-grid;
-        text-align: center;
-    }
-
-</style>
-
-<script>
-    var xThisCartaVMesas;
-
-    function xIniCartaVirtualMesas() {
-        console.log('ini mesa carta');
-
-        xThisCartaVMesas.imgAfiche = URL_IMG_CARTA + 'afiche_qr_modelo.jpg';
-        console.log('xThisCartaVMesas.imgAfiche', xThisCartaVMesas.imgAfiche);
-
-        loadDatosCartaMesas();
-        // loadReglasPwa();
-    }
-
-    function  loadDatosCartaMesas() {
-        $.ajax({ type: 'POST', url: '../../bdphp/log_005.php?op=903'})
-	    .done( function (res) {
-            res = JSON.parse(res);
-            // console.log('mesas', res.datos[0].mesas);
-            xThisCartaVMesas.objListMesasQr = JSON.parse(res.datos[0].mesas);
-            xThisCartaVMesas.objListMesasQr.map(x => {
-                const  _cod = x.codigo;
-                x.codigoDownload = `https://chart.apis.google.com/chart?cht=qr&chs=400x400&chl=${x.codigo}`;
-                x.codigo = `https://chart.apis.google.com/chart?cht=qr&chs=50x50&chl=${x.codigo}`;
-                x.titulo = 'Mesa '+ x.nummesa;     
-                x.codigo_qr = _cod;     
-                return x;
-            })
-            // console.log(xThisCartaVMesas.objListMesasQr);
-
-
-            // codigo qr para llevar
-            xThisCartaVMesas.objListOtherQr = [];
-            var listOther = [];
-            xThisCartaVMesas.qrLLevar = {};
-            var _cod = res.datos[0].qr_para_llevar;
-            xThisCartaVMesas.qrLLevar.codigoDownload = `https://chart.apis.google.com/chart?cht=qr&chs=400x400&chl=${_cod}`;
-            xThisCartaVMesas.qrLLevar.codigo = `https://chart.apis.google.com/chart?cht=qr&chs=50x50&chl=${_cod}`;
-            xThisCartaVMesas.qrLLevar.titulo = 'Solo para llevar';
-            xThisCartaVMesas.qrLLevar.codigo_qr = _cod;          
-            
-            // codigo qr delivery
-            xThisCartaVMesas.qrDelivery = {};
-            _cod = res.datos[0].qr_delivery;
-            xThisCartaVMesas.qrDelivery.codigoDownload = `https://chart.apis.google.com/chart?cht=qr&chs=400x400&chl=${_cod}`;
-            xThisCartaVMesas.qrDelivery.codigo = `https://chart.apis.google.com/chart?cht=qr&chs=50x50&chl=${_cod}`;
-            xThisCartaVMesas.qrDelivery.titulo = 'Delivery';
-            xThisCartaVMesas.qrDelivery.codigo_qr = _cod;
-            xThisCartaVMesas.url_delivery = _cod;
-
-            listOther.push(xThisCartaVMesas.qrLLevar);
-            listOther.push(xThisCartaVMesas.qrDelivery);
-            xThisCartaVMesas.objListOtherQr = JSON.parse(JSON.stringify(listOther));
-
-            console.log('xThisCartaVMesas.objListOtherQr', xThisCartaVMesas.objListOtherQr);            
-        });        
-    }
-
-    function descargarAfiche() {
-        window.open(xThisCartaVMesas.imgAfiche, 'Afiche', "width=500,height=500");
-    }
-
-    function descargarOtroQR(obj) {
-        const index = obj.dataIndex;
-        const fileDown = xThisCartaVMesas.objListOtherQr[index];
-        const url = fileDown.codigoDownload;
-        window.open(url, "CodigoQR", "width=500,height=500");
-    }
-
-    function descarGarQR(obj) {
-        const index = obj.dataIndex;
-        const fileDown = xThisCartaVMesas.objListMesasQr[index];
-
-        const url = fileDown.codigoDownload;
-        window.open(url, "CodigoQR", "width=500,height=500");
-        // var a = document.createElement("a");
-
-        // a.href = url;
-        // fileName = url.split("/").pop();
-        // a.download = 'aaaa.png';
-        // document.body.appendChild(a);
-        // a.click();
-        // window.URL.revokeObjectURL(url);
-        // a.remove();
-        // var downloading = browser.downloads.download({
-        //     url : fileDown.codigoDownload,
-        //     filename : fileDown.nummesa + '.png',
-        //     conflictAction : 'uniquify'
-        //     });
-
-        // downloading.then(null, null);
-    }
-    // function saveParamentros() {
-    //     xPopupLoad.xopen();
-    //     var _data = {
-    //         'pwa_time_limit': txt_minutos.value,
-    //         'pwa_msj_ini': txt_bienvenida.value,
-    //         'pwa_time_min_despacho': txt_minutos_min_despacho.value,
-    //         'pwa_time_max_despacho': txt_minutos_max_despacho.value,
-    //         'latitude': txt_latitude.value,
-    //         'longitude': txt_longitude.value
-    //     }
-
-    //     $.ajax({ 
-    //         type: 'POST', 
-    //         url: '../../bdphp/log_005.php?op=902', 
-    //         data: {item: _data}
-    //     })
-	//     .done( function (res) {
-    //         console.log(res);
-    //         xPopupLoad.xclose();
-    //     })
-    // }
-
-    // op 0= otros qr 1 = mesas
-    function generateQRCode(obj, op) {
-        const index = obj.dataIndex;
-        var item = op === 0 ? xThisCartaVMesas.objListOtherQr[index] : xThisCartaVMesas.objListMesasQr[index];
-        xThisCartaVMesas.objQrSelected = item;
-        console.log('item', item);
-                var qr = new QRious({
-                    foreground: 'black',
-                    element: document.getElementById('qr-download'),
-                    size: 350,
-                    value: item.codigo_qr
-                });
-
-                dialog_qr.open();
-                
-                // qr.set({
-                //     foreground: 'black',
-                //     size: 100,
-                //     value: qrtext
-                // });
-            }
-
-        
-    async function copiarQr() {
-        var img = document.getElementById('qr-download');
-        img = img.toDataURL('image/png');
-        const response = await fetch(img)
-        const blob = await response.blob()
-        await setToClipboard(blob);    
-    }
-
-    async function setToClipboard(blob) {
-        const data = [new ClipboardItem({ [blob.type]: blob })]
-        return navigator.clipboard.write(data)
-    }
-
-    function copiarUrl() {
-        var text = document.getElementById('urlcopy').innerText;
-        var elem = document.createElement("textarea");
-        document.body.appendChild(elem);
-        elem.value = text;
-        elem.select();
-        document.execCommand("copy");
-        document.body.removeChild(elem);
-
-        
-    }
-
-    Polymer({
-            is: 'x-carta-virtual-mesas',
-            properties: {
-                xt_org:Number,
-                xt_idsede:Number,
-                objListMesasQr: Object,
-                qrLLevar: Object,
-                qrDelivery: Object,
-                objListOtherQr: Object,
-                objQrSelected: Object,
-                url_delivery: String,
-                imgAfiche: String
-            },
-            attached: function () {                
-                xThisCartaVMesas = this;
-                xIniCartaVirtualMesas();
-            }
-        })
-</script>
+<style>.content-qr{display:inline-block}.codigo-qr{display:inline-grid;text-align:center}.bg-qr-mesa{background-image:url('./plano_qr.png');background-repeat:no-repeat;background-size:contain}.content-bg-qr{width:125px;height:193PX;margin-bottom:6px}.bg-qr-mesa .num-mesa{position:relative;left:45px;top:-29px;color:white;font-size:25px}.bg-qr-mesa .img-qr{top:-4px;position:relative}.content-logo-qr{width:31px;height:31px;border-radius:50%;overflow:hidden;position:relative;left:6px;top:4px;background:white;border:.04em solid}.content-logo-qr>img{width:35px;text-align:center;position:relative;top:23%;left:-2px}</style>
+<script>var xThisCartaVMesas,compImgLogo,_keyUrlLogoQr='';function xIniCartaVirtualMesas(){xThisCartaVMesas.medidaLogo={width:100,height:50}
+const _dataSede=xm_log_get('datos_org_sede')[0];_keyUrlLogoQr=_dataSede.idorg+''+_dataSede.idsede+'logoqr.png';compImgLogo=document.getElementById('compImgLogo');compImgLogo.addEventListener('setImg',res=>{const nomfileImg='logoqr';const img_promo=res.detail;uploadImgLogo(img_promo,nomfileImg)})
+xThisCartaVMesas.imgAfiche=URL_IMG_CARTA+'afiche_qr_modelo.jpg';loadDatosCartaMesas();}
+function loadDatosCartaMesas(){$.ajax({type:'POST',url:'../../bdphp/log_005.php?op=903'}).done(function(res){res=JSON.parse(res);xThisCartaVMesas.objListMesasQr=JSON.parse(res.datos[0].mesas);xThisCartaVMesas.objListMesasQr.map(x=>{const _cod=x.codigo;x.codigoDownload=`https:x.codigo=`https:x.titulo='Mesa '+x.nummesa;x.codigo_qr=_cod;return x;})
+xThisCartaVMesas.objListOtherQr=[];var listOther=[];xThisCartaVMesas.qrLLevar={};var _cod=res.datos[0].qr_para_llevar;xThisCartaVMesas.qrLLevar.codigoDownload=`https:xThisCartaVMesas.qrLLevar.codigo=`https:xThisCartaVMesas.qrLLevar.titulo='Solo para llevar';xThisCartaVMesas.qrLLevar.codigo_qr=_cod;xThisCartaVMesas.qrDelivery={};_cod=res.datos[0].qr_delivery;xThisCartaVMesas.qrDelivery.codigoDownload=`https:xThisCartaVMesas.qrDelivery.codigo=`https:xThisCartaVMesas.qrDelivery.titulo='Delivery';xThisCartaVMesas.qrDelivery.codigo_qr=_cod;xThisCartaVMesas.url_delivery=_cod;listOther.push(xThisCartaVMesas.qrLLevar);listOther.push(xThisCartaVMesas.qrDelivery);xThisCartaVMesas.objListOtherQr=JSON.parse(JSON.stringify(listOther));const _pathImg=URL_IMG_PROMO+_keyUrlLogoQr;try{compImgLogo.setImgPathFile(_pathImg);xThisCartaVMesas.imgLogoQr=_pathImg;}catch(error){compImgLogo.resetControl(_pathImg);xThisCartaVMesas.imgLogoQr='';}});}
+function descargarAfiche(){window.open(xThisCartaVMesas.imgAfiche,'Afiche',"width=500,height=500");}
+function descargarOtroQR(obj){const index=obj.dataIndex;const fileDown=xThisCartaVMesas.objListOtherQr[index];const url=fileDown.codigoDownload;window.open(url,"CodigoQR","width=500,height=500");}
+function descarGarQR(obj){const index=obj.dataIndex;const fileDown=xThisCartaVMesas.objListMesasQr[index];const url=fileDown.codigoDownload;window.open(url,"CodigoQR","width=500,height=500");}
+function generateQRCode(obj,op){const index=obj.dataIndex;var item=op===0?xThisCartaVMesas.objListOtherQr[index]:xThisCartaVMesas.objListMesasQr[index];xThisCartaVMesas.objQrSelected=item;var qr=new QRious({foreground:'black',element:document.getElementById('qr-download'),size:350,value:item.codigo_qr});dialog_qr.open();}
+async function copiarQr(){var img=document.getElementById('qr-download');img=img.toDataURL('image/png');const response=await fetch(img)
+const blob=await response.blob()
+await setToClipboard(blob);}
+async function xCopyQrCarta(obj){domtoimage.toPng(obj).then(async function(dataUrl){var img=new Image();img.src=dataUrl;const response=await fetch(img.src);const blob=await response.blob();await setToClipboard(blob);}).catch(function(error){console.error('oops, something went wrong!',error);});}
+async function xCopyAllQrCarta(obj){const _obj=$(obj).parent().find('.div-copy-all')[0];xCopyQrCarta(_obj);}
+async function setToClipboard(blob){showToastSwal('success','Copiado!');const data=[new ClipboardItem({[blob.type]:blob})]
+return navigator.clipboard.write(data)}
+function copiarUrl(){var text=document.getElementById('urlcopy').innerText;var elem=document.createElement("textarea");document.body.appendChild(elem);elem.value=text;elem.select();document.execCommand("copy");document.body.removeChild(elem);}
+function uploadImgLogo(imgBase64,nomfile){$.ajax({type:'POST',url:'upload_base64.php?op=6',data:{nomfile:nomfile,img:imgBase64}}).done((res)=>{console.log('ok');});}
+Polymer({is:'x-carta-virtual-mesas',properties:{xt_org:Number,xt_idsede:Number,objListMesasQr:Object,qrLLevar:Object,qrDelivery:Object,objListOtherQr:Object,objQrSelected:Object,url_delivery:String,imgAfiche:String,medidaLogo:Object,imgLogoQr:String,},attached:function(){xThisCartaVMesas=this;xIniCartaVirtualMesas();}})</script>

@@ -1746,8 +1746,13 @@
 
 		$idtipo_comprobante_serie = $x_array_comprobante['idtipo_comprobante_serie'];
 		
-		$sqlrp="update registro_pago set idtipo_comprobante_serie=".$idtipo_comprobante_serie." where idregistro_pago=".$id_registro_pago;
-		$idregistro_pago=$bd->xConsulta_NoReturn($sqlrp);
+		//0 si solo se factura
+		if ( $id_registro_pago != '0' ) {
+			$sqlrp="update registro_pago set idtipo_comprobante_serie=".$idtipo_comprobante_serie." where idregistro_pago=".$id_registro_pago;
+			$idregistro_pago=$bd->xConsulta_NoReturn($sqlrp);
+		} else {
+			$idregistro_pago = 0;
+		}
 	}
 
 
