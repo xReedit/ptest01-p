@@ -15,15 +15,24 @@
 <h3>Logo</h3>
 <p>Logo que va en el diseño impreso.</p>
 <div class="xLinea2"></div>
+<div>
 <x-comp-img-upload-2 id="compImgLogo" medidasimg="[[medidaLogo]]"></x-comp-img-upload-2>
+</div>
 <br>
 <div class="xLinea2"></div>
 <br>
 <h3>Codigos QR para las mesas</h3>
 <p>Toca para descargar.</p>
-<div class="xLinea2"></div>
 <br>
 <div class="content-qr">
+<paper-tabs selected="{{selectedTab}}">
+<paper-tab>Diseño 1</paper-tab>
+<paper-tab>Diseño 2</paper-tab>
+</paper-tabs>
+<div class="xLinea2"></div>
+<br><br>
+<iron-pages selected="{{selectedTab}}">
+<div id="template-1">
 <div class="div-copy-all" style="background:white">
 <template is="dom-repeat" items="{{objListMesasQr}}" as="item">
 <div class="codigo-qr content-bg-qr xCursor" onclick="xCopyQrCarta(this)" data-index=[[index]]>
@@ -38,6 +47,16 @@
 </template>
 </div>
 <button class="btn btn-primary" onclick="xCopyAllQrCarta(this)"><i class="fa fa-copy"></i> Copiar Todo</button>
+</div>
+<div id="template-2">
+<template is="dom-repeat" items="{{objListMesasQr}}" as="item">
+<div class="codigo-qr xCursor" onclick="generateQRCode(this,1)" data-index=[[index]]>
+<img src="{{item.codigo}}" alt="">
+<span>{{item.nummesa}}</span>
+</div>
+</template>
+</div>
+</iron-pages>
 </div>
 <br><br>
 <h3>Otros Codigos QR</h3>
@@ -67,7 +86,7 @@
 </div>
 </template>
 </dom-module>
-<style>.content-qr{display:inline-block}.codigo-qr{display:inline-grid;text-align:center}.bg-qr-mesa{background-image:url('./plano_qr.png');background-repeat:no-repeat;background-size:contain}.content-bg-qr{width:125px;height:193PX;margin-bottom:6px}.bg-qr-mesa .num-mesa{position:relative;left:45px;top:-29px;color:white;font-size:25px}.bg-qr-mesa .img-qr{top:-4px;position:relative}.content-logo-qr{width:31px;height:31px;border-radius:50%;overflow:hidden;position:relative;left:6px;top:4px;background:white;border:.04em solid}.content-logo-qr>img{width:35px;text-align:center;position:relative;top:23%;left:-2px}</style>
+<style>.content-qr{display:inline-block}.codigo-qr{display:inline-grid;text-align:center}.bg-qr-mesa{background-image:url('./plano_qr.png');background-repeat:no-repeat;background-size:contain}.content-bg-qr{width:125px;height:193PX;margin-bottom:6px}.bg-qr-mesa .num-mesa{position:relative;left:45px;top:-29px;color:white;font-size:25px}.bg-qr-mesa .img-qr{top:-4px;position:relative}.content-logo-qr{width:31px;height:31px;border-radius:50%;overflow:hidden;position:relative;left:6px;top:4px;background:white;border:.04em solid}.content-logo-qr>img{width:34px;text-align:center;position:relative;top:-1px;left:-2px}</style>
 <script>/*<![CDATA[*/var xThisCartaVMesas,compImgLogo,_keyUrlLogoQr='';function xIniCartaVirtualMesas(){xThisCartaVMesas.medidaLogo={width:200,height:200}
 const _dataSede=xm_log_get('datos_org_sede')[0];_keyUrlLogoQr=_dataSede.idorg+''+_dataSede.idsede+'logoqr.png';compImgLogo=document.getElementById('compImgLogo');compImgLogo.addEventListener('setImg',res=>{const nomfileImg='logoqr';const img_promo=res.detail;uploadImgLogo(img_promo,nomfileImg)})
 xThisCartaVMesas.imgAfiche=URL_IMG_CARTA+'afiche_qr_modelo.jpg';loadDatosCartaMesas();}
@@ -86,4 +105,5 @@ async function setToClipboard(blob){showToastSwal('success','Copiado!');const da
 return navigator.clipboard.write(data)}
 function copiarUrl(){var text=document.getElementById('urlcopy').innerText;var elem=document.createElement("textarea");document.body.appendChild(elem);elem.value=text;elem.select();document.execCommand("copy");document.body.removeChild(elem);}
 function uploadImgLogo(imgBase64,nomfile){$.ajax({type:'POST',url:'upload_base64.php?op=6',data:{nomfile:nomfile,img:imgBase64}}).done((res)=>{console.log('ok');});}
-Polymer({is:'x-carta-virtual-mesas',properties:{xt_org:Number,xt_idsede:Number,objListMesasQr:Object,qrLLevar:Object,qrDelivery:Object,objListOtherQr:Object,objQrSelected:Object,url_delivery:String,imgAfiche:String,medidaLogo:Object,imgLogoQr:String,},attached:function(){xThisCartaVMesas=this;xIniCartaVirtualMesas();}})/*]]>*/</script>
+Polymer({is:'x-carta-virtual-mesas',properties:{xt_org:Number,xt_idsede:Number,objListMesasQr:Object,qrLLevar:Object,qrDelivery:Object,objListOtherQr:Object,objQrSelected:Object,url_delivery:String,imgAfiche:String,medidaLogo:Object,imgLogoQr:String,selectedTab:Number},attached:function(){this.selectedTab=0
+xThisCartaVMesas=this;xIniCartaVirtualMesas();}})/*]]>*/</script>
