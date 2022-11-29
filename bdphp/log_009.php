@@ -114,8 +114,9 @@
             break;
         case 7: // control de delivery - control pedidos
             $arrItemPedido=$_POST['obj'];
+            $fecha= isset($_POST['fecha']) ? $_POST['fecha']: '';
             $arrItemPedido = isset($arrItemPedido) ? "'".json_encode($arrItemPedido)."'" : 'null';
-            $sql="call procedure_refresh_delivery($g_idsede, $arrItemPedido)";
+            $sql="call procedure_refresh_delivery($g_idsede, $arrItemPedido, '$fecha')";
             $bd->xConsulta($sql);
             break;
         case 8: // control delivery

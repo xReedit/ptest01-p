@@ -2,6 +2,18 @@
 <link rel="import" href="../../x-componentes/x-comp-printer-local-select/x-comp-printer-local-select.html">
 <link rel="preload" href="../../../images/_msj_envio_sunat.gif" as="image" media="(max-width: 600px)">
 <template>
+<paper-dialog class="dialog_redondo" id="dialog_info_supervisor" style="max-width:500px" modal entry-animation="scale-up-animation" exit-animation="fade-out-animation">
+<div>
+<p class="fs-18">Cunato tengo?.</p>
+<p class="fw-100 text-secondary">El importe que debe tener en caja es la suma de sus ventas en efectivo <span class="fw-600 text-primary">mas</span> sus ingresos de efectivo a caja y <span class="fw-600 text-danger">menos</span> sus salidas de efectivo de caja.</p>
+<br>
+<p class="fw-100 text-secondary">Puede ver sus ventas en efectivo en la opción de "Registro de Pagos". Si no encuentra su diferencia, llame al supervisor.</p>
+<br>
+<button dialog-dismiss class="btn btn-dark mb-2" onclick="xPSupervisor.xopen()">Ingresar clave supervisor</button><br>
+<button dialog-dismiss class="btn btn-primary mb-2" onclick="xOpenDialogPermisoRemotoUs()">Solicitar Permiso Remoto</button><br>
+<button dialog-dismiss class="btn btn-secondary">Cancelar</button>
+</div>
+</paper-dialog>
 <paper-dialog class="dialog_redondo" id="dialog_permiso_remoto" style="max-width:500px" modal entry-animation="scale-up-animation" exit-animation="fade-out-animation">
 <div>
 <img src="../../../images/_solicitud_remoto.png" alt="solicita">
@@ -221,8 +233,7 @@
 </div>
 <div id="btns_cierre">
 <button class="btn btn-success" onclick="xVerificar()"><i class="fa fa-check pr-1"></i>Verificar</button>
-<button class="btn btn-dark" onclick="xPSupervisor.xopen()"><i class="fa fa-user pr-1"></i>Supervisor</button>
-<button class="btn btn-info" onclick="xOpenDialogPermisoRemotoUs()"><i class="fa fa-volume-control-phone pr-1"></i>Permiso Remoto</button>
+<button class="btn btn-dark" onclick="dialog_info_supervisor.open()"><i class="fa fa-money pr-1"></i>Cuanto Tengo?</button>
 </div>
 </div>
 <br><br>
@@ -297,8 +308,11 @@ function xGuardarIngreso(){if(guadandoIngresoSalida){return;}
 guadandoIngresoSalida=true;xvalidateFormInput('form_ingreso',function(a){if(a===false){guadandoIngresoSalida=false;return;}
 var xvalIE=$("#form_ingreso #selecie").val();xPopupLoad.xopen();$("#form_ingreso #fecha").val(xDevolverFecha()+' '+xDevolverHora());$("#form_ingreso #monto").val(xMoneda($("#form_ingreso #monto").val()))
 $("#form_ingreso #tipo").val(xvalIE);$.post("../../bdphp/ManejoBD_IUD.php?tb=ie_caja",$("#form_ingreso").serialize(),function(aa){xPopupLoad.xclose();$("#form_ingreso #motivo").val('');$("#form_ingreso #monto").val('');xLoadResumenIS();guadandoIngresoSalida=false;})})}
-function xGetDataCierre(idBitacora){$.ajax({type:'POST',url:'../../bdphp/log.php?op=7000',data:{id:idBitacora}}).done(function(res){res=JSON.parse(res);if(!res.success){console.log(res);xPopupLoad.xclose();return;}
-const arrData=JSON.parse(res.datos[0]['data']);const arrTitulo=JSON.parse(res.datos[0]['titulo']);var keyTitulo='',cIndex=0,arrX=[],arrRpt=[];arrData.map((x,i)=>{keyTitulo=Object.keys(x)[0];arrX=JSON.parse(x[keyTitulo]);if(arrX){arrRpt.push({des:arrTitulo[i].des,t1:arrTitulo[i].t1,t2:arrTitulo[i].t2,t3:arrTitulo[i].t3,visible:0,});arrX.map((z,q)=>{arrRpt[cIndex][q]=z;});cIndex++;}});xArrayCierrePrint=arrRpt;xPopupLoad.xclose();$("#btns_cierre").html(`<button class="btn btn-success"onclick="xCerrarSessionAll();"><i class="fa fa-close"></i>Cerrar Terminal</button><button class="btn btn-warning"onclick="xDownloadPdfCierre(1);"><i class="fa fa-file-pdf-o"></i>Descargar cierre en PDF</button>`);xPermisoSupervisor=0;xIniArraysPrint();if(!isPrintCierreCaja){xVerificaSiFacturacionE();}
+function xGetDataCierre(idBitacora){xThisCaja.isErrorCierre=false;$.ajax({type:'POST',url:'../../bdphp/log.php?op=7000',data:{id:idBitacora}}).done(function(resCierre){resCierre=JSON.parse(resCierre);if(!resCierre.success){const _msjErr='<h3>Ups! hubo un problema al cerrar. Intente nuevamente</h3>'
+$('#xTituloRpt').html(_msjErr);$('#xTituloRpt').css('color','red');xThisCaja.isErrorCierre=true;console.log(resCierre);xPopupLoad.xclose();$("#btns_cierre").html(`<button class="btn btn-primary"onclick="xVerificar();"><i class="fa-light fa-repeat"></i>Volver a Verificar</button><button class="btn btn-warning"onclick="xDownloadPdfCierre(1);"><i class="fa fa-file-pdf-o"></i>V</button>`);return;}
+const arrData=JSON.parse(resCierre.datos[0]['data']);const arrTitulo=JSON.parse(resCierre.datos[0]['titulo']);const _objRunCierre={data:arrData,titulo:arrTitulo}
+$.ajax({type:'POST',url:'../../bdphp/log.php?op=70001',data:{id:idBitacora,objdata:_objRunCierre}}).done(_res=>{console.log('run cierre registro ',_res)})
+var keyTitulo='',cIndex=0,arrX=[],arrRpt=[];arrData.map((x,i)=>{keyTitulo=Object.keys(x)[0];arrX=JSON.parse(x[keyTitulo]);if(arrX){arrRpt.push({des:arrTitulo[i].des,t1:arrTitulo[i].t1,t2:arrTitulo[i].t2,t3:arrTitulo[i].t3,visible:0,});arrX.map((z,q)=>{arrRpt[cIndex][q]=z;});cIndex++;}});xArrayCierrePrint=arrRpt;xPopupLoad.xclose();$("#btns_cierre").html(`<button class="btn btn-success"onclick="xCerrarSessionAll();"><i class="fa fa-close"></i>Cerrar Terminal</button><button class="btn btn-warning"onclick="xDownloadPdfCierre(1);"><i class="fa fa-file-pdf-o"></i>Descargar cierre en PDF</button>`);xPermisoSupervisor=0;xIniArraysPrint();if(!isPrintCierreCaja){xVerificaSiFacturacionE();}
 xImprimirCierre(xArrayEncabezadoCierre,xArrayCierrePrint);xEscribirDatosHtml();});}
 function xLoadResumenIS(){$("#tb_resumen_ie .row").remove();$("#tb_resumen_ie").append('<tr class="row"><td colspan="5"><paper-spinner active></paper-spinner></td></tr>').trigger('create');$.ajax({type:'POST',url:'../../bdphp/log.php?op=70011'}).done(function(dtIE){var xdtIE=$.parseJSON(dtIE);var xcadena_resumen_ie='';var xCuentaRow=0;var xClassTipo='';xdtIE=xdtIE.datos;for(var i=0;i<xdtIE.length;i++){xCuentaRow++;xClassTipo='';if(xdtIE[i].tipo!=1){xClassTipo='xColorRow_Rojo';}
 xcadena_resumen_ie=String(xcadena_resumen_ie+'<tr class="row '+xClassTipo+'"><td>'+xCeroIzq(xCuentaRow,2)+'</td><td>'+xdtIE[i].fecha+'</td><td>'+xdtIE[i].des_tipo+'</td><td>'+xdtIE[i].motivo+'</td><td align="right">'+xdtIE[i].monto+'</td></tr>');};$("#tb_resumen_ie .row").remove();$("#tb_resumen_ie").append(xcadena_resumen_ie).trigger('create');});xLoadAdelantoOrdenPedido();xLoadTicketsEntradaCaja();xLoadIngresosVariosCaja();}
@@ -366,4 +380,4 @@ idUsAdminPermiso=xThisCaja.listUsAdmin[obj.selectedIndex].idusuario;}
 function xEnviarPermisoRemoto(){$.ajax({type:'POST',url:'../../bdphp/log.php?op=70113',data:{idus:idUsAdminPermiso,importe:txt_total_tengo.value}}).done(function(res){$('#div_espera_rpt').removeClass('xInvisible');dialog_permiso_remoto.close();});}
 function xCajaResPermisoRemoto(res){if(res.idusuario_solicita!==xIdUsuario){return;}
 xThisCaja.rowRptSolicitud=res;$('#div_espera_rpt').addClass('xInvisible');$('#div_rpt_solicitud').removeClass('xInvisible');}
-Polymer({is:'x-caja',properties:{xt_org:Number,xt_idsede:Number,xt_idus:Number,winchaCierre:[],listCierres:[],listUsAdmin:[],isShowLastCierres:Boolean,listAdelantoOrden:[],listTicketEntrada:[],isShowListaAdelantoOrden:Boolean,isShowEsperaRptSolicitudCierre:Boolean,isShowRptSolicitudCierre:Boolean,isShowListaTicketEntrada:Boolean,isShowIngresoVarios:Boolean,rowRptSolicitud:[],listIngresosVarios:[]},attached:function(){this.selected=0;this.isShowLastCierres=false;this.isShowListaAdelantoOrden=false;this.isShowEsperaRptSolicitudCierre=false;this.isShowRptSolicitudCierre=false;this.isShowListaTicketEntrada=false;this.isShowIngresoVarios=false;xThisCaja=this;xIniCaja();setTimeout(()=>{_cpSocketOpen();},1000);},detached:function(){_cpSocketClose();}})/*]]>*/</script>
+Polymer({is:'x-caja',properties:{xt_org:Number,xt_idsede:Number,xt_idus:Number,winchaCierre:[],listCierres:[],listUsAdmin:[],isShowLastCierres:Boolean,listAdelantoOrden:[],listTicketEntrada:[],isShowListaAdelantoOrden:Boolean,isShowEsperaRptSolicitudCierre:Boolean,isShowRptSolicitudCierre:Boolean,isShowListaTicketEntrada:Boolean,isShowIngresoVarios:Boolean,isErrorCierre:Boolean,rowRptSolicitud:[],listIngresosVarios:[]},attached:function(){this.selected=0;this.isErrorCierre=false;this.isShowLastCierres=false;this.isShowListaAdelantoOrden=false;this.isShowEsperaRptSolicitudCierre=false;this.isShowRptSolicitudCierre=false;this.isShowListaTicketEntrada=false;this.isShowIngresoVarios=false;xThisCaja=this;xIniCaja();setTimeout(()=>{_cpSocketOpen();},1000);},detached:function(){_cpSocketClose();}})/*]]>*/</script>

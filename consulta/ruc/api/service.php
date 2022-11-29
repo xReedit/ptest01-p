@@ -18,6 +18,8 @@
 	$pos = strrpos($respDecode["result"]["RazonSocial"], "****");	
 	$hayDatos = $respDecode["haydatos"];
 
+	// echo $resp;		
+	// return;
 	// 110321 // si no hay datos tambien manda a consultar en temporal
 	if ( !$pos &&  $hayDatos ) {
 		echo $resp;		

@@ -1970,7 +1970,7 @@
 					left JOIN usuario AS u on p.idusuario = u.idusuario
 					left join cliente as c on p.idcliente = c.idcliente
 					left join repartidor as r on r.idrepartidor = p.idrepartidor
-				WHERE p.idpedido > $lastIdPedido and (p.idsede=".$g_idsede." and ".$condicion.") and ".$isQyueryConfirmar;				
+				WHERE p.idpedido >= $lastIdPedido and (p.idsede=".$g_idsede." and ".$condicion.") and ".$isQyueryConfirmar;				
 
 				// AND (p.estado IN(0,1) OR (p.confirmar_pago = 1))
 
@@ -2214,6 +2214,13 @@
 			$idus = $_SESSION['idusuario'];
 			$idBitacora = $_POST['id'];
 			$sql = "call procedure_cierre_caja($idus,$idBitacora)";
+			$bd->xConsulta($sql);
+			break;
+		case 70001: // run cierre registros
+			$idus = $_SESSION['idusuario'];
+			$idBitacora = $_POST['id'];
+			$objData = json_encode($_POST['objdata']);
+			$sql = "call procedure_run_cierre($idus,$idBitacora, '$objData')";
 			$bd->xConsulta($sql);
 			break;
 		case 70111: // verificar cuadre

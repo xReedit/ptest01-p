@@ -65,6 +65,86 @@
 			$numRand = $this->cc->send($url);
 			return $numRand;
 		}
+		function getDataRUCApiPeru($ruc) {
+			$url = "https://apiperu.dev/api/ruc/".$ruc;
+            $headers = array(
+                "Accept: application/json",
+            	"Authorization: Bearer 9032a50cc5152873fe7c0d1485ade12b09b050b01b5cdf3235d370665d9b41ab",
+            );
+
+			$curl = curl_init($url);
+            curl_setopt($curl, CURLOPT_URL, $url);
+            curl_setopt($curl, CURLOPT_RETURNTRANSFER, true);
+            curl_setopt($curl, CURLOPT_HTTPHEADER, $headers);            
+            curl_setopt($curl, CURLOPT_SSL_VERIFYHOST, false);
+            curl_setopt($curl, CURLOPT_SSL_VERIFYPEER, false);
+            $resp = curl_exec($curl);
+            curl_close($curl);            
+            $result = json_decode($resp);
+
+			if ( $result->success ) {
+				$Nombre = $result->data->nombres;
+				$ApePat = $result->data->apellido_paterno;
+				$ApeMat = $result->data->apellido_materno;
+				$NombreCompleto = $result->data->nombre_completo;
+				$Fnac = isset($result->data->fecha_nacimiento) ? $result->data->fecha_nacimiento : '';
+
+				// $info = array(
+				// 	"DNI" 			=>(string)$number,
+				// 	"apellidos"     =>(string)$ApePat.' '.$ApeMat,
+				// 	"paterno" 		=>(string)$ApePat,
+				// 	"materno" 		=>(string)$ApeMat,
+				// 	"nombre" 		=>(string)$Nombre,
+				// 	"Nombres" 		=>(string)$Nombre,
+				// 	"sexo" 			=>'',
+				// 	"nacimiento" 	=>(string)$Fnac,
+				// 	"gvotacion" 	=>''
+				// );
+
+				$info = array(
+					"RazonSocial"			=> $result->data->nombre_o_razon_social,
+					"NombreComercial" 		=> $result->data->nombre_o_razon_social,
+					"NombreComercialAleternativo"		=> $result->data->ruc,					
+					"Tipo" 					=> "",
+					"Inscripcion" 			=> "",
+					"Estado" 				=> $result->data->estado,
+					"Direccion" 			=> $result->data->direccion_completa,
+					"SistemaEmision" 		=> "",
+					"ActividadExterior"		=> "",
+					"SistemaContabilidad" 	=> "",
+					"Oficio" 				=> "",
+					"ActividadEconomica" 	=> "",
+					"EmisionElectronica" 	=> "",
+					"PLE" 					=> "",
+					"ubigeo_sunat"			=> $result->data->ubigeo_sunat,
+					"condicion"				=> $result->data->condicion,
+					"departamento"			=> $result->data->departamento,
+					"provincia"				=> $result->data->provincia,
+					"distrito"				=> $result->data->distrito
+				);
+				
+
+				// $res_api = (object)array(
+				// 	"success" 	=> true,
+				// 	"data" 	=> $info
+				// );
+
+				return $info;
+				
+			}  else {
+
+				return [
+					'success' => false,
+					'dni' => $number,
+					'source' => 'apidev',
+					'message' => 'Datos no encontrados.',
+					"data" 	=> $result
+				];
+
+			}
+
+		}
+
 		function getDataRUC( $ruc )
 		{
 			$numRand = $this->getNumRand();
@@ -322,7 +402,8 @@
 			}
 			if( strlen($ruc_dni)==11 && $this->valid($ruc_dni) )
 			{
-				$info = $this->getDataRUC($ruc_dni);
+				// $info = $this->getDataRUC($ruc_dni);
+				$info = $this->getDataRUCApiPeru($ruc_dni);
 				if( $info!=false )
 				{
 					$rtn = array(
