@@ -3694,7 +3694,7 @@ function xDtUS($op_us){
 		case 3012: // load datos del org sede 
 			$sql_us = "SELECT s.idorg, se.idsede, s.nombre, s.direccion,s.ruc, s.telefono , se.nombre as sedenombre , se.direccion as sededireccion, se.ciudad as sedeciudad, se.telefono as sedetelefono, se.eslogan, se.authorization_api_comprobante, se.id_api_comprobante, se.facturacion_e_activo, '' as logo64, se.ubigeo, se.codigo_del_domicilio_fiscal
 				,se.sys_local, se.ip_server_local, se.pwa, se.url_api_fac
-				,se.email_cierre, se.metodo_pago_aceptados, se.habilita_verificacion_cpe, tcs.serie
+				,se.email_cierre, se.metodo_pago_aceptados, se.habilita_verificacion_cpe, tcs.serie, se.id_api_comprobante
 				from org as s 
 				inner JOIN sede as se on s.idorg = se.idorg 
 				left join (select idsede, serie from tipo_comprobante_serie tcs where idsede=$g_idsede and serie != 0 and estado = 0 limit 1) as tcs on tcs.idsede = se.idsede 
