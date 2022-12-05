@@ -28,4 +28,4 @@ function xSoapSunat_cambiarFormatoFecha(input){const pattern=/(\d{4})\-(\d{2})\-
 return input.replace(pattern,"$3/$2/$1");}
 function xSoapSunat_cambiarFormatoFechaString(sfecha){return sfecha.split("/").reverse().join("-");}
 function xSoapSunat_cambiarFormatoFechaString2(sfecha){return sfecha.split("-").reverse().join("/");}
-function xSoapSunat_DownloadFile(tipo,id){const _url=`${URL_COMPROBANTE_DOWNLOAD_FILE}/${tipo}/${id}`;window.open(_url,"_blank");}
+function xSoapSunat_DownloadFile(tipo,id){const _dtSede=xm_log_get("datos_org_sede")[0];const _userId=_dtSede.id_api_comprobante;const _url=`${URL_COMPROBANTE_DOWNLOAD_FILE}/${tipo}/${id}/${_userId}`;window.open(_url,"_blank");}
