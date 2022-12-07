@@ -129,7 +129,7 @@
 					<th align="right">Total</th>
 					<th>Estado Sistema</th>
 					<th>
-						<p hidden$="[[!showVerificacionSunat]]">Estado Sunat</p>						
+						Estado Sunat						
 					</th>
 				</thead>
 				<tbody>
@@ -512,7 +512,8 @@ function xEstadoCpeApi(estado) {
 		color: ''
 	};
 
-	switch (estado) {
+	const _valEstado = estado.toString()
+	switch (_valEstado) {
 		case '0': _estado.titulo = "NO EXISTE"; _estado.color= "purple"; break;
 		case '1': _estado.titulo = "ACEPTADO";  _estado.color= "green"; break;		
 		case '2': _estado.titulo = "ANULADO";  _estado.color= "red"; break;		
