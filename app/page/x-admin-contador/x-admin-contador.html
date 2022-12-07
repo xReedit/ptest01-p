@@ -1,179 +1,576 @@
 <script src="../../view/xApiConsultaSunat.js"></script>
 <script src="../../view/httpFech.js"></script>
 <dom-module id="x-admin-contador">
-<template is="dom">
-<paper-dialog id="dialog_match_sunat" class="dialog_redondo" modal style="min-width:330px;max-width:400px" modal entry-animation="scale-up-animation" exit-animation="fade-out-animation">
-<div class="p-2 text-center">
-<div>
-<img src="../../../images/scan_docs_sunat.gif" alt="img_match">
-</div>
-<div hidden$="[[ showProccessVerificationFinalize ]]">
-<paper-progress indeterminate></paper-progress>
-</div>
-<p class="fs-15 fw-600">Verificando el estado de los comprobantes con Sunat. <span class="text-success">{{numRowsVerificadoSuccess}}</span> de {{ numRowsList}}</p>
-<div hidden$="[[ !showRowsNoResponse ]]">
-<br>
-<div class="xLinea2"></div>
-<br>
-<p class="fs-15 fw-600">Sin respuesta: <span class="text-danger">{{numRowsVerificadoError}}</span></p>
-<div class="d-flexx justify-content-center" hidden$="[[ !showProccessVerificationFinalize ]]">
-<button class="btn btn-sm btn-info mr-2" onclick="downloadReporteCPE()">Verificar Nuevamente ({{numRowsVerificadoError}})</button>
-<button class="btn btn-sm btn-success" onclick="setDataListReporte()">Descargar</button>
-</div>
-</div>
-<div hidden$="[[ !showProccessVerificationError ]]">
-<br>
-<div class="xLinea2"></div>
-<br>
-<p class="fw-600 text-danger">Ocurrio un error al procesar</p>
-<button class="btn btn-sm btn-info mr-2" onclick="downloadReporteCPE()">Procesar Nuevamente</button>
-</div>
-</div>
-</paper-dialog>
-<br>
-<div class="xMiCard xradius" style="width:calc(100% - 10%);height:calc(100vh - 120px)">
-<div class="xEncanezadoCard xFondoRowAmarillo4">
-<strong>Reportes de facturacion electronica</strong><br>
-Para leer los reportes descargados debe contar con Microsof Excel instalado, o cualquier otro programa de calculo que lea archivos ".xml" <br>
-Para asignar mas Establecimientos o para soporte tecnico, comuniquese con nosotros a <a href="https://papaya.com.pe/" target="_blank">papaya.com.pe</a>
-</div>
-<div class="xContent">
-<div class="x_div_linea">
-<div class="xitem1 xBordeDe" style="height:calc(100vh - 185px)">
-<br>
-<h4>Estableciminetos Asignados</h4>
-<div class="xLinea2"></div>
-<br>
-<table width="100%">
-<thead>
-<th>#</th>
-<th>Razon social</th>
-<th>Ciudad</th>
-</thead>
-<tbody>
-<template is="dom-repeat" items="{{listAsignados}}" as="item">
-<tr id="{{index}}" class="animated fadeIn fast xCursor" onclick="selectEsablecimiento(this)">
-<td class="xfont11">{{displayIndex(index)}}</td>
-<td class="xfont11">{{item.razonsocial}} | {{item.nomsede}}</td>
-<td class="xfont11">{{item.ciudad}}</td>
-</tr>
-</template>
-</tbody>
-</table>
-</div>
-<div class="xitem2 xBordeIzqHover">
-<br>
-<h4>{{selEstablecimiento.nomsede}} | {{selEstablecimiento.ciudad}}</h4>
-<div class="xLinea2"></div>
-<br>
-<div style="width:120px">
-<label for="selYear" class="xColorRow_Plomo">Seleccione Año:</label>
-<select id="selYear" class="xTextRow2 xCursor" onchange="selectOptionYear()">
-<template is="dom-repeat" items="{{listYears}}" as="item">
-<option value="[[index]]">[[item.y]] </option>
-</template>
-</select>
-</div>
-<br>
-<table width="100%">
-<thead>
-<th width="15px">#</th>
-<th>Mes</th>
-<th>Estado</th>
-<th>Accion</th>
-</thead>
-<tbody>
-<template is="dom-repeat" items="{{listMonth}}" as="item">
-<tr id="{{index}}" class$="{{item.clase}}" onclick="selectedRowTR(this)">
-<td class="xfont11">{{displayIndex(index)}}</td>
-<td class="xfont11">{{item.mes}}</td>
-<td class="xfont11">{{item.desestado}}</td>
-<td class="xfont11">
-<div hidden$="{{!item.activo}}" onclick="downloadReporteCPE(this)">
-<a>Descargar <img src="../../../images/x_down2.png" alt=""></a>
-</div>
-</td>
-</tr>
-</template>
-</tbody>
-</table>
-</div>
-</div>
-</div>
-</div>
-<div id="reporte" class="xInvisible">
-<table id="testTable" width="100%">
-<caption>
-<h1>{{selEstablecimiento.nomsede}} | {{selEstablecimiento.ciudad}}</h1>
-<h2>Reporte de comprobantes electronicos - {{selMes.mes}}</h2>
-</caption>
-<thead>
-<th width="45px">#</th>
-<th width="15%">f. Emision</th>
-<th>Tipo</th>
-<th>Numero</th>
-<th width="35%">Cliente</th>
-<th width="15%">RUC/DNI</th>
-<th align="right">Sub total</th>
-<th align="right">I.G.V</th>
-<th align="right">Total</th>
-<th>Estado Sistema</th>
-<th>
-<p hidden$="[[!showVerificacionSunat]]">Estado Sunat</p>
-</th>
-</thead>
-<tbody>
-<template is="dom-repeat" items="{{ListReporte}}" as="row">
-<tr>
-<td>{{displayIndex(index)}}</td>
-<td style$="{{row.style_td}}">{{row.fecha}}</td>
-<td style$="{{row.style_td}}">{{row.tipo_doc}}</td>
-<td style$="{{row.style_td}}">{{row.num_doc}}</td>
-<td style$="{{row.style_td}}">{{row.nom_cliente}}</td>
-<td style='mso-number-format:"@"'>{{row.ruc}}</td>
-<td style$="{{row.style_td}}">{{row.subtotal}}</td>
-<td style$="{{row.style_td}}">{{row.igv}}</td>
-<td style$="{{row.style_td}}">{{row.total}}</td>
-<td style$="{{row.style_reporte}}">{{row.estado}}</td>
-<td style$="{{row.style_estado_sunat}}">{{row.estadoCp}}</td>
-</tr>
-</template>
-</tbody>
-</table>
-</div>
-<style>tr:hover,tr.selected{background-color:#e3f2fd}</style>
-</template>
+	<template is="dom">
+
+		<paper-dialog id="dialog_match_sunat" class="dialog_redondo" modal style="min-width: 330px; max-width: 400px" modal entry-animation="scale-up-animation"
+            exit-animation="fade-out-animation">
+			<div class="p-2 text-center">
+				<div>
+					<img src="../../../images/scan_docs_sunat.gif" alt="img_match">
+				</div>
+				<div hidden$="[[ showProccessVerificationFinalize ]]">
+					<paper-progress indeterminate></paper-progress>
+				</div>
+				<p class="fs-15 fw-600">Verificando el estado de los comprobantes con Sunat. <span class="text-success">{{numRowsVerificadoSuccess}}</span> de {{ numRowsList}}</p>
+				<div hidden$="[[ !showRowsNoResponse ]]">
+					<br>
+					<div class="xLinea2"></div>
+					<br>
+					<p class="fs-15 fw-600">Sin respuesta: <span class="text-danger">{{numRowsVerificadoError}}</span></p>
+					<div class="d-flexx justify-content-center" hidden$="[[ !showProccessVerificationFinalize ]]">
+						<button class="btn btn-sm btn-info mr-2" onclick="downloadReporteCPE()">Verificar Nuevamente ({{numRowsVerificadoError}})</button>
+						<button class="btn btn-sm btn-success" onclick="setDataListReporte()">Descargar</button>
+					</div>
+				</div>
+
+				<div hidden$="[[ !showProccessVerificationError ]]">
+					<br>
+					<div class="xLinea2"></div>
+					<br>
+					<p class="fw-600 text-danger">Ocurrio un error al procesar</p>
+					<button class="btn btn-sm btn-info mr-2" onclick="downloadReporteCPE()">Procesar Nuevamente</button>
+				</div>
+			</div>
+        </paper-dialog>
+
+
+		<br>
+		<div class="xMiCard xradius" style="width:calc(100% - 10%); height: calc(100vh - 120px);">
+			<div class="xEncanezadoCard xFondoRowAmarillo4">
+				<strong>Reportes de facturacion electronica</strong><br>
+				Para leer los reportes descargados debe contar con Microsof Excel instalado, o cualquier otro programa de calculo que lea archivos ".xml" <br>
+				Para asignar mas Establecimientos o para soporte tecnico, comuniquese con nosotros a <a
+					href="https://papaya.com.pe/" target="_blank">papaya.com.pe</a>
+			</div>
+			<div class="xContent">
+				<div class="x_div_linea">					
+					<div class="xitem1 xBordeDe" style="height: calc(100vh - 185px)">
+						<br>
+						<h4>Estableciminetos Asignados</h4>		
+						<div class="xLinea2"></div>
+						<br>
+						<table width="100%">
+							<thead>
+								<th>#</th>
+								<th>Razon social</th>
+								<th>Ciudad</th>
+							</thead>
+							<tbody>
+								<template is="dom-repeat" items="{{listAsignados}}" as="item">
+									<tr id="{{index}}" class="animated fadeIn fast xCursor" onclick="selectEsablecimiento(this);">
+										<td class="xfont11">{{displayIndex(index)}}</td>
+										<td class="xfont11">{{item.razonsocial}} | {{item.nomsede}}</td>										
+										<td class="xfont11">{{item.ciudad}}</td>										
+									</tr>
+								</template>
+							</tbody>
+						</table>
+					</div>
+					<div class="xitem2 xBordeIzqHover">
+						<br>
+						<h4>{{selEstablecimiento.nomsede}} | {{selEstablecimiento.ciudad}}</h4>
+						<div class="xLinea2"></div>
+						<br>
+						<div style="width: 120px;">
+							<label for="selYear" class="xColorRow_Plomo">Seleccione Año:</label>
+							<select id="selYear" class="xTextRow2 xCursor" onchange="selectOptionYear()">
+								<template is="dom-repeat" items="{{listYears}}" as="item">
+									<option value="[[index]]">[[item.y]] </option>
+								</template>
+							</select>
+						</div>
+						<br>
+						<table width="100%">
+							<thead>
+								<th width="15px">#</th>
+								<th>Mes</th>
+								<th>Estado</th>
+								<th>Accion</th>
+							</thead>
+							<tbody>
+								<template is="dom-repeat" items="{{listMonth}}" as="item">
+									<tr id="{{index}}" class$="{{item.clase}}" onclick="selectedRowTR(this)">
+										<td class="xfont11">{{displayIndex(index)}}</td>
+										<td class="xfont11">{{item.mes}}</td>
+										<td class="xfont11">{{item.desestado}}</td>										
+										<td class="xfont11">
+											<div hidden$="{{!item.activo}}" onclick="downloadReporteCPE(this)">
+												<a>Descargar <img src="../../../images/x_down2.png" alt=""></a>
+											</div>
+										</td>
+									</tr>
+								</template>
+							</tbody>
+						</table>
+					</div>				
+				</div>				
+			</div>
+		</div>	
+
+		<!-- reporte comprobantes exportar -> excel -->
+		<!-- <button onclick="xGenerarReporteExcel()">Exportar</button> -->
+		<div id="reporte" class="xInvisible">
+
+			<table id="testTable" width="100%">
+				<caption>
+					<h1>{{selEstablecimiento.nomsede}} | {{selEstablecimiento.ciudad}}</h1>					
+					<h2>Reporte de comprobantes electronicos - {{selMes.mes}}</h2>
+				</caption>
+				<thead>
+					<th width="45px">#</th>
+					<th width="15%">f. Emision</th>					
+					<th>Tipo</th>
+					<th>Numero</th>
+					<th width="35%">Cliente</th>
+					<th width="15%">RUC/DNI</th>
+					<th align="right">Sub total</th>
+					<th align="right">I.G.V</th>
+					<th align="right">Total</th>
+					<th>Estado Sistema</th>
+					<th>
+						<p hidden$="[[!showVerificacionSunat]]">Estado Sunat</p>						
+					</th>
+				</thead>
+				<tbody>
+					<template is="dom-repeat" items="{{ListReporte}}" as="row">
+						<tr>
+							<td>{{displayIndex(index)}}</td>
+							<td style$="{{row.style_td}}">{{row.fecha}}</td>							
+							<td style$="{{row.style_td}}">{{row.tipo_doc}}</td>
+							<td style$="{{row.style_td}}">{{row.num_doc}}</td>
+							<td style$="{{row.style_td}}">{{row.nom_cliente}}</td>
+							<!-- <td style$="{{row.style_td}}" data-t="s" class="text">'{{row.ruc}}</td> -->
+							<!-- <td style='mso-number-format:"00000000"'>{{row.ruc}}</td> -->
+							<td style='mso-number-format:"@"'>{{row.ruc}}</td>
+							<td style$="{{row.style_td}}">{{row.subtotal}}</td>
+							<td style$="{{row.style_td}}">{{row.igv}}</td>
+							<td style$="{{row.style_td}}">{{row.total}}</td>
+							<td style$="{{row.style_reporte}}">{{row.estado}}</td>
+							<td style$="{{row.style_estado_sunat}}">{{row.estadoCp}}</td>							
+						</tr>
+					</template>
+				</tbody>
+			</table>
+
+		</div>
+		<style>
+			tr:hover,
+			tr.selected {
+				background-color: #e3f2fd
+			}			
+		</style>
+	</template>	
 </dom-module>
 <script type="text/javascript" src="../../view/export.excel.js"></script>
-<script>/*<![CDATA[*/var xThisAdmContador,xObjBorrar,_apiConsultaCpe,listCpeSuccess=[],dataListReporte,objProcesar;const dateNow=new Date();const _m_now=dateNow.getMonth()+1;const _y_now=dateNow.getFullYear();function xIniAdmContador(){xPopupLoad=document.getElementById('xLoad');setTimeout(()=>{_apiConsultaCpe=new apiConsulaCpe();},1500);var _dtUs=xm_log_get('app3_us');xThisAdmContador.xt_org=_dtUs.ido;xThisAdmContador.xt_idsede=_dtUs.idsede;xThisAdmContador.xt_idus=_dtUs.idus;xThisAdmContador.ListReporte=[];$('body').addClass('loaded');$('.xPasarEnter2').on('keyup',function(e){var code=e.which;if(code==13||code==186){var inputs=$('input');var a=inputs.index(document.activeElement);if(inputs[a+1]!==null){var nextBox=inputs[a+1];if(nextBox===undefined){return}
-if(nextBox.disabled){nextBox=inputs[a+2]}
-if(nextBox==undefined){return;}
-nextBox.focus();nextBox.select();}
-return false;}});xLoadEstablecimientosAsignados();}
-function xLoadEstablecimientosAsignados(){$.ajax({type:'GET',url:'../../bdphp/log_007.php?op=1'}).done((res)=>{const _res=JSON.parse(res);xThisAdmContador.listAsignados=_res.datos;});}
-function selectEsablecimiento(obj){const index=obj.id;xThisAdmContador.selEstablecimiento=xThisAdmContador.listAsignados[index];xThisAdmContador.showVerificacionSunat=xThisAdmContador.selEstablecimiento.habilita_verificacion_cpe=='1'
-listCpeSuccess=[];xDataYears();selectedRowTR(obj);}
-function selectedRowTR(obj){$(obj).addClass("selected").siblings().removeClass("selected");}
-function xDataYears(){const f_ini=xThisAdmContador.selEstablecimiento.mes_inicio.split('/');var _m=f_ini[0],_y=f_ini[1],count_year=0;var _listYear=[];while(_y<=_y_now){_listYear.push({y:_y});_y++;count_year++;}
-xThisAdmContador.listYears=_listYear;setTimeout(()=>{xThisAdmContador.$.selYear.selectedIndex=count_year-1;xDataYearsMonth(_y_now);},100);}
-function selectOptionYear(){const index=xThisAdmContador.$.selYear.selectedIndex;const yy=parseInt(xThisAdmContador.listYears[index].y);xDataYearsMonth(yy);}
-function xDataYearsMonth(yy){var _listMonth=[],count_m=1;const _my_ini=xThisAdmContador.selEstablecimiento.mes_inicio.split('/');const yy_ini=parseInt(_my_ini[1]);const _num_f_ini=_y_now===yy_ini?parseInt(_my_ini[0])+yy_ini:1+_y_now;const isMismoYY=_y_now===yy;while(count_m<=12){const _num_f_now=isMismoYY?_m_now+_y_now:12+yy;const _num_f=count_m+yy;const _activo=_num_f<_num_f_ini||_num_f>_num_f_now?false:true;const _clase=_activo?'animated fadeIn fast xCursor':'animated fadeIn fast xColorRow_Plomo2';const _desestado=_activo?'DISPONIBLE':'SIN DATOS';_listMonth.push({mes:xDesMes(count_m-1)+' '+yy,m:count_m,y:yy,activo:_activo,clase:_clase,desestado:_desestado,});count_m++;}
-xThisAdmContador.listMonth=_listMonth;}
-async function downloadReporteCPE(obj){objProcesar=obj?obj:objProcesar;obj=objProcesar;var countCpeSuccess=0,countCpeError=0;const index=obj.parentElement.parentElement.id;const _selMes=xThisAdmContador.listMonth[index];xThisAdmContador.selMes=_selMes;xThisAdmContador.numRowsVerificadoSuccess=0;xThisAdmContador.showRowsNoResponse=false;xThisAdmContador.showProccessVerificationFinalize=false;xThisAdmContador.showProccessVerificationError=false;const _data={establecimiento:xThisAdmContador.selEstablecimiento,m:_selMes.m,y:_selMes.y}
-let rptApiToken=await _apiConsultaCpe.getToken();let countNewToken=0;const _apiToken=rptApiToken.access_token;xPopupLoad.titulo='Descargando...';xPopupLoad.xopen();dataListReporte=[];xThisAdmContador.ListReporte=[];$.ajax({type:'POST',url:'../../bdphp/log_007.php?op=2',data:{item:_data}}).done(async(res)=>{res=JSON.parse(res);if(res.error){console.log(res.error);return;}
-xPopupLoad.xclose();dialog_match_sunat.open();const ruc_emisor=xThisAdmContador.selEstablecimiento.ruc;const _numRows=res.data.length;xThisAdmContador.numRowsList=_numRows;for(let index=0;index<_numRows;index++){var x=res.data[index];x.estado=x.tipo_doc==='FACTURA'&&parseInt(x.ruc)===0?'ANULADO':x.estado;x.style_reporte=x.estado==='ANULADO'?'color: red':'color: green';x.style_td=x.estado==='ANULADO'?'color: red':'';try{const cpeVerificado=listCpeSuccess.find(c=>c.id===x.id);if(!cpeVerificado){const codComp=x.series.indexOf('F')>-1?'01':'03';const num_doc=parseInt(x.num_doc.split('-')[1]);const monto=x.total.replace(/,/g,'');const payload={header:{ruc_receptor:x.ruc,access_token:_apiToken},body:{"numRuc":ruc_emisor,"codComp":codComp,"numeroSerie":x.series,"numero":num_doc,"fechaEmision":x.fecha,"monto":monto}}
-if(x.estado.toLowerCase()=='anulado'){x.total='0'
-x.subtotal='0'}
-if(xThisAdmContador.selEstablecimiento.habilita_verificacion_cpe==1){if(x.rpt_sunat=='1'){x.success_sunat=1;estado_cpe=xEstadoCpeApi('1');x.estadoCp=estado_cpe.titulo;x.style_estado_sunat='color: '+estado_cpe.color;countCpeSuccess++;listCpeSuccess.push(x);}else{const rptApiConsulta=await _apiConsultaCpe.getConsulta(payload);let estado_cpe;if(rptApiConsulta?.success===true){x.success_sunat=1;estado_cpe=xEstadoCpeApi(rptApiConsulta.data.estadoCp);x.estadoCp=estado_cpe.titulo;x.style_estado_sunat='color: '+estado_cpe.color;if(rptApiConsulta.data.estadoCp==='0'){x.estado=estado_cpe.titulo;x.style_reporte='color: '+estado_cpe.color;}
-countCpeSuccess++;listCpeSuccess.push(x);}else{countCpeError++;x.success_sunat=0;x.estadoCp='Sin Respuesta';x.style_estado_sunat='color: black';xThisAdmContador.showRowsNoResponse=true;}
-if(countNewToken>500){rptApiToken=await _apiConsultaCpe.getToken();countNewToken=0;}
-countNewToken++;}}else{countCpeSuccess++;listCpeSuccess.push(x);}}else{x=cpeVerificado;countCpeSuccess++;}
-xThisAdmContador.numRowsVerificadoSuccess=countCpeSuccess;xThisAdmContador.numRowsVerificadoError=countCpeError;dataListReporte.push(x);}catch(error){xThisAdmContador.showProccessVerificationFinalize=true;xThisAdmContador.showProccessVerificationError=true;return;}}
-xThisAdmContador.showProccessVerificationFinalize=true;if(xThisAdmContador.showRowsNoResponse||xThisAdmContador.showProccessVerificationError){return;}
-setDataListReporte(dataListReporte);});}
-function xEstadoCpeApi(estado){var _estado={titulo:'',color:''};switch(estado){case'0':_estado.titulo="NO EXISTE";_estado.color="purple";break;case'1':_estado.titulo="ACEPTADO";_estado.color="green";break;case'2':_estado.titulo="ANULADO";_estado.color="red";break;case'3':_estado.titulo="AUTORIZADO";_estado.color="green";break;case'4':_estado.titulo="NO AUTORIZADO";_estado.color="red";break;}
-return _estado;}
-function setDataListReporte(list){xThisAdmContador.ListReporte=list?list:dataListReporte
-setTimeout(()=>{xExportarExcel();},500);}
-function xExportarExcel(){tableToExcel('testTable','Comprobantes');setTimeout(()=>{dialog_match_sunat.close();},500);}
-Polymer({is:'x-admin-contador',properties:{xt_org:Number,xt_idsede:Number,xt_idus:Number,listYears:[],listMonth:[],listAsignados:[],ListReporte:[],selEstablecimiento:[],selMes:[],numRowsVerificadoSuccess:Number,numRowsVerificadoError:Number,numRowsList:Number,showRowsNoResponse:Boolean,showProccessVerificationFinalize:Boolean,showProccessVerificationError:Boolean,showVerificacionSunat:Boolean,},attached:function(){this.selected=0,this.showRowsNoResponse=false;this.showProccessVerificationFinalize=false;this.showProccessVerificationError=false;this.showVerificacionSunat=false;xThisAdmContador=this;xIniAdmContador();},displayIndex:function(index){return xCeroIzq(index+1,1);},})/*]]>*/</script>
+<script>
+var xThisAdmContador, xObjBorrar, _apiConsultaCpe, listCpeSuccess = [], dataListReporte, objProcesar;
+const dateNow = new Date();
+const _m_now = dateNow.getMonth()+1;
+const _y_now = dateNow.getFullYear();
+
+function xIniAdmContador() {
+	xPopupLoad=document.getElementById('xLoad');
+
+	setTimeout(() => {
+		_apiConsultaCpe = new apiConsulaCpe();
+	}, 1500);
+
+	var _dtUs = xm_log_get('app3_us');
+	xThisAdmContador.xt_org = _dtUs.ido;
+	xThisAdmContador.xt_idsede = _dtUs.idsede;
+	xThisAdmContador.xt_idus = _dtUs.idus;
+	xThisAdmContador.ListReporte = [];
+	$('body').addClass('loaded');
+
+	$('.xPasarEnter2').on('keyup', function (e) {
+			var code = e.which;
+			if (code == 13 || code == 186) {
+				var inputs = $('input'); // storage a array of Inputs
+				var a = inputs.index(document.activeElement);
+				if (inputs[a + 1] !== null) {
+					var nextBox = inputs[a + 1];
+					if (nextBox === undefined) {
+						return
+					}
+					if (nextBox.disabled) {
+						nextBox = inputs[a + 2]
+					}
+
+					if (nextBox == undefined) {
+						return;
+					}
+					nextBox.focus();
+					nextBox.select();
+					//event.preventDefault();
+				}
+				return false;
+			}
+		});
+		
+		xLoadEstablecimientosAsignados();
+}
+
+function xLoadEstablecimientosAsignados() {
+	$.ajax({
+			type: 'GET',
+			url: '../../bdphp/log_007.php?op=1'			
+		})
+		.done((res) => {
+			const _res = JSON.parse(res);
+			// console.log('_res', _res);
+			xThisAdmContador.listAsignados = _res.datos;
+		});
+}
+
+function selectEsablecimiento(obj) {
+	const index = obj.id;	
+	xThisAdmContador.selEstablecimiento = xThisAdmContador.listAsignados[index];
+	// console.log('xThisAdmContador.selEstablecimiento', xThisAdmContador.selEstablecimiento);
+	xThisAdmContador.showVerificacionSunat = xThisAdmContador.selEstablecimiento.habilita_verificacion_cpe == '1'
+	listCpeSuccess = [];
+	xDataYears();
+	selectedRowTR(obj);
+}
+
+function selectedRowTR(obj){
+	$(obj).addClass("selected").siblings().removeClass("selected");
+} 
+
+function xDataYears() {	
+	const f_ini = xThisAdmContador.selEstablecimiento.mes_inicio.split('/');
+	var _m = f_ini[0], _y = f_ini[1], count_year=0;
+
+	// list years
+	var _listYear=[];
+	while(_y <=_y_now) {
+		_listYear.push({y:_y});
+		_y++;
+		count_year++;
+	}
+
+	xThisAdmContador.listYears = _listYear;
+
+	setTimeout(() => {
+		// xThisAdmContador.$.selYear.selectedIndex = count_year;
+		xThisAdmContador.$.selYear.selectedIndex = count_year - 1;
+		xDataYearsMonth(_y_now);
+	}, 100);
+	// if( count_year === 1 ) {xDataYearsMonth(_y_now);}	
+}
+
+function selectOptionYear() {	
+	const index = xThisAdmContador.$.selYear.selectedIndex;
+	const yy = parseInt(xThisAdmContador.listYears[index].y);
+
+	// _y_now = yy;
+	xDataYearsMonth(yy);
+}
+
+function xDataYearsMonth(yy) {
+	// list mes
+	var _listMonth=[],count_m=1;
+	const _my_ini = xThisAdmContador.selEstablecimiento.mes_inicio.split('/');
+	const yy_ini = parseInt(_my_ini[1]);
+	const _num_f_ini = _y_now === yy_ini ? parseInt(_my_ini[0]) + yy_ini : 1 + _y_now; // sumamos > 02+2019 = 2021 : 1 + 2020
+	const isMismoYY = _y_now === yy;
+
+	while(count_m <= 12) { 		
+		const _num_f_now = isMismoYY ? _m_now+_y_now : 12 + yy;
+		const _num_f = count_m+yy;
+		const _activo = _num_f < _num_f_ini || _num_f > _num_f_now ? false : true;  // activa la descarga
+		const _clase = _activo ? 'animated fadeIn fast xCursor' : 'animated fadeIn fast xColorRow_Plomo2';
+		const _desestado = _activo ? 'DISPONIBLE' : 'SIN DATOS';
+		// const _desbtn = _activo ? 'Descargar' : '';
+		
+		_listMonth.push({			
+			mes:xDesMes(count_m-1)+' ' +yy,
+			m: count_m,
+			y: yy,
+			activo: _activo,
+			clase : _clase,
+			desestado: _desestado,
+			// desbtn: _desbtn
+			}); 
+		count_m++; 
+	}
+	// console.log(_listMonth);
+	xThisAdmContador.listMonth = _listMonth;
+}
+
+async function downloadReporteCPE(obj) {
+
+	objProcesar = obj ? obj : objProcesar;
+	obj = objProcesar;
+	var countCpeSuccess = 0, countCpeError = 0;
+	const index = obj.parentElement.parentElement.id;
+	const _selMes = xThisAdmContador.listMonth[index];
+
+	xThisAdmContador.selMes = _selMes;	
+	xThisAdmContador.numRowsVerificadoSuccess = 0;
+	xThisAdmContador.showRowsNoResponse = false;
+	xThisAdmContador.showProccessVerificationFinalize = false;
+	xThisAdmContador.showProccessVerificationError = false;
+
+	const _data = {
+		establecimiento: xThisAdmContador.selEstablecimiento,
+		m: _selMes.m,
+		y: _selMes.y
+	}
+
+	// obtner toke api consulta success_sunat
+	let rptApiToken = await _apiConsultaCpe.getToken();
+	let countNewToken = 0;
+	// console.log('rptApiToken', rptApiToken);
+	// return;
+	const _apiToken = rptApiToken.access_token;
+	// console.log('rpt token', _apiToken);
+
+	xPopupLoad.titulo='Descargando...';
+	xPopupLoad.xopen();
+
+	dataListReporte = [];
+	xThisAdmContador.ListReporte = [];
+	$.ajax({
+			type: 'POST',
+			url: '../../bdphp/log_007.php?op=2',
+			data: {item: _data}
+		})
+		.done(async (res) => {
+			res = JSON.parse(res);
+			if ( res.error ) {console.log(res.error); return;}
+			// console.log(res.data);
+
+			xPopupLoad.xclose();
+			dialog_match_sunat.open();
+			
+			// console.log('xThisAdmContador.selEstablecimiento', xThisAdmContador.selEstablecimiento);
+
+			const ruc_emisor = xThisAdmContador.selEstablecimiento.ruc;
+
+			const _numRows = res.data.length;
+			xThisAdmContador.numRowsList = _numRows;
+
+			for (let index = 0; index < _numRows; index++) {
+				var x = res.data[index];			
+
+			// res.data.map(async (x) => {
+				x.estado = x.tipo_doc === 'FACTURA' && parseInt(x.ruc) === 0 ? 'ANULADO' : x.estado;
+				x.style_reporte = x.estado === 'ANULADO' ? 'color: red' : 'color: green';
+				x.style_td = x.estado === 'ANULADO' ? 'color: red' : '';
+				
+				// CONSULTAR CON API SUNAT -- >>
+				try {
+					
+					const cpeVerificado = listCpeSuccess.find(c => c.id === x.id);
+					if ( !cpeVerificado ) {
+						const codComp = x.series.indexOf('F') > -1 ? '01' : '03';
+						const num_doc = parseInt(x.num_doc.split('-')[1]);
+						const monto = x.total.replace(/,/g,''); // remplazamos las comas
+						const payload = {
+							header: {
+								ruc_receptor: x.ruc,
+								access_token: _apiToken
+							},
+							body: {"numRuc": ruc_emisor,"codComp": codComp,"numeroSerie": x.series,"numero": num_doc,"fechaEmision": x.fecha,"monto": monto}
+						}
+
+						// x.ruc = x.ruc.toString(); // para exportar cadena con 0 izquierda
+						if ( x.estado.toLowerCase() == 'anulado' ) {
+							x.total = '0'
+							x.subtotal = '0'
+						}
+
+						// x.ruc = ' ' + x.ruc; // string
+		
+						// console.log('payload', payload);
+						if ( xThisAdmContador.selEstablecimiento.habilita_verificacion_cpe == 1 ) {
+							// verificacion api sunat
+							if (x.rpt_sunat == '1') { // ya se consulto ya paso
+								x.success_sunat = 1;
+								estado_cpe = xEstadoCpeApi('1');
+								x.estadoCp = estado_cpe.titulo;
+								x.style_estado_sunat = 'color: ' + estado_cpe.color;
+								countCpeSuccess++;
+								listCpeSuccess.push(x);
+
+							} else { 
+								
+								// aun no se consulta // consultamos api sunat
+								const rptApiConsulta = await _apiConsultaCpe.getConsulta(payload);
+								let estado_cpe;
+								if (rptApiConsulta?.success === true) { 
+									x.success_sunat = 1;
+									estado_cpe = xEstadoCpeApi(rptApiConsulta.data.estadoCp);
+									x.estadoCp = estado_cpe.titulo;
+									x.style_estado_sunat = 'color: ' + estado_cpe.color;
+
+									// si no existe tambien marca en el estado sistema
+									if ( rptApiConsulta.data.estadoCp === '0' ) {
+										x.estado = estado_cpe.titulo;
+										x.style_reporte = 'color: ' + estado_cpe.color;
+									}
+
+									countCpeSuccess++;
+									listCpeSuccess.push(x);
+								} else {
+									countCpeError++;
+									x.success_sunat = 0;
+									x.estadoCp = 'Sin Respuesta';
+									x.style_estado_sunat = 'color: black';
+									xThisAdmContador.showRowsNoResponse = true;
+								}
+
+								// renovamos el token cada 500 registros consultados
+								if ( countNewToken > 500 ) {
+									rptApiToken = await _apiConsultaCpe.getToken();
+									countNewToken = 0;
+								}
+								countNewToken++;
+
+							}
+						} else {
+							// no consulta
+							countCpeSuccess++;
+							listCpeSuccess.push(x);
+						}
+
+
+						// console.log('rptApiConsulta', rptApiConsulta);
+					} else {
+						// dataListReporte.push(cpeVerificado);
+						x = cpeVerificado;
+						countCpeSuccess++;
+					}
+					xThisAdmContador.numRowsVerificadoSuccess = countCpeSuccess;
+					xThisAdmContador.numRowsVerificadoError = countCpeError;
+					// CONSULTAR CON API SUNAT -- >>
+					
+					
+					dataListReporte.push(x);
+
+				} catch (error) {
+					xThisAdmContador.showProccessVerificationFinalize = true;
+					xThisAdmContador.showProccessVerificationError = true;
+					return;
+				}
+				//return x;
+			// });
+			}
+
+
+
+
+			// return;
+			// console.log('aaa res token', aaa);
+
+			// verificar documentos con sunat
+
+			xThisAdmContador.showProccessVerificationFinalize = true;
+			if ( xThisAdmContador.showRowsNoResponse || xThisAdmContador.showProccessVerificationError ) {return; }
+			setDataListReporte(dataListReporte);
+
+			// xThisAdmContador.ListReporte = dataListReporte;
+
+			// setTimeout(() => {
+			// 	xExportarExcel();
+			// }, 500);
+		});
+
+	// api2
+	// $.ajax({
+	// 		type: 'POST',
+	// 		url: '../../bdphp/log_007.php?op=3',
+	// 		data: {item: _data}
+	// 	})
+	// 	.done((res) => {
+	// 		try {
+	// 			res = JSON.parse(res);
+	// 			if ( res.error ) {console.log(res.error); 
+	// 				setDataListReporte(dataListReporte);
+	// 				return;}	
+	// 		} catch (error) {
+	// 			setDataListReporte(dataListReporte);
+	// 		}
+			
+	// 		console.log(res.data);
+	// 		res.data.map(x => {
+	// 			x.estado = x.tipo_doc === 'FACTURA' && parseInt(x.ruc) === 0 ? 'ANULADO' : x.estado;
+	// 			x.style_reporte = x.estado === 'ANULADO' ? 'color: red' : 'color: green';
+	// 			x.style_td = x.estado === 'ANULADO' ? 'color: red' : '';
+	// 			dataListReporte.push(x);
+	// 			//return x;
+	// 		});
+
+	// 		setDataListReporte(dataListReporte);	
+	// 	});
+}
+
+function xEstadoCpeApi(estado) {
+	var _estado = {
+		titulo: '',
+		color: ''
+	};
+
+	switch (estado) {
+		case '0': _estado.titulo = "NO EXISTE"; _estado.color= "purple"; break;
+		case '1': _estado.titulo = "ACEPTADO";  _estado.color= "green"; break;		
+		case '2': _estado.titulo = "ANULADO";  _estado.color= "red"; break;		
+		case '3': _estado.titulo = "AUTORIZADO";  _estado.color= "green"; break;		
+		case '4': _estado.titulo = "NO AUTORIZADO"; _estado.color= "red"; break;		
+	}
+
+	return _estado;
+}
+
+function setDataListReporte(list) {
+	// xThisAdmContador.ListReporte = list;
+	xThisAdmContador.ListReporte = list ? list : dataListReporte
+	setTimeout(() => {
+		xExportarExcel();
+	}, 500);
+}
+
+function xExportarExcel() {
+	tableToExcel('testTable', 'Comprobantes');
+	setTimeout(() => {
+		// xPopupLoad.xclose();
+		dialog_match_sunat.close();
+	}, 500);
+}
+
+
+Polymer({
+	is: 'x-admin-contador',
+	properties: {
+		xt_org: Number,
+		xt_idsede: Number,	
+		xt_idus: Number,
+		listYears:[],
+		listMonth:[],
+		listAsignados: [],
+		ListReporte: [],
+		selEstablecimiento: [],
+		selMes:[],
+		numRowsVerificadoSuccess: Number,
+		numRowsVerificadoError: Number,
+		numRowsList: Number,
+		showRowsNoResponse: Boolean,
+		showProccessVerificationFinalize: Boolean,
+		showProccessVerificationError: Boolean,
+		showVerificacionSunat: Boolean,
+	},
+	attached: function () {
+		this.selected = 0,
+		this.showRowsNoResponse = false;
+		this.showProccessVerificationFinalize = false;
+		this.showProccessVerificationError = false;
+		this.showVerificacionSunat = false;
+		xThisAdmContador = this;
+		xIniAdmContador();
+	},
+	displayIndex: function (index) {
+		return xCeroIzq(index + 1, 1);
+	},
+})
+</script>
