@@ -2219,8 +2219,9 @@
 		case 70001: // run cierre registros
 			$idus = $_SESSION['idusuario'];
 			$idBitacora = $_POST['id'];
-			$objData = json_encode($_POST['objdata']);
-			$sql = "call procedure_run_cierre($idus,$idBitacora, '$objData')";
+			// $objData = json_encode($_POST['objdata']);
+			// $sql = "call procedure_run_cierre($idus,$idBitacora, '$objData')";
+			$sql = "call procedure_run_cierre($idus,$idBitacora, '')";
 			$bd->xConsulta($sql);
 			break;
 		case 70111: // verificar cuadre
