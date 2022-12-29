@@ -410,6 +410,9 @@ async function downloadReporteCPE(obj) {
 									if ( rptApiConsulta.data.estadoCp === '0' ) {
 										x.estado = estado_cpe.titulo;
 										x.style_reporte = 'color: ' + estado_cpe.color;
+										// no suma 
+										x.total = '0'
+										x.subtotal = '0'
 									}
 
 									countCpeSuccess++;
