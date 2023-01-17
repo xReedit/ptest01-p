@@ -34,7 +34,7 @@
 <br><br>
 <iron-pages selected="{{selectedTab}}" style="background:white">
 <div id="template-1">
-<div class="div-copy-all" style="background:white">
+<div class="div-copy-all" style="background:white;max-width:1600px" id="div-pdf-qr">
 <template is="dom-repeat" items="{{objListMesasQr}}" as="item">
 <div class="codigo-qr content-bg-qr xCursor" onclick="xCopyQrCarta(this)" data-index=[[index]]>
 <div class="bg-qr-mesa">
@@ -47,7 +47,7 @@
 </div>
 </template>
 </div>
-<button class="btn btn-primary" onclick="xCopyAllQrCarta(this)"><i class="fa fa-copy"></i> Copiar Todo</button>
+<button class="btn btn-primary" onclick="xCopyAllQrCarta(this)"><i class="fa fa-copy"></i> Descargar Todo</button>
 </div>
 <div id="template-2">
 <template is="dom-repeat" items="{{objListMesasQr}}" as="item">
@@ -58,11 +58,11 @@
 </template>
 </div>
 <div id="template-3">
-<div class="div-copy-all" style="display:flex;flex-wrap:wrap;background:white">
+<div class="div-copy-all" style="background:white;max-width:1600px">
 <template is="dom-repeat" items="{{objListMesasQr}}" as="item">
 <div class="div-sticker m-2 xCursor" onclick="xCopyQrCarta(this)" data-index=[[index]]>
 <div class="text-center">
-<h3 class="fw-600">Pide Aquí</h3>
+<h3 class="fw-900">PIDE AQUí</h3>
 <p class="m-0 fs-15 fw-600">Atención sin esperas. Escanea el QR con la camara de tu celular.</p>
 </div>
 <div class="codigo-qr">
@@ -83,7 +83,7 @@
 </template>
 </div>
 <br>
-<button class="btn btn-primary" onclick="xCopyAllQrCarta(this)"><i class="fa fa-copy"></i> Copiar Todo</button>
+<button class="btn btn-primary" onclick="xCopyAllQrCarta(this)"><i class="fa fa-copy"></i> Descargar Todo</button>
 </div>
 </iron-pages>
 </div>
@@ -115,11 +115,11 @@
 </div>
 </template>
 </dom-module>
-<style>.content-qr{display:inline-block}.codigo-qr{display:inline-grid;text-align:center}.bg-qr-mesa{background-image:url('./plano_qr.png');background-repeat:no-repeat;background-size:contain}.content-bg-qr{width:312px;height:480PX;margin-bottom:6px;background:white}.bg-qr-mesa .num-mesa{position:relative;left:110px;top:-65px;color:white;font-size:70px}.bg-qr-mesa .img-qr{top:10px;position:relative}.content-logo-qr{width:81px;height:81px;border-radius:50%;overflow:hidden;position:relative;left:12px;top:5px;background:white;border:.04em solid}.content-logo-qr>img{width:84px;text-align:center;position:relative;left:-2px}.div-sticker{width:250px;text-align:center;background:white;border:1px solid;border-radius:5px;padding:20px}</style>
+<style>.content-qr{display:inline-block}.codigo-qr{display:inline-grid;text-align:center}.bg-qr-mesa{background-image:url('./plano_qr.png');background-repeat:no-repeat;background-size:contain}.content-bg-qr{width:312px;height:480PX;margin-bottom:6px;background:white}.bg-qr-mesa .num-mesa{position:relative;left:110px;top:-65px;color:white;font-size:70px}.bg-qr-mesa .img-qr{top:10px;position:relative}.content-logo-qr{width:81px;height:81px;border-radius:50%;overflow:hidden;position:relative;left:12px;top:5px;background:white;border:.04em solid}.content-logo-qr>img{width:84px;text-align:center;position:relative;left:-2px}.div-sticker{width:250px;text-align:center;background:white;border:1px solid;border-radius:5px;padding:20px;display:inline-block}</style>
 <script>/*<![CDATA[*/var xThisCartaVMesas,compImgLogo,_keyUrlLogoQr='';function xIniCartaVirtualMesas(){xThisCartaVMesas.medidaLogo={width:200,height:200}
 const _dataSede=xm_log_get('datos_org_sede')[0];_keyUrlLogoQr=_dataSede.idorg+''+_dataSede.idsede+'logoqr.png';compImgLogo=document.getElementById('compImgLogo');compImgLogo.addEventListener('setImg',res=>{const nomfileImg='logoqr';const img_promo=res.detail;uploadImgLogo(img_promo,nomfileImg)})
 xThisCartaVMesas.imgAfiche=URL_IMG_CARTA+'afiche_qr_modelo.jpg';loadDatosCartaMesas();}
-function loadDatosCartaMesas(){$.ajax({type:'POST',url:'../../bdphp/log_005.php?op=903'}).done(function(res){res=JSON.parse(res);xThisCartaVMesas.objListMesasQr=JSON.parse(res.datos[0].mesas);xThisCartaVMesas.objListMesasQr.map(x=>{const _cod=x.codigo;x.codigoDownload='https://chart.apis.google.com/chart?cht=qr&chs=400x400&chl='+x.codigo;x.codigo_d1='https://chart.apis.google.com/chart?cht=qr&chs=185x185&chl='+x.codigo;x.codigo='https://chart.apis.google.com/chart?cht=qr&chs=75x75&chl='+x.codigo;x.titulo='Mesa '+x.nummesa;x.codigo_qr=_cod;return x;})
+function loadDatosCartaMesas(){$.ajax({type:'POST',url:'../../bdphp/log_005.php?op=903'}).done(function(res){res=JSON.parse(res);xThisCartaVMesas.objListMesasQr=JSON.parse(res.datos[0].mesas);xThisCartaVMesas.objListMesasQr.map(x=>{const _cod=x.codigo.replace('/#','');x.codigoDownload='https://chart.apis.google.com/chart?cht=qr&chs=400x400&chl='+_cod;x.codigo_d1='https://chart.apis.google.com/chart?cht=qr&chs=185x185&chl='+_cod;x.codigo='https://chart.apis.google.com/chart?cht=qr&chs=75x75&chl='+_cod;x.titulo='Mesa '+x.nummesa;x.codigo_qr=_cod;return x;})
 xThisCartaVMesas.objListOtherQr=[];var listOther=[];xThisCartaVMesas.qrLLevar={};var _cod=res.datos[0].qr_para_llevar;xThisCartaVMesas.qrLLevar.codigoDownload='https://chart.apis.google.com/chart?cht=qr&chs=400x400&chl='+_cod;xThisCartaVMesas.qrLLevar.codigo='https://chart.apis.google.com/chart?cht=qr&chs=50x50&chl='+_cod;xThisCartaVMesas.qrLLevar.titulo='Solo para llevar';xThisCartaVMesas.qrLLevar.codigo_qr=_cod;xThisCartaVMesas.qrDelivery={};_cod=res.datos[0].qr_delivery;xThisCartaVMesas.qrDelivery.codigoDownload='https://chart.apis.google.com/chart?cht=qr&chs=400x400&chl='+_cod;xThisCartaVMesas.qrDelivery.codigo='https://chart.apis.google.com/chart?cht=qr&chs=50x50&chl='+_cod;xThisCartaVMesas.qrDelivery.titulo='Delivery';xThisCartaVMesas.qrDelivery.codigo_qr=_cod;xThisCartaVMesas.url_delivery=_cod;listOther.push(xThisCartaVMesas.qrLLevar);listOther.push(xThisCartaVMesas.qrDelivery);xThisCartaVMesas.objListOtherQr=JSON.parse(JSON.stringify(listOther));const _pathImg=URL_IMG_PROMO+_keyUrlLogoQr;try{compImgLogo.setImgPathFile(_pathImg);xThisCartaVMesas.imgLogoQr=_pathImg;}catch(error){compImgLogo.resetControl(_pathImg);xThisCartaVMesas.imgLogoQr='';}});}
 function descargarAfiche(){window.open(xThisCartaVMesas.imgAfiche,'Afiche',"width=500,height=500");}
 function descargarOtroQR(obj){const index=obj.dataIndex;const fileDown=xThisCartaVMesas.objListOtherQr[index];const url=fileDown.codigoDownload;window.open(url,"CodigoQR","width=500,height=500");}
@@ -128,7 +128,8 @@ function generateQRCode(obj,op){const index=obj.dataIndex;var item=op===0?xThisC
 async function copiarQr(){var img=document.getElementById('qr-download');img=img.toDataURL('image/png');const response=await fetch(img)
 const blob=await response.blob()
 await setToClipboard(blob);}
-async function xCopyQrCarta(obj){domtoimage.toPng(obj).then(async function(dataUrl){var img=new Image();img.src=dataUrl;const response=await fetch(img.src);const blob=await response.blob();await setToClipboard(blob);}).catch(function(error){console.error('oops, something went wrong!',error);});}
+async function xCopyQrCarta(obj){var scale=9;domtoimage.toPng(obj,{quality:1.0,width:obj.clientWidth*scale,height:obj.clientHeight*scale,style:{transform:'scale('+scale+')',transformOrigin:'top left'}}).then(function(dataUrl){var link=document.createElement("a");link.download="ImageQr.png";link.href=dataUrl;link.click();}).then(function(){console.log("download Done");});}
+function xConvertToPDF(obj){var element=document.querySelector('#div-pdf-qr');var pdf=new jsPDF();var specialElementHandlers={'#editor':function(element,renderer){return true;}};pdf.fromHTML(element.innerHTML,15,15,{'width':170,'elementHandlers':specialElementHandlers});;pdf.save('sample-file.pdf');}
 async function xCopyAllQrCarta(obj){const _obj=$(obj).parent().find('.div-copy-all')[0];xCopyQrCarta(_obj);}
 async function setToClipboard(blob){showToastSwal('success','Copiado!');const data=[new ClipboardItem({[blob.type]:blob})]
 return navigator.clipboard.write(data)}
