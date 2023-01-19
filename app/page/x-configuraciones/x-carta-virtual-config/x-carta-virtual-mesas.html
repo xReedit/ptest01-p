@@ -65,7 +65,7 @@
 </div>
 <div id="template-3">
 <div class="div-copy-all" style="background:white;max-width:1600px">
-<template is="dom-repeat" items="{{objListMesasQr}}" as="item">
+<template is="dom-repeat" items="{{listQrPagesSelected}}" as="item">
 <div class="div-sticker m-2 xCursor" onclick="xCopyQrCarta(this)" data-index=[[index]]>
 <div class="text-center">
 <h3 class="fw-900">PIDE AQUí</h3>
@@ -89,6 +89,13 @@
 </template>
 </div>
 <br>
+<div class="d-flexx p-3">
+<h2>Paginas</h2>
+<template is="dom-repeat" items="{{objArrPagination}}" as="page">
+<p data-id="[[index]]" selected$={{page.selected}} class$="{{page.xclass}}" onclick="selectPageQr(this)">
+{{page.page}}</p>
+</template>
+</div>
 <button class="btn btn-primary" onclick="xCopyAllQrCarta(this)"><i class="fa fa-copy"></i> Descargar Todo</button>
 </div>
 </iron-pages>
