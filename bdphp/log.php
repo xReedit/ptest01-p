@@ -2143,7 +2143,30 @@
 				$id_pedidos_anular=$xarray_pe_anular[0]['idpedidos'];
 				$motivo_anular=$xarray_pe_anular[0]['m_a'];
 
-				$sql_pdt="update pedido_detalle set estado=1 where idpedido in (".$id_pedidos_anular."); update pedido set estado=3, motivo_anular='".$motivo_anular."' where idpedido in (".$id_pedidos_anular.");";
+				// and pagado=0 si ya pago no elimina
+				$sql_pdt="update pedido_detalle set estado=1, borrado=1 where idpedido in (".$id_pedidos_anular.") and pagado=0;";
+				$bd->xConsulta_NoReturn($sql_pdt);
+
+				// $id_pedidos_anular = rtrim($id_pedidos_anular, ",");
+				// $id_pedidos_anular = $id_pedidos_anular.',';
+				// estado = 4 anulado al final, algunos item cobrados
+				$list_id_pedidos_anular = explode(",", $id_pedidos_anular);
+				foreach ($list_id_pedidos_anular as $arrIdP) {
+					if ( $arrIdP !== '' ) {
+						$sql_pdt="update pedido as p	
+								inner join (select idpedido, sum(pagado) pagado from pedido_detalle
+											where idpedido=$arrIdP GROUP by idpedido) as pd on pd.idpedido = p.idpedido
+								set p.estado = if(pd.pagado=0,3,4)		
+								where pd.idpedido = $arrIdP";
+						
+						$bd->xConsulta_NoReturn($sql_pdt);
+					}
+				}
+
+
+				// and pagado=0 si ya pago no elimina
+				// $sql_pdt="update pedido_detalle set estado=1 where idpedido in (".$id_pedidos_anular.") and pagado=0;
+				// 	update pedido set estado=3, motivo_anular='".$motivo_anular."' where idpedido in (".$id_pedidos_anular.");";
 			}
 
 			$condicion_pdb="idpedido IN (".$id_pedidos_anular.") and pagado=0";//si no viene de registro elimina todo los item que no esten pagados // desde control de pedido
@@ -2168,7 +2191,8 @@
 			}
 
 			//print $sql_todos.$sql_change_de.$sql_pdt.$sqlpedido_borrado.$sql_historial_rp;
-			$bd->xMultiConsulta($sql_todos.$sql_change_de.$sql_pdt.$sql_historial_rp);
+			// $bd->xMultiConsulta($sql_todos.$sql_change_de.$sql_pdt.$sql_historial_rp);
+			$bd->xMultiConsulta($sql_todos.$sql_change_de.$sql_historial_rp);
 			/////////
 			break;
 		///////////////
@@ -2983,12 +3007,12 @@
 			";*/
 			$sql="
 				SELECT ps.idproducto_stock,p.idproducto, ps.idalmacen,pf.descripcion AS familia, a.descripcion AS almacen, p.descripcion AS producto, ps.stock, IF(p.precio_venta='','0.00',format(p.precio_venta,2)) AS precio_venta, IF(p.stock_minimo='',0,p.stock_minimo) AS stock_minimo
-						,p.img, p.codigo_barra, p.precio
+						,p.img, p.codigo_barra, p.precio, p.idproducto_familia, ps.idproducto_stock
 				FROM producto AS p
 					INNER JOIN producto_stock AS ps using(idproducto)
 					INNER JOIN almacen AS a using(idalmacen)
 					INNER JOIN producto_familia AS pf using(idproducto_familia)
-				WHERE (p.idorg=".$g_ido." AND p.idsede=".$g_idsede.") AND p.estado=0 AND ps.estado=0
+				WHERE (p.idsede=".$g_idsede.") AND p.estado=0 AND ps.estado=0
 				GROUP BY ps.idalmacen, ps.idproducto
 				ORDER BY a.descripcion, p.descripcion
 			";

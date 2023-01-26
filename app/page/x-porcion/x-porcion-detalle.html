@@ -1,0 +1,172 @@
+<dom-module id="x-porcion-detalle">    
+    <template>
+
+        <paper-dialog modal id="dialog_modificar_stock_porcion" class="dialog_redondo" modal
+            entry-animation="scale-up-animation" style="max-width: 600px;" exit-animation="fade-out-animation" with-backdrop>
+            <div class="xContent">
+                <h3>Modificar Stock</h3>
+                <span class="fw-100 text-secondary fs-11">Todas las modificaciones se registrarán en el historial de cambios.</span>
+                <div class="xLinea2"></div><br>
+                <div class="d-flexx justify-content-between">
+                    <div style="max-width: 90px;">
+                        <p class="fs-12 text-secondary m-0">Stock Actual</p>
+                        <p class="fs-15 fw-600"> {{objporcion.stock}} </p>
+                        <!-- <input type="number" placeholder="Ingrese nuevo stock" class="xMiInput xPasarEnter2" value={{objporcion.stock}} readonly> -->                        
+                    </div>
+                    <div class="w-50">
+                        <p class="fs-15 text-dark m-0 fw-600">Cual es el nuevo Stock?</p>
+                        <input type="number" id="stock_new" placeholder="Ingrese nuevo stock" class="xMiInput xPasarEnter2" onkeyup="changeStockPorcion(this.value)">
+                        
+                    </div>
+                </div>  
+                <br>
+                <p class$="{{classMsjStock}}">{{ msjStock }}</p>  
+                <br>
+                <button class="btn btn-sm btn-primary" onclick="saveStockModifyPorcion();">Listo, guardar</button>
+                <button class="btn btn-sm btn-secondary" dialog-dismiss>Cancelar</button>
+            </div>
+        </paper-dialog>
+
+
+
+        <div>
+            <!-- head -->
+            <div class="d-flexx justify-content-between align-items-center">
+                <div class="d-flexx">
+                    <div class="mr-5">
+                        <p class="fs-12 text-secondary m-0">Descripcion</p>
+                        <p class="fs-18 fw-600"> {{objporcion.porcion}} </p>
+                    </div>
+                    <div>
+                        <p class="fs-12 fw-600 text-secondary m-0">Stock Actual</p>
+                        <p class="fs-18 fw-600"> {{objporcion.stock}} </p>
+                    </div>
+                </div>
+                <div>
+                    <button class="btn btn-sm btn-primary" onclick="dialog_modificar_stock_porcion.open()">Modificar Stock</button>
+                </div>
+            </div>
+            <!-- historial -->
+            <div>
+                <br><br>
+                <p class="fs-18 text-secondary">Historial de cambios</p>
+                <hr>
+                <table class="w-100">
+                    <thead>
+                        <th>Fecha</th>
+                        <th>Hora</th>
+                        <th>Usuario</th>
+                        <th>Movimiento</th>
+                        <th class="text-center">Cantidad</th>
+                    </thead>
+                    <tbody>
+                        <template is="dom-repeat" items="{{listPorcionHistorial}}" as="item">
+                            <tr>
+                                <td>{{item.fecha}}</td>
+                                <td>{{item.hora}}</td>
+                                <td>{{item.nombres}}</td>
+                                <td class$="[[ item.classMovimiento ]]">{{item.tipo_movimiento}}</td>
+                                <td class="fw-600 text-center">{{item.cantidad}}</td>
+                            </tr>
+                        </template>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </template>
+</dom-module>
+<script>
+
+var xthisPorcionDetalle;
+let _difStockPorcion = 0
+let _msjModificarStock = ''
+let _stockNowPorcion = 0; 
+
+    async function xLoadDataPorcionDetalle() {
+        xPopupLoad.xopen();
+        const _data = {
+            idporcion: xthisPorcionDetalle.objporcion.idporcion
+        }
+        const _httpFecht = new httpFecht();
+        const rpt = await _httpFecht.postJson('../../bdphp/log_009.php?op=101', _data)        
+        if (rpt.success) {                        
+            xthisPorcionDetalle.listPorcionHistorial = rpt.datos;
+            xthisPorcionDetalle.listPorcionHistorial.map(x => {
+                x.classMovimiento = x.tipo_movimiento == 'Venta' ? 'fw-600 text-success' : x.tipo_movimiento == 'Aumenta' ? 'fw-600 text-primary' : 'fw-600 text-danger';
+                x.tipo_movimiento = x.tipo_movimiento.toUpperCase();
+                return x;
+            })
+        }
+        console.log('rpt', xthisPorcionDetalle.listPorcionHistorial);
+        xPopupLoad.xclose();
+    
+    }
+
+    function changeStockPorcion(value) {
+               
+        const _stockActualPorcion = parseFloat(xthisPorcionDetalle.objporcion.stock)  
+        _stockNowPorcion = parseFloat(value)  
+
+        if ( isNaN(_stockNowPorcion)) {
+            _msjModificarStock = ''
+        }
+        else {
+            if (_stockNowPorcion > _stockActualPorcion) {
+                _difStockPorcion = _stockNowPorcion - _stockActualPorcion;
+                _msjModificarStock = 'Aumenta Stock en: ' + _difStockPorcion;
+                xthisPorcionDetalle.classMsjStock = 'fw-600 text-primary'
+            } else {
+                _difStockPorcion = _stockActualPorcion - _stockNowPorcion;
+                _msjModificarStock = 'Disminuye Stock en: ' + _difStockPorcion;
+                xthisPorcionDetalle.classMsjStock = 'fw-600 text-danger'
+            }
+        }
+
+        xthisPorcionDetalle.msjStock = _msjModificarStock
+    }
+
+    async function saveStockModifyPorcion() {
+        xPopupLoad.xopen();
+        if ( _difStockPorcion === 0 ) {return; }
+        const _data = {
+            idporcion: xthisPorcionDetalle.objporcion.idporcion,
+            movimiento:  _msjModificarStock.split(' ')[0],
+            cantidad: _difStockPorcion,
+            stock_actual: _stockNowPorcion            
+        }
+
+        // console.log('_data', _data);
+
+        const _httpFecht = new httpFecht();
+        const rpt = await _httpFecht.postJson('../../bdphp/log_009.php?op=10', _data)
+        if ( rpt.success ) {
+            dialog_modificar_stock_porcion.close();
+            xLoadDataPorcionDetalle();
+        }
+        console.log('rpt', rpt);
+        xPopupLoad.xclose();
+    }
+
+Polymer({
+    is:'x-porcion-detalle',
+    properties:{
+        objporcion: {
+            type: Object,
+            notify: true,
+            reflectToAttribute: true,            
+            observer: 'porcionChanged',            
+        },
+        msjStock: String,
+        classMsjStock: String,
+        listPorcionHistorial: []
+    },
+    porcionChanged: (obj) => {
+        console.log('changed objporcion', obj);      
+        xLoadDataPorcionDetalle()  
+    },
+    attached:function(){
+        xthisPorcionDetalle =this;
+        // xIniPorcion();
+    }    
+})
+</script>

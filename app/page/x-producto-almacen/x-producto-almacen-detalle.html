@@ -1,0 +1,343 @@
+<dom-module id="x-producto-almacen-detalle">
+    <template>
+
+
+        <paper-dialog modal id="dialog_additem_pro_detalle" class="dialog_redondo" modal entry-animation="scale-up-animation"
+            style="min-width: 350px;" exit-animation="fade-out-animation" with-backdrop>
+            <div class="xContent">
+                <h3>Modificar Producto</h3>
+                <form id="frm_item_pro">       
+                    <p class="m-0 fs-10 text-secondary">Descripcion</p>
+                    <input type="text" id="descripcion" name="descripcion" placeholder="Descripcion"
+                        class="xMiInput xPasarEnter2" onChange="conMayusculas(this)" autofocus required espaciar><br>
+
+                    <p class="m-0 fs-10 text-secondary mt-2">Familia</p>
+                    <input type="text" id="sel_familia" name="no_post" class="xMiInput xPasarEnter2" placeholder="Familia"
+                        onChange="conMayusculas(this)" required espaciar><br>
+
+                    <p class="m-0 fs-10 text-secondary mt-2">Codigo de barras</p>
+                    <input type="text" id="codigo_barra" name="codigo_barra" placeholder="Codigo de barras"
+                        class="xMiInput xPasarEnter2" onChange="conMayusculas(this)" espaciar><br>
+
+                    <p class="m-0 fs-10 text-secondary mt-2">Stock</p>
+                    <input type="text" id="stock" readonly name="no_post" placeholder="Stock" class="xMiInput xPasarEnter2"
+                        onChange="conMayusculas(this)" espaciar><br>
+                    
+                    <p class="m-0 fs-10 text-secondary mt-2">Stock Minimo</p>
+                    <input type="text" id="stock_minimo" name="stock_minimo" placeholder="Stock minimo"
+                        class="xMiInput xPasarEnter2" onChange="conMayusculas(this)" required espaciar><br>                    
+
+                    <p class="m-0 fs-10 text-secondary mt-2">Precio de venta</p>
+                    <input type="text" id="precio_venta" name="precio_venta" placeholder="Precio de venta x unidad"
+                        onblur="xRetornaMoneda(this)" class="xMiInput xPasarEnter2 xPrecioAddPro" onChange="conMayusculas(this)"
+                        onkeyup="xEnterInInputDlgPP(event)" required espaciar><br>
+                    <div class="xInvisible">
+                        <input type="text" id="idproducto" name="idproducto">
+                        <input type="text" id="idorg" name="idorg">
+                        <input type="text" id="idsede" name="idsede">
+                        <input type="text" id="idproducto_familia" name="idproducto_familia">
+                        <!-- <input type="text" id="precio_unitario" name="precio_unitario"> -->
+                    </div>
+                </form>
+                <br><br>
+                <div class="xBoton2 xAzul" onclick="xGuardarModificarProducto();">Listo, guardar</div>
+                <div class="xBoton2 xPlomo" dialog-dismiss>Cancelar</div>
+                <br><br><br>
+            </div>
+        </paper-dialog>
+
+        <paper-dialog modal id="dialog_modificar_stock_producto" class="dialog_redondo" modal
+            entry-animation="scale-up-animation" style="max-width: 600px;" exit-animation="fade-out-animation"
+            with-backdrop>
+            <div class="xContent">
+                <h3>Modificar Stock</h3>
+                <span class="fw-100 text-secondary fs-11">Todas las modificaciones se registrarán en el historial de
+                    cambios.</span>
+                <div class="xLinea2"></div><br>
+                <div class="d-flexx justify-content-between">
+                    <div style="max-width: 90px;">
+                        <p class="fs-12 text-secondary m-0">Stock Actual</p>
+                        <p class="fs-15 fw-600"> {{objproducto.stock}} </p>
+                        <!-- <input type="number" id="stock_new" placeholder="Ingrese nuevo stock"
+                            class="xMiInput xPasarEnter2" value={{objproducto.stock}} readonly> -->
+                    </div>
+                    <div class="w-50">
+                        <p class="fs-15 text-dark m-0 fw-600">Cual es el nuevo Stock?</p>
+                        <input type="number" id="stock_new" placeholder="Ingrese nuevo stock"
+                            class="xMiInput xPasarEnter2" onkeyup="changeStockProducto(this.value)">
+                    </div>
+                </div>
+                <br>
+                <p class$="{{classMsjStock}}">{{ msjStock }}</p>
+                <br>
+                <button class="btn btn-sm btn-primary" onclick="saveStockModifyProducto();">Listo, guardar</button>
+                <button class="btn btn-sm btn-secondary" dialog-dismiss>Cancelar</button>
+            </div>
+        </paper-dialog>
+
+
+
+        <div>
+            <!-- head -->
+            <div class="d-flexx justify-content-between align-items-baseline ">
+                <div>
+                    <div class="d-flexx">
+                        <div class="mr-5 xCursor" onclick="xOpenModificarDetalleProducto()">
+                            <p class="fs-12 text-secondary m-0">Descripcion</p>
+                            <p class="fs-18 fw-600">
+                                {{objproducto.producto}} 
+                            </p>
+                        </div>
+                        <div class="mr-5 xCursor" onclick="xOpenModificarDetalleProducto()">
+                            <p class="fs-12 text-secondary m-0">Familia</p>
+                            <p class="fs-18 fw-600"> {{objproducto.familia}} </p>
+                        </div>                    
+                    </div>
+                    <br>
+                    <div class="d-flexx">
+                        <div class="mr-5">
+                            <p class="fs-12 text-secondary m-0">Almacén</p>
+                            <p class="fs-18 fw-600"> {{objproducto.almacen}} </p>
+                        </div>
+                        <div class="mr-5 xCursor" onclick="saveStockModifyProducto();">
+                            <p class="fs-12 fw-600 text-secondary m-0">Stock Actual</p>
+                            <p class="fs-18 fw-600"> {{objproducto.stock}} </p>
+                        </div>
+                        <div class="mr-5 xCursor" onclick="xOpenModificarDetalleProducto()">
+                            <p class="fs-12 fw-600 text-secondary m-0">Stock Mínimo</p>
+                            <p class="fs-15 fw-100 text-danger"> {{objproducto.stock_minimo}} </p>
+                        </div>
+                        <div  class="xCursor" onclick="xOpenModificarDetalleProducto()">
+                            <p class="fs-12 fw-600 text-secondary m-0">Precio de Venta</p>
+                            <p class="fs-15 fw-600 text-info"> {{objproducto.precio_venta}} </p>
+                        </div>
+                    </div>
+                </div>
+                <div class="text-right">
+                    <button class="btn btn-sm btn-primary" onclick="dialog_modificar_stock_producto.open()">Modificar
+                        Stock</button><br>
+                    <button class="btn btn-sm btn-info mt-1" onclick="xOpenModificarDetalleProducto()">
+                        <i class="fa fa-pencil mr-1"></i> Modificar Datos
+                    </button>
+                </div>
+            </div>
+            <!-- historial -->
+            <div>
+                <br><br>
+                <p class="fs-18 text-secondary">Historial de cambios</p>
+                <hr>
+                <table class="w-100">
+                    <thead>
+                        <th>Fecha</th>
+                        <th>Hora</th>
+                        <th>Usuario</th>
+                        <th>Movimiento</th>                        
+                        <th class="text-center">Stock</th>
+                    </thead>
+                    <tbody>
+                        <template is="dom-repeat" items="{{listProductoHistorial}}" as="item">
+                            <tr>
+                                <td>{{item.fecha}}</td>
+                                <td>{{item.hora}}</td>
+                                <td>{{item.nom_usuario}}</td>
+                                <td>
+                                    <p class$="[[ item.classMovimiento ]]">{{item.tipo_movimiento}}</p>
+                                    <p class="fs-10 text-secondary">{{ item.detalle }}</p>
+                                </td>
+                                <td class="fw-600 text-center">{{item.cantidad}}</td>
+                            </tr>
+                        </template>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </template>
+</dom-module>
+<script>
+
+var xthisProductoDetalle;
+let _difStockProducto = 0
+let _msjModificarStockProducto = ''
+let _stockNowProducto = 0; 
+
+    async function xLoadDataProductoDetalle() {
+        xPopupLoad.xopen();
+        xLoadFamiliasProducto();
+        const _data = {
+            idproducto: xthisProductoDetalle.objproducto.idproducto,
+            idproducto_stock: xthisProductoDetalle.objproducto.idproducto_stock,
+            idalmacen: xthisProductoDetalle.objproducto.idalmacen
+        }
+
+        const _classTipoMovimiento = {
+            'Venta': 'fw-600 text-success',
+            'Aumenta': 'fw-600 text-primary',
+            'Disminuye': 'fw-600 text-danger',
+            'Compra': 'fw-600 text-info',
+            'Ingreso x Distribucion': 'fw-600 text-warning',
+            'Salida x Distribucion': 'fw-600 text-danger'
+        }
+
+        const _httpFecht = new httpFecht();
+        const rpt = await _httpFecht.postJson('../../bdphp/log_009.php?op=111', _data)        
+        if (rpt.success) {                        
+            xthisProductoDetalle.listProductoHistorial = rpt.datos;
+            xthisProductoDetalle.listProductoHistorial.map(x => {
+                // x.classMovimiento = x.tipo_movimiento == 'Venta' ? 'fw-600 text-success' : x.tipo_movimiento == 'Aumenta' ? 'fw-600 text-primary' : x.tipo_movimiento == 'Compra'? 'fw-600 text-info' : 'fw-600 text-danger';
+                x.classMovimiento = _classTipoMovimiento[x.tipo_movimiento]
+                x.tipo_movimiento = x.tipo_movimiento.toUpperCase();
+                x.showDetalle = x.detalle !== '';
+                return x;
+            })
+        }
+        // console.log('rpt', xthisProductoDetalle.listProductoHistorial);
+        xPopupLoad.xclose();
+    
+    }
+
+    function xOpenModificarDetalleProducto() {
+        $("#frm_item_pro #descripcion").val(xthisProductoDetalle.objproducto.producto)
+        $("#frm_item_pro #sel_familia").val(xthisProductoDetalle.objproducto.familia)
+        $("#frm_item_pro #codigo_barra").val(xthisProductoDetalle.objproducto.codigo_barra)
+        $("#frm_item_pro #stock").val(xthisProductoDetalle.objproducto.stock)
+        $("#frm_item_pro #stock_minimo").val(xthisProductoDetalle.objproducto.stock_minimo)
+        $("#frm_item_pro #precio_venta").val(xthisProductoDetalle.objproducto.precio_venta)
+        $("#frm_item_pro #idproducto_familia").val(xthisProductoDetalle.objproducto.idproducto_familia)
+        $("#frm_item_pro #idproducto").val(xthisProductoDetalle.objproducto.idproducto)
+        dialog_additem_pro_detalle.open();
+    }
+
+   function xCargarFamiliaInputProducto() {
+        //cargan en control
+        var xObjTxtFam = $("#sel_familia");
+        xObjTxtFam.autocomplete({
+            autoFocus: true,
+            source: xthisProductoDetalle.listFamilias,
+            appendTo: $('#dialog_additem_pro_detalle'),
+            select: function (event, ui) {
+                xObjTxtFam.val(ui.item.label);
+                xObjTxtFam.attr('data-id', ui.item.value);
+                $("#frm_item_pro #idproducto_familia").val(ui.item.value);
+                return false;
+            },
+            focus: function (event, ui) { return false; },
+            change: function (event, ui) {
+                if (ui.item === null) {
+                    xObjTxtFam.attr('data-value', "");
+                    xObjTxtFam.attr('data-id', "");
+                    $("#frm_item_pro #idproducto_familia").val("");
+                    xNewFamilia = true;
+                } else { xNewFamilia = false; $("#frm_item_pro #idproducto_familia").val(ui.item.value); }
+                return false;
+            }
+        });
+    }
+    function xLoadFamiliasProducto() {
+        $.ajax({ type: 'POST', url: '../../bdphp/log.php?op=1601' })
+            .done(function (DtFam) {
+                var xDtFam = JSON.parse(DtFam);
+                xthisProductoDetalle.listFamilias = xDtFam.datos;
+                xCargarFamiliaInputProducto();
+            })
+    }
+
+    function xGuardarModificarProducto() {
+        //guardar producto
+        xCan_item = $("#frm_item_pro #stock").val();
+        // var xPrecio_und_pro = parseFloat(xPrecio_item) / parseFloat(xCan_item);
+        $("#frm_item_pro #idorg").val(xIdOrg);
+        $("#frm_item_pro #idsede").val(xIdSede);
+        // $("#frm_item_pro #precio_unitario").val(xPrecio_und_pro);
+        $.post("../../bdphp/ManejoBD_IUD.php?tb=producto", $("#frm_item_pro").serialize(), function (xUltimo_id_pro) {
+            xIdProducto_sel = xUltimo_id_pro;  
+            
+            xthisProductoDetalle.objproducto.producto = $("#frm_item_pro #descripcion").val()
+            xthisProductoDetalle.objproducto.familia = $("#frm_item_pro #sel_familia").val()
+            xthisProductoDetalle.objproducto.codigo_barra = $("#frm_item_pro #codigo_barra").val()
+            // xthisProductoDetalle.objproducto.stock = $("#frm_item_pro #stock").val()
+            xthisProductoDetalle.objproducto.stock_minimo = $("#frm_item_pro #stock_minimo").val()
+            xthisProductoDetalle.objproducto.precio_venta = $("#frm_item_pro #precio_venta").val()
+            xthisProductoDetalle.objproducto.idproducto_familia = $("#frm_item_pro #idproducto_familia").val()
+            xthisProductoDetalle.objproducto.idproducto = $("#frm_item_pro #idproducto").val()
+            xthisProductoDetalle.objproducto = JSON.parse(JSON.stringify(xthisProductoDetalle.objproducto));
+
+
+            dialog_additem_pro_detalle.close();
+            $("#frm_item_pro").reset();
+            xPopupLoad.xclose();
+        })
+    }
+
+    function changeStockProducto(value) {
+
+            const _stockActualPorcion = parseFloat(xthisProductoDetalle.objproducto.stock)
+            _stockNowProducto = parseFloat(value)
+
+            if (isNaN(_stockNowProducto)) {
+                _msjModificarStockProducto = ''
+            }
+            else {
+                if (_stockNowProducto > _stockActualPorcion) {
+                    _difStockProducto = _stockNowProducto - _stockActualPorcion;
+                    _msjModificarStockProducto = 'Aumenta Stock en: ' + _difStockProducto;
+                    xthisProductoDetalle.classMsjStock = 'fw-600 text-primary'
+                } else {
+                    _difStockProducto = _stockActualPorcion - _stockNowProducto;
+                    _msjModificarStockProducto = 'Disminuye Stock en: ' + _difStockProducto;
+                    xthisProductoDetalle.classMsjStock = 'fw-600 text-danger'
+                }
+            }
+
+            xthisProductoDetalle.msjStock = _msjModificarStockProducto            
+        }
+
+    async function saveStockModifyProducto() {
+        xPopupLoad.xopen();
+        if (_difStockProducto === 0) { return; }
+        const _data = {
+            idproducto: xthisProductoDetalle.objproducto.idproducto,
+            idproducto_stock: xthisProductoDetalle.objproducto.idproducto_stock,
+            idalmacen: xthisProductoDetalle.objproducto.idalmacen,
+            movimiento: _msjModificarStockProducto.split(' ')[0],
+            cantidad: _difStockProducto,
+            stock_actual: _stockNowProducto
+        }
+
+        // console.log('_data', _data);
+
+        const _httpFecht = new httpFecht();
+        const rpt = await _httpFecht.postJson('../../bdphp/log_009.php?op=11', _data)
+        if (rpt.success) {
+            dialog_modificar_stock_producto.close();
+            xthisProductoDetalle.objproducto.stock = _stockNowProducto;
+            xthisProductoDetalle.objproducto = JSON.parse(JSON.stringify(xthisProductoDetalle.objproducto))
+            xLoadDataProductoDetalle();
+        }
+        // console.log('rpt', rpt);
+        xPopupLoad.xclose();
+    }
+
+Polymer({
+    is:'x-producto-almacen-detalle',
+    properties:{
+        objproducto: {
+            type: Object,
+            notify: true,
+            reflectToAttribute: true,            
+            observer: 'productoChanged',            
+        },
+        msjStock: String,
+        classMsjStock: String,        
+        listFamilias: [],
+        listProductoHistorial: []
+    },
+    productoChanged: (obj) => {
+        console.log('changed productoChanged', obj);              
+        xLoadDataProductoDetalle()  
+    },
+    attached:function(){
+        xthisProductoDetalle=this;
+        // xIniPorcion();
+    }    
+})
+</script>

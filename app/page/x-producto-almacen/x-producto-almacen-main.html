@@ -1,0 +1,387 @@
+<dom-module id="x-producto-almacen-main">
+    <link rel="import" href="../../x-componentes/x-comp-find-almacen/x-comp-find-almacen.html">        
+    <link rel="import" href="./x-producto-almacen-detalle.html">
+    <link rel="import" href="./x-producto-familia.html">
+    <template>
+        
+
+        <paper-dialog modal id="dialog_additem_pro" class="dialog_redondo" modal entry-animation="scale-up-animation"
+            exit-animation="fade-out-animation" with-backdrop style="min-width: 350px;">
+            <div class="xContent">
+                <h3>Agregar Producto</h3>
+                <form id="frm_item_pro_alm">
+                    <label for="sel_almacen_pro">Almacen donde ingresa:</label><br>
+                    <select id="sel_almacen_pro" name="no_post" class="xMiInput"></select>
+
+                    <p class="m-0 fs-10 text-secondary mt-2">Descripcion</p>
+                    <input type="text" id="descripcion" name="descripcion" placeholder="Descripcion"
+                        class="xMiInput xPasarEnter2" onChange="conMayusculas(this)" autofocus required espaciar><br>
+
+                    <p class="m-0 fs-10 text-secondary mt-2">Familia</p>
+                    <input type="text" id="sel_familia_pro_alm" name="no_post" class="xMiInput xPasarEnter2" placeholder="Familia"
+                        onChange="conMayusculas(this)" required espaciar><br>
+
+                    <p class="m-0 fs-10 text-secondary mt-2">Familia</p>
+                    <input type="text" id="codigo_barra" name="codigo_barra" placeholder="Codigo de barras"
+                        class="xMiInput xPasarEnter2" onChange="conMayusculas(this)" espaciar><br>
+
+                    <p class="m-0 fs-10 text-secondary mt-2">Stock</p>
+                    <input type="text" id="stock" name="no_post" placeholder="Stock" class="xMiInput xPasarEnter2"
+                        onChange="conMayusculas(this)" espaciar required><br>
+
+                    <p class="m-0 fs-10 text-secondary mt-2">Stock Minimo</p>
+                    <input type="text" id="stock_minimo" name="stock_minimo" placeholder="Stock minimo"
+                        class="xMiInput xPasarEnter2" onChange="conMayusculas(this)" espaciar><br>
+
+                    <p class="m-0 fs-10 text-secondary mt-2">Precio de Compra</p>
+                    <input type="text" id="precio" name="precio" placeholder="Precio de compra" onblur="xRetornaMoneda(this)"
+                        class="xMiInput xPasarEnter2" onChange="conMayusculas(this)" required espaciar><br>
+
+                    <p class="m-0 fs-10 text-secondary mt-2">Precio de Venta</p>                    
+                    <input type="text" id="precio_venta" name="precio_venta" placeholder="Precio de venta x unidad"
+                        onblur="xRetornaMoneda(this)" class="xMiInput xPasarEnter2 xPrecioAddPro" onChange="conMayusculas(this)"
+                        required espaciar><br>
+                        
+                    <div class="xInvisible">
+                        <input type="text" id="idproducto" name="idproducto">
+                        <input type="text" id="idorg" name="idorg">
+                        <input type="text" id="idsede" name="idsede">
+                        <input type="text" id="idproducto_familia" name="idproducto_familia">
+                        <input type="text" id="precio_unitario" name="precio_unitario">
+                    </div>
+                </form>
+                <br><br>
+                <div class="xBoton2 xAzul" onclick="xGuardarItemProPP();">Listo, guardar</div>
+                <div class="xBoton2 xPlomo" dialog-dismiss>Cancelar</div>
+                <br><br><br>
+            </div>
+        </paper-dialog>
+
+
+        <div class="p-2">
+
+            <br>
+            <div class="xMiCard xradius" style="width:90%; max-width: 1250px;">
+                <div class="xEncanezadoCard d-flexx justify-content-between"
+                    style="background: lavenderblush; color: #424242;">
+                    <div class="div-content-head-op">
+                        <p class="fw-600 fs-18">Productos en Almacen</p>
+                        <p class="fw-100 text-secondary fs-12">Los productos que se encuentren en almacen "Bodega" apareceran en todas sus cartas, disponible para la venta.</p>
+                    </div>
+                    <div>
+                        <button class="btn btn-sm btn-secondary" hidden$="[[isShowMainProducto]]"
+                            onclick="goMainProducto()">Atras</button>
+                    </div>
+                </div>
+                <div class="p-3 mb-5">
+                    
+
+                    <!-- main -->
+                    <div hidden$="[[!isShowMainProducto]]">
+                        <!-- header -->
+
+                        <div class="d-flexx justify-content-between">
+                            <div style="max-width: 200px;">
+                                <x-comp-find-almacen class="mr-1" id="sel_almacen_pp"></x-comp-find-almacen>
+                                <div>
+                                    <input type="text" class="xMiInput w-100 mr-1" placeholder="Buscar" inline id="txt_buscar_producto_almacen">
+                                    <br><br>
+                                    <paper-checkbox id="chec_min">Ver solo stock minimo </paper-checkbox>
+                                </div>
+                        
+                            </div>
+                            <div class="text-right">
+                                <button class="btn btn-sm btn-secondary" onclick="goProductoFamilias();">
+                                    <i class="fa fa-group"></i> Familias </button>
+                                <br>
+                                <button class="btn btn-sm btn-primary mt-1" onclick="dialog_additem_pro.open();">
+                                    + Agregar producto </button>
+                            </div>
+                        </div>
+
+                        <br><br><br>
+                        <div class="xLinea2"></div>
+                        <br>
+
+
+                        <table width="100%">
+                            <thead>
+                                <th align="left" width="20%">Almacen</th>
+                                <th align="left" width="20%">Familia</th>
+                                <th align="left">Producto</th>
+                                <th align="left" width="80px">Stock</th>
+                                <th align="left" width="80px">P.Venta</th>                                
+                                <th align="left" width="80px">Accion</th>                                
+                            </thead>
+                            <tbody>
+                                <template is="dom-repeat" items="{{xdt_prodcutos}}" as="item">
+                                    <tr data-id="[[item.idproducto_stock]]" onclick="xGoDetalleProducto(this)" class="xCursor">
+                                        <td>{{ item.almacen }}</td>
+                                        <td>{{ item.familia }}</td>
+                                        <td>{{ item.producto }}</td>
+                                        <td>{{ item.stock }}</td>
+                                        <td>{{ item.precio_venta }}</td>                                        
+                                        <td>
+                                            <button data-id="[[item.idproducto_stock]]" onclick="xGoDetalleProducto(this)"
+                                                class="btn btn-sm btn-xsm xBoton_flat_2">
+                                                Detalle
+                                            </button>
+                                        </td>
+                                    </tr>
+                                </template>
+                                <tr>
+                                    <td class="fw-600 fs-18">Totales</td>
+                                    <td class="fw-600 fs-18">{{ totalProductos }}</td>
+                                    <td class="fw-600 fs-18">-</td>
+                                    <td class="fw-600 fs-18">{{ totalStockProductos }}</td>
+                                    <td class="fw-600 fs-18">-</td>
+                                    <td class="fw-600 fs-18">-</td>
+                                </tr>
+                            </tbody>
+                        </table>
+                        <br><br><br>
+                    </div>
+
+
+                    <!-- detalle -->
+                    <div hidden$="[[!isShowDetalleProducto]]">
+                        <x-producto-almacen-detalle objproducto$=[[productoSeleted]]></x-producto-almacen-detalle>
+                    </div>
+
+                    <!-- familia productos -->
+
+                    <div hidden$="[[!isShowDetalleFamilias]]">
+                        <x-producto-familia></x-producto-familia>
+                    </div>
+
+                </div>
+            </div>
+        </div>
+
+
+
+
+
+
+    </template>
+</dom-module>
+<script>
+var xThisAlmPro;
+
+    function xIniAlmacenProducto() {
+        $("#Titulo_page").text("Almacen Productos");
+
+
+        $("#txt_buscar_producto_almacen").on('keyup', function () {
+            xFilterPorductoTxtSearch(this.value)
+        })
+
+        $("#sel_almacen_pp").on('change', function (obj) {
+            //xFiltrarRowAttr2($("#tb_productos"),'data-idalmacen',sel_almacen_pp.value)
+            // console.log('sel_almacen_pp.value', sel_almacen_pp.getAlmacen().idalmacen);
+            xLoadProductos(sel_almacen_pp.getAlmacen().idalmacen)
+        })
+
+        $("#chec_min").on('change', function () {        
+            xFilterPorductoStockMin(this.checked)
+        })
+
+        xLoadProductos_dt();
+
+        // xLoadFamilias();
+        xLoadAlmacenes();
+
+        
+    }
+
+    function xLoadProductos_dt(xid_filtro) {
+        $.ajax({ type: 'POST', url: '../../bdphp/log.php?op=18'})
+            .done(function (dtPro) {
+                var xdtPro = JSON.parse(dtPro).datos;  
+                xThisAlmPro.listProductosMaster = xdtPro;
+                xThisAlmPro.xdt_prodcutos = xdtPro;                
+                xSumTotalProductoAlmacen();
+            })
+    }
+
+    function xLoadProductos(xid_filtro) {            
+        xThisAlmPro.xdt_prodcutos = xThisAlmPro.listProductosMaster.filter(x => x.idalmacen === xid_filtro);
+        xSumTotalProductoAlmacen();
+    }
+
+    function xFilterPorductoTxtSearch(value) {
+        value= value.toLowerCase();
+        xThisAlmPro.xdt_prodcutos = xThisAlmPro.listProductosMaster.filter(x => x.producto.toLowerCase().includes(value));
+        xSumTotalProductoAlmacen();
+    }
+    function xFilterPorductoStockMin(value) {
+        if(value) {
+            xThisAlmPro.xdt_prodcutos = xThisAlmPro.listProductosMaster.filter(x => parseInt(x.stock_minimo)  >= parseInt(x.stock));
+        } else {
+            xThisAlmPro.xdt_prodcutos = xThisAlmPro.listProductosMaster;
+        }
+        xSumTotalProductoAlmacen();
+    }
+
+    function xSumTotalProductoAlmacen() {
+        xThisAlmPro.totalProductos = xThisAlmPro.xdt_prodcutos.length;
+        xThisAlmPro.totalStockProductos = xThisAlmPro.xdt_prodcutos.map(x => parseFloat(x.stock)).reduce((a, b) => a + b, 0);
+    }
+
+    function xGoDetalleProducto(obj) {
+        const _index = obj.dataId;
+        const _producto = xThisAlmPro.listProductosMaster.filter(x => x.idproducto_stock === _index)[0];            
+        // console.log('_producto', _producto);
+        xThisAlmPro.productoSeleted = _producto
+        // xThisAlmPro.isShowDetalleProducto = true;
+        goDetalleProducto();
+    }
+
+    function goMainProducto() {
+        xThisAlmPro.isShowMainProducto = true;
+        xThisAlmPro.isShowDetalleProducto = false;
+        xThisAlmPro.isShowDetalleFamilias = false;
+    }
+
+    function goProductoFamilias() {
+        xThisAlmPro.isShowMainProducto = false;
+        xThisAlmPro.isShowDetalleProducto = false;
+        xThisAlmPro.isShowDetalleFamilias = true;
+    }
+
+    function goDetalleProducto() {
+        xThisAlmPro.isShowMainProducto = false;
+        xThisAlmPro.isShowDetalleProducto = true;
+        xThisAlmPro.isShowDetalleFamilias = false;
+    }
+
+
+    
+    function xCargarFamiliaInput() {
+        //cargan en control
+        var xObjTxtFam = $("#sel_familia_pro_alm");
+        xObjTxtFam.autocomplete({
+            autoFocus: true,
+            source: xThisAlmPro.listFamilias,
+            appendTo: $('#dialog_additem_pro'),
+            select: function (event, ui) {
+                xObjTxtFam.val(ui.item.label);
+                xObjTxtFam.attr('data-id', ui.item.value);
+                $("#frm_item_pro_alm #idproducto_familia").val(ui.item.value);
+                return false;
+            },
+            focus: function (event, ui) { return false; },
+            change: function (event, ui) {
+                if (ui.item === null) {
+                    xObjTxtFam.attr('data-value', "");
+                    xObjTxtFam.attr('data-id', "");
+                    $("#frm_item_pro_alm #idproducto_familia").val("");
+                    xNewFamilia = true;
+                } else { xNewFamilia = false; $("#frm_item_pro_alm #idproducto_familia").val(ui.item.value); }
+                return false;
+            }
+        });
+    }
+    function xLoadFamilias() {
+        $.ajax({ type: 'POST', url: '../../bdphp/log.php?op=1601' })
+            .done(function (DtFam) {
+                var xDtFam = JSON.parse(DtFam);
+                xThisAlmPro.listFamilias = xDtFam.datos;
+                xCargarFamiliaInput();
+            })
+    }    
+
+
+    function xLoadAlmacenes() {
+            // xPopupLoad.xopen();
+            $.ajax({ type: 'POST', url: '../../bdphp/log.php?op=1604' })
+                .done(function (DtAlm) {
+                    let xDtAlam = JSON.parse(DtAlm);
+                    let xcandena_alm = '';
+                    xDtAlam = xDtAlam.datos;
+                    for (var i = 0; i < xDtAlam.length; i++) {
+                        xcandena_alm = String(xcandena_alm + '<option value="' + xDtAlam[i].idalmacen + '">' + xDtAlam[i].descripcion + '</option>')
+                    };
+                    // xcandena_alm = String(xcandena_alm + '<option value=0>TODOS</option>')
+                    // $("#sel_almacen_pp").html(xcandena_alm).trigger('create');
+                    $("#sel_almacen_pro").html(xcandena_alm).trigger('create');
+                    //xidAlmacenbUS=$("#sel_almacen_pp option:selected").val(0)
+
+                    // xLoadProductos_dt();
+                    xLoadFamilias();
+                })
+        }
+
+
+    function xGuardarItemProPP() {
+        //guardar familia
+        xvalidateFormInput('frm_item_pro_alm', function (a) {
+            if (a === false) { return; }
+            xPopupLoad.xopen();
+            xnom_familia = $("#sel_familia_pro_alm").val();
+            xPrecio_item = xMoneda($("#frm_item_pro_alm #precio").val());
+            if (xNewFamilia == true) {
+                $.ajax({ type: 'POST', url: '../../bdphp/log.php?op=1602', data: { f: xnom_familia } })
+                    .done(function (DtIdFamRpt) {
+                        $("#frm_item_pro_alm #idproducto_familia").val(DtIdFamRpt);
+                        //$("#sel_familia_pro_alm").attr('data-value')=xnom_familia;
+                        xGuardarItemProDtPP();
+                        xLoadFamilias();
+                    })
+            } else { xGuardarItemProDtPP(); }
+        });
+    }
+
+
+    function xGuardarItemProDtPP() {
+        //guardar producto
+        xCan_item = $("#frm_item_pro_alm #stock").val();
+        var xPrecio_und_pro = parseFloat(xPrecio_item) / parseFloat(xCan_item);
+        $("#frm_item_pro_alm #idorg").val(xIdOrg);
+        $("#frm_item_pro_alm #idsede").val(xIdSede);
+        $("#frm_item_pro_alm #precio_unitario").val(xPrecio_und_pro);
+        $.post("../../bdphp/ManejoBD_IUD.php?tb=producto", $("#frm_item_pro_alm").serialize(), function (xUltimo_id_pro) {
+            xIdProducto_sel = xUltimo_id_pro;
+            $.ajax({ type: 'POST', url: '../../bdphp/log.php?op=1807', data: { 'p': xIdProducto_sel, 'a': sel_almacen_pro.value, 'c': $("#frm_item_pro_alm #stock").val() } })
+                .done(function (a) {
+                    dialog_additem_pro.close();
+                    $("#frm_item_pro_alm").reset();
+                    xPopupLoad.xclose();
+                    xLoadProductos_dt()
+                })
+        })
+    }        
+
+       
+
+Polymer({
+	is:'x-producto-almacen-main',
+	properties:{
+        listProductosMaster: [],
+        xdt_prodcutos: [],
+        isShowDetalleProducto: Boolean,
+        isShowDetalleFamilias: Boolean,
+        isShowMainProducto: Boolean,
+        totalProductos: Number,
+        totalStockProductos: Number,
+        productoSeleted: [],
+        listFamilias: [],
+		// listPorciones:Object,		
+        // objPorcion: [],
+	},
+	attached:function(){
+        this.isShowMainProducto = true;	
+        this.isShowDetalleProducto = false	
+        this.isShowDetalleFamilias = false
+        this.totalProductos =0;
+        this.totalStockProductos = 0;
+    	xThisAlmPro =this;
+    	xIniAlmacenProducto();
+    },
+    ready:() => {
+        this.isShowMainProducto = true;
+        this.isShowDetalleProducto = false
+        this.isShowDetalleFamilias = false
+    }
+})
+</script>

@@ -1,0 +1,179 @@
+<dom-module id="x-porcion-main">    
+    
+    <link rel="import" href="./x-porcion-detalle.html">
+    <template>
+
+        <paper-dialog modal id="dialog_additem_porcion" class="dialog_redondo" modal entry-animation="scale-up-animation"
+            style="max-width: 600px;"
+            exit-animation="fade-out-animation" with-backdrop>
+            <div class="xContent">
+                <h3>Agregar Porcion</h3><br>
+                <p><strong>Elaborar porciones para las recetas.</strong><br>
+                    Por ejemplo: de 1000gr de bistec salen 10 porciones de 100gr cada una para el preparar bistec a lo
+                    pobre.<br>
+                    Utilize la misma unidad de medida que esta en el producto a porcionar. Es decir si el producto a porcionar
+                    esta en gramos la misma unidad de medida debe ser para las prociones.</p>
+                <br>
+                <form id="frm_add_porcion">
+                    <input type="text" id="descripcion" name="descripcion" placeholder="Descripcion de la porcion"
+                        class="xMiInput xPasarEnter2" onChange="conMayusculas(this)" autofocus required espaciar><br>
+                    <input type="text" id="peso" name="peso" placeholder="Peso" class="xMiInput xPasarEnter2"
+                        onChange="conMayusculas(this)" autofocus required espaciar><br>
+                    <input type="text" id="stock" name="stock" placeholder="Cantidad" class="xMiInput xPasarEnter2"
+                        onChange="conMayusculas(this)" autofocus required espaciar><br>
+                    <div class="xInvisible">
+                        <input type="text" id="idporcion" name="idporcion">
+                        <input type="text" id="idorg" name="idorg">
+                        <input type="text" id="idsede" name="idsede">
+                    </div>
+                </form>
+                <br><br>
+                <div class="xBoton2 xAzul" onclick="xGuardarItemPorcionPorcion();">Listo, guardar</div>
+                <div class="xBoton2 xPlomo" dialog-dismiss>Cancelar</div>
+                <br><br><br>
+            </div>
+        </paper-dialog>
+        
+        <div class="p-2">
+
+            <br>
+            <div class="xMiCard xradius" style="width:90%; max-width: 1250px;">
+                <div class="xEncanezadoCard d-flexx justify-content-between" style="background: lavenderblush; color: #424242;">
+                    <div class="div-content-head-op">
+                        <p class="fw-600 fs-18">Porciones</p>
+                        <p class="fw-100 text-secondary fs-12">Lista de porciones que son parte de recetas.</p>
+                    </div>
+                    <div>
+                        <button class="btn btn-sm btn-secondary" hidden$="[[!isShowDetallePorcion]]" onclick="goMainPorcion()">Atras</button>
+                    </div>
+                </div>
+                <div class="p-3 mb-5">
+
+                    <!-- main -->
+                    <div hidden$="[[isShowDetallePorcion]]">
+                        <input type="text" class="xMiInput" placeholder="Buscar" inline id="txt_buscar_porcion">
+                        <div class="xBoton2 xAzul xDerecha" onclick="dialog_additem_porcion.open();">+ Agregar Porcion</div>
+                        <br><br><br>
+                        <div class="xLinea2"></div>
+                        <br>
+                                                
+                        
+                        <table width="100%">
+                            <thead>
+                                <th align="left" width="20%">Familia</th>
+                                <th align="left">Porcion</th>
+                                <th align="left" width="90px">Stock</th>
+                                <th width="5px"></th>
+                            </thead>
+                            <tbody>
+                                <template is="dom-repeat" items="{{listPorciones}}" as="item">
+                                    <tr data-id="[[item.idporcion]]" onclick="xGoDetallePorcion(this)">
+                                        <td>{{ item.familia }}</td>
+                                        <td class="xCursor"> {{ item.porcion }}</td>
+                                        <td class="sumar_stock xCursor">{{ item.stock }}</td>
+                                        <td>
+                                            <button data-id="[[item.idporcion]]" onclick="xGoDetallePorcion(this)" class="btn btn-sm btn-xsm xBoton_flat_2">
+                                                Detalle
+                                            </button>
+                                        </td>
+                                    </tr>
+                                </template>
+                            </tbody>
+                        </table>
+                        <br><br><br>
+                    </div>
+                
+
+                    <!-- detalle -->
+                    <div hidden$="[[!isShowDetallePorcion]]">                        
+                        <x-porcion-detalle objporcion$=[[objPorcion]]></x-porcion-detalle>
+                    </div>
+
+                </div>
+            </div>
+        </div>
+
+
+
+            
+
+        
+    </template>
+</dom-module>
+<script>
+var xThisProPor;
+
+    function xIniPorcion() {
+        $("#Titulo_page").text("Porciones");
+        xLoadPorciones();
+        
+    }
+
+
+    function xGuardarItemPorcionPorcion() {
+        xvalidateFormInput('frm_add_porcion', function (a) {
+            if (a === false) { return; }
+            xPopupLoad.xopen();
+            $("#frm_add_porcion #idorg").val(xIdOrg);
+            $("#frm_add_porcion #idsede").val(xIdSede);
+            $.post("../../bdphp/ManejoBD_IUD.php?tb=porcion", $("#frm_add_porcion").serialize(), function (xUltimo_id_por) {
+                xLoadPorciones();
+                xPopupLoad.xclose();
+                dialog_additem_porcion.close();
+            })
+        });
+    }
+    function xLoadPorciones() {
+        xPopupLoad.xopen();
+        $.ajax({ type: 'POST', url: '../../bdphp/log.php?op=1803' })
+            .done(function (dtPor) {
+                var xdtPor = $.parseJSON(dtPor);
+                var xcadena_por = '';
+                var xtr_stock_por = '';
+                xdtPor = xdtPor.datos.map(x => { x.modificado = false; return x });
+                xThisProPor.listPorciones = xdtPor;
+                for (var i = 0; i < xdtPor.length; i++) {
+                    xtr_stock_por = xdtPor[i].stock;
+                    xcadena_por = String(xcadena_por + '<tr class="row" data-idp="' + xdtPor[i].idporcion + '">'
+                        + '<td>' + xdtPor[i].familia + '</td>'
+                        + '<td class="xCursor"><span onclick="xModRow(this,3);" id="td_des" data-valorginal="' + xdtPor[i].porcion + '">' + xdtPor[i].porcion + '</span></td>'
+                        + '<td class="sumar_stock xCursor" onclick="xModRow(this,2);" id="td_stock" data-valorginal="' + xtr_stock_por + '" data-mod-stock="' + xtr_stock_por + '" data-colummn="stock">' + xtr_stock_por + '</td>'
+                        + '<td><span class="xDeleteRowNeutro" title="Borrar" onclick="xBorrarProcion(this);"></span></td>'
+                        + '</tr>')
+                }
+                $("#tb_porcion .row").remove();
+
+                xPopupLoad.xclose();
+                /// 101121 lo quitamos
+                // $("#tb_porcion").append(xcadena_por).trigger('create');
+                // xSumarTotalesPorcion();
+
+            })
+    }
+
+function xGoDetallePorcion(obj) {
+    const _index = obj.dataId;    
+    const _Porcion = xThisProPor.listPorciones.filter(x => x.idporcion === _index)[0];            
+    console.log('_index', _Porcion);
+    xThisProPor.objPorcion = _Porcion
+    xThisProPor.isShowDetallePorcion = true;
+}
+
+function goMainPorcion() {
+    xThisProPor.isShowDetallePorcion = false;
+}
+
+Polymer({
+	is:'x-porcion-main',
+	properties:{
+		listPorciones:Object,		
+        objPorcion: [],
+        isShowDetallePorcion: Boolean,
+	},
+	attached:function(){	
+        this.isShowDetallePorcion = false	
+    	xThisProPor=this;
+    	xIniPorcion();
+    }
+})
+</script>

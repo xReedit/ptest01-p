@@ -87,10 +87,12 @@
 <input type="text" id="f_compra" name="f_compra">
 <input type="text" id="f_registro" name="f_registro">
 <input type="text" id="f_pago" name="f_pago">
+<input type="text" id="fecha_hora" name="fecha_hora">
 <input type="text" id="total" name="total">
 <input type="text" id="a_pagar" name="a_pagar">
 <input type="text" id="nota_de_compra" name="nota_de_compra">
 <input type="text" id="idtipo_pago" name="idtipo_pago">
+<input type="text" id="idusuario" name="idusuario">
 </form>
 </div>
 <div class="xEncanezadoCard xFondoRowIndigo2 xCursor xHoverOpaco xTransicion3s" id="div_proveedor" style="height:25px">
@@ -219,7 +221,7 @@ $("#frm_proveedor #idsede").val(xlo_idsede)
 $.post("../../bdphp/ManejoBD_IUD.php?tb=proveedor",$("#frm_proveedor").serialize(),function(xUltimo_id_proveedor){xsel_proveedor=xUltimo_id_proveedor;xGuardarRegistroCompra();})}else{xGuardarRegistroCompra();}}
 function xGuardarRegistroCompra(){var xrow_tipo_pago='';xrow_tipo_pago=String(xrow_tipo_pago+'<tr class="row">'+'<td data-ColumName="idcompra">-compra</td>'+'<td data-ColumName="idtipo_pago">'+sel_idTipoPago+'</td>'+'<td data-ColumName="importe">'+xImporte_total_list+'</td>'+'</tr>')
 $("#tb_compra_pago").append(xrow_tipo_pago).trigger('create');xPopupLoad.xopen();var xIdCompra;var sql_update_pro=xArmarInsertDetalle($("#tb_update_precio"),'idproducto','','',1);var sql_historial_precio_pro=xArmarInsertDetalle($("#tb_input"),'','','');var sql_compra_items=xArmarInsertDetalle($("#tb_compra_items"),'','','');var sql_compra_tp=xArmarInsertDetalle($("#tb_compra_pago"),'','','');sql_historial_precio_pro=sql_historial_precio_pro.replace(/-proveedor/g,xsel_proveedor)
-const frm_compra=$("#frm_compra");frm_compra.find("#idproveedor").val(xsel_proveedor);frm_compra.find("#idalmacen").val(xsel_almacen);frm_compra.find("#f_registro").val(xDevolverFecha());frm_compra.find("#f_compra").val(xDevolverFecha());frm_compra.find("#f_pago").val(xDevolverFechaFormatInputDate(date_fecha_pago.value));frm_compra.find("#idtipo_pago").val(sel_idTipoPago);frm_compra.find("#total").val(xImporte_total_list);frm_compra.find("#a_pagar").val(xImporte_total_list);frm_compra.find("#idorg").val(xlo_idorg);frm_compra.find("#idsede").val(xlo_idsede);$.post("../../bdphp/ManejoBD_IUD.php?tb=compra",$("#frm_compra").serialize(),function(xUltimo_id_compra){xIdCompra=xUltimo_id_compra;sql_compra_items=sql_compra_items.replace(/-compra/g,xIdCompra)
+const frm_compra=$("#frm_compra");frm_compra.find("#idproveedor").val(xsel_proveedor);frm_compra.find("#idalmacen").val(xsel_almacen);frm_compra.find("#f_registro").val(xDevolverFecha());frm_compra.find("#f_compra").val(xDevolverFecha());frm_compra.find("#f_pago").val(xDevolverFechaFormatInputDate(date_fecha_pago.value));frm_compra.find("#fecha_hora").val(new Date().toLocaleString());frm_compra.find("#idtipo_pago").val(sel_idTipoPago);frm_compra.find("#total").val(xImporte_total_list);frm_compra.find("#a_pagar").val(xImporte_total_list);frm_compra.find("#idorg").val(xlo_idorg);frm_compra.find("#idsede").val(xlo_idsede);frm_compra.find("#idusuario").val(xIdUsuario);$.post("../../bdphp/ManejoBD_IUD.php?tb=compra",$("#frm_compra").serialize(),function(xUltimo_id_compra){xIdCompra=xUltimo_id_compra;sql_compra_items=sql_compra_items.replace(/-compra/g,xIdCompra)
 sql_compra_tp=sql_compra_tp.replace(/-compra/g,xIdCompra)
 var xunion_sql=String(sql_compra_items+'; '+sql_compra_tp+'; '+sql_historial_precio_pro+'; '+sql_update_pro)
 $.ajax({type:'POST',url:'../../bdphp/log_100.php?op=1',data:{xsql:xunion_sql}}).done(function(DtIdFamRpt){xPopupLoad.xclose();dialog_registrar_pago.close();xNuevaCompra();xLoadCpeEmitidos();})})}

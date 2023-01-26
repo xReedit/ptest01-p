@@ -1,0 +1,155 @@
+<dom-module id="x-producto-familia">
+    <template>
+
+        <paper-dialog modal id="dialog_modificar_stock_porcion" class="dialog_redondo" modal
+            entry-animation="scale-up-animation" style="max-width: 600px;" exit-animation="fade-out-animation"
+            with-backdrop>
+            <div class="xContent">
+                <h3>Modificar Stock</h3>
+                <span class="fw-100 text-secondary fs-11">Todas las modificaciones se registrarán en el historial de
+                    cambios.</span>
+                <div class="xLinea2"></div><br>
+                <div class="d-flexx justify-content-between">
+                    <div style="max-width: 90px;">
+                        <p class="fs-12 text-secondary m-0">Stock Actual</p>
+                        <p class="fs-15 fw-600"> {{objporcion.stock}} </p>
+                        <!-- <input type="number" placeholder="Ingrese nuevo stock" class="xMiInput xPasarEnter2" value={{objporcion.stock}} readonly> -->
+                    </div>
+                    <div class="w-50">
+                        <p class="fs-15 text-dark m-0 fw-600">Cual es el nuevo Stock?</p>
+                        <input type="number" id="stock_new" placeholder="Ingrese nuevo stock"
+                            class="xMiInput xPasarEnter2" onkeyup="changeStockPorcion(this.value)">
+                    </div>
+                </div>
+                <br>
+                <p class$="{{classMsjStock}}">{{ msjStock }}</p>
+                <br>
+                <button class="btn btn-sm btn-primary" onclick="saveStockModifyPorcion();">Listo, guardar</button>
+                <button class="btn btn-sm btn-secondary" dialog-dismiss>Cancelar</button>
+            </div>
+        </paper-dialog>
+
+
+
+        <div>
+            <!-- head -->
+            <div class="d-flexx justify-content-between align-items-center">
+                <div class="d-flexx">
+                    <h3>Lista de Familias</h3>
+                </div>
+            </div>
+            <!-- historial -->
+            <div>
+                <br><br>
+                <p class="fs-18 text-secondary">Familias</p>
+                <hr>
+                <table class="w-100">
+                    <thead>
+                        <th>#</th>
+                        <th>Descripcion</th>
+                        <th >Porductos Relacionados</th>
+                        <th></th>                        
+                    </thead>
+                    <tbody>
+                        <template is="dom-repeat" items="{{listFamilias}}" as="item">
+                            <tr>
+                                <td>{{displayIndex(index)}}</td>
+                                <td data-id="[[item.idproducto_familia]]" class="xCursor" onclick="xgoModificarFamilia(this)">
+                                    <p hidden$=[[item.edit]]>{{item.descripcion}}</p>
+                                    <input data-id="[[item.idproducto_familia]]" hidden$=[[!item.edit]] type="text" class="xMiInput xPasarEnter2" 
+                                        onChange="conMayusculas(this)" onblur="xSaveModificacionFamilia(this)"
+                                    value="{{item.descripcion}}">
+                                </td>
+                                <td>{{item.cantidad_relacionados}}</td>                                
+                                <td><i data-id="[[item.idproducto_familia]]" 
+                                    class="fa fa-trash text-danger xCursor" onclick="xRemoveFamilia(this)"></i></td>
+                            </tr>
+                        </template>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </template>
+</dom-module>
+<script>
+
+let xthisProductoFamilias;
+let familiaSeletedEdit;
+
+async function xIniLoadProductosFamilias() {
+    xPopupLoad.xopen();
+    const _httpFecht = new httpFecht();
+    const rpt = await _httpFecht.postJson('../../bdphp/log_009.php?op=112')    
+    if (rpt.success) {
+        xthisProductoFamilias.listFamilias = rpt.datos.map(x => {
+            x.edit = false;
+            return x;
+        })
+    }
+
+    xPopupLoad.xclose();
+}
+
+function xgoModificarFamilia(obj) {
+    const _itemFamilia = xGetItemFamilia(obj)
+    _itemFamilia.edit = true;    
+    xSetearDataFamlia()
+}
+
+function xSetearDataFamlia() {
+    xthisProductoFamilias.listFamilias = JSON.parse(JSON.stringify(xthisProductoFamilias.listFamilias))
+}
+
+async function xRemoveFamilia(obj) {
+    const _itemFamilia = xGetItemFamilia(obj);
+    const _msjRelacionados = _itemFamilia.cantidad_relacionados > 0 ? `tiene ${_itemFamilia.cantidad_relacionados} productos relacionados.` : '';
+
+     const _swalAlertValues = paramsSwalAlert;     
+    _swalAlertValues.title = '<p class="fw-600 fs-18">Borrar Familia</p>';
+    _swalAlertValues.html = `<div class="pb-2" style="display: inline-flex;">                    
+                                    <p>Esta seguro de borrar la familia de productos: <strong>${_itemFamilia.descripcion}</strong> ${_msjRelacionados}</p>
+                                </div>`;
+    _swalAlertValues.confirmButtonText = 'Si, borrar';
+    _swalAlertValues.showCancelButton = true;
+
+
+    await showAlertSwalHtmlDecision(_swalAlertValues, 1)
+        .then(async res => {            
+            if (res.isConfirmed) { // remove familia
+                const _httpFecht = new httpFecht();
+                const rpt = await _httpFecht.postJson('../../bdphp/log_009.php?op=113', _itemFamilia)                
+                xIniLoadProductosFamilias();
+            }
+            
+        })
+}
+
+function xGetItemFamilia(obj) {
+    const _index = obj.dataId;
+    return xthisProductoFamilias.listFamilias.filter(x => x.idproducto_familia === _index)[0];
+}
+
+async function xSaveModificacionFamilia(obj) {
+    const _itemFamilia = xGetItemFamilia(obj)
+    _itemFamilia.descripcion = obj.value;
+    _itemFamilia.edit = false;
+    xSetearDataFamlia()
+
+    const _httpFecht = new httpFecht();
+    const rpt = await _httpFecht.postJson('../../bdphp/log_009.php?op=114', _itemFamilia)
+}
+
+Polymer({
+    is:'x-producto-familia',
+    properties:{        
+        listFamilias: []
+    },    
+    attached:function(){
+        xthisProductoFamilias =this;
+        xIniLoadProductosFamilias();
+    },
+    displayIndex: function (index) {
+        return xCeroIzq(index + 1, 1);
+    }    
+})
+</script>
