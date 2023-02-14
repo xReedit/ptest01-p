@@ -737,7 +737,7 @@
 					$lastIdRegistroPago = $bd->xDevolverUnDato("select COALESCE (min(idregistro_pago), 0) d1 from registro_pago where idsede = $idsede and STR_TO_DATE(fecha, '%d/%m/%Y') >= date_sub(curdate(), INTERVAL 2 day) limit 2");	
 					// if ( $fecha == 0 ) {
 						// $fecha = " and (STR_TO_DATE(rp.fecha_cierre, '%d/%m/%Y') =  DATE_ADD(CURDATE(), INTERVAL -1 DAY))";
-						$fecha = " and rp.idregistro_pago >= $lastIdRegistroPago and rp.cierre = 0"; //(rp.cierre = 0 and STR_TO_DATE(rp.fecha, '%d/%m/%Y') BETWEEN DATE_SUB(CURDATE(), INTERVAL 2 DAY) AND CURDATE())";
+						$fecha = " rp.idregistro_pago >= $lastIdRegistroPago and rp.cierre = 0"; //(rp.cierre = 0 and STR_TO_DATE(rp.fecha, '%d/%m/%Y') BETWEEN DATE_SUB(CURDATE(), INTERVAL 2 DAY) AND CURDATE())";
 						$hoy = "if (STR_TO_DATE(rp.fecha, '%d/%m/%Y') = curdate(), 1, 0 )";
 					// } else {
 					// 	$hoy = "if (STR_TO_DATE(rp.fecha, '%d/%m/%Y') = STR_TO_DATE('$fecha', '%d/%m/%Y'), 1, 0 )";				
@@ -748,7 +748,7 @@
 					break;
 				case 'semana':
 						$hoy = "if(WEEK(STR_TO_DATE(rp.fecha, '%d/%m/%Y')) = WEEK(now()), 1 ,0)";
-						$fecha = " and STR_TO_DATE(rp.fecha, '%d/%m/%Y') between date_sub(now(),INTERVAL 2 WEEK) and now()";					
+						$fecha = " STR_TO_DATE(rp.fecha, '%d/%m/%Y') between date_sub(now(),INTERVAL 2 WEEK) and now()";					
 						$columm_add = ", WEEK(STR_TO_DATE(rp.fecha, '%d/%m/%Y')) num_semana, if(WEEK(STR_TO_DATE(rp.fecha, '%d/%m/%Y')) = WEEK(now()), 1 ,0) semana_actual
 						, DAYNAME(STR_TO_DATE(rp.fecha, '%d/%m/%Y')) nom_dia
 						, DAYOFWEEK(STR_TO_DATE(rp.fecha, '%d/%m/%Y')) num_dia";
@@ -772,7 +772,7 @@
 					// $fecha = $fecha == 0 ? 'now()' : "STR_TO_DATE('$fecha', '%d/%m/%Y')";
 					// $hoy = "if(MONTH(STR_TO_DATE(rp.fecha, '%d/%m/%Y')) = MONTH($fecha), 1 ,if(MONTH(STR_TO_DATE(rp.fecha, '%d/%m/%Y')) < MONTH($fecha) - 1, 2, 0 ))";
 					$hoy = "if(MONTH(STR_TO_DATE(rp.fecha, '%d/%m/%Y')) = $mm, 1 ,if(MONTH(STR_TO_DATE(rp.fecha, '%d/%m/%Y')) < $mm - 1, 2, 0 ))";
-					$fecha = " and (rp.idregistro_pago between $firstIdRegistroPago and $lastIdRegistroPago)"; // and  STR_TO_DATE(rp.fecha, '%d/%m/%Y') between date_sub($fecha,INTERVAL 2 MONTH) and $fecha";					
+					$fecha = " (rp.idregistro_pago between $firstIdRegistroPago and $lastIdRegistroPago)"; // and  STR_TO_DATE(rp.fecha, '%d/%m/%Y') between date_sub($fecha,INTERVAL 2 MONTH) and $fecha";					
 					break;
 				
 				case 'rango':
@@ -788,7 +788,7 @@
 
 					$columm_add = '';
 					$hoy = "1";
-					$fecha = " and (rp.idregistro_pago between $firstIdRegistroPago and $lastIdRegistroPago)";
+					$fecha = " (rp.idregistro_pago between $firstIdRegistroPago and $lastIdRegistroPago)";
 					break;
 			}
 			
@@ -815,7 +815,7 @@
 				 inner join tipo_consumo tpc on tpc.idtipo_consumo = rp.idtipo_consumo
 				 left join tipo_comprobante_serie tcs on rp.idtipo_comprobante_serie = tcs.idtipo_comprobante_serie
 				 LEFT join tipo_comprobante tc on tcs.idtipo_comprobante = tc.idtipo_comprobante 
-				 where rp.idsede = $idsede $fecha
+				 where $fecha and rp.idsede = $idsede
 			 order by rpd.idregistro_pago desc";
 			 
 			// echo $sql;

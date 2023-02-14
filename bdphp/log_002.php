@@ -221,7 +221,7 @@
             $sql= "SELECT fecha_resumen, ticket, external_id 
                 from ce_resumen 
                 where ( idorg=".$_SESSION['ido']." and idsede=".$_SESSION['idsede']." ) 
-                and (fecha_envio = DATE_FORMAT(now(),'%d/%m/%Y')) and estado_sunat=0 and estado=0";
+                and (STR_TO_DATE(fecha_envio, '%d/%m/%Y') >= (curdate() - INTERVAL $dias_consulta DAY)) and estado_sunat=0 and estado=0 order by idce_resumen asc";
             $bd->xConsulta($sql);
             break;        
         // case '4' : // guardar cpe y obtener correlativo
