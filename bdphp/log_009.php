@@ -200,5 +200,25 @@
             $sql="update producto_familia set descripcion = '$postBody->descripcion' WHERE idproducto_familia = '$postBody->idproducto_familia'";
             $bd->xConsulta($sql);
             break;
+        case 115: //guardar modificacion descripcion porcion
+            $postBody = json_decode(file_get_contents('php://input'));
+            $sql="update porcion set descripcion = '$postBody->descripcion' WHERE idporcion = $postBody->idporcion";
+            $bd->xConsulta($sql);
+            break;
+        case 116: // load cantidad de recetas enlazadas
+            $postBody = json_decode(file_get_contents('php://input'));
+            $sql="select count(idporcion) cantidad from item_ingrediente ii where idporcion = $postBody->idporcion and estado = 0";
+            $bd->xConsulta($sql);
+            break;
+        case 117: // borrar porcion 
+            $postBody = json_decode(file_get_contents('php://input'));
+            $sql="update porcion set estado = 1 WHERE idporcion = $postBody->idporcion";
+            $bd->xConsulta($sql);
+            break;
+        case 118: // borrar producto
+            $postBody = json_decode(file_get_contents('php://input'));
+            $sql="update producto set estado = 1 WHERE idproducto = $postBody->idproducto";
+            $bd->xConsulta($sql);
+            break;
     }
 ?>    

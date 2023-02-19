@@ -73,8 +73,8 @@ function xValidarToken(token,callback){var _token=token;var _url_servicio="../..
 function xRefreshToken(callback){var token="eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiIxMjM0NTY3ODkwIiwibmFtZSI6IkpvaG4gRG9lIiwiaWF0IjoxNTE2MjM5MDIyfQ.1tLS4vhIGufCW5H5vJ4bmNxhf43x-Vaik4oRwaDXi7E";callback(token);}
 function xm_all_SetResponseLog_001(response){const arr=response.split('|');var _concat={};arr.map(x=>{if(x===""){return;}
 const arr_row=JSON.parse(x);Object.keys(arr_row).map(k=>{_concat[k]=arr_row[k];})});return _concat;}
-function xm_all_xToastOpen(msj,duracion=0,loading=true){msj=msj===null?'Cargando...':msj;if(!loading){$("#toast #loading").addClass("xInvisible");}else{$("#toast #loading").removeClass("xInvisible");}
-toast=document.getElementById("toast");toast.duration=duracion;toast.text=msj;toast.show();}
+function xm_all_xToastOpen(msj,duracion=0,loading=true,iconWifi=false){msj=msj===null?'Cargando...':msj;if(!loading){$("#toast #loading").addClass("xInvisible");}else{$("#toast #loading").removeClass("xInvisible");}
+iconWifi?$("#toast #icon-wifi").removeClass("xInvisible"):$("#toast #icon-wifi").addClass("xInvisible");toast=document.getElementById("toast");toast.duration=duracion;toast.text=msj;toast.show();}
 function xm_all_xToastClose(){toast=document.getElementById("toast");toast.hide();}
 function delay(callback,ms){var timer=0;return function(){var context=this,args=arguments;clearTimeout(timer);timer=setTimeout(function(){callback.apply(context,args);},ms||0);};}
 function xDelay(delayInms){return new Promise(resolve=>{setTimeout(()=>{resolve(2);},delayInms);});}

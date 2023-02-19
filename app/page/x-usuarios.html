@@ -1,6 +1,17 @@
 <link rel="import" href="../x-componentes/x-comp-find-almacen/x-comp-find-almacen.html">
 <dom-module id="x-usuarios">
 <template>
+<paper-dialog class="dialog_redondo" id="dialog_borrar_usuario" entry-animation="scale-up-animation" exit-animation="fade-out-animation" with-backdrop>
+<div class="xtxtCentro">
+<img src="../../images/_dlg_remove.gif" alt="" width="150px">
+</div>
+<p>Esta seguro de querer borrar este usuario?</p>
+<br>
+<div class="buttons">
+<button class="xBoton2 xPlomo" dialog-dismiss>Cancelar</button>
+<button class="xBoton2 xRojo" onclick="xGoBorrarUsuario()">Si, borrar</button>
+</div>
+</paper-dialog>
 <paper-dialog id="dialog_add_us" class="dialog_redondo" style="max-width:600px" modal entry-animation="scale-up-animation" exit-animation="fade-out-animation" with-backdrop>
 <div class="xContent">
 <paper-tabs selected="{{selected_us}}">
@@ -81,7 +92,8 @@
 <paper-checkbox class="checkA" data-id='B2,'> Distribucion</paper-checkbox><br>
 <paper-checkbox class="checkA" data-id='B3,'> Porcionar</paper-checkbox><br>
 <paper-checkbox class="checkA" data-id='B4,'> Recetas y costos</paper-checkbox><br>
-<paper-checkbox class="checkA" data-id='B5,'> Productos Porciones</paper-checkbox><br>
+<paper-checkbox class="checkA" data-id='B5,'> Almacenes y Productos</paper-checkbox><br>
+<paper-checkbox class="checkA" data-id='B12,'> Porciones</paper-checkbox><br>
 <paper-checkbox class="checkA" data-id='B6,'> Entradas y Salidas del almacen</paper-checkbox><br>
 <paper-checkbox class="checkA" data-id='B7,'> Inventario</paper-checkbox><br>
 <paper-checkbox class="checkA" data-id='B8,'> Clientes</paper-checkbox><br>
@@ -107,6 +119,9 @@
 <paper-checkbox class="checkP" data-id='Pe3,'>Agregar sin imprimir</paper-checkbox><br>
 <paper-checkbox class="checkP" data-id='Pe4,'>Cambiar de mesa el pedido</paper-checkbox><br>
 <paper-checkbox class="checkP" data-id='Pe5,'>Asignar descuentos</paper-checkbox><br>
+<paper-checkbox class="checkP" data-id='Pe6,'>Eliminar Porciones</paper-checkbox><br>
+<paper-checkbox class="checkP" data-id='Pe7,'>Eliminar Productos</paper-checkbox><br>
+<paper-checkbox class="checkP" data-id='Pe8,'>Eliminar Clientes</paper-checkbox><br>
 </div>
 </div>
 <div id="div_zona">
@@ -154,7 +169,7 @@
 </table>
 </template>
 </dom-module>
-<script>/*<![CDATA[*/var xThis;function xIniUsuarios(){$("#Titulo_page").text("Usuarios");xm_log_get('ini_us');$('body').addClass('loaded');const sufijoSede=xm_log_get('datos_org_all_sede')[0].sufijo;xThis.xt_org=xIdOrg;xThis.xt_idsede=xIdSede;xThis.xt_idus=xIdUsuario;xThis.xt_sufijo=sufijoSede;xThis.showFormRepartidor=false;if(xIdOrg===""||xIdOrg==undefined){var _dtUs=xm_log_get('app3_us');xThisConfig.xt_org=_dtUs.ido;xThisConfig.xt_idsede=_dtUs.idsede;xThisConfig.xt_idus=_dtUs.idus;}
+<script>/*<![CDATA[*/var xThis,objUsuarioSeleted;function xIniUsuarios(){$("#Titulo_page").text("Usuarios");xm_log_get('ini_us');$('body').addClass('loaded');const sufijoSede=xm_log_get('datos_org_all_sede')[0].sufijo;xThis.xt_org=xIdOrg;xThis.xt_idsede=xIdSede;xThis.xt_idus=xIdUsuario;xThis.xt_sufijo=sufijoSede;xThis.showFormRepartidor=false;if(xIdOrg===""||xIdOrg==undefined){var _dtUs=xm_log_get('app3_us');xThisConfig.xt_org=_dtUs.ido;xThisConfig.xt_idsede=_dtUs.idsede;xThisConfig.xt_idus=_dtUs.idus;}
 xLoadUs();$('.xPasarEnter2').on('keyup',function(e){var code=e.which;if(code==13||code==186){var inputs=$('input');var a=inputs.index(document.activeElement);if(inputs[a+1]!==null)
 {var nextBox=inputs[a+1];if(nextBox===undefined){return}
 if(nextBox.disabled){nextBox=inputs[a+2]}
@@ -176,8 +191,11 @@ console.log(JSON.stringify(_dataSend));xPopupLoad.xopen();$.ajax({type:'POST',ur
 xvalidateFormInput('frm_us',function(a){if(a===false){xThis.selected_us=0;return;}
 xPopupLoad.xopen();$.post("../../bdphp/ManejoBD_IUD.php?tb=usuario",$("#frm_us").serialize(),function(id){dialog_add_us.close();xPopupLoad.xclose();xNuevoUsuario();xLoadUs();})});}
 function xNuevoUsuario(){$("#frm_us").reset();$(".checkA").each(function(index,element){element.checked=false;});$(".checkP").each(function(index,element){element.checked=false;});}
-function xLoadUs(){$("#tb_us").append('<tr class="row"><td colspan="4"><paper-spinner active></paper-spinner></td></tr>');$.ajax({type:'POST',url:'../../bdphp/log.php?op=402'}).done(function(dtUs){var xdtUs=$.parseJSON(dtUs);var xCadenaUs='';xdtUs=xdtUs.datos;for(var i=0;i<xdtUs.length;i++){xCadenaUs=String(xCadenaUs+'<tr class="row" data-id="'+xdtUs[i].idusuario+'" data-t="usuario"><td>'+xdtUs[i].nombres+'</td><td>'+xdtUs[i].cargo+'</td><td>'+xdtUs[i].usuario+'</td>'+'<td title="Modificar" onClick="xModificarUs(this)"><span class="icon xCursor"><img src="../../images/edit.png"></span></td>'+'<td><span onclick="xBorrarItem(this);" class="xDeleteRow" title="Borrar"></span></td>'+'</tr>');}
+function xLoadUs(){$("#tb_us").append('<tr class="row"><td colspan="4"><paper-spinner active></paper-spinner></td></tr>');$.ajax({type:'POST',url:'../../bdphp/log.php?op=402'}).done(function(dtUs){var xdtUs=$.parseJSON(dtUs);var xCadenaUs='';xdtUs=xdtUs.datos;for(var i=0;i<xdtUs.length;i++){xCadenaUs=String(xCadenaUs+'<tr class="row" data-id="'+xdtUs[i].idusuario+'" data-t="usuario"><td>'+xdtUs[i].nombres+'</td><td>'+xdtUs[i].cargo+'</td><td>'+xdtUs[i].usuario+'</td>'+'<td title="Modificar" onClick="xModificarUs(this)"><span class="icon xCursor"><img src="../../images/edit.png"></span></td>'+'<td><span onClick="xBorrarUsuarioOpenDialog(this)" class="xDeleteRow" title="Borrar"></span></td>'+'</tr>');}
 $("#tb_us .row").remove();$("#tb_us").append(xCadenaUs).trigger('create');});$("#tb_us_re").append('<tr class="row"><td colspan="4"><paper-spinner active></paper-spinner></td></tr>');$.ajax({type:'POST',url:'../../bdphp/log.php?op=4021'}).done(function(dtUs){var xdtUs=$.parseJSON(dtUs);var xCadenaUs='';xdtUs=xdtUs.datos;for(var i=0;i<xdtUs.length;i++){xCadenaUs=String(xCadenaUs+'<tr class="row" data-id="'+xdtUs[i].idrepartidor+'" data-t="repartidor"><td>'+xdtUs[i].nombre+' '+xdtUs[i].apellido+'</td><td>Repartidor</td><td>'+xdtUs[i].usuario+'</td>'+'<td><span onclick="xBorrarItem(this);" class="xDeleteRow" title="Borrar"></span></td>'+'</tr>');}
 $("#tb_us_re .row").remove();$("#tb_us_re").append(xCadenaUs).trigger('create');});}
+function xBorrarUsuarioOpenDialog(obj){objUsuarioSeleted=obj;dialog_borrar_usuario.open()}
+function xGoBorrarUsuario(){xBorrarItem(objUsuarioSeleted)
+dialog_borrar_usuario.close()}
 function tipoUsuario($event){xThis.showFormRepartidor=$event.selectedIndex===2;}
 Polymer({is:'x-usuarios',properties:{xt_org:Number,xt_idsede:Number,xt_idus:Number,xt_sufijo:String,showFormRepartidor:boolean=false,subscription$:Object},attached:function(){this.selected_us=0;this.showFormRepartidor=false;xThis=this;xIniUsuarios();this.subscription$=onStatusSetUsChangeSede().subscribe(res=>{if(res==true){xIniUsuarios();}});},detached:function(){this.subscription$.unsubscribe();},})/*]]>*/</script>

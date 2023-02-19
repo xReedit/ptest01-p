@@ -308,8 +308,9 @@
 		
 		case 14: // guardar cliente_sede
 			$data = $_POST['data'];
-			$sql = "insert into cliente_sede (idsede, idcliente) values (".$g_idsede.",".$data['idcliente'].")";
+			// $sql = "insert into cliente_sede (idsede, idcliente) values (".$g_idsede.",".$data['idcliente'].")";
 			// echo $sql;
+			$sql= "call procedure_save_new_modifica_cliente(".$data['idcliente'].",".$g_idsede.",'".$data['telefono']."')";
 			$bd->xConsulta($sql); 
 			break;
 

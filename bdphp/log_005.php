@@ -148,16 +148,30 @@
 			// $filtroFechaCount = $fecha === '' ? '' : " and (SUBSTRING_INDEX(c.fecha,' ',1)= '".$fecha."')";
 
 			$sql = "
-				SELECT  c.*, if(LENGTH(c.ruc)>8, 'PJ', 'PN') as tipo 
-					, rp.importe_consumo
+				SELECT  c.idcliente, c.idorg, c.nombres, c.f_nac, c.f_registro, c.ruc, c.direccion, c.credito,c.pwa_id,c.email,c.calificacion,c.direccion_delivery_no_map,c.referencia
+					, if(LENGTH(c.ruc)>8, 'PJ', 'PN') as tipo 
+					, format(cs.importe_consumo,2) importe_consumo
 					, TIMESTAMPDIFF(DAY, CURDATE(), STR_TO_DATE(concat(SUBSTRING(f_nac,1,6), YEAR(NOW())), '%d/%m/%Y')) dias_cumple
 					, if ( c.f_nac = 'null', '',  c.f_nac) f_nacimiento
+					, if(c.telefono = '', cs.telefono, c.telefono) telefono
 				from cliente_sede cs
-					inner join cliente c on cs.idcliente = c.idcliente	
-					left join ( select rp.idcliente, format(sum(rp.total_r), 2) importe_consumo 
-								from pedido rp where rp.idsede = $g_idsede  group by rp.idcliente  ) rp on rp.idcliente = c.idcliente
-				where cs.idsede = $g_idsede$filtrocumple$filtro
-				order by rp.importe_consumo desc, c.nombres asc limit ".$pagination['pageLimit']." OFFSET ".$pagination['pageDesde'];			
+					inner join cliente c on cs.idcliente = c.idcliente						
+				where cs.estado=0 and cs.idsede = $g_idsede $filtrocumple $filtro
+				GROUP by cs.idcliente
+				order by cs.importe_consumo desc, c.nombres asc limit ".$pagination['pageLimit']." OFFSET ".$pagination['pageDesde'];			
+
+				
+			// $sql = "
+			// 	SELECT  c.*, if(LENGTH(c.ruc)>8, 'PJ', 'PN') as tipo 
+			// 		, rp.importe_consumo
+			// 		, TIMESTAMPDIFF(DAY, CURDATE(), STR_TO_DATE(concat(SUBSTRING(f_nac,1,6), YEAR(NOW())), '%d/%m/%Y')) dias_cumple
+			// 		, if ( c.f_nac = 'null', '',  c.f_nac) f_nacimiento
+			// 	from cliente_sede cs
+			// 		inner join cliente c on cs.idcliente = c.idcliente	
+			// 		left join ( select rp.idcliente, format(sum(rp.total_r), 2) importe_consumo 
+			// 					from pedido rp where rp.idsede = $g_idsede  group by rp.idcliente  ) rp on rp.idcliente = c.idcliente
+			// 	where cs.idsede = $g_idsede $filtrocumple $filtro
+			// 	order by rp.importe_consumo desc, c.nombres asc limit ".$pagination['pageLimit']." OFFSET ".$pagination['pageDesde'];			
 
 				// echo $sql;
 			// $sql = "
@@ -176,6 +190,17 @@
 			$rpt = $bd->xConsulta($sql);            
 			print $rpt."**".$rowCount;
 			// echo 'restaurar';
+			break;
+		case 40001: // importe_consumo
+			$pagination = $_POST['pagination'];
+			$sql="call procedure_historial_comsumo_cliente_sede(".$g_idsede.",".$pagination['pageDesde'].",".$pagination['pageLimit'].")";			
+			//echo $sql;
+			$rpt = $bd->xConsulta($sql);
+			break;
+		case 40002: // elminar cliente sede
+			$idcliente_sede = $_POST['id'];
+			$sql="update cliente_sede set estado=1 where idcliente=".$idcliente_sede;						
+			$rpt = $bd->xConsulta($sql);
 			break;
 		case 401:// historial cliente
 			// $sql = "select idcliente, STR_TO_DATE(fecha, '%d/%m/%Y') fecha, fecha as fecha_mostrar, total  from registro_pago where idcliente=".$_POST['i']." and idsede=$g_idsede and estado=0";
@@ -1578,7 +1603,14 @@
 				break;
 			
 			case 23: // verifica si hay cajas abiertas - control de pedidos
-				$sql = "select count(idregistro_pago) cant from registro_pago rp where idsede = $g_idsede and STR_TO_DATE(fecha, '%d/%m/%Y') = CURDATE() and idusuario!=$g_idusuario and cierre=0 order by idregistro_pago desc limit 1";
+				// $sql = "select count(idregistro_pago) cant from registro_pago rp where idsede = $g_idsede and STR_TO_DATE(fecha, '%d/%m/%Y') = CURDATE() and idusuario!=$g_idusuario and cierre=0 order by idregistro_pago desc limit 1";
+				$sql = "select u.nombres, FORMAT(sum(rp.total), 2) importe from registro_pago rp 
+							inner join usuario u on u.idusuario = rp.idusuario 
+						where rp.idsede = $g_idsede 
+							and rp.cierre=0 
+							and STR_TO_DATE(rp.fecha, '%d/%m/%Y') = CURDATE() 
+							and rp.idusuario!=$g_idusuario
+						GROUP by rp.idusuario";
 				$bd->xConsulta($sql);
 				break;
 	}
