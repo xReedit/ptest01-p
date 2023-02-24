@@ -83,3 +83,4 @@ function objectifyForm(formArray){var returnArray={};for(var i=0;i<formArray.len
 return returnArray;}
 function pantallaCompleta(){var elem=document.documentElement;if(!window.screenTop&&!window.screenY){if(elem.mozRequestFullScreen){elem.mozRequestFullScreen();}else if(elem.webkitRequestFullscreen){elem.webkitRequestFullscreen();}}else{if(document.mozCancelFullScreen){document.mozCancelFullScreen();}else if(document.webkitExitFullscreen){document.webkitExitFullscreen();}}}
 async function xSendEmailClienteSES(params){const _url=URL_SERVER+'delivery/send-email-ses';await $.ajax({type:'POST',url:_url,data:{msj:params}}).done((res)=>{return res;});}
+function xCalcMontoBaseIGV(importeTotal,procentaje_IGV){return parseFloat(parseFloat(importeTotal)/(1+procentaje_IGV)).toFixed(2)}
