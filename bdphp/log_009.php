@@ -220,5 +220,13 @@
             $sql="update producto set estado = 1 WHERE idproducto = $postBody->idproducto";
             $bd->xConsulta($sql);
             break;
+        case 20: // guardar pago repartidor
+            $postBody = json_decode(file_get_contents('php://input'));
+            $list = $postBody->list;
+            // $list = json_encode($postBody->list);
+            // $sql="call procedure_registra_pago_repartidor($g_idsede,$g_us,$postBody->id,'$list')";
+            $sql="call procedure_registra_pago_repartidor($g_idsede,$g_us,$postBody->id,'$list')";
+            $bd->xConsulta($sql);
+            break;
     }
 ?>    

@@ -96,7 +96,7 @@ xThisPago.setVisibleContainerPago();}}else{xVerContainerPago();}}
 e.stopPropagation();e.stopImmediatePropagation();});xtipoP=[];var xdif_text='',xPase=0;xCompTableFP=document.getElementById('comp-table-fp');xCompTableFP.addEventListener('xCompTableChange',function(e){const evento=e.detail.evento;xtipoP=e.detail.datos;const xsuma_total=e.target.valImporteRestante;if(xsuma_total<=0){xdif_text='Vuelto: '+xMoneda((xsuma_total*-1));$("#pdif").removeClass('pdif_rojo');$("#pdif").addClass('pdif_verde');xPase=1;xThisPago.change_monto_pago_valid=true;}else{xdif_text='Falta: '+xMoneda(xsuma_total);$("#pdif").removeClass('pdif_verde');$("#pdif").addClass('pdif_rojo');xPase=0;if(xsuma_total>0){xThisPago.change_monto_pago_valid=false;}}
 xThisPago.diferencia=xdif_text;xThisPago.tipoPagoRequiereCliente=xtipoP.filter(x=>x.reqcliente==="1").length>0?true:false;if(xThisPago.clienteModel&&xThisPago.tipoPagoRequiereCliente){xThisPago.tipoPagoRequiereCliente=xThisPago.clienteModel.nombres===''?true:false;}
 xFireSend(xPase)
-if(evento&&evento.keyCode===13){xListoRegistraPago();}});}
+if(evento&&evento.keyCode===13){xListoRegistraPago();}});xCompTableFP.addEventListener('xCompTableAddRemoveRow',()=>{xThisPago.fire('ChangeListPagoAddRemoveRow',xThisPago.tipoComprovanteSelecionado);})}
 async function xValidarDNIRUC(valor,e,tecla=true,buscarSoloSunat=false){var servicio='ruc';valor=valor?valor:sel_cliente.value;xThisPago.mensajeErrorDocumento='';if(!xThisPago.$.sel_cliente.validate()){xThisPago.$.sel_cliente.invalid=true;xThisPago.mensajeErrorDocumento='Solo numeros';return;}
 if(xThisPago.ComprobanteRequiereCliente&&e.keyCode!==13&&tecla===true){if(xThisPago.tipoComprovanteSelecionado.codsunat==='01'){xThisPago.placeholder_clie='Cliente RUC';if(valor.length<11){xThisPago.$.sel_cliente.invalid=true;xThisPago.mensajeErrorDocumento='Nro de RUC no valido';}}else{xThisPago.placeholder_clie='Cliente DNI o RUC';}
 _inputAutocompleteObj.inputValue='';$("#clie_direccion").val('');$("#clie_telefono").val('');xIdCliente_pago='';EmitirValidacionFormCliente();return;}
@@ -116,7 +116,7 @@ xThisPago.valid_form_cliente_pago=validForm;xThisPago.fire('xFormClienteValid',v
 function EmitirValidacionFormMontoPago(val){}
 function xCancelarCerrar(){xThisPago.fire('xCancelarCerrar',true);}
 function xListoRegistraPago(){if(!xThisPago.change_monto_pago_valid){return}
-if(registrando)return;registrando=true;xSumarTotales_row();xThisPago.fire('xListoRegistraPago',true);setTimeout(()=>{registrando=false;try{_cpSocketVentaRegistrado();}catch(error){}},2000);}
+if(registrando)return;registrando=true;xSumarTotales_row();xThisPago.fire('xListoRegistraPago',true);xThisPago.fire('xListoRegistraPagoRpt',xtipoP);setTimeout(()=>{registrando=false;try{_cpSocketVentaRegistrado();}catch(error){}},2000);}
 function xSumarTotales_row(){}
 function xFireSend(xPase){var nom_nota=$("#sel_cliente").val(),xRpts=[];xThisPago.clienteModel={'idcliente':xIdCliente_pago,'num_doc':$("#sel_cliente").val(),'nombres':_inputAutocompleteObj.inputValue,'direccion':$("#clie_direccion").val(),'telefono':$("#clie_telefono").val(),}
 const _clienteRptBD=xThisPago.changeDatosClienteSave;let is_update_cliente=true;if(_clienteRptBD){is_update_cliente=_clienteRptBD?.direccion!==xThisPago.clienteModel.direccion;is_update_cliente=_clienteRptBD.telefono!==xThisPago.clienteModel.telefono;}

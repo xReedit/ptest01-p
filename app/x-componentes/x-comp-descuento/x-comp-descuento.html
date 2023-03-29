@@ -12,14 +12,14 @@
 <div class="animate__animated animate__fadeIn animate__faster" hidden$="[[ !showDetalle ]]">
 <div class="d-flexx align-content-center justify-content-end">
 <div class="pr-1">
-<select class="selected-template-1 fs-15" onchange="selectedDsc(this)">
+<select class$="[[classselect]]" onchange="selectedDsc(this)">
 <template is="dom-repeat" items="{{listTipoConceptos}}" as="item">
 <option value="{{ item.idtipo_descuento }}">{{ item.descripcion }}</option>
 </template>
 </select>
 </div>
 <div class="content-text-improte pr-1">
-<input type="text" class="text_importe fs-16" id="txt_imp_dsc" autocomplete="off" onkeyup="xCalcImporteDsc()">
+<input type="text" class="text_importe fs-16" id="txt_imp_dsc" autocomplete="off" onblur="xFocusInputDescuento(false)" onfocus="xFocusInputDescuento(true)" onkeyup="xCalcImporteDsc()">
 </div>
 <div class="pl-1">
 <button class="btn btn-sm btn-danger" onclick="xShowDetalleDsc()">
@@ -32,20 +32,21 @@
 </template>
 </dom-module>
 <style>.btn-descuento{border:1px solid #bdbdbd;border-radius:3px;align-items:center;width:160px;display:flex;cursor:pointer}.btn-descuento:hover{background:#eee}.content-text-improte{border:1px solid #bdbdbd;border-radius:3px;display:flex;align-items:center;max-width:100px}.content-text-improte:hover{background:#eee}.text_importe{border:0;text-align:end!important;max-width:90px}.text_importe:focus{outline:0}</style>
-<script>var xThisCompDesc,datauSPerDsc,paseAccPer=false,keyDscStorage='::app3_sys_tpdsc',tipoDscSelected,importeInicial=0,lastValCalc=0,xPermisoSupervisorDsc;function xShowDetalleDsc(){xThisCompDesc.showDetalle=!xThisCompDesc.showDetalle;if(xThisCompDesc.showDetalle){txt_imp_dsc.value='';txt_imp_dsc.focus();}else{xThisCompDesc.fire('changeDescuento',{'value':0,'descripcion':'','isAgregar':false});}}
+<script>var xThisCompDesc,datauSPerDsc,paseAccPer=false,keyDscStorage='::app3_sys_tpdsc',tipoDscSelected,importeInicial=0,lastValCalc=0,xPermisoSupervisorDsc;function xShowDetalleDsc(){xThisCompDesc.showDetalle=!xThisCompDesc.showDetalle;if(xThisCompDesc.showDetalle){xThisCompDesc.$.txt_imp_dsc.value='';xThisCompDesc.$.txt_imp_dsc.focus();}else{xThisCompDesc.fire('changeDescuento',{'value':0,'descripcion':'','isAgregar':false});}}
 function xVerificarPermisoDscUsuario(){paseAccPer=datauSPerDsc.per.indexOf('Pe5')>-1;if(!paseAccPer){xPSupervisor.setVal('Pe5');xPSupervisor.addEventListener('xSendPe5',function(e){var p=e.detail.xRpts[0].p;if(p===1){xPermisoSupervisorDsc=e.detail.xRpts[0].us;xShowDetalleDsc();return;}});pass_us.open();return;}
 xShowDetalleDsc();}
-function xResetCompDsc(){xThisCompDesc.showDetalle=false;txt_imp_dsc.value='';lastValCalc=0;}
-function xLoadTipoDsc(){var paseDsc=false;var _dtDscStorage=localStorage.getItem(keyDscStorage);txt_imp_dsc.value===''
+function xResetCompDsc(){xThisCompDesc.showDetalle=false;xThisCompDesc.$.txt_imp_dsc.value='';lastValCalc=0;}
+function xLoadTipoDsc(){var paseDsc=false;var _dtDscStorage=localStorage.getItem(keyDscStorage);xThisCompDesc.$.txt_imp_dsc.value===''
 if(_dtDscStorage){try{xThisCompDesc.listTipoConceptos=JSON.parse(_dtDscStorage);paseDsc=true;tipoDscSelected=xThisCompDesc.listTipoConceptos[0];}catch(error){paseDsc=false}}
 if(paseDsc){return;}
 $.ajax({type:'GET',url:'../../bdphp/log_componentes.php?op=14'}).done(function(res){res=JSON.parse(res)
 if(!res.success){console.log('error',res);return;}
 xThisCompDesc.listTipoConceptos=res.datos;tipoDscSelected=xThisCompDesc.listTipoConceptos[0];localStorage.setItem(keyDscStorage,JSON.stringify(res.datos));});}
-function selectedDsc(obj){tipoDscSelected=xThisCompDesc.listTipoConceptos[obj.selectedIndex];xCalcImporteDsc();txt_imp_dsc.focus();try{txt_imp_dsc.selected();}catch(error){}}
-function xCalcImporteDsc(){const isDestPorcentaje=tipoDscSelected.idtipo_descuento==='2';var rptCalc=0,descripcionDesct='';var importeTotalPedido=xThisCompDesc.importeventa;importeInicial=txt_imp_dsc.value===''?0:importeInicial;if(importeInicial===0){importeInicial=importeTotalPedido+lastValCalc;}
-var limiteCantidadDsc=isDestPorcentaje?100:importeInicial;var valtxt=parseFloat(txt_imp_dsc.value)||0;if(valtxt===lastValCalc){return;}
-if(valtxt>limiteCantidadDsc){valtxt=limiteCantidadDsc;txt_imp_dsc.value=valtxt;}
+function selectedDsc(obj){tipoDscSelected=xThisCompDesc.listTipoConceptos[obj.selectedIndex];xCalcImporteDsc();xThisCompDesc.$.txt_imp_dsc.focus();try{xThisCompDesc.$.txt_imp_dsc.selected();}catch(error){}}
+function xCalcImporteDsc(){const isDestPorcentaje=tipoDscSelected.idtipo_descuento==='2';var rptCalc=0,descripcionDesct='';var importeTotalPedido=xThisCompDesc.importeventa;importeInicial=xThisCompDesc.$.txt_imp_dsc.value===''?0:importeInicial;if(importeInicial===0){importeInicial=importeTotalPedido+lastValCalc;}
+var limiteCantidadDsc=isDestPorcentaje?100:importeInicial;var valtxt=parseFloat(xThisCompDesc.$.txt_imp_dsc.value)||0;if(valtxt===lastValCalc){return;}
+if(valtxt>limiteCantidadDsc){valtxt=limiteCantidadDsc;xThisCompDesc.$.txt_imp_dsc.value=valtxt;}
 if(isDestPorcentaje){rptCalc=Math.round((importeInicial*(valtxt/100)),2);rptCalc=rptCalc>importeInicial?importeInicial:rptCalc;descripcionDesct=valtxt+'%';}else{rptCalc=valtxt;}
 lastValCalc=rptCalc;xThisCompDesc.fire('changeDescuento',{'value':rptCalc,'descripcion':descripcionDesct,'isAgregar':true});}
-Polymer({is:'x-comp-descuento',properties:{showDetalle:Boolean,listTipoConceptos:[],importeventa:{type:Number,notify:true,reflectToAttribute:true,value:0}},attached:function(){this.showDetalle=false;xThisCompDesc=this;datauSPerDsc=xm_log_get('app3_us');xLoadTipoDsc();},reset:()=>{xResetCompDsc();}})</script>
+function xFocusInputDescuento(value){xThisCompDesc.fire('focus-input',value)}
+Polymer({is:'x-comp-descuento',properties:{showDetalle:Boolean,listTipoConceptos:[],importeventa:{type:Number,notify:true,reflectToAttribute:true,value:0},classselect:{type:String,value:'selected-template-1 fs-15'}},attached:function(){this.showDetalle=false;xThisCompDesc=this;datauSPerDsc=xm_log_get('app3_us');xLoadTipoDsc();},reset:()=>{xResetCompDsc();},setVisible:(value)=>{xThisCompDesc.showDetalle=value;}})</script>

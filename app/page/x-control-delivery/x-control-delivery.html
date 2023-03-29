@@ -9,6 +9,10 @@
 <div class="xContent" style="padding:0 20px 0 5px" id="content_xpago_delivery">
 </div>
 </paper-dialog>
+<paper-dialog id="dialog_registrar_pago_repartidor" class="dialog_redondo" style="min-width:320px" entry-animation="scale-up-animation" exit-animation="fade-out-animation" with-backdrop>
+<div class="xContent" style="padding:0 20px 0 5px" id="content_xpago_repartidor">
+</div>
+</paper-dialog>
 <div class="p-3" style="max-width:1200px!important;min-width:750px!important;margin:0 auto">
 <div class="d-flexx justify-content-between align-items-center mb-1">
 <h3>Control de Delivery</h3>
@@ -177,6 +181,9 @@
 <div hidden$="[[ !item.isShowPedidoCobrado ]]">
 <p class="badge badge-success"><i class="fa fa-check"></i> Pagado</p>
 </div>
+<div hidden$="[[ !item.isShowPedidoAnulado ]]">
+<p class="badge badge-danger"><i class="fa fa-check"></i> Anulado</p>
+</div>
 </td>
 <td align="right">
 <div hidden$="[[ item.isShowPedidoCobrado ]]">
@@ -202,7 +209,11 @@
 </th>
 <th align="right">
 <p>Total</p>
-<p class="fs-9 text-secondary">Importe total - Costo Delivery</p>
+<p class="fs-9 text-secondary">Total - Delivery</p>
+</th>
+<th align="right">
+<p>Por Pagar</p>
+<p class="fs-9 text-secondary">Importe total a pagar</p>
 </th>
 </thead>
 <body>
@@ -230,16 +241,36 @@
 </div>
 </template>
 </td>
-<td align="right" class="fw-600 fs-18">{{ item.pedidos.importe_total }}</td>
+<td align="right">
+<p class="fw-600 fs-18">{{ item.pedidos.importe_total }}</p>
+</td>
 <td align="right" class="fw-600 fs-18">{{ item.pedidos.entrega }}</td>
-<td align="right" class="fw-600 fs-18">{{ item.pedidos.total }}</td>
+<td align="right">
+<p class="fw-600 fs-18">{{ item.pedidos.total }}</p>
+<div class="fw-600 fs-14 text-warning" hidden$="[[!item.pedidos.showImportePagado]]">
+<span class="fs-10">Pagado: </span>
+<span>{{ item.pedidos.importe_pagado }}</span>
+</div>
+</td>
+<td align="right" class="fw-600 fs-18">
+<div hidden$="[[!item.pedidos.showBtnRegistroPago]]">
+<p class="fw-600 fs-18">{{ item.pedidos.importe_pagar }}</p>
+<button data-id="{{item}}" class="btn btn-sm fs-11 btn-flat sky mt-1" onclick="xRegistrarPagoRepartidor(this)">Registrar Pago</button>
+</div>
+<div class="text-center" hidden$="[[item.pedidos.showBtnRegistroPago]]">
+<i class="fa fa-check text-success fa-2x"></i>
+</div>
+</td>
 </tr>
 </template>
 <tr>
 <td colspan="3" class="p-3 fs-18">Total</td>
-<td align="right" class="fw-600 fs-18">{{convertRowFixed(listResumenDeliveryTotales.importe_total)}}</td>
+<td align="right">
+<p class="fw-600 fs-18">{{convertRowFixed(listResumenDeliveryTotales.importe_total)}}</p>
+</td>
 <td align="right" class="fw-600 fs-18">{{convertRowFixed(listResumenDeliveryTotales.entrega)}}</td>
 <td align="right" class="fw-600 fs-18">{{convertRowFixed(listResumenDeliveryTotales.total)}}</td>
+<td align="right" class="fw-600 fs-18">{{convertRowFixed(listResumenDeliveryTotales.importe_pagar)}}</td>
 </tr>
 </body>
 </table>
@@ -253,7 +284,8 @@
 <script>/*<![CDATA[*/var xThisCDelivery,repartidorListSeleted,htmlDivPagoCP,xRpt_pagoCD,lastIdPedidoDeliverySearch=0,xfecha_delivery_selected='';function xIniControlDelivery(){xThisCDelivery.arrSedeInfo=xm_log_get('datos_org_all_sede')[0];$(".js-select2").select2({placeholder:"Aplicar Filtro",allowHtml:true,allowClear:true,tags:true,width:"100%",});$(".js-select2").on("change",(e)=>{const _arrOpSelected=[...e.target.selectedOptions].map(i=>JSON.parse(i.value));xCDSetFilterList(_arrOpSelected);})
 compPickDateDelivery=$('#txt_fecha_delivery').pickadate({format:'dd mmm yyyy',today:'Hoy',clear:'Todos',close:'Cerrar',onSet:function(context){const xfecha_delivery_selected=context.select?new Date(context.select).toLocaleDateString():'';xCDSearchAllPedidos(xfecha_delivery_selected)}});xPopupLoad.xopen();$(document).on('selected','.comp-list-repartidor',function(e){repartidorListSeleted=e.detail;});$("#dialog_comprobante_delivery").on('iron-overlay-closed',function(){xbuscar_mesa=false;xCDRestaurarXPagoCP();});$("#dialog_detalle").on('iron-overlay-opened',function(){xbuscar_mesa=true;});$("#select_tab_cd").on('iron-select',function(e){switch(xThisCDelivery.selectedTab){case 1:xCDRepartidorResumen();break;}
 e.stopPropagation();e.stopImmediatePropagation();});xCDSearchAllPedidos();xCDgetAllRepartidor();}
-function xCDSearchAllPedidos(_fecha=''){$.ajax({type:'POST',url:'../../bdphp/log_009.php?op=7',data:{fecha:_fecha}}).done(function(res){res=JSON.parse(res);xThisCDelivery.listDeliveryPedido=xCDCocinarDataItemPedido(res.datos);xPopupLoad.xclose();xCDSetChangeListDelivery();});}
+function xCDSearchAllPedidos(_fecha=''){if(_fecha==''){_fecha=xDevolverFecha();txt_fecha_delivery.value=_fecha}
+$.ajax({type:'POST',url:'../../bdphp/log_009.php?op=7',data:{fecha:_fecha}}).done(function(res){res=JSON.parse(res);xThisCDelivery.listDeliveryPedido=xCDCocinarDataItemPedido(res.datos);xPopupLoad.xclose();xCDSetChangeListDelivery();});}
 function xCDSearchItemPedido(_idpedido){var objSend='';if(_idpedido){objSend={idpedido:_idpedido}}
 $.ajax({type:'POST',url:'../../bdphp/log_009.php?op=7',data:{obj:objSend}}).done(function(res){res=JSON.parse(res);const _rowItemAdd=xCDCocinarDataItemPedido(res.datos,true)
 xThisCDelivery.listDeliveryPedido.unshift(_rowItemAdd[0]);xCDSetChangeListDelivery();});}
@@ -262,7 +294,7 @@ var _nunRows=indexList?xThisCDelivery.listDeliveryPedido.length+1:rowData.length
 if(_isAutoCallRepartidor){x.pwa_delivery_habilitar_llamar_repartidor_papaya='1';x.flag_solicita_repartidor_papaya='1';}
 if(isDataJson){var _subTotales=x.json_datos_delivery.p_subtotales;_subTotales=_isRepartoPropio?_subTotales:darFormatoSubTotalesDelivery(_subTotales);x.json_datos_delivery.p_subtotales=_subTotales;x.total=_subTotales.filter(x=>x.descripcion.toUpperCase()==='TOTAL')[0].importe;x.total=parseFloat(x.total).toFixed(2);}
 x.showRepartidor=!!x.nom_repartidor;x.isRepartidorPapaya=x.sede_repartidor==='0';x.isRepartidorPapaya=x.idrepartidor?x.isRepartidorPapaya:null;x.nom_repartidor=x.showRepartidor?toTitleCase(x.nom_repartidor):'';x.isShowCallRepartidor=isDataJson?_isShowBtnCallRepartidor:false;x.isShowLoaderSearchRepartor=x.flag_solicita_repartidor_papaya=='1';x.isShowBtnCancelarSolicitud=false;x.isShowBtnCancelarSolicitudContador=0;var _labelEstado='En Proceso',classEstado='badge badge-secondary';switch(x.pwa_estado){case'R':_labelEstado='En Camino';classEstado='badge badge-warning';break;case'E':_labelEstado='Entregado';classEstado='badge badge-success';break;}
-x.classEstado=classEstado;x.labelEstado=_labelEstado;x.isShowPedidoCobrado=x.estado=='2';x.isShowPedidoCobrado=x.estado=='2';x.num_comprobante=isDataJson?x.json_datos_delivery.p_header.num_comprobante:null;x.isShowNumComprobante=!!x.num_comprobante;x.num=_nunRows;x.classNewRow=classNewRow;_nunRows--;return x;});}
+x.classEstado=classEstado;x.labelEstado=_labelEstado;x.isShowPedidoCobrado=x.estado=='2';x.isShowPedidoAnulado=x.estado=='3';x.num_comprobante=isDataJson?x.json_datos_delivery.p_header.num_comprobante:null;x.isShowNumComprobante=!!x.num_comprobante;x.num=_nunRows;x.classNewRow=classNewRow;_nunRows--;return x;});}
 function xCDLoaderSolicitaRepartidorPapaya(obj){const _rowItem=xCDGetItemListDelivery(obj);_rowItem.flag_solicita_repartidor_papaya=1;_rowItem.isShowLoaderSearchRepartor=true;_rowItem.isShowBtnCancelarSolicitud=true;_rowItem.isShowBtnCancelarSolicitudContador=6;xCDSetChangeListDelivery(_rowItem);xCDTimerShowBtnCancelSOlicitudRepartidor(_rowItem.idpedido);}
 function xCDTimerShowBtnCancelSOlicitudRepartidor(_id){const _rowItem=xCDGetItemListDeliveryById(_id);const _contadorTimer=setInterval(()=>{_rowItem.isShowBtnCancelarSolicitudContador--;if(_rowItem.isShowBtnCancelarSolicitudContador===0){xCDSolicitarRepartidorPapaya(_rowItem.idpedido);xCDSetChangeListDelivery(_rowItem);clearInterval(_contadorTimer);}},1000);}
 async function xCDSolicitarRepartidorPapaya(_id){const _rowItem=xCDGetItemListDeliveryById(_id);if(!_rowItem.isShowLoaderSearchRepartor){return;}
@@ -281,7 +313,8 @@ async function xCDOpenListRepartidor(obj){const _paramsSwalAlert=paramsSwalAlert
 function xCDAsignarRepartidorManual(_repartidor,_rowItemPedido){$.ajax({type:'POST',url:'../../bdphp/log_005.php?op=1301',data:{idrepartidor:_repartidor.idrepartidor,idpedido:_rowItemPedido.idpedido}}).done(function(res){_rowItemPedido.idrepartidor=_repartidor.idrepartidor;_cpSocketNoiticaRepartidorFromComercio(_rowItemPedido);try{const payloadRepartidor=[{nombre:_rowItemPedido.json_datos_delivery.p_header.arrDatosDelivery.nombres,telefono:_rowItemPedido.json_datos_delivery.p_header.arrDatosDelivery.telefono,establecimiento:_rowItemPedido.json_datos_delivery.p_header.arrDatosDelivery.establecimiento.nombre,idpedido:_rowItemPedido.idpedido,repartidor_nom:_repartidor.nombre,repartidor_telefono:_repartidor.telefono}];_cpSocketNoiticaClienteRepartidorAsignado(payloadRepartidor);}catch(error){console.log(error);}});}
 function xCDOpenDetallePedido(obj){const _rowItem=xCDGetItemListDelivery(obj);xThisCDelivery.lastObjBtnVer=$(obj).parents('tr');$(obj).attr('data-numpedido',_rowItem.numpedido);$(obj).attr('data-correlativo',_rowItem.correlativo_dia);$(obj).attr('data-idcat',_rowItem.idcategoria);$(obj).attr('data-from','control-delivery');$(obj).attr('data-isconfirmarpago','0');$(obj).attr('data-nummesa','0');xThisCDelivery.rowItemSeleted=_rowItem;xLoadDetallesPedido(obj);}
 function xCDOpenEmitirComprobante(obj){const _rowItem=xCDGetItemListDelivery(obj);xThisCDelivery.rowItemSeleted=_rowItem;$('#div_pago').empty();$('#content_xpago_delivery').html('<x-pago id="component_pago_delivery"></x-pago>').trigger('create');xPopupLoad.xopen();setTimeout(()=>{xbuscar_mesa=true;xComoPagoDelivery=document.getElementById('component_pago_delivery');xComoPagoDelivery.addEventListener('xSend',function(e){xRpt_pagoCD=e.detail.xRpts;});xComoPagoDelivery.addEventListener('xCancelarCerrar',function(e){dialog_comprobante_delivery.close()});xComoPagoDelivery.addEventListener('xListoRegistraPago',function(e){xCDGoEmitirComprobante();});xComoPagoDelivery.addEventListener('xSelectTipoComprobante',function(e){dialog_comprobante_delivery.center();});xComoPagoDelivery.addEventListener('xFormClienteValid',function(e){dialog_comprobante_delivery.center();});component_pago_delivery.setVal(xMoneda(parseFloat(_rowItem.total)));component_pago_delivery.setTelefonoCliente(_rowItem.tel_cliente);component_pago_delivery.setModoSoloComprobante();xPopupLoad.xclose();dialog_comprobante_delivery.open();},500);}
-function xCDRestaurarXPagoCP(){$('#content_xpago_delivery').empty();setTimeout(()=>{$('#div_pago').html('<x-pago id="component_pago"></x-pago>').trigger('create');},500);}
+function xCDRestaurarXPagoCP(){$('#content_xpago_delivery').empty();$('#content_xpago_repartidor').empty();setTimeout(()=>{$('#div_pago').html('<x-pago id="component_pago"></x-pago>').trigger('create');},500);}
+function xCDQuitarXPagoCP(){$('#div_pago').empty();}
 function xCDGoEmitirComprobante(){var arr_cliente=xRpt_pagoCD[0].cliente;var arr_comprobante=xRpt_pagoCD[0].comprobante;const _pedido=xThisCDelivery.rowItemSeleted.json_datos_delivery.p_body;const _subTotales=xThisCDelivery.rowItemSeleted.json_datos_delivery.p_subtotales;const arrayItems=xEstructuraItemsJsonPedidoDelivery(_pedido);xPopupLoad.xopen();$.ajax({type:'POST',url:'../../bdphp/log_001.php',data:{p_from:'fe',p_comprobante:arr_comprobante,idregistro_pago:'0'}}).done(function(xrpt_correlativo){const _arrRpt=xm_all_SetResponseLog_001(xrpt_correlativo);arr_comprobante.correlativo=xCeroIzqNumComprobante(_arrRpt.correlativo_comprobante);xCocinarImprimirComprobante(arrayItems,_subTotales,arr_comprobante,arr_cliente,0,-2);const _rowItem=xCDGetItemListDeliveryById(xThisCDelivery.rowItemSeleted.idpedido);_rowItem.num_comprobante=`${arr_comprobante.descripcion.substr(0,1).toUpperCase()}${arr_comprobante.serie}-${_arrRpt.correlativo_comprobante}`;_rowItem.isShowNumComprobante=true;xCDSetChangeListDelivery(_rowItem);$.ajax({type:'POST',url:'../../bdphp/log_002.php',data:{op:'12',id:_rowItem.idpedido,num_comprobante:_rowItem.num_comprobante}})
 dialog_comprobante_delivery.close();xPopupLoad.xclose();});}
 function xCDRemoveItemRow(payload){const _rowItem=xCDGetItemListDeliveryById(payload.idpedido);if(!_rowItem){return;}
@@ -309,9 +342,25 @@ function xCDGetFilteredCodes(array,key,value){return array.filter((o)=>o[key]===
 function xCDInfoResumen(){const _list=xThisCDelivery.listDeliveryPedidoFilter;const _numPedidos=_list.length
 const _numEntregados=_list.filter(x=>x.labelEstado.toLowerCase()==='entregado').length;const _numEnCamino=_list.filter(x=>x.labelEstado.toLowerCase()==='en camino').length;const _numEnProceso=_list.filter(x=>x.labelEstado.toLowerCase()==='en proceso').length;const _numAsignados=_list.filter(x=>x.idrepartidor).length;const _numSinAsignar=_list.filter(x=>!x.idrepartidor).length;const _importe=_list.map(x=>parseFloat(x.total)).reduce((a,b)=>a+b,0);const _arr={num_pedidos:_numPedidos,num_entregados:_numEntregados,num_camino:_numEnCamino,num_proceso:_numEnProceso,num_asignados:_numAsignados,num_asignar:_numSinAsignar,importe:numeroConComas(_importe.toFixed(2))}
 xThisCDelivery.arrInfo=JSON.parse(JSON.stringify(_arr))}
-function xCDRepartidorResumen(){const _list=xThisCDelivery.listDeliveryPedido;var _listRepartidor=[];var _listTotalesResumen={importe_total:0,entrega:0,total:0}
-_list.filter(x=>x.idrepartidor).map(x=>{if(!_listRepartidor.find(i=>i.idrepartidor===x.idrepartidor)){const _filterRepartidor=_list.filter(z=>z.idrepartidor===x.idrepartidor)
-const _costoEntrega=x.isRepartidorPapaya?_filterRepartidor.filter(z=>z.idtipo_pago!==2).map(z=>{try{return parseFloat(z.json_datos_delivery.p_header.arrDatosDelivery.costoTotalDelivery)}catch(error){return 0;}}).reduce((a,b)=>a+b,0):_filterRepartidor.map(z=>{try{const _subTotal=z.json_datos_delivery.p_subtotales;return _subTotal.filter(s=>s.descripcion.toLowerCase().indexOf('delivery')>-1).map(s=>parseFloat(s.importe)).reduce((a,b)=>a+b,0);}catch(error){return 0;}}).reduce((a,b)=>a+b,0)
-const _rowRepartidor={idrepartidor:x.idrepartidor,nom_repartidor:x.nom_repartidor,tel_repartidor:x.tel_repartidor,isRepartidorPapaya:x.isRepartidorPapaya,cant_pedidos:_filterRepartidor.length,pedidos:{metodoPago:[],importe_total:_filterRepartidor.map(z=>parseFloat(z.total)).reduce((a,b)=>a+b,0),entrega:isNaN(_costoEntrega)?0:_costoEntrega,total:0}};var _metodoPago=[];xThisCDelivery.listTipoPagoFilter.map(tp=>{const _row={idtipo_pago:tp.idtipo_pago,descripcion:tp.descripcion,importe:_filterRepartidor.filter(z=>z.idtipo_pago===tp.idtipo_pago).map(z=>parseFloat(z.total)).reduce((a,b)=>a+b,0)}
-_metodoPago.push(_row);});_rowRepartidor.pedidos.metodoPago=_metodoPago.filter(z=>z.importe>0);_rowRepartidor.pedidos.total=_rowRepartidor.pedidos.importe_total-_rowRepartidor.pedidos.entrega;_rowRepartidor.pedidos.total=_rowRepartidor.pedidos.total.toFixed(2);_rowRepartidor.pedidos.importe_total=_rowRepartidor.pedidos.importe_total.toFixed(2);_rowRepartidor.pedidos.entrega=_rowRepartidor.pedidos.entrega.toFixed(2);_listTotalesResumen.importe_total+=parseFloat(_rowRepartidor.pedidos.importe_total);_listTotalesResumen.entrega+=parseFloat(_rowRepartidor.pedidos.entrega);_listTotalesResumen.total+=parseFloat(_rowRepartidor.pedidos.total);_listRepartidor.push(_rowRepartidor);}});xThisCDelivery.listResumenDeliveryTotales=_listTotalesResumen;xThisCDelivery.listResumenDelivery=_listRepartidor;}
-Polymer({is:'x-control-delivery',properties:{listDeliveryPedido:[],listDeliveryPedidoFilter:[],listResumenDelivery:[],listResumenDeliveryTotales:[],selectedTab:Number,listRepartidor:[],listTipoPagoFilter:[],listUsuarioFilter:[],listEstadoFilter:[],listCondicionFilter:[],rowItemSeleted:[],arrInfo:[],arrSedeInfo:[],lastObjBtnVer:Object},attached:function(){this.selectedTab=0;_cpSocketOpen();xThisCDelivery=this;},detached:function(){_cpSocketClose();},ini:()=>{xIniControlDelivery();},convertRowFixed:(obj)=>{return obj.toFixed(2)}})/*]]>*/</script>
+function xCDRepartidorResumen(){const _list=xThisCDelivery.listDeliveryPedido;var _listRepartidor=[];var _listTotalesResumen={importe_total:0,entrega:0,total:0,importe_pagado:0,importe_pagar:0}
+_list.filter(x=>x.idrepartidor).map(x=>{if(!_listRepartidor.find(i=>i.idrepartidor===x.idrepartidor)){const _filterRepartidor=_list.filter(z=>z.idrepartidor===x.idrepartidor&&z.estado!=='3')
+const _costoEntrega=x.isRepartidorPapaya?_filterRepartidor.filter(z=>z.idtipo_pago!==2).map(z=>{try{return parseFloat(z.json_datos_delivery.p_header.arrDatosDelivery.establecimiento.c_servicio)}catch(error){return 0;}}).reduce((a,b)=>a+b,0):_filterRepartidor.map(z=>{try{const _subTotal=z.json_datos_delivery.p_subtotales;return _subTotal.filter(s=>s.descripcion.toLowerCase().indexOf('delivery')>-1||s.descripcion.toLowerCase().indexOf('entrega')>-1).map(s=>parseFloat(s.importe)).reduce((a,b)=>a+b,0);}catch(error){return 0;}}).reduce((a,b)=>a+b,0)
+const _sumCostoEntrega=!x.isRepartidorPapaya?0:_costoEntrega
+const _rowRepartidor={idrepartidor:x.idrepartidor,nom_repartidor:x.nom_repartidor,tel_repartidor:x.tel_repartidor,isRepartidorPapaya:x.isRepartidorPapaya,cant_pedidos:_filterRepartidor.length,listIdPedidos:_filterRepartidor.map(x=>x.idpedido).join(','),pedidos:{metodoPago:[],importe_total:_filterRepartidor.map(z=>parseFloat(z.total)).reduce((a,b)=>a+b,0)+_sumCostoEntrega,entrega:isNaN(_costoEntrega)?0:_costoEntrega,total:0,importe_pagado:_filterRepartidor.filter(x=>x.estado=='2').map(z=>parseFloat(z.total)).reduce((a,b)=>a+b,0)+_sumCostoEntrega,importe_pagar:0,showImportePagado:false,showBtnRegistroPago:false,}};var _metodoPago=[];xThisCDelivery.listTipoPagoFilter.map(tp=>{const _row={idtipo_pago:tp.idtipo_pago,descripcion:tp.descripcion,importe:_filterRepartidor.filter(z=>z.idtipo_pago===tp.idtipo_pago).map(z=>parseFloat(z.total)).reduce((a,b)=>a+b,0)}
+_metodoPago.push(_row);});_rowRepartidor.pedidos.metodoPago=_metodoPago.filter(z=>z.importe>0);_rowRepartidor.pedidos.total=_rowRepartidor.pedidos.importe_total-_rowRepartidor.pedidos.entrega;_rowRepartidor.pedidos.importe_pagado=_rowRepartidor.pedidos.importe_pagado>0?_rowRepartidor.pedidos.importe_pagado-_rowRepartidor.pedidos.entrega:0;_rowRepartidor.pedidos.importe_pagar=(_rowRepartidor.pedidos.total-_rowRepartidor.pedidos.importe_pagado).toFixed(2);_rowRepartidor.pedidos.total=_rowRepartidor.pedidos.total.toFixed(2);_rowRepartidor.pedidos.importe_total=_rowRepartidor.pedidos.importe_total.toFixed(2);_rowRepartidor.pedidos.entrega=_rowRepartidor.pedidos.entrega.toFixed(2);_rowRepartidor.pedidos.importe_pagado=_rowRepartidor.pedidos.importe_pagado.toFixed(2);_rowRepartidor.pedidos.showImportePagado=_rowRepartidor.pedidos.importe_pagado>0;_rowRepartidor.pedidos.showBtnRegistroPago=_rowRepartidor.pedidos.importe_pagar>0;_listTotalesResumen.importe_total+=parseFloat(_rowRepartidor.pedidos.importe_total);_listTotalesResumen.entrega+=parseFloat(_rowRepartidor.pedidos.entrega);_listTotalesResumen.total+=parseFloat(_rowRepartidor.pedidos.total);_listTotalesResumen.importe_pagado+=parseFloat(_rowRepartidor.pedidos.importe_pagado);_listTotalesResumen.importe_pagar+=parseFloat(_rowRepartidor.pedidos.importe_pagar);_listRepartidor.push(_rowRepartidor);}});xThisCDelivery.listResumenDeliveryTotales=_listTotalesResumen;xThisCDelivery.listResumenDelivery=_listRepartidor;}
+async function xRegistrarPagoRepartidor(obj){const _id=obj.dataId
+const _repartidor=obj.dataId;xThisCDelivery.nomRepartidorPago=_repartidor.nom_repartidor;let _paramsSwalAlert=paramsSwalAlert;_paramsSwalAlert.html=`<div class="p-1"><p class="fw-600 fs-20">Registrar Pago</p><p class="fw-100 fs-14">Repartidor:<span class="badge badge-warning">${_repartidor.nom_repartidor}</span></p><br><p class="fs-14">Puede registrar el pago total en diferentes metodos(efectivo,tarjeta,etc.)<span class="fs-14 text-warning">Al finalizar el registro se darán por pagados todos los pedidos del repartidor</span>.</p></div>`;_paramsSwalAlert.showCancelButton=true;const _rptDialog=await showAlertSwalHtmlDecision(_paramsSwalAlert);if(_rptDialog.isConfirmed){xShowCompRegistrarPagoRepartidor(_repartidor.pedidos.importe_pagar,_repartidor);}}
+function xShowCompRegistrarPagoRepartidor(importeCobrar,_repartidor){xPopupLoad.titulo="Cargando..."
+xPopupLoad.xopen();xCDQuitarXPagoCP();$('#content_xpago_repartidor').html('<x-pago id="component_pago_repartidor" hidden_container_pago="false"></x-pago>').trigger('create');setTimeout(()=>{let xValPagoRepartidor=document.getElementById('component_pago_repartidor');component_pago_repartidor.setVal(importeCobrar)
+component_pago_repartidor.setModoSoloProveedor();component_pago_repartidor.setVisibleContainerPago();xPopupLoad.xclose();dialog_registrar_pago_repartidor.open();xValPagoRepartidor.addEventListener('xCancelarCerrar',function(e){dialog_registrar_pago_repartidor.close();xCDRestaurarXPagoCP()});xValPagoRepartidor.addEventListener('xListoRegistraPagoRpt',function(e){dialog_registrar_pago_repartidor.close();setTimeout(()=>{xCDRestaurarXPagoCP()},100);xRegistrarPagoDeliveryRepartidor(e.detail,_repartidor);});xValPagoRepartidor.addEventListener('ChangeListPagoAddRemoveRow',function(e){setTimeout(()=>{dialog_registrar_pago_repartidor.center()},100);})},1000);}
+async function xRegistrarPagoDeliveryRepartidor(listTpSelected,_repartidor){const _dataSend={id:_repartidor.idrepartidor,list:_repartidor.listIdPedidos,op:20}
+var _fetchApi=new httpFecht();const _rpt=await _fetchApi.postJson('../../bdphp/log_009.php',_dataSend);if(_rpt.success){xSetEstadoPedidoDeliveryPagado(_repartidor)
+xSaveRegistrarPagoDeliveryRepartidor(listTpSelected)}}
+function xSetEstadoPedidoDeliveryPagado(_repartidor){xThisCDelivery.listDeliveryPedidoFilter.filter(x=>x.idrepartidor===_repartidor.idrepartidor).map(x=>{x.estado=2
+x.isShowPedidoCobrado=true;})
+xThisCDelivery.listDeliveryPedido.filter(x=>x.idrepartidor===_repartidor.idrepartidor).map(x=>{x.estado=2
+x.isShowPedidoCobrado=true;})
+xCDSetChangeListDelivery();xCDRepartidorResumen();}
+async function xSaveRegistrarPagoDeliveryRepartidor(listTpSelected){const _dataSend={list:listTpSelected,concepto:'Pago de Repartidor '+xThisCDelivery.nomRepartidorPago,nom_cliente:'Repartidor'}
+$.ajax({type:'POST',url:'../../bdphp/log_002.php',data:{op:'11',data:_dataSend}}).done(res=>{console.log(res);})}
+Polymer({is:'x-control-delivery',properties:{listDeliveryPedido:[],listDeliveryPedidoFilter:[],listResumenDelivery:[],listResumenDeliveryTotales:[],selectedTab:Number,listRepartidor:[],listTipoPagoFilter:[],listUsuarioFilter:[],listEstadoFilter:[],listCondicionFilter:[],rowItemSeleted:[],arrInfo:[],arrSedeInfo:[],lastObjBtnVer:Object,nomRepartidorPago:String},attached:function(){this.selectedTab=0;_cpSocketOpen();xThisCDelivery=this;},detached:function(){_cpSocketClose();},ini:()=>{xIniControlDelivery();},convertRowFixed:(obj)=>{return obj.toFixed(2)}})/*]]>*/</script>
