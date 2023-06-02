@@ -1,0 +1,532 @@
+<dom-module id="x-cuentas-por-cobrar">
+    <template>        
+        <div class="p-2">
+            <div class="d-flexx justify-content-between">
+                <p class="fw-600 fs-15">Cuentas por Cobrar</p>
+                <button hidden$="[[!showDetalleCuentaCobrar]]" class="btn btn-sm btn-secondary" onclick="xGoBackListaCuentasCobrar()">
+                    <i class="fa fa-arrow-left mr-1"></i>
+                    Atras
+                </button>
+                <button class="btn btn-sm btn-secondary" hidden$="[[showDetalleCuentaCobrar]]" onclick="xGoBackListaCuentasCobrarPrincipal()">
+                    <i class="fa fa-arrow-left mr-1"></i>
+                    Atras
+                </button>
+            </div>
+            <div hidden$="[[!showDetalleCuentaCobrar]]" class="mt-2">
+                <div class="xLinea2"></div>                
+                <br>
+            </div>
+            <!-- listado -->
+            <div hidden$="[[showDetalleCuentaCobrar]]">            
+                <div>                
+                    <p>Ventas registrados al credito.</p>
+                </div>
+                <br>
+                <input type="text" id="text_buscar_cliente_credito" class="xMiInput w-100" placeholder="Buscar Cliente" onkeyup="xBuscarClienteCredito(this)">
+                <br><br>
+                <div>
+                    <!-- tabla con la lista de cuentas por pagar -->
+                    <table class="w-100">
+                        <thead>
+                            <th>#</th>
+                            <th>Cliente</th>
+                            <th align="right">Imp. Consumo</th>
+                            <th align="right">Pagó</th>
+                            <th align="right">Debe Aún</th>
+                            <th></th>
+                        </thead>
+                        <tbody>
+                            <template is="dom-repeat" items="{{listCuentasPagar}}">
+                                <tr>
+                                    <td>{{displayIndex(index)}}</td>
+                                    <td>{{item.nom_cliente}}</td>
+                                    <td align="right">
+                                        <p class="fw-600">{{item.total}}</p>
+                                    </td>
+                                    <td align="right">
+                                        <p class="fw-600 text-success">{{item.pago}}</p>
+                                    </td>
+                                    <td align="right">
+                                        <p class="fw-600 text-primary">{{item.debe}}</p>
+                                    </td>                                <td>
+                                        <button data-id="[[item.idcliente]]" 
+                                            class="btn btn-sm btn-xsm xBoton_flat_2"
+                                            onclick="xCobrarCuentaCliente(this);"
+                                            >Cobrar
+                                        </button>
+                                    </td>
+                                </tr>
+                            </template>
+                            <!-- total -->
+                            <tr>
+                                <td align="right" colspan="2"><p class="fw-600 fs-15">Totales</p></td>
+                                <td align="right"><p class="fw-600 fs-17">{{totalConsumoCliente}}</p></td>
+                                <td align="right"><p class="fw-600 fs-17">{{totalPagadoCliente}}</p></td>
+                                <td align="right"><p class="fw-600 fs-17">{{totalDebeCliente}}</p></td>
+                                <td></td>
+                            </tr>                        
+                        </tbody>            
+                    </table>
+                </div>
+            </div>
+
+            <!-- detalle cuenta cobrar -->
+            <div hidden$="[[!showDetalleCuentaCobrar]]">
+                <!-- datos del cliente -->
+                <section>
+                    <p class="fw-600 fs-17">{{ objCuentaCobrar.nom_cliente }}</p>
+                    <div class="d-flexx">
+                        <p class="fw-600 fs-15 mr-2">
+                            <i class="fa fa-id-card-o mr-1"></i>
+                            {{ objCuentaCobrar.num_dni }}
+                        </p>
+                        <p class="fw-600 fs-15">
+                            <i class="fa fa-phone mr-1"></i>
+                            {{ objCuentaCobrar.telfono }}
+                        </p>
+                    </div>
+                </section>
+
+                <br>
+                <div class="xLinea2"></div>
+                <br>
+
+                <!-- listas -->
+                <section>
+                    <div class="grid-container">
+                        <div class="column1">
+                            <div class="column-title">
+                                <p>Consumos al credito</p>
+                            </div>
+                            <div class="div-table">
+                                <table class="w-100 fs-12">
+                                    <thead>
+                                        <th>#</th>
+                                        <th>Fecha</th>
+                                        <th>Consumo</th>
+                                        <th>Pagado</th>
+                                        <th>Debe</th>
+                                    </thead>
+                                    <tbody>
+                                        <template is="dom-repeat" items="{{listConsumosCreditoCliente}}">
+                                            <tr>
+                                                <td>{{displayIndex(index)}}</td>
+                                                <td>
+                                                    <p>{{item.fecha}}</p>
+                                                    <p class="fs-10 text-secondary">Pasaron: {{item.pasaron}} dia(s)</p>
+                                                </td>
+                                                <td>{{item.total}}</td>
+                                                <td>{{item.pagado}}</td>
+                                                <td>{{item.debe}}</td>
+                                            </tr>
+                                        </template>
+                                    </tbody>
+                                </table>
+                            </div>
+                        </div>
+
+                        <div class="column2">
+                            <div class="column-title">
+                                <p>Historial de Pagos</p>
+                            </div>
+                            <div class="div-table">
+                                <table class="w-100 fs-12">
+                                    <thead>                                        
+                                        <th>Fecha</th>
+                                        <th>Usuario</th>
+                                        <th align="right">Pagado</th>                                        
+                                    </thead>
+                                    <tbody>
+                                        <template is="dom-repeat" items="{{listCuentaPagarHistoriaPagosCliente}}">
+                                            <tr>
+                                                <td>
+                                                    <p>{{item.fecha}}</p>
+                                                    <p>{{item.hora}}</p>
+                                                </td>
+                                                <td>{{item.nom_usuario}}</td>
+                                                <td align="right">
+                                                    <p class="fw-600">{{item.importe}}</p>
+                                                    <p class$="[[item.classTp]]">{{item.nom_tipo_pago}}</p>
+                                                </td>                                                
+                                            </tr>
+                                        </template>
+                                    </tbody>
+                                </table>
+                            </div>
+                        </div>
+                    </div>
+                </section>
+                <br>
+
+                <!-- resumen y accion -->
+                <section class="div-resumen-cuenta-pagar">
+                    <p class="fw-600 fs-15 text-secondary mb-3">Resumen de cuenta pendiente por pagar</p>
+                    <div class="grid-totales pb-2">
+                        <div>
+                            <p>Imp. Consumo</p>
+                            <p class="fs-23 fw-600">{{ arrTotalesListCreditoCliente.total }}</p>
+                        </div>
+                        <div>
+                            <p>Pagado</p>
+                            <p class="fs-23 fw-600 text-success">{{ arrTotalesListCreditoCliente.pagado_show }}</p>
+                        </div>
+                        <div>
+                            <p>Debe Aún</p>
+                            <p class="fs-23 fw-600 text-primary">{{ arrTotalesListCreditoCliente.debe_show }}</p>
+                        </div>
+                        <div>
+                            <p class="fw-600 fs-15">Importe a Pagar</p>
+                            <p class="fs-11 text-secondary">Indique aqui el importe que pagará</p>
+                            <input 
+                                type="number"
+                                class="xMiInput fs-23 fw-600" 
+                                id="txt_importe_pago_cuenta_credito"
+                                onkeyup="xValidarBtnPagoCuentaCobrar(this)"
+                                placeholder="">  
+
+                            <button 
+                                disabled$="[[!enabledBtnCobrarCuenta]]"
+                                class="btn btn-sm mt-2 btn-primary" style="float: right;" onclick="xShowIngresoPagoCuentaCobrar()">Registrar Pago</button>
+                        </div>                        
+                    </div>
+                </section>
+
+            </div>
+        </div>
+    </template>
+
+    <style>
+        .grid-container {
+            display: grid;
+            /* grid-template-columns: minmax(0, 350px) auto; */
+            grid-template-columns: 1fr 1fr;
+            /* La primera columna tiene un ancho mínimo de 0 y máximo de 400px, la segunda columna ocupa el espacio restante */
+            gap: 10px;
+            /* Espacio entre las columnas */
+        }
+    
+        .column1 {
+            /* background-color: lightblue; */
+            border: 1px solid #ccc;
+            border-radius: 5px;
+        }
+    
+        .column2 {
+            border: 1px solid #ccc;
+            border-radius: 5px;
+        }
+    
+        .column-title {
+            border-radius: 5px 5px 0px 0px;
+            color: #fff !important;
+            padding: 5px 10px 5px 10px;
+            background: #424242;
+            height: 30px;
+            justify-content: space-between;
+            display: flex;
+            align-items: center;
+        }
+
+        .div-table {
+            max-height: 300px;
+            overflow: auto;
+        }
+
+        .grid-totales {
+            display: grid;
+            grid-template-columns: 1fr 1fr 1fr 1fr auto;
+            gap: 10px;
+        }
+
+        .div-resumen-cuenta-pagar {
+            border: 1px solid #d7d7d7;
+            padding: 10px;
+            border-radius: 5px;
+        }
+    
+        /* Media query para dispositivos móviles */
+        @media (max-width: 767px) {
+            .grid-container {
+                grid-template-columns: 1fr;
+                /* Las columnas ocupan todo el ancho */
+            }
+    
+            .column2 {
+                margin-top: 10px;
+                /* Espacio entre las columnas en dispositivos móviles */
+            }
+
+            .grid-totales {
+                grid-template-columns: 1fr 1fr;
+            }
+        }
+    </style>
+
+    <script>
+        var xThisCuentasPorCobrar, itemOptionTpCuentaCobrarSelected;
+
+
+        async function xInitCuentasPorCobrar() {
+            xPopupLoad.xopen();
+            const _httpFecht = new httpFecht();
+            const rpt = await _httpFecht.postJson('../../bdphp/log_009.php?op=23')            
+            
+            if (rpt.success) {
+                xThisCuentasPorCobrar.listCuentasPagar = rpt.datos;
+                xThisCuentasPorCobrar.listCuentasPagarMaster = rpt.datos; // para busquedas
+                xShowTotalCuentasPagar();
+            } 
+
+            xPopupLoad.xclose();
+
+            $(document).on('getValorIncial', '.tpf_option_cuenta_cobrar', function (e) {                
+                itemOptionTpCuentaCobrarSelected = e.detail.values;
+            });
+        }
+
+        function xShowTotalCuentasPagar() {            
+            xThisCuentasPorCobrar.totalConsumoCliente = xThisCuentasPorCobrar.listCuentasPagar
+                                                    .map(x => parseFloat(removeComas(x.total)))
+                                                    .reduce((a, b) => a + b, 0);            
+            
+            xThisCuentasPorCobrar.totalPagadoCliente = xThisCuentasPorCobrar.listCuentasPagar
+                .map(x => parseFloat(removeComas(x.pago)))
+                .reduce((a, b) => a + b, 0);             
+            
+            
+                
+            xThisCuentasPorCobrar.totalDebeCliente = xThisCuentasPorCobrar.listCuentasPagar
+                .map(x => parseFloat(removeComas(x.debe)))
+                .reduce((a, b) => a + b, 0);             
+
+            xThisCuentasPorCobrar.totalConsumoCliente = xThisCuentasPorCobrar.totalConsumoCliente.toFixed(2)
+            xThisCuentasPorCobrar.totalPagadoCliente = xThisCuentasPorCobrar.totalPagadoCliente.toFixed(2)
+            xThisCuentasPorCobrar.totalDebeCliente = xThisCuentasPorCobrar.totalDebeCliente.toFixed(2)
+        }
+
+        function xBuscarClienteCredito(obj){
+            // buscar en la lista de cuentas por pagar
+            const _nom_cliente = obj.value;
+            xThisCuentasPorCobrar.listCuentasPagar = xThisCuentasPorCobrar.listCuentasPagarMaster
+                            .filter(x => x.nom_cliente.toLowerCase().includes(_nom_cliente.toLowerCase()));
+
+            xShowTotalCuentasPagar();
+
+        }
+        
+        function xCobrarCuentaCliente(obj) {
+            const _idcliente = obj.dataId;            
+            const _objCuentaCobrar = xThisCuentasPorCobrar.listCuentasPagar.find(x => x.idcliente == _idcliente);
+            xThisCuentasPorCobrar.objCuentaCobrar = _objCuentaCobrar;
+            xThisCuentasPorCobrar.showDetalleCuentaCobrar = true;
+
+            txt_importe_pago_cuenta_credito.value = ''
+
+            xLoadConsumoCreditoByCliente();
+        }
+
+        async function xLoadConsumoCreditoByCliente() {
+            // cargar los consumos del cliente
+            xPopupLoad.xopen();
+            const _dataSend = {
+                idcliente: xThisCuentasPorCobrar.objCuentaCobrar.idcliente
+            }
+
+            const _httpFecht = new httpFecht();
+            const rpt = await _httpFecht.postJson('../../bdphp/log_009.php?op=2301', _dataSend)
+
+            if (rpt.success) {
+                xThisCuentasPorCobrar.listConsumosCreditoCliente = rpt.datos;
+                // suma los totales
+                let _totalesListCreditoCliente = {
+                    total: 0,
+                    pagado: 0,
+                    debe: 0,
+                    pagadoShow: 0,
+                    debeShow: 0, 
+                }
+
+                rpt.datos.map( x => {
+                    _totalesListCreditoCliente.total += parseFloat(removeComas(x.total));
+                    _totalesListCreditoCliente.pagado += parseFloat(removeComas(x.pagado));
+                    _totalesListCreditoCliente.debe += parseFloat(removeComas(x.debe));
+                })         
+
+                _totalesListCreditoCliente.total = _totalesListCreditoCliente.total.toFixed(2);
+                _totalesListCreditoCliente.pagado = _totalesListCreditoCliente.pagado.toFixed(2);
+                _totalesListCreditoCliente.debe = _totalesListCreditoCliente.debe.toFixed(2);
+
+                _totalesListCreditoCliente.pagado_show = _totalesListCreditoCliente.pagado;
+                _totalesListCreditoCliente.debe_show = _totalesListCreditoCliente.debe;
+                
+                xThisCuentasPorCobrar.arrTotalesListCreditoCliente = _totalesListCreditoCliente;
+            }
+
+            listCuentaPagarHistoriaPagosCliente(); // historial de pagos
+
+            xPopupLoad.xclose();
+            
+        }
+
+        async function listCuentaPagarHistoriaPagosCliente() {
+            const _dataSend = {
+                idcliente: xThisCuentasPorCobrar.objCuentaCobrar.idcliente
+            }
+
+            const _httpFecht = new httpFecht();
+            const rpt = await _httpFecht.postJson('../../bdphp/log_009.php?op=2303', _dataSend)
+            if (rpt.success) {
+                xThisCuentasPorCobrar.listCuentaPagarHistoriaPagosCliente = rpt.datos.map( x => {
+                    x.classTp = getColorTipoPago(x.idtipo_pago);
+                    x.fecha = x.fecha_hora.split(' ')[0];                  
+                    x.hora = x.fecha_hora.split(' ')[1];
+                    return x;
+                });
+
+            }
+        }
+
+        function xGoBackListaCuentasCobrar() {
+            xThisCuentasPorCobrar.showDetalleCuentaCobrar = false;
+        }
+
+        function xValidarBtnPagoCuentaCobrar(obj) {
+            let _pagado = parseFloat(obj.value)
+            if ( isNaN(_pagado) ) {
+                xThisCuentasPorCobrar.enabledBtnCobrarCuenta = false;
+                _pagado = 0
+                // return;
+            } else {
+                xThisCuentasPorCobrar.enabledBtnCobrarCuenta = true;
+            }
+
+            let _importeDebe = parseFloat(xThisCuentasPorCobrar.arrTotalesListCreditoCliente.debe);
+            if ( _pagado > _importeDebe ) {
+                _pagado = _importeDebe
+                obj.value = _pagado;
+                // xThisCuentasPorCobrar.enabledBtnCobrarCuenta = false;
+                // return;
+            }
+
+            const _debeAun = _importeDebe - _pagado;
+            xThisCuentasPorCobrar.arrTotalesListCreditoCliente.pagado_show = _pagado.toFixed(2);
+            xThisCuentasPorCobrar.arrTotalesListCreditoCliente.debe_show = _debeAun.toFixed(2);
+
+            xThisCuentasPorCobrar.arrTotalesListCreditoCliente = JSON.parse(JSON.stringify(xThisCuentasPorCobrar.arrTotalesListCreditoCliente));
+            xThisCuentasPorCobrar.importePagadoCuentaCobrar = _pagado
+            
+        }
+
+
+        async function xShowIngresoPagoCuentaCobrar(_arrCpeFac) {
+                const _swalAlertValues = paramsSwalAlert;
+                _swalAlertValues.title = '<p class="fw-600 fs-18">Elige el metodo de pago</p><p class="fs-13">Se registrará como una <span class="fw-600 text-primary">ingreso a caja</span></p>';
+                _swalAlertValues.html = `<div class="pb-2" style="display: inline-flex;">                    
+                                        <x-comp-find-tipo-pago-option class="tpf_option_cuenta_cobrar"></x-comp-find-tipo-pago-option>
+                                    </div>`;
+                _swalAlertValues.confirmButtonText = 'Listo, registrar';
+                _swalAlertValues.showCancelButton = true;
+
+
+                const rpt =  await showAlertSwalHtmlDecision(_swalAlertValues, 0)
+                if (rpt.isConfirmed) { // guardar    
+                    xPopupLoad.xopen();                    
+                    xShowProccessPagoCuentaCredito();
+                }                   
+
+        }
+
+        async function xShowProccessPagoCuentaCredito() {
+            xPopupLoad.xopen();
+
+            // elaborar lista de item pagados de listCuentasPagar con el importe recibido
+            let arrListItemsPagados = [];
+            let importePagado = xThisCuentasPorCobrar.importePagadoCuentaCobrar            
+            xThisCuentasPorCobrar.listConsumosCreditoCliente.map(x => {
+                if (importePagado > 0) {
+                    let _debeRow = parseFloat(removeComas(x.debe));
+                    let _diferencia = importePagado - _debeRow;
+                    let _pagadoRow = x.pagado;
+
+                    importePagado -= _debeRow;
+
+                    if (_diferencia > 0) {
+                        _pagadoRow = x.importe;
+                        _debeRow = 0;
+                    } else {
+                        _diferencia = _diferencia * -1;
+                        _pagadoRow = x.importe - _diferencia;
+                        _debeRow = _diferencia;
+                    }
+
+                    arrListItemsPagados.push({
+                        idregistro_pago_detalle: x.idregistro_pago_detalle,
+                        pagado: _pagadoRow,
+                        flag_pagado: _debeRow == 0 ? '1' : '0'
+                    })
+                }
+            })
+            
+            // return;
+
+            const _httpFecht = new httpFecht();
+            const _dataSend = {
+                idcliente: xThisCuentasPorCobrar.objCuentaCobrar.idcliente,
+                idtipo_pago: itemOptionTpCuentaCobrarSelected.idtipo_pago,
+                importe: xThisCuentasPorCobrar.importePagadoCuentaCobrar,
+                debe: xThisCuentasPorCobrar.arrTotalesListCreditoCliente.debe_show,
+                idusuario: xIdUsuario,
+                listPagados: arrListItemsPagados
+                // listPagados: JSON.stringify(arrListItemsPagados)
+            }
+            const rpt = await _httpFecht.postJson('../../bdphp/log_009.php?op=2302', _dataSend)            
+            if (rpt.success) {
+                xThisCuentasPorCobrar.showDetalleCuentaCobrar = false;
+                xInitCuentasPorCobrar();
+                xRegistrarIngresoCajaCobroCredito();
+                return;
+            }
+
+            xPopupLoad.xclose();
+        }
+
+        function xRegistrarIngresoCajaCobroCredito(params) {
+            const _dataSend = {                
+                idtipo_pago: itemOptionTpCuentaCobrarSelected.idtipo_pago,
+                total: xThisCuentasPorCobrar.importePagadoCuentaCobrar.toFixed(2),
+                concepto: `PAGO DE CUENTA - ${xThisCuentasPorCobrar.objCuentaCobrar.nom_cliente}`,
+                nom_cliente: xThisCuentasPorCobrar.objCuentaCobrar.nom_cliente,
+            }
+
+            $.ajax({ type: 'POST', url: '../../bdphp/log_002.php', data: { op: '11', data: _dataSend} })
+        }
+
+        Polymer({
+                is: 'x-cuentas-por-cobrar',
+                properties: {
+                    listCuentasPagar: [],
+                    listCuentasPagarMaster:[],
+                    listConsumosCreditoCliente: [],
+                    listCuentaPagarHistoriaPagosCliente: [],
+                    arrTotalesListCreditoCliente: {},
+                    totalDebeCliente: Number,
+                    totalConsumoCliente: Number,
+                    totalPagadoCliente: Number,
+                    showDetalleCuentaCobrar: Boolean,
+                    objCuentaCobrar: Object,
+                    enabledBtnCobrarCuenta: Boolean,
+                    importePagadoCuentaCobrar: Number
+                },
+                attached: function () {
+                    this.importePagadoCuentaCobrar = 0
+                    this.showDetalleCuentaCobrar = false;
+                    this.enabledBtnCobrarCuenta = false;
+                    xThisCuentasPorCobrar = this;
+                    xInitCuentasPorCobrar();
+                },
+                displayIndex: function (index) {
+                    return xCeroIzq(index + 1, 1);
+                },
+            })
+    </script>
+</dom-module>

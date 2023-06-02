@@ -1,0 +1,188 @@
+<dom-module id="x-proveedores">
+    <link rel="import" href="./x-proveedores-detalle.html">
+    <template>
+
+        <paper-dialog modal id="dialog_modificar_proveedor" style="max-width: 350px;" class="dialog_redondo" modal
+            entry-animation="scale-up-animation" exit-animation="fade-out-animation" with-backdrop>
+            <div class="xContent">
+                <h4>Modificar Proveedor</h4>
+                <div class="xLinea2"></div><br>
+                <div>
+                    <form id="frm_comp_proveedor">                        
+                        <label for="descripcion" class="label-input">Razon Social</label>
+                        <input type="text" id="descripcion" name="descripcion" placeholder="Nombre / Razon social"
+                            onChange="conMayusculas(this)" class="xMiInput xPasarEnter2">                        
+
+                        <label for="dni" class="label-input">DNI / RUC</label>
+                        <input type="text" id="dni" name="dni" placeholder="DNI / RUC" class="xMiInput xPasarEnter2"
+                            onChange="conMayusculas(this)">
+
+                        <label for="telefono" class="label-input">Telefono</label>
+                        <input type="text" id="telefono" name="telefono" placeholder="Telefono" onChange="conMayusculas(this)"
+                            class="xMiInput xPasarEnter2">
+
+                        <label for="direccion" class="label-input">Direccion</label>
+                        <input type="text" id="direccion" name="direccion" placeholder="Direccion" class="xMiInput xPasarEnter2"
+                            onChange="conMayusculas(this)">
+
+                        <div class="xInvisible">
+                            <input type="text" id="idorg" name="idorg">
+                            <input type="text" id="idsede" name="idsede">
+                            <input type="text" id="idproveedor" name="idproveedor">
+                        </div>
+                    </form>
+                </div>                
+                <br><br>
+                <button class="btn btn-sm btn-primary" onclick="saveProveedor();">Listo, guardar</button>
+                <button class="btn btn-sm btn-secondary" dialog-dismiss>Cancelar</button>
+            </div>
+        </paper-dialog>
+
+
+        <br>
+        <div class="xMiCard xradius" style="width:90%; max-width: 1250px;">
+            <div class="xEncanezadoCard d-flexx justify-content-between" style="background: lavenderblush; color: #424242;">
+                <div class="div-content-head-op">
+                    <p class="fw-600 fs-18">Proveedores</p>                   
+                </div>
+                <div>
+                    <button class="btn btn-sm btn-secondary" hidden$="[[!isShowDetalleProveedor]]"
+                        onclick="goMainProveedor()">Atras</button>
+                </div>
+            </div>
+
+            
+            <div class="p-3 mb-5">
+                <!-- lista -->
+                <div hidden$="[[isShowDetalleProveedor]]">                                
+                    <div class="d-flexx justify-content-between">
+                        <h4>Lista de Proveedores</h4>
+                        <button class="btn btn-sm btn-primary" onclick="newProveedor()">
+                            <i class="fa fa-plus"></i>
+                            Agregar Proveedor
+                        </button>
+                    </div>
+                    <br>
+                    <table class="w-100">
+                        <thead>
+                            <th>Nombre / Razon Social</th>
+                            <th>RUC</th>
+                            <th>Telefono</th>
+                            <th align="center"># Compras</th>                        
+                        </thead>
+                        <tbody>
+                            <template is="dom-repeat" items="{{listProveedores}}" as="item">
+                                <tr>
+                                    <td>
+                                        <p data-id="{{item.idproveedor}}"
+                                            class="fw-600 text-primary xCursor" title="Editar Datos" onclick="openDialogModifyProveedor(this)">
+                                            {{item.descripcion}}
+                                            <i class="fa fa-pencil"></i>
+                                        </p>                                    
+                                    </td>
+                                    <td>{{item.dni}}</td>
+                                    <td>{{item.telefono}}</td>
+                                    <td align="center">
+                                        <div class="d-flexx text-center justify-content-center">
+                                            <p class="fw-600 text-primary xCursor">{{item.num_compras}}</p>                                                                            
+                                            <button data-id="{{item.idproveedor}}"  class="ml-2 btn btn-sm btn-xsm xBoton_flat_2" onclick="goDetalleProveedor(this)">Ver</button>                                        
+                                        </div>
+                                    </td>                                                           
+                                </tr>
+                            </template>
+                        </tbody>
+                    </table>
+                </div>
+
+                <!-- detalle -->
+                <div hidden$="[[!isShowDetalleProveedor]]">
+                    <x-proveedores-detalle objproveedor$=[[objProveedor]]></x-proveedores-detalle>
+                </div>
+            </div>
+        </div>
+    </template>
+
+    <script>
+        var xThisProveedores, proveedorSelected
+
+        async function xInitProveedores() {
+            xPopupLoad.xopen();
+            console.log('load proveedor');
+            const _httpFecht = new httpFecht();
+            const rpt = await _httpFecht.postJson('../../bdphp/log_009.php?op=21')
+            console.log('rpt', rpt);
+            if (rpt.success) {
+                xThisProveedores.listProveedores = rpt.datos
+            }
+            xPopupLoad.xclose();
+        }
+
+        function openDialogModifyProveedor(event) {
+            const _idProveedor = event.dataId
+            proveedorSelected = xThisProveedores.listProveedores.find(item => item.idproveedor == _idProveedor)
+            
+            $('#frm_comp_proveedor #descripcion').val(proveedorSelected.descripcion)
+            $('#frm_comp_proveedor #dni').val(proveedorSelected.dni)
+            $('#frm_comp_proveedor #telefono').val(proveedorSelected.telefono)
+            $('#frm_comp_proveedor #direccion').val(proveedorSelected.direccion)
+            $('#frm_comp_proveedor #idproveedor').val(proveedorSelected.idproveedor)
+            
+
+            dialog_modificar_proveedor.open()
+
+        }
+
+        function newProveedor() {
+            $('#frm_comp_proveedor #descripcion').val('')
+            $('#frm_comp_proveedor #dni').val('')
+            $('#frm_comp_proveedor #telefono').val('')
+            $('#frm_comp_proveedor #direccion').val('')
+            $('#frm_comp_proveedor #idproveedor').val('')
+
+            dialog_modificar_proveedor.open()
+        }
+
+        function saveProveedor() {
+            xPopupLoad.xopen();
+            // agregar proveedor, obtener los datos de los inputs y pasarlo a un json            
+            $("#frm_comp_proveedor #idorg").val(xIdOrg)
+            $("#frm_comp_proveedor #idsede").val(xIdSede)
+
+            $.post("../../bdphp/ManejoBD_IUD.php?tb=proveedor", $("#frm_comp_proveedor").serialize(), function (aa) {                
+                console.log('aaa', aa);
+                dialog_modificar_proveedor.close()
+                xInitProveedores();
+            })
+        }
+
+        function goDetalleProveedor(event) {
+            const _idProveedor = event.dataId
+            xThisProveedores.objProveedor = xThisProveedores.listProveedores.find(item => item.idproveedor == _idProveedor)
+            console.log('xThisProveedores.objProveedor', xThisProveedores.objProveedor);
+            xThisProveedores.isShowDetalleProveedor = true;
+        }
+
+        function goMainProveedor() {
+            xThisProveedores.isShowDetalleProveedor = false;
+        }
+        
+
+        Polymer({
+            is: 'x-proveedores',
+            properties: {    
+                listProveedores: [],
+                objProveedor: [],
+                isShowDetalleProveedor: Boolean                
+            },
+            attached: function () {
+                this.isShowDetalleProveedor = false;
+                xThisProveedores = this;
+                xInitProveedores();
+            },
+            displayIndex: function (index) {
+                return xCeroIzq(index + 1, 1);
+            },
+        })
+    </script>
+
+</dom-module>

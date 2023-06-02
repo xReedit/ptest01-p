@@ -105,4 +105,7 @@ function PrintElemDiv(divId,titulo)
 {var printContents=document.getElementById(divId).innerHTML;var originalContents=document.body.innerHTML;document.body.innerHTML="<html><head><title></title></head><body>"+printContents+"</body>";window.print();document.body.innerHTML=originalContents;}
 function removeSpecialChar(_string){return _string.replace(/[&\/\\,~'"?]/g,'');}
 function removeSpecialCharObj(obj){obj.value=obj.value.replace(/[&\/\\,~'"?]/g,'');}
-const arrGroupBy=function(xs,key){return xs.reduce(function(rv,x){(rv[x[key]]=rv[x[key]]||[]).push(x);return rv;},{});};
+const arrGroupBy=function(xs,key){return xs.reduce(function(rv,x){(rv[x[key]]=rv[x[key]]||[]).push(x);return rv;},{});};function disableScrollRefresh(event){$('body').css('overscroll-behavior','contain');}
+function enableScrollRefresh(){$('body').css('overscroll-behavior','auto');}
+function getColorTipoPago(idtipo_pago){const _classTp=['badge badge-secondary','badge badge-primary','badge bg-papaya','badge','badge badge-warning','badge badge-info','badge badge-dark']
+return _classTp[idtipo_pago-1];}

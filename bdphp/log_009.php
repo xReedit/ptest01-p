@@ -228,5 +228,160 @@
             $sql="call procedure_registra_pago_repartidor($g_idsede,$g_us,$postBody->id,'$list')";
             $bd->xConsulta($sql);
             break;
+        case 21: // load lista proveedores
+            $sql="select p.*, count(c.idcompra) num_compras from proveedor p
+                    left join compra c on c.idsede = p.idsede and p.idproveedor = c.idproveedor
+                where p.idsede = $g_idsede and p.estado = 0
+                GROUP by p.idproveedor 
+                order by num_compras desc limit 50";            
+            $bd->xConsulta($sql);
+            break;        
+        case 2101: // lista de compras por proveedor
+            $postBody = json_decode(file_get_contents('php://input'));
+            $sql="select c.idcompra, c.f_compra, c.total, c.f_pago, c.nota_de_compra 
+                    ,a.descripcion nom_almacen, tp.descripcion as des_tipo_pago
+                    ,u.nombres nom_usuario
+                from compra c 
+                    inner join almacen a on a.idalmacen = c.idalmacen 
+                    inner join tipo_pago tp on tp.idtipo_pago = c.idtipo_pago 
+                    inner join usuario u on c.idusuario = u.idusuario 
+                where c.idproveedor = $postBody->idproveedor and c.idsede = $g_idsede
+                order by c.idcompra desc";
+
+            $bd->xConsulta($sql);
+            break;
+        case 2102: // listado de las 30 ultimas compras
+            $postBody = json_decode(file_get_contents('php://input'));
+            $sql="select ci.idcompra_items, ci.idcompra, ci.idproducto, p.descripcion nom_producto
+                ,format(ci.punitario, 2) punitario, sum(ci.cantidad) cantidad, format(sum(ci.ptotal), 2) total
+            from compra_items ci 
+                inner join compra c on c.idcompra = ci.idcompra 
+                inner join producto p on p.idproducto = ci.idproducto 
+            where c.idsede = $g_idsede and c.idproveedor = $postBody->idproveedor
+            GROUP by  ci.idproducto
+            order by cantidad desc, c.idcompra desc limit 50";
+
+            $bd->xConsulta($sql);
+            break;
+        case 2103: //lista de productos por idcompra
+            $postBody = json_decode(file_get_contents('php://input'));
+            $sql="select ci.idcompra_items, ci.idcompra, ci.idproducto, p.descripcion nom_producto
+                ,format(ci.punitario, 2) punitario, ci.cantidad, format(ci.ptotal, 2) total
+            from compra_items ci 
+                inner join compra c on c.idcompra = ci.idcompra 
+                inner join producto p on p.idproducto = ci.idproducto 
+            where c.idcompra = $postBody->idcompra and c.idsede = $g_idsede
+            order by total desc";
+
+            $bd->xConsulta($sql);
+            break;
+        case 22: //compras listado
+            $postBody = json_decode(file_get_contents('php://input'));
+            $sql="select c.idcompra, c.f_compra,c.f_registro,c.total,c.f_pago,c.nota_de_compra
+                    ,tp.descripcion nom_tipo_pago, p.descripcion nom_proveedor,a.descripcion nom_almacen
+                    ,u.nombres nom_usuario
+                from compra c
+                    inner join proveedor p using(idproveedor)
+                    inner join tipo_pago tp using(idtipo_pago)
+                    inner join almacen a using(idalmacen)
+                    inner join usuario u on c.idusuario = u.idusuario 
+                where c.idsede = $g_idsede 
+                    and (MONTH(STR_TO_DATE(c.f_compra, '%d/%m/%Y')) = $postBody->mm 
+                        and YEAR(STR_TO_DATE(c.f_compra, '%d/%m/%Y')) = $postBody->yy)
+                order by c.idcompra desc";
+
+            $bd->xConsulta($sql);
+            break;
+        case 23: // cuentas por cobrar - ventas al credito            
+            // $sql="select rp.idcliente, rp.idregistro_pago, c.nombres nom_cliente, c.ruc as num_dni, c.direccion, c.telefono
+            //         ,format(sum(rp.total),2) total, count(rp.idregistro_pago) cantidad       
+            //         , format(COALESCE(cpc.importe, 0), 2) pago, format(COALESCE(cpc.debe,0),2) debe
+            //         ,c.telefono, c.ruc 
+            //     from cliente c
+            //     inner join registro_pago rp using(idcliente)
+            //     inner join registro_pago_detalle rpd using(idregistro_pago)
+            //     left join cliente_paga_credito cpc on c.idcliente = cpc.idcliente
+            // where rpd.idtipo_pago = 3 and rp.idsede = $g_idsede and rpd.pagado != rpd.importe
+            // GROUP by c.idcliente
+            // order by rp.idregistro_pago desc";
+
+            $sql = "select rp.idcliente,format(sum(rpd.importe),2) total, GROUP_CONCAT(rpd.idregistro_pago_detalle) , rp.idregistro_pago, c.nombres nom_cliente, c.ruc as num_dni, c.direccion, c.telefono
+                ,format(sum(rpd.importe),2) total, count(rp.idregistro_pago) cantidad       
+                , format(COALESCE(cpc.importe, 0), 2) pago, format(COALESCE(cpc.debe,0),2) debe
+                ,c.telefono
+            from cliente_sede cs
+                inner join cliente c on cs.idcliente = c.idcliente 
+                inner join registro_pago rp on cs.idcliente = rp.idcliente
+                inner join registro_pago_detalle rpd using(idregistro_pago)
+                left join cliente_paga_credito cpc on cpc.idcliente = cs.idcliente and cpc.idsede = cs.idsede 
+            where rpd.idtipo_pago = 3 and (cs.idsede=$g_idsede and rp.idsede=$g_idsede) and rpd.flag_pagado=0
+            GROUP by cs.idcliente
+            order by rp.idregistro_pago desc";
+
+            $bd->xConsulta($sql);
+            break;
+
+        case 2301: // lista de consumos x cliente
+            $postBody = json_decode(file_get_contents('php://input'));
+            $sql = "select rp.idregistro_pago, rpd.idregistro_pago_detalle,STR_TO_DATE(rp.fecha, '%d/%m/%Y') fecha , rp.total, rpd.importe, format(rpd.pagado,2) pagado
+                ,DATEDIFF(now(),STR_TO_DATE(rp.fecha, '%d/%m/%Y')) as pasaron
+                ,format((rpd.importe - rpd.pagado),2) debe
+            from registro_pago rp 
+                inner join registro_pago_detalle rpd using(idregistro_pago)
+            where rp.idcliente=$postBody->idcliente and rpd.idtipo_pago = 3 and rp.idsede = $g_idsede and rpd.flag_pagado = 0
+            order by rp.idregistro_pago desc";
+
+            $bd->xConsulta($sql);
+            break;
+        case 2302: // registrar pago cuenta credito cliente
+            $postBody = json_decode(file_get_contents('php://input'));            
+
+            $sql="select idcliente_paga_credito as d1 from cliente_paga_credito where idcliente=$postBody->idcliente and idsede=$g_idsede";
+            $idcliente_paga_credito = $bd->xDevolverUnDato($sql);
+
+            if ( isset($idcliente_paga_credito) ) {
+                $sql = "update cliente_paga_credito set importe = '$postBody->importe', debe = '$postBody->debe', fecha=curdate() where idcliente_paga_credito = $idcliente_paga_credito";
+                $bd->xConsulta_NoReturn($sql);
+            } else {
+                $sql = "insert into cliente_paga_credito(idcliente, importe, debe, fecha, idsede)
+                    values ($postBody->idcliente, '$postBody->importe', '$postBody->debe', curdate(), $g_idsede)";
+                $idcliente_paga_credito = $bd->xConsulta_UltimoId($sql);
+            }
+
+            // insert detalle
+            $sql = "insert into cliente_paga_credito_detalle(idcliente_paga_credito, importe, fecha_hora, idusuario, idtipo_pago)
+                values ($idcliente_paga_credito, '$postBody->importe', now(), $g_us, $postBody->idtipo_pago)";
+
+            $bd->xConsulta_NoReturn($sql);
+
+
+
+                        
+            // actualiza registro_pago_detalle los importes pagados
+            $sql2 = "";
+            // $postBody->listPagados = json_decode($postBody->listPagados);   
+            foreach ($postBody->listPagados as $item) {
+                $sql2.="update registro_pago_detalle set pagado = $item->pagado, flag_pagado = '$item->flag_pagado' where idregistro_pago_detalle = $item->idregistro_pago_detalle; ";
+            }
+
+            $bd->xMultiConsultaNoReturn($sql2);   
+            
+            echo json_encode(array('success' => true));
+                        
+            break;
+        
+        case 2303: // historial de pagos credito por cliente
+            $postBody = json_decode(file_get_contents('php://input'));
+            $sql = "select cp.idcliente_paga_credito, cp.fecha_hora, format(cp.importe,2) importe
+                ,u.nombres nom_usuario, tp.descripcion nom_tipo_pago, cp.idtipo_pago
+                from cliente_paga_credito_detalle cp
+                    inner join cliente_paga_credito cpc using(idcliente_paga_credito)
+                    inner join usuario u on cp.idusuario = u.idusuario 
+                    inner join tipo_pago tp using(idtipo_pago)
+                where cpc.idcliente = $postBody->idcliente and cpc.idsede = $g_idsede
+                order by cp.idcliente_paga_credito_detalle desc";
+            
+            $bd->xConsulta($sql);
+            break;
     }
 ?>    

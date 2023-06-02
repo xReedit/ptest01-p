@@ -3,24 +3,41 @@
 <paper-dialog modal id="dialog_additem_pro_detalle" class="dialog_redondo" modal entry-animation="scale-up-animation" style="min-width:350px" exit-animation="fade-out-animation" with-backdrop>
 <div class="xContent">
 <h3>Modificar Producto</h3>
+<br><br>
+<div class="xLinea2"></div>
 <form id="frm_item_pro">
-<p class="m-0 fs-10 text-secondary">Descripcion</p>
+<div class="d-flexx">
+<div class="mr-2">
+<p class="m-0 fs-10 text-secondary mt-2">Descripcion</p>
 <input type="text" id="descripcion" name="descripcion" placeholder="Descripcion" class="xMiInput xPasarEnter2" onChange="conMayusculas(this)" autofocus required espaciar><br>
 <p class="m-0 fs-10 text-secondary mt-2">Familia</p>
 <input type="text" id="sel_familia" name="no_post" class="xMiInput xPasarEnter2" placeholder="Familia" onChange="conMayusculas(this)" required espaciar><br>
 <p class="m-0 fs-10 text-secondary mt-2">Codigo de barras</p>
 <input type="text" id="codigo_barra" name="codigo_barra" placeholder="Codigo de barras" class="xMiInput xPasarEnter2" onChange="conMayusculas(this)" espaciar><br>
+</div>
+<div>
 <p class="m-0 fs-10 text-secondary mt-2">Stock</p>
 <input type="text" id="stock" readonly name="no_post" placeholder="Stock" class="xMiInput xPasarEnter2" onChange="conMayusculas(this)" espaciar><br>
 <p class="m-0 fs-10 text-secondary mt-2">Stock Minimo</p>
 <input type="text" id="stock_minimo" name="stock_minimo" placeholder="Stock minimo" class="xMiInput xPasarEnter2" onChange="conMayusculas(this)" required espaciar><br>
 <p class="m-0 fs-10 text-secondary mt-2">Precio de venta</p>
 <input type="text" id="precio_venta" name="precio_venta" placeholder="Precio de venta x unidad" onblur="xRetornaMoneda(this)" class="xMiInput xPasarEnter2 xPrecioAddPro" onChange="conMayusculas(this)" onkeyup="xEnterInInputDlgPP(event)" required espaciar><br>
+</div>
+</div>
+<div>
+<br>
+<paper-checkbox id="check_venta_x_peso_detalle"></paper-checkbox>Se vendará por peso<br>
+<span class="text-secondary fs-11">Podrá modificar la cantidad en Punto de Venta.</span>
+<br>
+</div>
+<br><br>
+<div class="xLinea2"></div>
 <div class="xInvisible">
 <input type="text" id="idproducto" name="idproducto">
 <input type="text" id="idorg" name="idorg">
 <input type="text" id="idsede" name="idsede">
 <input type="text" id="idproducto_familia" name="idproducto_familia">
+<input type="text" id="venta_x_peso" name="venta_x_peso">
 </div>
 </form>
 <br><br>
@@ -144,11 +161,15 @@ $("#frm_item_pro #stock_minimo").val(xthisProductoDetalle.objproducto.stock_mini
 $("#frm_item_pro #precio_venta").val(xthisProductoDetalle.objproducto.precio_venta)
 $("#frm_item_pro #idproducto_familia").val(xthisProductoDetalle.objproducto.idproducto_familia)
 $("#frm_item_pro #idproducto").val(xthisProductoDetalle.objproducto.idproducto)
+$("#frm_item_pro #venta_x_peso").val(xthisProductoDetalle.objproducto.venta_x_peso)
+check_venta_x_peso_detalle.checked=xthisProductoDetalle.objproducto.venta_x_peso=='1'
 dialog_additem_pro_detalle.open();}
 function xCargarFamiliaInputProducto(){var xObjTxtFam=$("#sel_familia");xObjTxtFam.autocomplete({autoFocus:true,source:xthisProductoDetalle.listFamilias,appendTo:$('#dialog_additem_pro_detalle'),select:function(event,ui){xObjTxtFam.val(ui.item.label);xObjTxtFam.attr('data-id',ui.item.value);$("#frm_item_pro #idproducto_familia").val(ui.item.value);return false;},focus:function(event,ui){return false;},change:function(event,ui){if(ui.item===null){xObjTxtFam.attr('data-value',"");xObjTxtFam.attr('data-id',"");$("#frm_item_pro #idproducto_familia").val("");xNewFamilia=true;}else{xNewFamilia=false;$("#frm_item_pro #idproducto_familia").val(ui.item.value);}
 return false;}});}
 function xLoadFamiliasProducto(){$.ajax({type:'POST',url:'../../bdphp/log.php?op=1601'}).done(function(DtFam){var xDtFam=JSON.parse(DtFam);xthisProductoDetalle.listFamilias=xDtFam.datos;xCargarFamiliaInputProducto();})}
-function xGuardarModificarProducto(){xCan_item=$("#frm_item_pro #stock").val();$("#frm_item_pro #idorg").val(xIdOrg);$("#frm_item_pro #idsede").val(xIdSede);$.post("../../bdphp/ManejoBD_IUD.php?tb=producto",$("#frm_item_pro").serialize(),function(xUltimo_id_pro){xIdProducto_sel=xUltimo_id_pro;xthisProductoDetalle.objproducto.producto=$("#frm_item_pro #descripcion").val()
+function xGuardarModificarProducto(){xCan_item=$("#frm_item_pro #stock").val();$("#frm_item_pro #idorg").val(xIdOrg);$("#frm_item_pro #idsede").val(xIdSede);const _venta_x_peso=check_venta_x_peso_detalle.checked?'1':'0'
+$("#frm_item_pro #venta_x_peso").val(_venta_x_peso)
+$.post("../../bdphp/ManejoBD_IUD.php?tb=producto",$("#frm_item_pro").serialize(),function(xUltimo_id_pro){xIdProducto_sel=xUltimo_id_pro;xthisProductoDetalle.objproducto.producto=$("#frm_item_pro #descripcion").val()
 xthisProductoDetalle.objproducto.familia=$("#frm_item_pro #sel_familia").val()
 xthisProductoDetalle.objproducto.codigo_barra=$("#frm_item_pro #codigo_barra").val()
 xthisProductoDetalle.objproducto.stock_minimo=$("#frm_item_pro #stock_minimo").val()

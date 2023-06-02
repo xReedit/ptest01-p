@@ -39,6 +39,7 @@
 
 			// echo json_encode($data_array);
 
+			// de api backend-apifac
 			$get_data = callAPI('GET-BODY-JSON', 'http://apifac.papaya.com.pe:3719/api/documents', json_encode($data_array));
 			$response = json_decode($get_data);
 			print json_encode($response);

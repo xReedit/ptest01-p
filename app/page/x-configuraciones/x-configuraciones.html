@@ -24,27 +24,43 @@
 <div class="xBoton2 xVerde" onclick="xSubirFileAlmacen()">Listo, subir archivo e ingresar</div>
 </div>
 </paper-dialog>
-<paper-dialog id="dialog_add_sede" style="max-width:550px;overflow:auto" entry-animation="scale-up-animation" exit-animation="fade-out-animation" with-backdrop>
+<paper-dialog id="dialog_add_sede" class="dialog_redondo" style="max-width:550px;overflow:auto" entry-animation="scale-up-animation" exit-animation="fade-out-animation" with-backdrop>
 <div class="xContent">
 <h4>DATOS DE SEDE</h4>
 <form id="frm_sede">
 <input type="text" class="xMiInput xPasarEnter2" placeholder="DESCRIPCION" onChange="conMayusculas(this)" id="nombre" name="nombre" espaciar required>
-<input type="text" class="xMiInput xPasarEnter2" placeholder="CIUDAD" onChange="conMayusculas(this)" id="ciudad" name="ciudad" espaciar required>
 <input type="text" class="xMiInput xPasarEnter2" placeholder="DIRECCION" onChange="conMayusculas(this)" id="direccion" name="direccion" espaciar required>
-<input type="text" class="xMiInput xPasarEnter2" placeholder="ESLOGAN" id="eslogan" name="eslogan" maxlength="100" espaciar>
-<input type="number" class="xMiInput xPasarEnter2" placeholder="NUMERO DE MESAS" id="mesas" min="1" name="mesas" espaciar>
-<input type="text" class="xMiInput xPasarEnter2" placeholder="UBIGEO" id="ubigeo" name="ubigeo" espaciar>
-<input type="text" class="xMiInput xPasarEnter2" placeholder="CODIGO DEL DOMICILIO FISCAL" id="codigo_del_domicilio_fiscal" name="codigo_del_domicilio_fiscal" espaciar>
-<br><br>
-<label for="ubigeo" class="xColorRow_Plomo">Telefono</label>
-<input type="text" class="xMiInput xPasarEnter2" placeholder="TELEFONO" id="telefono" name="telefono" espaciar>
+<div class="d-flexx">
+<div>
+<label for="ciudad" class="label-input">Ciudad</label>
+<input type="text" class="xMiInput xPasarEnter2" placeholder="CIUDAD" onChange="conMayusculas(this)" id="ciudad" name="ciudad" required>
+<label for="eslogan" class="label-input">Eslogan</label>
+<input type="text" class="xMiInput xPasarEnter2" placeholder="ESLOGAN" id="eslogan" name="eslogan" maxlength="100">
+</div>
+<div>
+<label for="mesas" class="label-input">Número de Mesas</label>
+<input type="number" class="xMiInput xPasarEnter2" placeholder="NUMERO DE MESAS" id="mesas" min="1" name="mesas">
+<label for="telefono" class="label-input">Telefono</label>
+<input type="text" class="xMiInput xPasarEnter2" placeholder="TELEFONO" id="telefono" name="telefono">
+</div>
+</div>
+<br>
+<div>
+<p class="fw-600">Razón Social para comprobantes electronicos.</p>
+<div>
+<label for="ruc_cpe" class="label-input">Ruc</label>
+<input type="text" class="xMiInput xPasarEnter2" placeholder="RUC" onChange="conMayusculas(this)" id="ruc_cpe" name="ruc_cpe" espaciar required>
+<label for="razonsocial_cpe" class="label-input">Razón Social</label>
+<input type="text" class="xMiInput xPasarEnter2" placeholder="RAZON SOCIAL" onChange="conMayusculas(this)" id="razonsocial_cpe" name="razonsocial_cpe" espaciar required>
+</div>
+</div>
 <div class="xInvisible">
 <input type="text" id="idsede" name="idsede">
 <input type="text" id="idorg" name="idorg" value$="[[xt_org]]">
 </div>
-<br><br><br>
+<br><br>
 <p class="fw-600">Email donde se enviaran los cierres de caja.</p>
-<p class="text-secondary">Puede separar por comas ej. gerente@gmail.com, admin_local@hotmail.com </p>
+<p class="text-secondary fs-12">Puede separar por comas ej. gerente@gmail.com, admin_local@hotmail.com </p>
 <input type="text" class="xMiInput xPasarEnter2" placeholder="EMAIL" id="email_cierre" name="email_cierre" espaciar>
 </form>
 <br><br>
@@ -746,6 +762,7 @@ Esto se utiliza en el escenario de que cada caja tenga su impresora, por ejemplo
 </div>
 </div>
 </template>
+<style>.label-input{margin-left:5px;font-size:10px;color:grey}</style>
 </dom-module>
 <script type="text/javascript" src="config_comporbantes.js"></script>
 <script type="text/javascript" src="../../shared/config.const.js"></script>
@@ -864,7 +881,7 @@ xPopupLoad.xopen();$("#frm_regla #idcategoria").val(xidCat);$("#frm_regla #idsec
 function xLoadCategoria(){$.ajax({type:'POST',url:'../../bdphp/log.php?op=1'}).done(function(dtCAct){var xCadenaCat='';var xdtCAct=$.parseJSON(dtCAct);xdtCAct=xdtCAct.datos;for(var i=0;i<xdtCAct.length;i++){xCadenaCat=String(xCadenaCat+'<option value="'+xdtCAct[i].idcategoria+'">'+xdtCAct[i].descripcion+'</option>');};$("#selCategoria").html(xCadenaCat).trigger('create');});$.ajax({type:'POST',url:'../../bdphp/log.php?op=201'}).done(function(dtSec){var xCadenaCat='';var xdtSec=$.parseJSON(dtSec);xdtSec=xdtSec.datos;xThisConfig.dt_seccion=xdtSec;for(var i=0;i<xdtSec.length;i++){xCadenaCat=String(xCadenaCat+'<option value="'+xdtSec[i].value+'">'+xdtSec[i].label+'</option>');};$("#selSeccion").html(xCadenaCat).trigger('create');$("#selSeccion_adicional").html(xCadenaCat).trigger('create');$("#selCon").html(xCadenaCat).trigger('create');});cadenaSelNivel='<option value="0">POR ITEM</option><option value="1">POR PEDIDO</option>';$("#selNivel_adicional").html(cadenaSelNivel).trigger('create');}
 function xLoadReglasCarta(){$("#tb_regla .row").remove();$("#tb_regla").append('<tr class="row"><td colspan="3"><paper-spinner active></paper-spinner></td></tr>');$.ajax({type:'POST',url:'../../bdphp/log.php?op=4'}).done(function(dtRla){var xCadenaRgl='';var xdtRla=$.parseJSON(dtRla);xdtRla=xdtRla.datos;for(var i=0;i<xdtRla.length;i++){xCadenaRgl=String(xCadenaRgl+'<tr class="row" data-t="regla_carta" data-id="'+xdtRla[i].idregla_carta+'"><td>'+xdtRla[i].des_categoria+'</td><td>'+xdtRla[i].des_seccion+'</td><td>'+xdtRla[i].des_con+'</td><td><span class="xDeleteRow" title="Borrar" onclick="xDialogBorrarObj(this);"></span></td></tr>');};$("#tb_regla .row").remove();$("#tb_regla").append(xCadenaRgl).trigger('create');});}
 function xLoadCategoriaCarta(){$("#tb_cat").append('<tr class="row"><td colspan="4"><paper-spinner active></paper-spinner></td></tr>');$.ajax({type:'POST',url:'../../bdphp/log.php?op=405'}).done(function(dtCat){var xcadena_cat='';var xdtCat=$.parseJSON(dtCat);xdtCat=xdtCat.datos;xThisConfig.dt_cat=xdtCat;for(var i=0;i<xdtCat.length;i++){xcadena_cat=String(xcadena_cat+'<tr class="row" data-index='+i+' data-id="'+xdtCat[i].idcategoria+'" data-t="categoria"><td>'+xdtCat[i].descripcion+'</td><td>'+xdtCat[i].hora_ini+'</td><td>'+xdtCat[i].hora_fin+'</td><td title="Modificar" onClick="xModificarCat(this)"><span class="icon xCursor"><img src="../../images/edit.png"></span></td><td><span class="xDeleteRow" title="Borrar" onclick="xDialogBorrarObj(this);"></span></td></tr>')};$("#tb_cat .row").remove();$("#tb_cat").append(xcadena_cat).trigger('create');});}
-function xModificarSede(obj){var xids=$(obj).parents('tr').attr('data-id');$("#frm_sede #idsede").val(xThisConfig.dt_sede[xids].idsede);$("#frm_sede #nombre").val(xThisConfig.dt_sede[xids].nom_sede);$("#frm_sede #ciudad").val(xThisConfig.dt_sede[xids].ciudad);$("#frm_sede #direccion").val(xThisConfig.dt_sede[xids].dir_sede);$("#frm_sede #eslogan").val(xThisConfig.dt_sede[xids].eslogan);$("#frm_sede #mesas").val(xThisConfig.dt_sede[xids].mesas);$("#frm_sede #telefono").val(xThisConfig.dt_sede[xids].sedetelefono);$("#frm_sede #ubigeo").val(xThisConfig.dt_sede[xids].ubigeo);$("#frm_sede #codigo_del_domicilio_fiscal").val(xThisConfig.dt_sede[xids].codigo_del_domicilio_fiscal);$("#frm_sede #email_cierre").val(xThisConfig.dt_sede[xids].email_cierre);dialog_add_sede.open();}
+function xModificarSede(obj){var xids=$(obj).parents('tr').attr('data-id');$("#frm_sede #idsede").val(xThisConfig.dt_sede[xids].idsede);$("#frm_sede #nombre").val(xThisConfig.dt_sede[xids].nom_sede);$("#frm_sede #ciudad").val(xThisConfig.dt_sede[xids].ciudad);$("#frm_sede #direccion").val(xThisConfig.dt_sede[xids].dir_sede);$("#frm_sede #eslogan").val(xThisConfig.dt_sede[xids].eslogan);$("#frm_sede #mesas").val(xThisConfig.dt_sede[xids].mesas);$("#frm_sede #telefono").val(xThisConfig.dt_sede[xids].sedetelefono);$("#frm_sede #ruc_cpe").val(xThisConfig.dt_sede[xids].ruc_cpe);$("#frm_sede #razonsocial_cpe").val(xThisConfig.dt_sede[xids].razonsocial_cpe);$("#frm_sede #email_cierre").val(xThisConfig.dt_sede[xids].email_cierre);dialog_add_sede.open();}
 function xModificarCat(obj){var xids=$(obj).parents('tr').attr('data-index');$("#frm_cat #idcategoria").val(xThisConfig.dt_cat[xids].idcategoria);$("#frm_cat #descripcion").val(xThisConfig.dt_cat[xids].descripcion);$("#frm_cat #hora_ini").val(xThisConfig.dt_cat[xids].hora_ini);$("#frm_cat #hora_fin").val(xThisConfig.dt_cat[xids].hora_fin);$("#frm_cat #detalle").val(xThisConfig.dt_cat[xids].detalle);check_visible_cliente.checked=xThisConfig.dt_cat[xids].visible_cliente==="0"?false:true;check_accesible_mozo.checked=xThisConfig.dt_cat[xids].accesible_mozo==="0"?false:true;$('.dia_disponible').each((i,e)=>{e.checked=false});const listDiasAtienden=xThisConfig.dt_cat[xids].dia_disponible;if(listDiasAtienden){$('.dia_disponible').each((i,e)=>{e.checked=listDiasAtienden.indexOf(e.value)>-1;});}
 dialog_add_cat.open();}
 function xGuardarOrg(){xvalidateFormInput('frm_org',function(a){if(a===false){return;}

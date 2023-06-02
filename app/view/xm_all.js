@@ -48,11 +48,13 @@ xIdOrg=xdtS.datos[0].ido;xIdSede=xdtS.datos[0].idse;xIdUsuario=xdtS.datos[0].idu
 function xVerificarSession(){$.ajax({type:'POST',url:'../../bdphp/log.php?op=-104'}).done(function(a){if(a==1){setClearLocalStorage();}});}
 function xLoadImpresoras(){var xDtbdPrint_eval=xm_log_get('app3_woIpPrint');var xPrintLocal=window.localStorage.getItem('::app3_woIpPrintLoC');for(var i=0;i<xDtbdPrint_eval.length;i++){if(xDtbdPrint_eval[i].local==1){if(xPrintLocal===xDtbdPrint_eval[i].descripcion){window.localStorage.setItem("::app3_woIpPrintLoC",xDtbdPrint_eval[i].descripcion);window.localStorage.setItem("::app3_woIpPrintLo",JSON.stringify(xDtbdPrint_eval[i]));return;}}}}
 function xCerrarSessionAll(){$('body').removeClass('loaded');$.ajax({type:'POST',url:'../../bdphp/log.php?op=-103'}).done(function(a){setClearLocalStorage()});}
-function setClearLocalStorage(redirec=true){var printL=window.localStorage.getItem('::app3_woIpPrintLoC');var touchVR=window.localStorage.getItem('::app3_sys_vr_touch');var lasIdSede=window.localStorage.getItem('::app3_sys_last_s');var show_opcion_item=window.localStorage.getItem('::app3_sys_vr_show_opcion');var vr_touch_item=window.localStorage.getItem('::app3_sys_vr_touch');window.localStorage.clear();if(printL){window.localStorage.setItem('::app3_woIpPrintLoC',printL);}
+function setClearLocalStorage(redirec=true){var printL=window.localStorage.getItem('::app3_woIpPrintLoC');var touchVR=window.localStorage.getItem('::app3_sys_vr_touch');var lasIdSede=window.localStorage.getItem('::app3_sys_last_s');var show_opcion_item=window.localStorage.getItem('::app3_sys_vr_show_opcion');var vr_touch_item=window.localStorage.getItem('::app3_sys_vr_touch');var app3_woZD=window.localStorage.getItem('::app3_woZD');var app3_woZD_TP=window.localStorage.getItem('::app3_woZD_TP');window.localStorage.clear();if(printL){window.localStorage.setItem('::app3_woIpPrintLoC',printL);}
 if(touchVR){window.localStorage.setItem('::app3_sys_vr_touch',touchVR);}
 if(lasIdSede){window.localStorage.setItem('::app3_sys_last_s',lasIdSede);}
 if(show_opcion_item){window.localStorage.setItem('::app3_sys_vr_show_opcion',show_opcion_item);}
 if(vr_touch_item){window.localStorage.setItem('::app3_sys_vr_touch',vr_touch_item);}
+if(app3_woZD){window.localStorage.setItem('::app3_woZD',app3_woZD);}
+if(app3_woZD_TP){window.localStorage.setItem('::app3_woZD_TP',app3_woZD_TP);}
 if(redirec){document.location.href='../../logueese.html';}};function getCookie(name){var value="; "+document.cookie;var parts=value.split("; "+name+"=");if(parts.length==2)return parts.pop().split(";").shift();}
 function xm_LogIni(responde){$.ajax({type:'POST',url:'../../bdphp/log.php?op=-1111'}).done(function(dt){if(dt=="0"){xVerificarSession();responde(false);}else{window.localStorage.setItem("::app3_woDUS",dt);responde(true);}})}
 function xm_LogChequea(responde){var xdt_log=window.localStorage.getItem("::app3_woDUS");var _xdt_log=xdt_log

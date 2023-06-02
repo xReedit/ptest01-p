@@ -24,8 +24,7 @@
 </div>
 <br>
 <div class="xtxtCentro" hidden$="isPedidoDespachado">
-<hr>
-<button class="xBoton2 xPlomo" onclick="pedidoDeliveryEntregado()">Entregado</button>
+<button class="xBoton2 xPlomo" dialog-dismiss onclick="pedidoDeliveryEntregado()">Listo</button>
 </div>
 </paper-dialog-scrollable>
 </paper-dialog>
@@ -55,6 +54,12 @@
 <p id="min_max_pedido">-<span class="xfont9">min x pedido</span></p>
 </div>
 <div class="xContent_Indicador_pedido_de">
+<div class="xIndicadorPedido default xCursor noselect" onclick="window.location.reload()">
+<div>
+<i class="fa fa-refresh"></i>
+<p class="fs-10">Actualizar</p>
+</div>
+</div>
 <div class="xIndicadorPedido fuccia xCursor noselect xInvisible xFondoRowAmarillo3" id="btn_ver_reserva" onclick="xVerReservas()">
 <div><p id="tt_pedidos_reserva">0</p><span>Reservas</span></div>
 </div>
@@ -75,15 +80,13 @@
 <p class="xpading_10">Seleccione las zonas de despacho y el tipo de consumo a trabajar.</p>
 <div class="xLinea"></div>
 <div class="xContent xpading_15" id="div_zona_despacho">
-<h4>Zona de despacjo</h4>
+<h4>Zona de despacho</h4>
 <div class="xLinea"></div><br>
-<paper-checkbox>Cocina</paper-checkbox><br>
-<paper-checkbox>Bar</paper-checkbox><br>
+<paper-checkbox>...</paper-checkbox><br>
 <br>
 <h4>Tipo de consumo</h4>
 <div class="xLinea"></div><br>
-<paper-checkbox>En el local</paper-checkbox><br>
-<paper-checkbox>Para llevar</paper-checkbox><br>
+<paper-checkbox>...</paper-checkbox><br>
 <br>
 <br>
 </div><br>
@@ -132,7 +135,10 @@
 <div id="id_charts_despacho" class="xContent">
 <br><br>
 <h3 class="xBold"><span class="xCursor xDerecha"><a onclick="xVerDepacho()">Regresar</a></span></h3>
-<div style="text-align:center" class="xfont18"><p>Tiempo maximo establecido: <span id="tt_max_p" class="xBold"></span> <span>Pedidos despachados: <span id="tt_pd" class="xBold"></span> <span class="xColorRow_Rojo">Pedidos Retirados: <span id="tt_an" class="xBold"></span></p></div>
+<div style="text-align:center" class="xfont18">
+<h3>Últimos 2 dias</h3>
+<p>Tiempo maximo establecido: <span id="tt_max_p" class="xBold"></span> <span>Pedidos despachados: <span id="tt_pd" class="xBold"></span> <span class="xColorRow_Rojo">Pedidos Retirados: <span id="tt_an" class="xBold"></span></p>
+</div>
 <br>
 <div class="xLinea"></div><br>
 <div style="text-align:center" class="xfont18"><p>Tiempo de despacho en minutos por pedido.<p></div>
@@ -141,12 +147,10 @@
 <div class="xLinea"></div><br>
 <div style="text-align:center">
 <div class="xdiv_promedio xEnLinearTop">
+<div class="xdiv_promedio_show" style="border-radius:5px;display:inline-block;padding:10px">
 <h2 class="xBold" id="val_tt_p">50'</h2>
 <p>Minutos, en promedio se tomo en despachar un pedido</p>
 </div>
-<div class="xEnLinearTop">
-<p class="xBold">Tiempo promedio de despacho</p>
-<div id="chart_bar_tiempo" style="margin:auto 0;width:500px;height:300px"></div>
 </div>
 <div class="xEnLinearTop">
 <div id="chart_indicador"style="margin:auto 0; width:500px; height: 250px;"></div>
@@ -158,7 +162,7 @@
 </template>
 </dom-module>
 <style type="text/css">.dialog_color{border-radius:5px;position:fixed;top:10px;right:10px}.xdiv_promedio{padding:20px;text-align:center;width:90px;border-radius:10px;color:white}.xEnLinearTop{display:inline-block;vertical-align:middle}</style>
-<script>/*<![CDATA[*/var xThisZonaDespacho;var xdata_zona=[],xIdZonaSeccion='',xIdTp='',des_despacho='',xValCountPedidosDespacho=0,xUltimoIdPedidoEnZona=0,xColorMarcado='xNaranja',xObjPedido,xRefresh_tiempo,xelem_tt_p_cola,xhora_actual_serv;var xtiempo_maximo=0,tiempo_medio=0,xNumReservas=0,element_sonido,isSocket,$grid,itemPedidoEntregar;function pruebaAddPedido(){var xaa='<div class="xmarco_zd_pedido ini"><h3>pedido</h3><h3>pedido</h3><h3>pedido</h3><h3>pedido</h3><h3>pedido</h3></div>';$('.xContent_zd_pedido').append(xaa).trigger('create');setTimeout(function(){xTransicionPedido();},100);}
+<script>/*<![CDATA[*/var xThisZonaDespacho,xdes_mesa_pedido='';var xdata_zona=[],xIdZonaSeccion='',xIdTp='',des_despacho='',xValCountPedidosDespacho=0,xUltimoIdPedidoEnZona=0,xColorMarcado='xNaranja',xObjPedido,xRefresh_tiempo,xelem_tt_p_cola,xhora_actual_serv;var xtiempo_maximo=0,tiempo_medio=0,xNumReservas=0,element_sonido,isSocket,$grid,itemPedidoEntregar;function pruebaAddPedido(){var xaa='<div class="xmarco_zd_pedido ini"><h3>pedido</h3><h3>pedido</h3><h3>pedido</h3><h3>pedido</h3><h3>pedido</h3></div>';$('.xContent_zd_pedido').append(xaa).trigger('create');setTimeout(function(){xTransicionPedido();},100);}
 function xIniZonaDespacho(){xm_LogChequea(function(){xm_log_get('ini_us');xPopupLoad=document.getElementById('xLoad');$("#Titulo_page").text("Zona de despacho");$("#panel_toolbar").hide();xLoadZonaDespacho();$('body').addClass('loaded');xelem_tt_p_cola=$("#tt_pedidos_cola");element_sonido=document.getElementById('sonido_notifica_despacho');element_sonido.autobuffer=true;element_sonido.load();try{element_sonido.play();}catch(error){}});$(document.body).on('click','.xtabla_pedido_despacho tr td',function(e){if($(this).hasClass('des_seccion')){return;}
 if($(this).hasClass('xmarcado')){$(this).removeClass();}else{$(this).addClass(xColorMarcado+' xmarcado');}
 e.stopPropagation();e.stopImmediatePropagation();})
@@ -168,12 +172,20 @@ if($(this).text()==="Confirmar"){xObjPedido=$(this).parents('.xmarco_zd_pedido')
 if($(this).text()==="Confirmar envio"){xObjPedido=$(this).parents('.xmarco_zd_pedido');$(xObjPedido).addClass('retirada');xEnviarReservaDespacho(xObjPedido)}
 e.stopPropagation();e.stopImmediatePropagation();})
 $(document.body).on('click','.xBtnDespacho_retirar',function(e){if($(this).text()==="Retirar"){$(this).text('Confirma')}else{xObjPedido=$(this).parents('.xmarco_zd_pedido');xDespachado_retirado(xObjPedido,1);}
-e.preventDefault();e.stopPropagation();e.stopImmediatePropagation();})}
+e.preventDefault();e.stopPropagation();e.stopImmediatePropagation();})
+disableScrollRefresh()}
+function xCheckStorageChecksZD(){var _xIdZonaSeccion=window.localStorage.getItem('::app3_woZD');var _xIdTp=window.localStorage.getItem('::app3_woZD_TP');if(_xIdZonaSeccion==null||_xIdZonaSeccion==undefined){return}
+_xIdZonaSeccion=_xIdZonaSeccion.split(',')
+_xIdTp=_xIdTp.split(',')
+if(_xIdZonaSeccion.length>0){_xIdZonaSeccion.forEach(function(xid,index){$('.check_zona').each(function(i,xcheck){if(xcheck.dataset.ids==xid){xcheck.checked=true;}})});}
+if(_xIdTp.length>0){_xIdTp.forEach(function(xid,index){$('.check_tp').each(function(i,xcheck){if(xcheck.dataset.tp==xid){xcheck.checked=true;}})});xValCountPedidosDespacho=0
+xUltimoIdPedidoEnZona=0
+xEstablecerFiltroDespachos();}}
 function xCargarChartDespacho(){closeDrawer_izq();xThisZonaDespacho.select_div=3
 $.ajax({type:'POST',url:'../../bdphp/log_chart.php?op=1',data:{'arr_filtro':xdata_zona}}).done(function(dt_chart){var xdata=$.parseJSON(dt_chart);var xdata_grafico=[],xcuenta_row=1,xtiempo_p=0,xcant_x_tiempo=[],xtiempo_row,xcount_tiempo_ok=0,xcount_tiempo_m=0,xcount_tiempo_fuera=0,xp_retirados=0,xdata_bar_tiempo,data,option,xcolor_chart='',xtotal_row_chart=0;xdata=xdata.datos;xtotal_row_chart=xdata.length;xdata_grafico=xdata.filter(({estado})=>estado!=="4");xdata.forEach(function(d){if(d.estado==="4"){xp_retirados++;}
 else{xtiempo_row=parseInt(d.minutos);xtiempo_p+=xtiempo_row;if(xtiempo_row>=xtiempo_maximo){xcount_tiempo_fuera++;}else if(xtiempo_row>=tiempo_medio){xcount_tiempo_m++;}else{xcount_tiempo_ok++;}
 xcuenta_row++;}});xtiempo_p=parseInt(xtiempo_p/xcuenta_row);if(xtiempo_p>=xtiempo_maximo){xcolor_chart='#E53935';}else if(xtiempo_p>=tiempo_medio){xcolor_chart='#ffa000';}else{xcolor_chart='#43a047';}
-$("#val_tt_p").text(xtiempo_p+"'");$(".xdiv_promedio").css('background',xcolor_chart);$("#tt_max_p").text(xtiempo_maximo+" minutos |");$("#tt_pd").text(xCeroIzq(xcuenta_row-1,2)+' | ');$("#tt_an").text(xCeroIzq(xp_retirados,2));chart=c3.generate({bindto:'#chart_linea_tiempo_pedido',data:{json:xdata_grafico,keys:{x:'despachado_hora',value:['minutos'],},type:'area-spline'},grid:{y:{lines:[{value:xtiempo_maximo,text:'Tiempo maximo establecido',position:'start'}]}},axis:{x:{type:'category'}},legend:{show:false},color:{pattern:[xcolor_chart]}});var chart=c3.generate({bindto:'#chart_bar_tiempo',data:{columns:[['data',xtiempo_p]],type:'gauge'},gauge:{label:{format:function(value,ratio){return value;},},max:xtiempo_maximo,units:'minutos',},color:{pattern:['#60B044','#F6C600','#FF0000'],threshold:{values:[tiempo_medio,(xtiempo_maximo*0.9),xtiempo_maximo]}},size:{height:180}});var chart=c3.generate({bindto:'#chart_indicador',data:{columns:[['Total',xtotal_row_chart],['A tiempo',xcount_tiempo_ok],['Medio tiempo',xcount_tiempo_m],['Fuera de tiempo',xcount_tiempo_fuera],['Retirados',xp_retirados]],type:'bar',labels:true},color:{pattern:["#1976d2","#43a047","#ffa000","#E53935","#6d4c41"]}});});}
+$("#val_tt_p").text(xtiempo_p+"'");$(".xdiv_promedio_show").css('background',xcolor_chart);$("#tt_max_p").text(xtiempo_maximo+" minutos |");$("#tt_pd").text(xCeroIzq(xcuenta_row-1,2)+' | ');$("#tt_an").text(xCeroIzq(xp_retirados,2));chart=c3.generate({bindto:'#chart_linea_tiempo_pedido',data:{json:xdata_grafico,keys:{x:'despachado_hora',value:['minutos'],},type:'area-spline'},grid:{y:{lines:[{value:xtiempo_maximo,text:'Tiempo maximo establecido',position:'start'}]}},axis:{x:{type:'category'}},legend:{show:false},color:{pattern:[xcolor_chart]}});var chart=c3.generate({bindto:'#chart_indicador',data:{columns:[['Total',xtotal_row_chart],['A tiempo',xcount_tiempo_ok],['Medio tiempo',xcount_tiempo_m],['Fuera de tiempo',xcount_tiempo_fuera],['Retirados',xp_retirados]],type:'bar',labels:true},color:{pattern:["#1976d2","#43a047","#ffa000","#E53935","#6d4c41"]}});});}
 function xTransicionPedido(){$(element_sonido).trigger('play');$('.xmarco_zd_pedido.ini').each(function(i,e){$(e).removeClass('ini');element_sonido.pause();element_sonido.currentTime=0;element_sonido.play();xResumenPedidosItem();})}
 function xVerPedidosDespachados(){closeDrawer_izq();xThisZonaDespacho.select_div=1;clearInterval(xRefresh_tiempo);var xtb_obj=$(".grid_pedidos_despachados");try{$(xtb_obj).empty();if($(xtb_obj).isotope()){$(xtb_obj).isotope('destroy');}}
 catch(e){}
@@ -181,7 +193,7 @@ $(xtb_obj).html('<paper-spinner active class="xCentradoVerticalHorizontal"></pap
 xcolor_tiempo_transcurrido='xFondoRowverde_estado_pedido';x_tiempo_transcurrido=xdtPe[xindex].despachado_tiempo
 xmin_tt=x_tiempo_transcurrido.split(':');xmin_tt=xmin_tt[0];if(xmin_tt>=xtiempo_maximo){xcolor_tiempo_transcurrido='xFondoRowRojo_estado_pedido';}else if(xmin_tt>=tiempo_medio){xcolor_tiempo_transcurrido='xFondoRowAmarillo_estado_pedido';}
 xCadenaNumMesa=String(xCadenaNumMesa+'<div class="xMiCardPedido xCursor '+xcolor_tiempo_transcurrido+'" data-hora="'+xdtPe[xindex].despacho_tiempo+'" data-color="'+xcolor_tiempo_transcurrido+'" data-p="'+xdtPe[xindex].idpedido+'" data-nummesa="'+xdtPe[xindex].nummesa+'" data-correlativo="'+xdtPe[xindex].correlativo_dia+'"  data-numpedido="'+xdtPe[xindex].numpedido+'" onclick="xVerDetallePD(this)">'+'<p class="tipo">'+xdes_mesa_pedido+'</p>'+'<h3 class="numero xBold">'+xcont_mesa+'</h3>'+'<p class="referencia xfont9">'+xdtPe[xindex].idpedido+'</p>'+'<p class="referencia xfont12">'+xdtPe[xindex].referencia+'</p>'+'<p class="tiempo xBold">'+x_tiempo_transcurrido+'</p>'+'</div>');};$(xtb_obj).html($(xCadenaNumMesa)).trigger('create').isotope({itemSelector:'.xMiCardPedido',});})}
-function xVerDetallePD(obj){var xid_p=$(obj).attr('data-p'),xcolor_estado=$(obj).attr('data-color');xPopupLoad.titulo="Cargando...";xPopupLoad.xopen();$.ajax({type:'POST',url:'../../bdphp/log.php?op=2104',data:{'id':xid_p}}).done(function(dt_dp){var xdt_pedidos=$.parseJSON(dt_dp),xarr_pedido=[],xcadena_item='',xcadena_secc='',xcadena_pedido='';xdt_pedidos=xdt_pedidos.datos;xarr_pedido=xElaborarArray(xdt_pedidos);for(e in xarr_pedido){itemPedidoEntregar=xarr_pedido[e];xThisZonaDespacho.isPedidoDespachado=xarr_pedido[e].pwa_delivery_status==='0'?false:true;if(xarr_pedido[e].nummesa===''||xarr_pedido[e].nummesa==='0'){xdes_mesa_pedido='Pedido';xcont_mesa=xCeroIzq(xarr_pedido[e].correlativo_dia,4);}else{xcont_mesa=xCeroIzq(xarr_pedido[e].nummesa,2);}
+function xVerDetallePD(obj){var xid_p=$(obj).attr('data-p'),xcolor_estado=$(obj).attr('data-color');xPopupLoad.titulo="Cargando...";xPopupLoad.xopen();$.ajax({type:'POST',url:'../../bdphp/log.php?op=2104',data:{'id':xid_p}}).done(function(dt_dp){var xdt_pedidos=$.parseJSON(dt_dp),xarr_pedido=[],xcadena_item='',xcadena_secc='',xcadena_pedido='';xdt_pedidos=xdt_pedidos.datos;xarr_pedido=xElaborarArray(xdt_pedidos);for(e in xarr_pedido){itemPedidoEntregar=xarr_pedido[e];xThisZonaDespacho.isPedidoDespachado=xarr_pedido[e].pwa_delivery_status==='0'?false:true;if(xarr_pedido[e].nummesa===''||xarr_pedido[e].nummesa==='0'){xdes_mesa_pedido='Pedido';xcont_mesa=xCeroIzq(xarr_pedido[e].correlativo_dia,4);}else{xcont_mesa=xCeroIzq(xarr_pedido[e].nummesa,2);xdes_mesa_pedido='Mesa'}
 xcadena_secc='';xid_p=e;xcadena_enca='<div class="xmarco_zd_pedidox" data-id="'+xid_p+'">'+'<div class="encabezado '+xcolor_estado+'" data-id="'+xid_p+'" id="enca_'+xid_p+'" data-tiempo="'+xarr_pedido[e].hora+'">'+'<table width="100%" class="xtable4">'+'<tr class="xSinBorde_tr">'+'<td>'+'<div class="xEncabezado_zd_pedido"><p class="xfont30">'+xcont_mesa+'</p><span>'+xdes_mesa_pedido+'</span></div>'+'</td>'+'<td>'+'<div class="xEncabezado_zd_pedido"><p id="val_num_cola">-</p><span># en cola</span></div>'+'</td>'+'<td>'+'<div class="xEncabezado_zd_pedido"><p id="val_minutos">'+xarr_pedido[e].despachado_tiempo+'</p><span>minutos</span></div>'+'</td>'+'</tr>'+'</table>'+'</div>';if(xarr_pedido[e]===null){continue;}
 $.map(xarr_pedido[e],function(tp_c,z){const _referenciaPedido=xarr_pedido[e].referencia;if(typeof tp_c==="object"){$.map(tp_c,function(n_seccion,z){xcadena_tp_c='<div id="ref_pedido" class="referencia xFondoRowIndigo">'+'<p>'+tp_c.des_tipo_consumo+'<br><span class="xBold">'+_referenciaPedido+'</span></p>'+'</div>'+'<div id="body_pedido">'+'<table width="100%" class="xtabla_pedido_despacho">';if(typeof n_seccion==="object"){$.map(n_seccion,function(items,z){if(typeof items==="object"){xcadena_item=String(xcadena_item+'<tr class="row row_item" data-id="'+items.idpedido_detalle+'" data-iditem="'+items.iditem+'" data-idseccion="'+n_seccion.idseccion+'"><td>'+xCeroIzq(items.cantidad_r,2)+' | '+items.descripcion+'</td></tr>');}})
 xcadena_secc=String(xcadena_secc+'<tr><td class="xSinBorde xBold des_seccion" data-id="'+n_seccion.idseccion+'">'+n_seccion.des_seccion+'</td></tr>'+xcadena_item);xcadena_item='';}})
@@ -192,11 +204,11 @@ xid_pd=xid_p;const objColor=$(obj).find(".encabezado");let valEstado=0;valEstado
 $(xObjPedido).addClass('retirada');setTimeout(function(){$(xObjPedido).remove();xObjPedido.empty();xResumenPedidosItem();},2000)
 xPopupLoad.xclose();_zonaSocketprinterOnly(xObjPedido);})}
 function xVerSiPedidos_logrun(){if(isSocket){return;}
-var xrpt_run;console.log(xdata_zona);if(typeof(EventSource)!=="undefined"){xsourceEvent=new EventSource("../../bdphp/log_run.php?op=2&tp="+xdata_zona.tipo_consumo+"&ids="+xdata_zona.idseccion);xsourceEvent.onmessage=function(event){xrpt_run=event.data.split(',');xhora_actual_serv=xrpt_run[1];if(xrpt_run[0]!==xValCountPedidosDespacho){xValCountPedidosDespacho=xrpt_run[0];xActualizarPedidosZona();}};}}
-function xVerSiPedidos_logrun_socket(){var xrpt_run;console.log(xdata_zona);if(typeof(EventSource)!=="undefined"){const _url='../../bdphp/log_run.php?op=201&tp='+xdata_zona.tipo_consumo+'&ids='+xdata_zona.idseccion;$.ajax({type:'GET',url:_url}).done(event=>{xrpt_run=event.split(',');xhora_actual_serv=xrpt_run[1];if(xrpt_run[0]!==xValCountPedidosDespacho){xValCountPedidosDespacho=xrpt_run[0];xActualizarPedidosZona();}});}}
+var xrpt_run;if(typeof(EventSource)!=="undefined"){xsourceEvent=new EventSource("../../bdphp/log_run.php?op=2&tp="+xdata_zona.tipo_consumo+"&ids="+xdata_zona.idseccion);xsourceEvent.onmessage=function(event){xrpt_run=event.data.split(',');xhora_actual_serv=xrpt_run[1];if(xrpt_run[0]!==xValCountPedidosDespacho){xValCountPedidosDespacho=xrpt_run[0];xActualizarPedidosZona();}};}}
+function xVerSiPedidos_logrun_socket(){var xrpt_run;const _url='../../bdphp/log_run.php?op=201&tp='+xdata_zona.tipo_consumo+'&ids='+xdata_zona.idseccion;$.ajax({type:'GET',url:_url}).done(event=>{xrpt_run=event.split(',');xhora_actual_serv=xrpt_run[1];if(xrpt_run[0]!==xValCountPedidosDespacho){xValCountPedidosDespacho=xrpt_run[0];xActualizarPedidosZona();}});}
 function _zonaSocketPintarPedido(pedido){xVerSiPedidos_logrun_socket();}
 function xActualizarPedidosZona(){var xarr_pedido=[];var xNumEnCola=parseInt($(".xmarco_zd_pedido").length);$.ajax({type:'POST',url:'../../bdphp/log.php?op=2101',data:{'id':xUltimoIdPedidoEnZona,'num_pedidos_cola':xNumEnCola,'arr_filtro':xdata_zona}}).done(function(dt_pedidos){var xdt_pedidos=$.parseJSON(dt_pedidos),xid_p,xid_secc,xid_item,xcadena_enca='',xcadena_secc='',xcadena_tp_c='',xcadena_item='',xcadena_pedido='',xcandena_btn='',xid_tp_c='',xnum_mesa_p=0,xdes_mesa_p="mesa";xdt_pedidos=xdt_pedidos.datos;xarr_pedido=xElaborarArray(xdt_pedidos);for(e in xarr_pedido){xcadena_secc='';xNumEnCola++;xid_p=e;xdes_mesa_p="mesa";xnum_mesa_p=xCeroIzq(xarr_pedido[e].nummesa,2);if(xnum_mesa_p==="00"){xnum_mesa_p=xCeroIzq(xarr_pedido[e].correlativo_dia,3);xdes_mesa_p="pedido"}
-xcadena_enca='<div class="xmarco_zd_pedido ini" data-id="'+xid_p+'" >'+'<div class="encabezado xFondoRowverde" data-id="'+xid_p+'" id="enca_'+xid_p+'" data-reserva="'+xarr_pedido[e].reserva+'" data-tiempo="'+xarr_pedido[e].hora+'">'+'<table width="100%" class="xtable4">'+'<tr class="xSinBorde_tr">'+'<td>'+'<div class="xEncabezado_zd_pedido"><p class="xfont30">'+xnum_mesa_p+'</p><span>'+xdes_mesa_p+'</span></div>'+'</td>'+'<td>'+'<div class="xEncabezado_zd_pedido xDesactivarBoton"><p id="val_num_cola">'+xCeroIzq(xNumEnCola,2)+'</p><span># en cola</span></div>'+'</td>'+'<td>'+'<div class="xEncabezado_zd_pedido"><p id="val_minutos">00:00</p><span>minutos</span></div>'+'</td>'+'</tr>'+'</table>'+'</div>';if(xarr_pedido[e]===null){continue;}
+xcadena_enca='<div class="xmarco_zd_pedido ini noselect" data-id="'+xid_p+'" >'+'<div class="encabezado xFondoRowverde" data-id="'+xid_p+'" id="enca_'+xid_p+'" data-reserva="'+xarr_pedido[e].reserva+'" data-tiempo="'+xarr_pedido[e].hora+'">'+'<table width="100%" class="xtable4">'+'<tr class="xSinBorde_tr">'+'<td>'+'<div class="xEncabezado_zd_pedido"><p class="xfont30">'+xnum_mesa_p+'</p><span>'+xdes_mesa_p+'</span></div>'+'</td>'+'<td>'+'<div class="xEncabezado_zd_pedido xDesactivarBoton"><p id="val_num_cola">'+xCeroIzq(xNumEnCola,2)+'</p><span># en cola</span></div>'+'</td>'+'<td>'+'<div class="xEncabezado_zd_pedido"><p id="val_minutos">00:00</p><span>minutos</span></div>'+'</td>'+'</tr>'+'</table>'+'</div>';if(xarr_pedido[e]===null){continue;}
 $.map(xarr_pedido[e],function(tp_c,z){const _referenciaPedido=xarr_pedido[e].referencia;if(typeof tp_c==="object"){$.map(tp_c,function(n_seccion,z){xcadena_tp_c='<div id="ref_pedido" class="referencia xFondoRowIndigo">'+'<p>'+tp_c.des_tipo_consumo+'<br><span class="xBold">'+_referenciaPedido+'</span></p>'+'</div>'+'<div id="body_pedido">'+'<table width="100%" class="xtabla_pedido_despacho">';if(typeof n_seccion==="object"){$.map(n_seccion,function(items,z){if(typeof items==="object"){xcadena_item=String(xcadena_item+'<tr class="row row_item" data-id="'+items.idpedido_detalle+'" data-iditem="'+items.iditem+'" data-idseccion="'+n_seccion.idseccion+'"><td>'+xCeroIzq(items.cantidad_r,2)+' | '+items.descripcion+'</td></tr>');}})
 xcadena_secc=String(xcadena_secc+'<tr><td class="xSinBorde xBold des_seccion" data-id="'+n_seccion.idseccion+'">'+n_seccion.des_seccion+'</td></tr>'+xcadena_item);xcadena_item='';}});if(xcadena_secc!==''){xcadena_secc=String(xcadena_tp_c+xcadena_secc);xcadena_pedido=String(xcadena_pedido+xcadena_secc+'</table>');xcadena_secc='';}}});if(xarr_pedido[e].reserva==='1'){xNumReservas++;xcandena_btn='<div class="xFlex xpie_zd_btn_pedido" id="btn_pedido"><div id="bt_retirar" class="xAlinearce xBtnDespacho_retirar noselect xCursor" style="width:60px">Retirar</div><div id="bt_despachado" class="xAlinearce xBtnDespacho noselect xCursor" style="width:240px">Enviar a despacho</div></div>';xcadena_pedido=String(xcadena_enca+xcadena_pedido+'</div>'+xcandena_btn+'</div></div>');$("#div_reserva").append(xcadena_pedido).trigger('create');$("#tt_pedidos_reserva").parent().parent().removeClass('xInvisible');xCuentaReservas();}else{xcandena_btn='<div class="xFlex xpie_zd_btn_pedido" id="btn_pedido"><div id="bt_retirar" class="xAlinearce xBtnDespacho_retirar noselect xCursor" style="width:60px">Retirar</div><div id="bt_despachado" class="xAlinearce xBtnDespacho noselect xCursor" style="width:240px">Listo</div></div>';xcadena_pedido=String(xcadena_enca+xcadena_pedido+'</div>'+xcandena_btn+'</div></div>');$("#xContent_zd_pedido").append(xcadena_pedido).trigger('create');}
 setTimeout(function(){xTransicionPedido();},100);element_sonido.play();xcadena_pedido='';}
@@ -209,7 +221,7 @@ xre_cadena=String(xre_cadena+xre_des_seccion+xre_cadena_item+'<tr class="xSinBor
 $("#tb_resumen_pedido").html(xre_cadena).trigger('create');}
 function xRefrecarTiempoMinutos(){var xtiempo_transcurrido,tiempo_encabezado,xen_cola=0;$(".xmarco_zd_pedido .encabezado").each(function(i,e){if(e.dataset.reserva!=='1'){tiempo_encabezado=e.dataset.tiempo;xTiempoTranscurridos_2(tiempo_encabezado,function(h,m,s){xen_cola++;xtiempo_transcurrido=m+':'+s;$(e).find('#val_minutos').text(xtiempo_transcurrido);$(e).find('#val_num_cola').text(xCeroIzq(xen_cola,2));xCalcularEstadoSegunTiempo($(e),xtiempo_transcurrido);})}});xelem_tt_p_cola.text(xCeroIzq(xen_cola,2));}
 function xCalcularEstadoSegunTiempo(elemento,x_tiempo_transcurrido){var xmin_tt=x_tiempo_transcurrido.split(':');xmin_tt=xmin_tt[0];if(xmin_tt>=xtiempo_maximo){elemento.removeClass('xFondoRowverde_estado_pedido');elemento.removeClass('xFondoRowAmarillo_estado_pedido');elemento.addClass('xFondoRowRojo_estado_pedido');}else if(xmin_tt>=tiempo_medio){elemento.removeClass('xFondoRowverde_estado_pedido');elemento.addClass('xFondoRowAmarillo_estado_pedido');}}
-function xLoadZonaDespacho(){$.ajax({type:'POST',url:'../../bdphp/log.php?op=21'}).done(function(dtImp){var xdtImp=$.parseJSON(dtImp),xcadena_imp='',xmin_pedido=0;xdtImp=xdtImp.datos;xcadena_imp='<br><h4>Zonas de despacho</h4><div class="xLinea"></div><br>';for(var i=0;i<xdtImp.length;i++){xcadena_imp=String(xcadena_imp+'<paper-checkbox class="check_zona" data-ids="'+xdtImp[i].idimpresora+'" data-tiempo="'+xdtImp[i].minutos_pedido+'">'+xdtImp[i].descripcion+'</paper-checkbox><br>');};$.ajax({type:'POST',url:'../../bdphp/log.php?op=3'}).done(function(dttp){var xdttp=$.parseJSON(dttp);xdttp=xdttp.datos;xcadena_imp=xcadena_imp+'<br><br><h4>Tipos de consumo</h4><div class="xLinea"></div><br>';for(var i=0;i<xdttp.length;i++){xcadena_imp=String(xcadena_imp+'<paper-checkbox class="check_tp" data-tp="'+xdttp[i].idtipo_consumo+'">'+xdttp[i].descripcion+'</paper-checkbox><br>')};$("#div_zona_despacho").html(xcadena_imp);});});}
+function xLoadZonaDespacho(){$.ajax({type:'POST',url:'../../bdphp/log.php?op=21'}).done(function(dtImp){var xdtImp=$.parseJSON(dtImp),xcadena_imp='',xmin_pedido=0;xdtImp=xdtImp.datos;xcadena_imp='<br><h4>Zonas de despacho</h4><div class="xLinea"></div><br>';for(var i=0;i<xdtImp.length;i++){xcadena_imp=String(xcadena_imp+'<paper-checkbox class="check_zona" data-ids="'+xdtImp[i].idimpresora+'" data-tiempo="'+xdtImp[i].minutos_pedido+'">'+xdtImp[i].descripcion+'</paper-checkbox><br>');};$.ajax({type:'POST',url:'../../bdphp/log.php?op=3'}).done(function(dttp){var xdttp=$.parseJSON(dttp);xdttp=xdttp.datos;xcadena_imp=xcadena_imp+'<br><br><h4>Tipos de consumo</h4><div class="xLinea"></div><br>';for(var i=0;i<xdttp.length;i++){xcadena_imp=String(xcadena_imp+'<paper-checkbox class="check_tp" data-tp="'+xdttp[i].idtipo_consumo+'">'+xdttp[i].descripcion+'</paper-checkbox><br>')};$("#div_zona_despacho").html(xcadena_imp);setTimeout(()=>{xCheckStorageChecksZD()},1500);});});}
 function xCalcularMinutosDespacho(mm){xtiempo_maximo=mm;tiempo_medio=parseInt(xtiempo_maximo*0.6);$("#min_max_pedido").html(xCeroIzq(xtiempo_maximo,2)+'<span class="xfont9">min x pedido</span>').trigger('create');}
 function xEstablecerFiltroDespachos(){element_sonido.play();xIdZonaSeccion='';des_despacho='';xIdTp='',xmin_pedido=0,xmin_pedido_ultimo=0;$(".check_zona").each(function(i,e){if(e.checked){xIdZonaSeccion=xIdZonaSeccion+$(e).attr('data-ids')+',';xmin_pedido_ultimo=parseInt($(e).attr('data-tiempo'));if(isNaN(xmin_pedido_ultimo)){xmin_pedido_ultimo=0;}
 des_despacho=des_despacho+xMayusculaPrimera(xSoloMinuscula($(e).text().trim()))+',';if(xmin_pedido_ultimo>xmin_pedido){xmin_pedido=xmin_pedido_ultimo;}}})
@@ -218,6 +230,7 @@ des_despacho=des_despacho.slice(0,-1);xIdZonaSeccion=xIdZonaSeccion.slice(0,-1);
 xdata_zona={'tipo_consumo':xIdTp,'idseccion':xIdZonaSeccion}
 $("#des_titulo_despacho").text(des_despacho);closeDrawer_izq();if(typeof(xsourceEvent)!=="undefined"){xsourceEvent.close();}
 $("#xContent_zd_pedido").html('').trigger('create');xValCountPedidosDespacho=0
+xUltimoIdPedidoEnZona=0
 xThisZonaDespacho.select_div=0;xVerSiPedidos_logrun();xVerSiPedidos_logrun_socket();xRefresh_tiempo=setInterval(function(){xRefrecarTiempoMinutos()},1000);}
 function xElaborarArray(xdata){var xdt_pedidos=xdata,xarr_pedido=[],xid_p,xid_secc,xid_item,xcadena_enca='',xcadena_secc='',xcadena_tp_c='',xcadena_item='',xcadena_pedido='',xcandena_btn='',xid_tp_c='';for(var i=0;i<xdt_pedidos.length;i++){xid_p=xdt_pedidos[i].idpedido;if(xarr_pedido[xid_p]!==undefined){continue;}
 xarr_pedido[xid_p]={'id':xid_p,'fecha_hora':xdt_pedidos[i].fecha_hora,'hora':xdt_pedidos[i].hora,'nummesa':xdt_pedidos[i].nummesa,'correlativo_dia':xdt_pedidos[i].correlativo_dia,'referencia':xdt_pedidos[i].referencia,'reserva':xdt_pedidos[i].reserva,'des_tipo_consumo':xdt_pedidos[i].des_tipo_consumo,'idtipo_consumo':xdt_pedidos[i].idtipo_consumo,'despachado_tiempo':xdt_pedidos[i].despachado_tiempo,'reserva':xdt_pedidos[i].reserva,'pwa_delivery_status':xdt_pedidos[i].pwa_delivery_status,'idcliente':xdt_pedidos[i].idcliente}};for(a in xarr_pedido){xid_p=xarr_pedido[a].id;for(var i=0;i<xdt_pedidos.length;i++){if(xid_p===xdt_pedidos[i].idpedido){xid_tp_c=xdt_pedidos[i].idtipo_consumo;if(xarr_pedido[xid_p][xid_tp_c]!==undefined){continue;}
@@ -238,6 +251,6 @@ function closeDrawer_izq(){document.getElementById("xdrawerIzq").style.width="0"
 function closeDrawer_de(){document.getElementById("xdrawerDe").style.width="0";}
 function xRefreshMarcador(obj){xColorMarcado=$(obj).attr('data-color');dialog_marcar.close();}
 function xDespacharTodos(){$.ajax({type:'POST',url:'../../bdphp/log.php?op=2109'}).done(function(x){dialog_despachar.close();});}
-function pedidoDeliveryEntregado(){if(itemPedidoEntregar.pwa_delivery_status!=='0'){return;}
-$.ajax({type:'POST',url:'../../bdphp/log.php?op=2202',data:{'i':itemPedidoEntregar.id}}).done(function(x){_zonaSocketPedidoEntregado(itemPedidoEntregar.idcliente);dialog_detalle_pd.close();});}
-Polymer({is:'x-zona_despacho',properties:{isPedidoDespachado:Boolean},attached:function(){this.select_div=0;xThisZonaDespacho=this;setTimeout(()=>{_zonaSocketConnect();},1000);xIniZonaDespacho();},detached:function(){_zonaSocketClose();clearInterval(xRefresh_tiempo);}})/*]]>*/</script>
+function pedidoDeliveryEntregado(){try{if(itemPedidoEntregar.pwa_delivery_status!=='0'){return;}
+$.ajax({type:'POST',url:'../../bdphp/log.php?op=2202',data:{'i':itemPedidoEntregar.id}}).done(function(x){_zonaSocketPedidoEntregado(itemPedidoEntregar.idcliente);dialog_detalle_pd.close();});}catch(error){}}
+Polymer({is:'x-zona_despacho',properties:{isPedidoDespachado:Boolean},attached:function(){this.select_div=0;xThisZonaDespacho=this;setTimeout(()=>{_zonaSocketConnect();},1000);xIniZonaDespacho();},detached:function(){_zonaSocketClose();clearInterval(xRefresh_tiempo);enableScrollRefresh()}})/*]]>*/</script>

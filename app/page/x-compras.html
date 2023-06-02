@@ -1,5 +1,6 @@
 <link rel="import" href="../x-componentes/x-comp-find-tipo-pago/x-comp-find-tipo-pago.html">
 <link rel="import" href="../x-componentes/pagination-input/pagination-input.html">
+<link rel="import" href="./x-compras-list.html">
 <dom-module id="x-compras">
 <template>
 <paper-dialog id="dialog_additem_pro" modal entry-animation="scale-up-animation" exit-animation="fade-out-animation" with-backdrop>
@@ -95,13 +96,22 @@
 <input type="text" id="idusuario" name="idusuario">
 </form>
 </div>
-<div class="xEncanezadoCard xFondoRowIndigo2 xCursor xHoverOpaco xTransicion3s" id="div_proveedor" style="height:25px">
+<div class="xEncanezadoCard xFondoRowAmarillo4">
+<p>Estos productos ingresa a:</p>
+<select id="sel_alamcen" class="xTextRow2" inline></select>
+</div>
+<div class="xEncanezadoCard xHoverOpaco xTransicion3s" id="div_proveedor">
 <p><strong>Datos del proveedor</strong></p>
 <br>
-<div class="xInvisible" id="div_ínput">
+<div id="div_ínput">
 <form id="frm_proveedor" method="post" action="#">
-<input type="text" id="descripcion" name="descripcion" placeholder="Nombre / Razon social" onChange="conMayusculas(this)" class="xMiInput xPasarEnter2" style="width:40%" inline>
-<input type="text" id="dni" name="dni" placeholder="DNI / RUC" class="xMiInput xPasarEnter2" onChange="conMayusculas(this)" inline>
+<div>
+<div>
+<input type="text" id="descripcion" name="descripcion" placeholder="🔍 Nombre / Razon social" onChange="conMayusculas(this)" class="xMiInput xPasarEnter2" style="width:50%;min-width:250px" inline>
+</div>
+<input type="text" id="dni" name="dni" placeholder="DNI / RUC" class="xMiInput xPasarEnter2" onChange="conMayusculas(this)" style="width:50%;min-width:200px" inline>
+<input type="text" id="telefono" name="telefono" placeholder="Telefono" onChange="conMayusculas(this)" class="xMiInput xPasarEnter2" style="width:44%;min-width:200px" inline>
+</div>
 <input type="text" id="direccion" name="direccion" placeholder="Direccion" class="xMiInput xPasarEnter2" onChange="conMayusculas(this)">
 <div class="xInvisible">
 <input type="text" id="idorg" name="idorg">
@@ -111,10 +121,6 @@
 </form>
 <br><br>
 </div>
-</div>
-<div class="xEncanezadoCard xFondoRowAmarillo4">
-<p>Estos productos ingresa a:</p>
-<select id="sel_alamcen" class="xTextRow2" inline></select>
 </div>
 <div class="xContentCard">
 <table class="xtable4" width="100%" id="tb_input" data-TablaName="producto_historial_precio">
@@ -151,62 +157,25 @@
 </div>
 </div>
 <div id="divList" style="padding:30px">
-<p class="fw-600 fs-20">Listado de compras</p>
-<br>
 <div class="d-flexx justify-content-between align-content-center">
-<input type="text" class="xMiInput xfont18 xitem2" style="width:80%;bottom:-2px" placeholder="Buscar" autofocus onkeyup="xfiltrarDatos()" id="txt_buscar" enlinea>
-<button class="btn btn-sm btn-info" onclick="goCompra()">+ Nuevo</button>
+<p class="fw-600 fs-20">Listado de compras</p>
+<button class="btn btn-sm btn-primary" onclick="goCompra()">+ Nuevo</button>
 </div>
-<br><br>
-<table width="100%" id="tb_list_cpe">
-<thead>
-<th align="left">#</th>
-<th align="left">fecha</th>
-<th align="left">Tipo Pago</th>
-<th align="left">Almacen</th>
-<th align="right">Total</th>
-<th>.</th>
-</thead>
-<tbody>
-<template is="dom-repeat" items="{{ListCpe}}" as="item">
-<tr class="animated fadeIn fast" id="{{index}}">
-<td data-id="{{index}}">
-<span>{{displayIndex(index)}}</span>
-</td>
-<td align="left">{{item.f_registro}}</td>
-<td align="left">{{item.des_tipo_pago}}</td>
-<td align="left">{{item.des_almacen}}</td>
-<td align="right" class="ximporte_row"> <span class="fw-600 fs-15"> {{item.total}} </span> </td>
-<td align="right">
-<button class="btn btn-sm btn-success" data-id="{{item.idcompra}}" onclick="xloadDetalleCompra(this)">Ver</button>
-</td>
-</tr>
-</template>
-</tbody>
-</table>
 <br>
-<div class="d-flexx justify-content-between">
-<div>
-<span class="fw-600 fs-18"> Total S/.{{ sumListCompra }} </span>
-</div>
-<pagination-input id="paginator" class="xDerecha" current-page="1" page-count="5" current-page-changed="onChangePagination($event)"></pagination-input>
-</div>
+<x-compras-list id="compListCompras"></x-compras-list>
 </div>
 <br><br>
 </div>
 </template>
 </dom-module>
-<script>/*<![CDATA[*/var xThis,xNewItemPro=false,xNewFamilia=false,xPrecio_item_Add=0,xCan_item,xDes_item,xPrecio_item,xnom_familia,xPrecio_und_pro,xIdProducto_sel,xValPago,xImporte_total_list=0,xlo_idorg,xlo_idsede,xsel_proveedor,xsel_almacen,xRpt_pago,sel_idTipoPago,p_rows_re=0,p_rows=0,p_fecha='',p_filter='',p_desde=0,data_pagination={},data_pagination_re={},xdebounce,xe_debounce=false;function xIniCompras(){xIniPagination();xPopupLoad=document.getElementById('xLoad');xm_LogChequea(function(){xm_log_get('ini_us');$('body').addClass('loaded');xlo_idorg=xIdOrg;xlo_idsede=xIdSede;xloadAlamcen();});dateNow=new Date();const maxDate=dateNow.toISOString().split("T")[0];date_fecha_pago.value=maxDate;xThis.habilitarPago=false;$("#Titulo_page").text("Registrar Compras");$('.xPasarEnter2').on('keyup',function(e){var code=e.which;if(code==13||code==186){var inputs=$('input');var a=inputs.index(document.activeElement);if(inputs[a+1]!==null)
+<script>/*<![CDATA[*/var xThis,xNewItemPro=false,xNewFamilia=false,xPrecio_item_Add=0,xCan_item,xDes_item,xPrecio_item,xnom_familia,xPrecio_und_pro,xIdProducto_sel,xValPago,xImporte_total_list=0,xlo_idorg,xlo_idsede,xsel_proveedor,xsel_almacen,xRpt_pago,sel_idTipoPago,p_rows_re=0,p_rows=0,p_fecha='',p_filter='',p_desde=0,data_pagination={},data_pagination_re={},xdebounce,xe_debounce=false;function xIniCompras(){xPopupLoad=document.getElementById('xLoad');xm_LogChequea(function(){xm_log_get('ini_us');$('body').addClass('loaded');xlo_idorg=xIdOrg;xlo_idsede=xIdSede;xloadAlamcen();});dateNow=new Date();const maxDate=dateNow.toISOString().split("T")[0];date_fecha_pago.value=maxDate;xThis.habilitarPago=false;$("#Titulo_page").text("Registrar Compras");$('.xPasarEnter2').on('keyup',function(e){var code=e.which;if(code==13||code==186){var inputs=$('input');var a=inputs.index(document.activeElement);if(inputs[a+1]!==null)
 {var nextBox=inputs[a+1];if(nextBox===undefined){return}
 if(nextBox.disabled){nextBox=inputs[a+2]}
 if(nextBox==undefined){return;}
 nextBox.focus();nextBox.select();}
 event.stopPropagation();e.stopPropagation();e.stopImmediatePropagation()
 return false;}});$(".xprecio").on('keyup',function(e){var code=e.which;if(code==13||code==186){xAddItemCompra(this);}});xValPago=document.getElementById('component_pago_pro');xValPago._tipo=2
-xValPago.addEventListener('xSend',function(e){xRpt_pago=e.detail.xRpts;var p=e.detail.xRpts[0].ok;if(p==0){}else{xRegistrar_compra();}});xValPago.addEventListener('xCancelarCerrar',function(e){xThis.$.dialog_pago.close()});$("#div_proveedor").on('click',function(e){$(this).css('height','80px')
-$(this).find('#div_ínput').removeClass('xInvisible');$("#sel_proveedor").focus();})
-$("#dialog_pago").on('iron-overlay-opened',function(){component_pago_pro.setFocusTxt();})
-$("#txt_fecha").on('change',function(){var d=$(this).val().split('-');p_fecha=d[1]===undefined?'':d[2]+'/'+d[1]+'/'+d[0];xThis.$.paginator.currentPage=1;xLoadCpeEmitidos('6');});xThis.$.paginator.addEventListener('page-limit-change',(e)=>{data_pagination=e.detail.value;p_desde=data_pagination.pageDesde;lastPos=$(window).scrollTop();xLoadCpeEmitidos('6');});}
+xValPago.addEventListener('xSend',function(e){xRpt_pago=e.detail.xRpts;var p=e.detail.xRpts[0].ok;if(p==0){}else{xRegistrar_compra();}});xValPago.addEventListener('xCancelarCerrar',function(e){xThis.$.dialog_pago.close()});$("#dialog_pago").on('iron-overlay-opened',function(){component_pago_pro.setFocusTxt();})}
 function xfiltrarDatos(){if(xe_debounce)return;xe_debounce=true;clearTimeout(xdebounce);xdebounce=setTimeout(()=>{xLoadCpeEmitidos('6');xe_debounce=false;xThis.$.paginator.currentPage=1;},900);}
 function xEnterInInputDlg(e){var code=e.which;if(code==13||code==186){xGuardarItemProComp();}}
 function xOpenRegistrarPago(){sel_idTipoPago=compTpPago.__data__.list_tipo_pago.idtipo_pago;dialog_registrar_pago.open();}
@@ -224,9 +193,9 @@ $("#tb_compra_pago").append(xrow_tipo_pago).trigger('create');xPopupLoad.xopen()
 const frm_compra=$("#frm_compra");frm_compra.find("#idproveedor").val(xsel_proveedor);frm_compra.find("#idalmacen").val(xsel_almacen);frm_compra.find("#f_registro").val(xDevolverFecha());frm_compra.find("#f_compra").val(xDevolverFecha());frm_compra.find("#f_pago").val(xDevolverFechaFormatInputDate(date_fecha_pago.value));frm_compra.find("#fecha_hora").val(new Date().toLocaleString());frm_compra.find("#idtipo_pago").val(sel_idTipoPago);frm_compra.find("#total").val(xImporte_total_list);frm_compra.find("#a_pagar").val(xImporte_total_list);frm_compra.find("#idorg").val(xlo_idorg);frm_compra.find("#idsede").val(xlo_idsede);frm_compra.find("#idusuario").val(xIdUsuario);$.post("../../bdphp/ManejoBD_IUD.php?tb=compra",$("#frm_compra").serialize(),function(xUltimo_id_compra){xIdCompra=xUltimo_id_compra;sql_compra_items=sql_compra_items.replace(/-compra/g,xIdCompra)
 sql_compra_tp=sql_compra_tp.replace(/-compra/g,xIdCompra)
 var xunion_sql=String(sql_compra_items+'; '+sql_compra_tp+'; '+sql_historial_precio_pro+'; '+sql_update_pro)
-$.ajax({type:'POST',url:'../../bdphp/log_100.php?op=1',data:{xsql:xunion_sql}}).done(function(DtIdFamRpt){xPopupLoad.xclose();dialog_registrar_pago.close();xNuevaCompra();xLoadCpeEmitidos();})})}
+$.ajax({type:'POST',url:'../../bdphp/log_100.php?op=1',data:{xsql:xunion_sql}}).done(function(DtIdFamRpt){xPopupLoad.xclose();dialog_registrar_pago.close();xNuevaCompra();xLoadCpeEmitidos();const _compListCompras=document.getElementById('compListCompras');_compListCompras.refresh()})})}
 function _getTipoPago(e){sel_idTipoPago=e.idtipo_pago;}
-function xNuevaCompra(){$("#tb_update_precio tr").remove();$("#tb_input tr.row").remove();$("#tb_input tr.tt_row").remove();$("#tb_compra_items tr").remove();$("#frm_compra").reset();$("#frm_proveedor").reset();$("#frm_item_pro").reset();dialog_pago.close();xThis.habilitarPago=false;$("#div_proveedor").css('height','30px');$("#div_proveedor #div_ínput").addClass('xInvisible');}
+function xNuevaCompra(){$("#tb_update_precio tr").remove();$("#tb_input tr.row").remove();$("#tb_input tr.tt_row").remove();$("#tb_compra_items tr").remove();$("#frm_compra").reset();$("#frm_proveedor").reset();$("#frm_item_pro").reset();dialog_pago.close();xThis.habilitarPago=false;}
 function xSumarTotalLista(){var xTb_items=$("#tb_input");xImporte_total_list=xMoneda(xSumaCantRow(xTb_items,'.ximporte_row'));var xtt_row='<tr class="tt_row xSinBorde"><td colspan="2" align="right"><h3>Total</h3></td><td align="right"><h3><strong>'+xImporte_total_list+'</strong></h3></td><td colspan="2"></td></tr>';xTb_items.find(".tt_row").remove();xTb_items.append(xtt_row).trigger('create');xThis.habilitarPago=parseInt(xImporte_total_list)>0?true:false;}
 function xBorrarItemLocalPro(obj){var xObj=$(obj).parent().parent();var xtb=xObj.parents('table');var xtb_row_id=xObj.attr('id');xObj.fadeTo(550,0,function(){$(this).remove();$('#tb_update_precio #'+xtb_row_id).remove();$('#tb_compra_items #'+xtb_row_id).remove();xSumarTotalLista()});}
 function xResetInputPro(){$("#des_item").val('');$("#des_item").attr('data-id','')
@@ -246,12 +215,11 @@ function xloadProductoItem(){$.ajax({type:'POST',url:'../../bdphp/log.php?op=16'
 xLoadProveedores()})}
 function xLoadFamilias(){$.ajax({type:'POST',url:'../../bdphp/log.php?op=1601'}).done(function(DtFam){var xDtFam=$.parseJSON(DtFam);xThis.dtProFam=xDtFam.datos;xCargarFamiliaInput();})}
 function xLoadProveedores(){$.ajax({type:'POST',url:'../../bdphp/log.php?op=1603'}).done(function(DtProv){var xDtProv=$.parseJSON(DtProv);xThis.dtProProveedor=xDtProv.datos;xCargarProveedores();xPopupLoad.xclose();})}
-function xCargarProveedores(){var xObjTxtProveedor=$("#frm_proveedor #descripcion");xObjTxtProveedor.autocomplete({autoFocus:true,source:xThis.dtProProveedor,select:function(event,ui){xsel_proveedor=ui.item.value;xObjTxtProveedor.val(ui.item.label);xObjTxtProveedor.attr('data-id',xsel_proveedor);$("#frm_proveedor #idproveedor").val(xsel_proveedor);$("#frm_proveedor #direccion").val(ui.item.direccion);$("#frm_proveedor #dni").val(ui.item.dni);return false;},focus:function(event,ui){return false;},change:function(event,ui){if(ui.item===null){xObjTxtProveedor.attr('data-id',"");xsel_proveedor="";$("#frm_proveedor #idproveedor").val('');}
+function xCargarProveedores(){var xObjTxtProveedor=$("#frm_proveedor #descripcion");xObjTxtProveedor.autocomplete({autoFocus:true,source:xThis.dtProProveedor,select:function(event,ui){xsel_proveedor=ui.item.value;xObjTxtProveedor.val(ui.item.label);xObjTxtProveedor.attr('data-id',xsel_proveedor);$("#frm_proveedor #idproveedor").val(xsel_proveedor);$("#frm_proveedor #direccion").val(ui.item.direccion);$("#frm_proveedor #dni").val(ui.item.dni);$("#frm_proveedor #telefono").val(ui.item.telefono);return false;},focus:function(event,ui){return false;},change:function(event,ui){if(ui.item===null){xObjTxtProveedor.attr('data-id',"");xsel_proveedor="";$("#frm_proveedor #idproveedor").val('');}
 return false;}});}
 function xCargarFamiliaInput(){var xObjTxtFam=$("#sel_familia");xObjTxtFam.autocomplete({autoFocus:true,source:xThis.dtProFam,appendTo:$('#dialog_additem_pro'),select:function(event,ui){xObjTxtFam.val(ui.item.label);xObjTxtFam.attr('data-id',ui.item.value);$("#frm_item_pro #idproducto_familia").val(ui.item.value);return false;},focus:function(event,ui){return false;},change:function(event,ui){if(ui.item===null){xObjTxtFam.attr('data-value',"");xObjTxtFam.attr('data-id',"");$("#frm_item_pro #idproducto_familia").val("");xNewFamilia=true;}else{xNewFamilia=false;$("#frm_item_pro #idproducto_familia").val(ui.item.value);}
 return false;}});}
-function xIniPagination(){xThis.$.paginator.currentPage=1;xThis.$.paginator.pageRows=p_rows;xThis.$.paginator.listRows=[10,20,30,40];}
-function xLoadCpeEmitidos(op){p_filter=xThis.$.txt_buscar.value;data_pagination.pageFilter=p_filter;data_pagination.pageFecha=p_fecha;let xDataRes=[];$.ajax({type:'POST',url:'../../bdphp/log_004.php?op=13',data:{op:'13',pagination:data_pagination}}).done(function(res){res=res.split('**');p_rows=res[1];res=$.parseJSON(res[0]);xDataRes=res.datos;xThis.sumListCompra=xDataRes.map(x=>parseFloat(x.total)).reduce((a,b)=>a+b,0);xThis.sumListCompra=xThis.sumListCompra.toFixed(2);p_upadate=false;xThis.$.paginator.pageRows=p_rows;xThis.ListCpe=[];xThis.ListCpe=xDataRes;setTimeout(()=>{$(window).scrollTop(lastPos);},5);});}
+function xLoadCpeEmitidos(op){}
 function xloadDetalleCompra(obj){const _idcompra=obj.dataId;$.ajax({type:'POST',url:'../../bdphp/log_004.php?op=1301',data:{id:_idcompra}}).done(function(res){res=JSON.parse(res).datos;xThis.sumListDetalleCompra=0;if(res.length===0){return;};xThis.sumListDetalleCompra=res.map(x=>parseFloat(x.precio)).reduce((a,b)=>a+b,0);xThis.sumListDetalleCompra=xThis.sumListDetalleCompra.toFixed(2);xThis.ListDetalleCompra=res;dialog_detalle_compora.open();});}
 function goList(){$(divCompra).addClass('xInvisible');$(divList).removeClass('xInvisible');}
 function goCompra(){$(divList).addClass('xInvisible');$(divCompra).removeClass('xInvisible');}
