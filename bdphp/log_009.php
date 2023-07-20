@@ -383,5 +383,58 @@
             
             $bd->xConsulta($sql);
             break;
+
+        // recibe distribuicion
+        case 24: 
+            $postBody = json_decode(file_get_contents('php://input'));
+            $sql="select d.iddistribuicion, sd.nombre sede_de, ad.descripcion almacen_de, ud.usuario usuario_de
+                ,d.fecha, d.detalle 
+                ,sa.nombre sede_a
+                , ua.usuario idusuario_recibe
+                , d.fecha_recibe
+                , if (COALESCE(d.idusuario_recibe,0) = 0,0,1) recibido
+            from distribuicion d 
+                inner join sede sd on sd.idsede = d.idsede 
+                inner join usuario ud on ud.idusuario = d.idusuario 
+                inner join almacen ad on ad.idalmacen = d.idalmacen_de
+                inner join sede sa on sa.idsede= d.idsede_a
+                left join usuario ua on ua.idusuario = d.idusuario_recibe
+            where d.idsede_a = $g_idsede and d.is_to_sede=1 
+                and (MONTH(STR_TO_DATE(d.fecha, '%d/%m/%Y')) = $postBody->mm 
+                and YEAR(STR_TO_DATE(d.fecha, '%d/%m/%Y')) = $postBody->yy)
+                and d.estado = 0
+            order by d.iddistribuicion desc";
+
+            $bd->xConsulta($sql);
+            break;
+
+        case 2401: //
+            $postBody = json_decode(file_get_contents('php://input'));
+            $sql="select dd.*, p.idproducto, if(COALESCE(p.idproducto,0)=0,0,1) registrado
+                ,trim(SUBSTRING_INDEX(dd.descripcion, '|', -1)) nom_producto, trim(SUBSTRING_INDEX(dd.descripcion, '|', 1)) nom_familia
+                , pt.precio, pt.precio_unitario, pt.precio_venta, pt.codigo_barra, pt.venta_x_peso, pt.stock_minimo
+                from distribuicion_detalle dd
+                    inner join producto pt on pt.idproducto = dd.idproducto
+                    left join (
+                        select pp.idproducto, pp.descripcion from producto pp
+                        where pp.idsede = $g_idsede
+                    ) as p on trim(upper(p.descripcion)) = upper(trim(SUBSTRING_INDEX(dd.descripcion, '|', -1)))
+                where dd.iddistribuicion = $postBody->iddistribuicion";
+            $bd->xConsulta($sql);
+            break;
+
+        case 2402: // recibir producto
+            // $postBody = json_decode(file_get_contents('php://input'));
+            $postBody = file_get_contents('php://input');
+            $sql = "call procedure_recibir_producto_distribuicion($g_idsede, $g_ido, '$postBody')";
+            // echo json_encode(array('success' => $sql));
+            $bd->xConsulta($sql);
+            break;
+
+        case 2403: // marcar como recibido
+            $postBody = json_decode(file_get_contents('php://input'));
+            $sql="update distribuicion set idusuario_recibe=$g_us, fecha_recibe=now() where iddistribuicion = $postBody->iddistribuicion"; 
+            $bd->xConsulta($sql);
+            break;
     }
 ?>    

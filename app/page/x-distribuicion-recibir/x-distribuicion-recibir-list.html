@@ -1,0 +1,296 @@
+<dom-module id="x-distribuicion-recibir-list">
+    <link rel="import" href="../../x-componentes/x-comp-find-almacen/x-comp-find-almacen.html">
+    <template>
+    <br>
+    <div class="xMiCard xradius" style="width:90%; max-width: 1250px;">
+        <div class="xEncanezadoCard" style="background: lavenderblush; color: #424242;">
+            <div class="div-content-head-op">
+                <p class="fw-600 fs-18">Recibir Productos</p>
+                <p Class="text-secondary">Recibir productos enviados desde otro almacen.</p>
+            </div>
+        </div>
+        <div class="p-3 mb-5">
+            <!-- header-->
+            <div>
+                <div hidden$="[[ showDetalleDistribuicionRecibe ]]" class="d-flexx justify-content-between align-items-center">
+                    <div>
+                        <h4>Seleccione Mes</h4>
+                        <input type="month" class="selected-template-1 xCursor" id="txt_list_fecha_distribuicion_recibe"
+                            placeholder="Elige fecha">                    
+                    </div>                    
+                </div>
+                <div hidden$="[[ !showDetalleDistribuicionRecibe ]]">
+                    <div>
+                        <div class="d-flexx justify-content-between" style="align-items: flex-start">
+                            <p class="fs-15 fw-600 mb-2">Detalle de Distribuición</p>                        
+                            <button hidden$="[[!showDetalleDistribuicionRecibe]]" class="btn btn-sm btn-secondary"
+                                onclick="golistDistribuicionRecibe()"><i class="fa fa-arrow-left"></i> Atras</button>
+                        </div>
+                        <hr>
+                        <div class="d-flexx justify-content-between mt-3">
+                            <div class="d-flexx justify-content">
+                                <div class="mr-3">
+                                    <p class="fw-600">Envio Desde</p>
+                                    <p>Local: <span class="fw-600">{{objDistribuicionSeleted.sede_de}}</span></p>
+                                    <p>Almacen: <span class="fw-600">{{objDistribuicionSeleted.almacen_de}}</span></p>
+                                    <p>Usuario: <span class="fw-600">{{objDistribuicionSeleted.usuario_de}}</span></p>
+                                </div>         
+                                <div>  
+                                    <p>Fecha: <span class="fw-600">{{objDistribuicionSeleted._fecha}}</span></p>
+                                    <p>Hora: <span class="fw-600">{{objDistribuicionSeleted._hora}}</span></p>
+                                    <p>Observaciones: <span class="fw-600">{{objDistribuicionSeleted.detalle}}</span></p>                                
+                                </div>               
+                            </div>                                         
+                            <div class="text-right">
+                                <p class="fw-600">Estos productos ingrensan A:</p>
+                                <x-comp-find-almacen clasecss="selected-template-1" id="sel_almacen_recibe"></x-comp-find-almacen>                                
+                            </div>
+                        </div>
+                    </div>                    
+                </div>
+            </div>
+            <div hidden$="[[ showDetalleDistribuicionRecibe ]]">
+                <br>
+                <p class="fs-15 fw-600">Listado de Distribuicion</p>
+                <br>
+                <table width="100%">
+                    <thead>
+                        <th>#</th>
+                        <th>Fecha</th>
+                        <th>Desde</th>
+                        <th>A</th>
+                        <th>Recibido</th>                        
+                        <th></th>
+                    </thead>
+                    <tbody>
+                        <template is="dom-repeat" items="{{listDistribuicionRecibe}}" as="item">
+                            <tr data-id="[[item.iddistribuicion]]">
+                                <td data-id="{{index}}">
+                                    <p>{{ displayIndex(index) }}</p>
+                                </td>
+                                <td>
+                                    <p>{{ item._fecha }}</p>
+                                    <p>{{ item._hora }}</p>
+                                </td>
+                                <td>
+                                    <p>{{ item.sede_de }}</p>
+                                    <p class="fs-12 fw-600">{{ item.almacen_de }}</p>
+                                    <p class="text-secondary fs-10">{{ item.usuario_de }}</p>
+                                </td>
+                                <td>
+                                    <p>{{ item.sede_a }}</p>
+                                    <p class="text-secondary fs-10">{{item.detalle}}</p>
+                                </td>
+                                <td>
+                                    <div hidden$="[[!item.aceptado]]">
+                                        <p><i class="fa fa-check text-success"></i></p>
+                                        <p class="fs-12">{{item.idusuario_recibe}}</p>
+                                        <p class="fs-10 text-secondary">{{item.fecha_recibe}}</p>
+                                    </div>
+
+                                    <div hidden$="[[item.aceptado]]">
+                                        <p><i class="fa fa-times text-secondary"></i></p>
+                                    </div> 
+                                    
+                                </td>                                
+                                <td align="right">
+                                    <!-- <button class="btn btn-sm btn-success" data-id="{{item.iddistribuicion}}"
+                                        onclick="xloadDetalleDistribuicionRecibe(this)">Ver</button> -->
+
+                                    <button data-id="[[item.iddistribuicion]]" 
+                                        class="btn btn-sm btn-xsm xBoton_flat_2"
+                                        onclick="xloadDetalleDistribuicionRecibe(this);"
+                                        >Ver Detalle
+                                    </button>
+                                </td>
+                            </tr>
+                        </template>
+                    </tbody>
+                </table>
+            </div>
+
+            <!-- productos de distribuicion -->
+            <div hidden$="[[ !showDetalleDistribuicionRecibe ]]">                                
+                <br>
+                <p class="fs-15 fw-600">Productos</p>
+                <hr>
+                <table width="100%">
+                    <thead>
+                        <td>#</td>
+                        <td width="60%">Producto</td>
+                        <td align="right">Cantidad</td>                        
+                        <td>Recibido</td>
+                    </thead>
+                    <tbody>                                        
+                        <template is="dom-repeat" items="{{listDistribuicionDetalleRecibe}}" as="item">
+                            <tr data-id="[[item.idproducto_stock]]">
+                                <td data-id="{{index}}">
+                                    <p>{{ displayIndex(index) }}</p>
+                                </td>
+                                <td>{{ item.nom_producto }}</td>
+                                <td align="right"> {{ item.cantidad }} </td>
+                                <td>
+                                    <div hidden$="[[!item.is_recibido]]">
+                                        <p><i class="fa fa-check text-success"></i></p>
+                                    </div>
+
+                                    <div hidden$="[[item.is_recibido]]">
+                                        <button data-id="[[item.iddistribuicion_detalle]]" class="btn btn-sm btn-xsm xBoton_flat_2"
+                                            onclick="recibirProductoDistribuicion(this);">Recibir
+                                        </button>
+                                    </div>
+                                </td>
+                            </tr>
+                        </template>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+    </template>
+
+    <script>
+        var xThisDisttribucionRecibe, valDateMonthShowListDistribuicion = '';
+
+        function xIniDistribuicionRecibe() {            
+            xPopupLoad.xopen();
+
+            xLoadListDistribuicionRecibeByMonth(null)
+
+            $('#txt_list_fecha_distribuicion_recibe').on('change', function () {
+                if (valDateMonthShowListDistribuicion != $(this).val()) {
+                    valDateMonthShowListDistribuicion = $(this).val()
+                    xLoadListDistribuicionRecibeByMonth(valDateMonthShowListDistribuicion)
+                }
+            })
+
+            $("#sel_almacen_recibe").on('change', function (obj) {                
+                xThisDisttribucionRecibe.idalmacen_recibe = sel_almacen_recibe.getAlmacen().idalmacen                
+            })
+
+            setTimeout(() => {                
+                xThisDisttribucionRecibe.idalmacen_recibe = sel_almacen_recibe.getAlmacen().idalmacen            
+            }, 2500);
+            
+        }
+
+        async function xLoadListDistribuicionRecibeByMonth(_dateMonthSeletec = null) {
+            xPopupLoad.xopen();
+            const _date = new Date()
+            _dateMonthSeletec = _dateMonthSeletec === null ? _date.getFullYear() + "-" + (("0" + (_date.getMonth() + 1)).slice(-2)) : _dateMonthSeletec
+
+            txt_list_fecha_distribuicion_recibe.value = (_dateMonthSeletec)
+            valDateMonthShowListDistribuicion = $('#txt_list_fecha_distribuicion_recibe').val()
+
+            const _dataSend = {
+                mm: _dateMonthSeletec.split('-')[1],
+                yy: _dateMonthSeletec.split('-')[0]
+            }
+
+            const _httpFecht = new httpFecht();
+            const rpt = await _httpFecht.postJson('../../bdphp/log_009.php?op=24', _dataSend)
+
+            if (rpt.success) {
+                xThisDisttribucionRecibe.listDistribuicionRecibe = rpt.datos.map(x => {
+                    x._fecha = x.fecha.split(' ')[0]
+                    x._hora = x.fecha.split(' ')[1]
+                    x.aceptado = x.recibido == 1 ? true : false
+                    return x
+                })
+                xThisDisttribucionRecibe.showDetalleDistribuicionRecibe = false
+            } else {
+                xThisDisttribucionRecibe.listDistribuicionRecibe = []
+                xThisDisttribucionRecibe.showDetalleDistribuicionRecibe = false
+            }
+
+            xPopupLoad.xclose();
+
+        }
+
+        function xloadDetalleDistribuicionRecibe(event) {
+            const idDistribuicion = event.dataId
+            xThisDisttribucionRecibe.objDistribuicionSeleted = xThisDisttribucionRecibe.listDistribuicionRecibe.find(x => x.iddistribuicion == idDistribuicion)            
+            xShowDetalleDistribuicionRecibe()
+        }
+
+        async function xShowDetalleDistribuicionRecibe() {
+            xPopupLoad.xopen();            
+            const _httpFecht = new httpFecht();
+            const _data = { iddistribuicion: xThisDisttribucionRecibe.objDistribuicionSeleted.iddistribuicion }
+            const rpt = await _httpFecht.postJson('../../bdphp/log_009.php?op=2401', _data)
+            
+            if (rpt.success) {
+                xThisDisttribucionRecibe.showDetalleDistribuicionRecibe = true
+                xThisDisttribucionRecibe.listDistribuicionDetalleRecibe = rpt.datos.map(x => {
+                    x.is_recibido = x.recibido == '1' ? true : false
+                    x.is_registrado = x.registrado == '1' ? true : false
+                    return x;
+                })
+            }
+
+            xThisDisttribucionRecibe.showDetalleDistribuicionRecibe = true
+            xPopupLoad.xclose();
+        }
+
+        function golistDistribuicionRecibe() {
+            xThisDisttribucionRecibe.showDetalleDistribuicionRecibe = false
+        }
+
+        async function recibirProductoDistribuicion(obj) {
+            const _id = obj.dataId
+            const _rowSeleted = xThisDisttribucionRecibe.listDistribuicionDetalleRecibe.find(x => x.iddistribuicion_detalle == _id)
+            const dateSend = {..._rowSeleted, idalmacen_ingresa: xThisDisttribucionRecibe.idalmacen_recibe }    
+            
+
+            xPopupLoad.xopen();
+            const _httpFecht = new httpFecht();
+            const rpt = await _httpFecht.postJson('../../bdphp/log_009.php?op=2402', dateSend)                        
+            if (rpt.success) {
+                _rowSeleted.is_recibido = true
+                _rowSeleted.is_registrado = true
+                xThisDisttribucionRecibe.listDistribuicionDetalleRecibe = JSON.parse(JSON.stringify(xThisDisttribucionRecibe.listDistribuicionDetalleRecibe))   
+            }
+            xPopupLoad.xclose();
+
+            // verificar si todos los productos ya estan recibidos
+            const _isAllRecibido = xThisDisttribucionRecibe.listDistribuicionDetalleRecibe.every(x => x.is_recibido == true)            
+            if (_isAllRecibido) {
+                const _dataSendRecibido = {                    
+                    iddistribuicion: _rowSeleted.iddistribuicion
+                }
+                
+                const rpt1 = await _httpFecht.postJson('../../bdphp/log_009.php?op=2403', _dataSendRecibido)                
+
+                if (rpt1.success) {
+                    xThisDisttribucionRecibe.objDistribuicionSeleted.aceptado = true
+                    xThisDisttribucionRecibe.listDistribuicionRecibe = JSON.parse(JSON.stringify(xThisDisttribucionRecibe.listDistribuicionRecibe))
+                }
+            }
+
+        }
+
+        Polymer({
+            is: 'x-distribuicion-recibir-list',
+            properties: {
+                listDistribuicionRecibe: [],
+                listDistribuicionDetalleRecibe: [],
+                showDetalleDistribuicion: Boolean,
+                showDetalleDistribuicionRecibe: Boolean,
+                objDistribuicionSeleted: [],
+                idalmacen_recibe: Number
+
+            },
+            attached: function () {
+                this.showDetalleDistribuicion = false
+                this.showDetalleDistribuicionRecibe = false
+                xThisDisttribucionRecibe = this;
+                xIniDistribuicionRecibe();
+            },
+            displayIndex: function (index) {
+                return xCeroIzq(index + 1, 1);
+            },
+        })
+    </script>
+
+
+</dom-module>
