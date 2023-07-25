@@ -71,11 +71,11 @@ function sheetDataProductos($sheet) {
       }      
       //verificar producto si existe actualiza, en almacen central
       if($y==1){
-        $sql="select idproducto as d1 from producto where descripcion='".$cell."' and estado=0 and (idsede=".$idsede.");";        
+        $sql="select idproducto as d1 from producto where descripcion='".$cell."' and estado=0 and (idsede=".$idsede.");";                
         $idProNewUp=$bdP->xDevolverUnDato($sql);  
-        //echo $y.' | '.$idProNewUp;        
+        // echo 'c='.$y.' | rpt='.$idProNewUp;        
         //nuevo
-        if($idProNewUp==''){
+        if($idProNewUp=='' || isset($idProNewUp)==false){
           $xrow_producto_new=0;
         }else{
           $xrow_producto_new=1;
@@ -84,18 +84,17 @@ function sheetDataProductos($sheet) {
           $idProDtNewUp = $idProNewUp;
         }
 
-          //echo $cell.' | '.$idProNewUp.' | '.$xrow_producto_new;
+          // echo $cell.' | '.$idProNewUp.' | '.$xrow_producto_new;
       //echo 'productonew'.$xrow_producto_new;
       }      
       //verificar familia
       if($y==2){        
         $sql="select idproducto_familia as d1 from producto_familia where descripcion='".$cell."' and estado=0 and (idsede=".$idsede.")";                
-        $idt=$bdP->xDevolverUnDato($sql);        
-        // echo ' | verificar_famimila :'.$sql."  |  rspt".$idt;
+        $idt=$bdP->xDevolverUnDato($sql);                
         if($idt==''){
           $sql="insert into producto_familia(descripcion,idorg,idsede, img)value('".$cell."',".$idorg.",".$idsede.", '')";                    
           $bdP->xConsulta_NoReturn($sql); 
-    //$idt=$bdP->xConsulta_NoReturn($sql);    
+      //$idt=$bdP->xConsulta_NoReturn($sql);    
           // $idt=$bdP->xConsulta_UltimoId($sql);     
           
           // 191118 -- el id es char ej: f1
@@ -157,18 +156,19 @@ function sheetDataProductos($sheet) {
 
       $y++;
     }        
+
     if($xrow==""){$x++;continue;}
     
     $xrow=substr($xrow, 0, -1);        
     $row_cant_almacem=substr($row_cant_almacem, 0, -1);        
 
-    $re='('.$xrow.','.$idorg.','.$idsede.')';        
+    $re='('.$xrow.','.$idorg.','.$idsede.',"")';        
     //guardar producto
-    //echo 'new:'.$xrow_producto_new;
+    // echo 'new:'.$xrow_producto_new.' re = '.$re;
     if($xrow_producto_new==0){
-      $sqlProducto="insert into producto (descripcion,idproducto_familia,codigo_barra,stock_minimo,precio,precio_unitario,precio_venta,img, idorg, idsede) values ".$re;            
+      $sqlProducto="insert into producto (descripcion,idproducto_familia,codigo_barra,stock_minimo,precio,precio_unitario,precio_venta, idorg, idsede,img) values ".$re;            
       // echo ' | sql:'.$sqlProducto;
-      //echo 'add producto '.$sqlProducto;
+      // echo 'add producto '.$sqlProducto;
       $idProducto=$bdP->xConsulta_UltimoId($sqlProducto);
 
       // $reDP=$reDP.'('.$IdAlmacen.','.$idProducto.','.$row_cant_almacem.','.$fecha_actual.'),';        
@@ -235,7 +235,7 @@ function sheetDataProductos($sheet) {
 
   // $bdP->xMultiConsulta($sqlProductoUpdate);  
   // $bdP->xMultiConsulta($sqlProductoDetalleNew);
-  echo $sqlProductoUpdate.' | '.$sqlProductoDetalleNew.' | '.$sqlProductoDetalle;
+  // echo $sqlProductoUpdate.' | '.$sqlProductoDetalleNew.' | '.$sqlProductoDetalle;
 }
 
 function eliminar_tildes($cadena){
