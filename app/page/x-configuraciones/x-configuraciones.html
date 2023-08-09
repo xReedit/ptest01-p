@@ -803,7 +803,7 @@ function xDialogBorrarObj(obj){xThisConfig.xObjBorrar=obj;dialog_borrar.open();}
 function xDlgBorrar(){xBorrarItem(xThisConfig.xObjBorrar);dialog_borrar.close();}
 function xSubirFileAlmacen(){$('#fileAlamcen').click();}
 function transferenciaCompletaAlmacen(a){xNomFileXls=xIdOrg+xIdSede+xNomFileXls;xleerXls(xNomFileXls)}
-function xleerXls(xfile){xIdA=sel_almacen_file.value;if($("#fileAlamcen").val==""){return};$.ajax({type:'POST',url:'../../bdphp/leer_excel.php?op=2',data:{f:xNomFileXls,fecha:xDevolverFecha(),a:xIdA}}).done(function(dtUpP){$("#fileAlamcen").val('');xPopupLoad.xclose();dialog_subir_file_alamcen.close();alert("Se subio la informacion correctamente.");})}
+function xleerXls(xfile){xIdA=sel_almacen_file.value;if($("#fileAlamcen").val==""){return};$.ajax({type:'POST',url:'../../bdphp/leer_excel.php?op=2',data:{f:xNomFileXls,fecha:xDevolverFecha(),a:xIdA}}).done(function(dtUpP){console.log(dtUpP);$("#fileAlamcen").val('');xPopupLoad.xclose();dialog_subir_file_alamcen.close();alert("Se subio la informacion correctamente.");})}
 $(document).on('change','.check_almacen',function(e){var xid_al=$(this).parents('tr').attr("data-id");var xcampo_al=$(this).attr("data-campo");var xval_check=this.checked?1:0;$.ajax({type:'POST',url:'../../bdphp/log.php?op=1605',data:{id:xid_al,t:'conf_print_adicionales',campo:xcampo_al,valor:xval_check}})
 event.stopPropagation();e.stopPropagation();e.stopImmediatePropagation()
 return false;})

@@ -1,268 +1,117 @@
 <dom-module id="x-compras-list">
-    <template>
-        <h4>Seleccione Mes</h4>
-        <input type="month" class="selected-template-1 xCursor" id="txt_list_compra_fecha_compra"  placeholder="Elige fecha">
-        
-        <br><br>
-        <div class="xLinea2"></div>
-        <br>
-
-        <div class="grid-container">
-            <div class="column1">
-                <div class="column-title">
-                    <p>Compras</p>
-                </div>
-                <table class="w-100 fs-12">
-                    <thead>
-                        <th>#</th>
-                        <th>Fecha</th>
-                        <th align="right">Improte</th>
-                    </thead>
-                    <tbody>
-                        <template is="dom-repeat" items="{{listComprasByMonth}}" as="item">
-                            <tr class$="{{item.classRow}}" onclick="listComprasByMonthDetalle(this)"
-                                data-id="{{item.idcompra}}">
-                                <td>{{displayIndex(index)}}</td>
-                                <td>
-                                    <p class="fw-600">{{ item.nom_proveedor }}</p>
-                                    <p class="fw-100 fs-10 text-secondary">{{item.f_compra}} | {{item.nom_tipo_pago}}</p>                                    
-                                </td>
-                                <td align="right">{{item.total}}</td>
-                            </tr>
-                        </template>
-                        <tr>
-                            <td colspan="3" align="right">
-                                <p class="fw-600 fs-15">{{totalCompras}}</p>
-                            </td>
-                        </tr>
-                    </tbody>
-                </table>
-            </div>
-            <div class="column2">
-                <div class="column-title d-flexx justify-content-between align-items-center">
-                    <p>Productos</p>                    
-                </div>
-                
-
-                <!-- listado de productos por compra -->
-                <div>
-                    <div class="fs-12" style="padding: 12px;">
-                        <p><strong>Proveedor:</strong> {{objCompraSeleted.nom_proveedor}}</p>
-                        <div class="d-flexx">
-                            <div class="mr-2">
-                                <p><strong>F. Compra:</strong> {{objCompraSeleted.f_compra}}</p>
-                                <p><strong>Forma de pago:</strong> {{objCompraSeleted.nom_tipo_pago}}</p>
-                            </div>
-                            <div>
-                                <p><strong>Almacen que ingresa:</strong> {{objCompraSeleted.nom_almacen}}</p>
-                                <p><strong>Usuario:</strong> {{objCompraSeleted.nom_usuario}}</p>
-                            </div>
-                        </div>                        
-                        <p><strong>Anotaciones:</strong> {{objCompraSeleted.nota_de_compra}}</p>
-                    </div>
-                    <table class="w-100 fs-12">
-                        <thead>
-                            <th>Producto</th>
-                            <th align="right">Cantidad</th>
-                            <th align="right">P.Unitario</th>
-                            <th align="right">Total</th>
-                        </thead>
-                        <tbody>
-                            <template is="dom-repeat" items="{{listProductosByCompra}}" as="item">
-                                <tr>
-                                    <td>{{item.nom_producto}}</td>
-                                    <td align="right">{{item.cantidad}}</td>
-                                    <td align="right">{{item.punitario}}</td>
-                                    <td align="right">{{item.total}}</td>
-                                </tr>
-                            </template>
-                            <tr>
-                                <td colspan="4" align="right">
-                                    <p class="fw-600 fs-15">{{totalProductos}}</p>
-                                </td>
-                            </tr>
-                        </tbody>
-                    </table>
-                </div>
-            </div>
-        </div>
-    </template>
-
-    <style>
-        .grid-container {
-            display: grid;
-            grid-template-columns: minmax(270px, 350px) auto;
-            /* La primera columna tiene un ancho mínimo de 0 y máximo de 400px, la segunda columna ocupa el espacio restante */
-            gap: 10px;
-            /* Espacio entre las columnas */
-        }
-
-        .column1 {
-            /* background-color: lightblue; */
-            border: 1px solid #ccc;
-            border-radius: 5px;
-            /* min-width: 270px; */
-        }
-
-        .column2 {
-            border: 1px solid #ccc;
-            border-radius: 5px;
-        }
-
-        .column-title {
-            border-radius: 5px 5px 0px 0px;
-            color: #fff !important;
-            padding: 5px 10px 5px 10px;
-            background: #424242;
-            height: 30px;
-            justify-content: space-between;
-            display: flex;
-            align-items: center;
-        }
-
-        /* Media query para dispositivos móviles */
-        @media (max-width: 767px) {
-            .grid-container {
-                grid-template-columns: 1fr;
-                /* Las columnas ocupan todo el ancho */
-            }
-
-            .column2 {
-                margin-top: 10px;
-                /* Espacio entre las columnas en dispositivos móviles */
-            }
-        }
-    </style>
-
-    <script>
-        var xThisComprasList, valDateMonthShowListCompras=''
-
-        async function xInitComprasList() {
-
-            xLoadListComprasByMonth(null)
-            
-            xPopupLoad.xopen();
-            
-
-
-            $('#txt_list_compra_fecha_compra').on('change', function () {
-                if (valDateMonthShowListCompras != $(this).val()) {
-                    valDateMonthShowListCompras = $(this).val()                    
-                    xLoadListComprasByMonth(valDateMonthShowListCompras)
-                }
-            })
-        }
-
-        async function xLoadListComprasByMonth(_dateMonthSeletec = null) {
-            xPopupLoad.xopen();
-            const _date = new Date()
-            _dateMonthSeletec = _dateMonthSeletec === null ? _date.getFullYear() + "-" + (("0" + (_date.getMonth() + 1)).slice(-2)) : _dateMonthSeletec
-
-            txt_list_compra_fecha_compra.value = (_dateMonthSeletec)
-            valDateMonthShowListCompras = $('#txt_list_compra_fecha_compra').val()            
-
-            const _dataSend = {
-                mm: _dateMonthSeletec.split('-')[1],
-                yy: _dateMonthSeletec.split('-')[0]
-            }
-
-            const _httpFecht = new httpFecht();
-            const rpt = await _httpFecht.postJson('../../bdphp/log_009.php?op=22', _dataSend)
-            
-            if (rpt.success) {
-                xThisComprasList.listComprasByMonth = rpt.datos.map(x => {
-                    x.selected = false
-                    x.classRow = 'xCursor'
-                    return x;
-                })
-
-                xThisComprasList.totalCompras = xThisComprasList.listComprasByMonth.map(x => parseFloat(removeComas(x.total))).reduce((a, b) => a + b, 0)
-                xThisComprasList.totalCompras = xThisComprasList.totalCompras.toFixed(2)
-            }
-
-            if (xThisComprasList.listComprasByMonth.length > 0) {
-                xThisComprasList.objCompraSeleted = xThisComprasList.listComprasByMonth[0]
-                rowListCompraSelected(xThisComprasList.objCompraSeleted);
-                
-                showDetalleListCompraByMont();
-            }
-            xPopupLoad.xclose();
-        }
-
-
-        async function listComprasByMonthDetalle(event) {
-            // lista de productos por idcompra            
-            const idCompra = event.dataId
-            xThisComprasList.objCompraSeleted = xThisComprasList.listComprasByMonth.find(x => x.idcompra == idCompra)            
-            rowListCompraSelected(xThisComprasList.objCompraSeleted);
-
-            showDetalleListCompraByMont();       
-        }
-
-        async function showDetalleListCompraByMont() {
-            xPopupLoad.xopen();
-            const _httpFecht = new httpFecht();
-            const _data = { idcompra: xThisComprasList.objCompraSeleted.idcompra }
-            const rpt = await _httpFecht.postJson('../../bdphp/log_009.php?op=2103', _data)
-
-            if (rpt.success) {
-                xThisComprasList.listProductosByCompra = rpt.datos
-                xThisComprasList.totalProductos = rpt.datos.map(x => parseFloat(removeComas(x.total))).reduce((a, b) => a + b, 0)
-                xThisComprasList.totalProductos = xThisComprasList.totalProductos.toFixed(2)
-            }
-
-            xPopupLoad.xclose();
-        }
-
-       
-
-        function rowListCompraSelected(itemSelected) {
-            xThisComprasList.listComprasByMonth.forEach(x => {
-                if (x.idcompra == itemSelected.idcompra) {
-                    x.selected = true
-                    x.classRow = 'xCursor selected'
-                } else {
-                    x.selected = false
-                    x.classRow = 'xCursor'
-                }
-            })
-
-            xThisComprasList.listComprasByMonth = JSON.parse(JSON.stringify(xThisComprasList.listComprasByMonth))
-        }
-
-
-
-
-        Polymer({
-            is: 'x-compras-list',
-            properties: {
-                objproveedor: {
-                    type: Object,
-                    notify: true,
-                    reflectToAttribute: true,
-                    observer: 'proveedorChanged',
-                },
-                listCompras: [],                
-                listProductosByCompra: [],
-                totalCompras: Number,
-                totalProductos: Number,
-                objCompraSeleted: [],                
-            },
-            refresh: function () {
-                // xLoadDataProveedorDetalle()
-                xLoadListComprasByMonth(null)
-            },
-            // proveedorChanged: (obj) => {
-            //     xLoadDataProveedorDetalle()
-            // },
-            attached: function () {                
-                xThisComprasList = this;
-                xInitComprasList();
-            },
-            displayIndex: function (index) {
-                return xCeroIzq(index + 1, 1);
-            },
-        })
-    </script>
-
+<template>
+<h4>Seleccione Mes</h4>
+<input type="month" class="selected-template-1 xCursor" id="txt_list_compra_fecha_compra" placeholder="Elige fecha">
+<br><br>
+<div class="xLinea2"></div>
+<br>
+<div class="grid-container">
+<div class="column1">
+<div class="column-title">
+<p>Compras</p>
+</div>
+<table class="w-100 fs-12">
+<thead>
+<th>#</th>
+<th>Fecha</th>
+<th align="right">Improte</th>
+</thead>
+<tbody>
+<template is="dom-repeat" items="{{listComprasByMonth}}" as="item">
+<tr class$="{{item.classRow}}" onclick="listComprasByMonthDetalle(this)" data-id="{{item.idcompra}}">
+<td>{{displayIndex(index)}}</td>
+<td>
+<p class="fw-600">{{ item.nom_proveedor }}</p>
+<p class="fw-100 fs-10 text-secondary">{{item.f_compra}} | {{item.nom_tipo_pago}}</p>
+</td>
+<td align="right">{{item.total}}</td>
+</tr>
+</template>
+<tr>
+<td colspan="3" align="right">
+<p class="fw-600 fs-15">{{totalCompras}}</p>
+</td>
+</tr>
+</tbody>
+</table>
+</div>
+<div class="column2">
+<div class="column-title d-flexx justify-content-between align-items-center">
+<p>Productos</p>
+</div>
+<div>
+<div class="fs-12" style="padding:12px">
+<p><strong>Proveedor:</strong> {{objCompraSeleted.nom_proveedor}}</p>
+<div class="d-flexx">
+<div class="mr-2">
+<p><strong>F. Compra:</strong> {{objCompraSeleted.f_compra}}</p>
+<p><strong>Forma de pago:</strong> {{objCompraSeleted.nom_tipo_pago}}</p>
+</div>
+<div>
+<p><strong>Almacen que ingresa:</strong> {{objCompraSeleted.nom_almacen}}</p>
+<p><strong>Usuario:</strong> {{objCompraSeleted.nom_usuario}}</p>
+</div>
+</div>
+<p><strong>Anotaciones:</strong> {{objCompraSeleted.nota_de_compra}}</p>
+</div>
+<table class="w-100 fs-12">
+<thead>
+<th>Producto</th>
+<th align="right">Cantidad</th>
+<th align="right">P.Unitario</th>
+<th align="right">Total</th>
+</thead>
+<tbody>
+<template is="dom-repeat" items="{{listProductosByCompra}}" as="item">
+<tr>
+<td>{{item.nom_producto}}</td>
+<td align="right">{{item.cantidad}}</td>
+<td align="right">{{item.punitario}}</td>
+<td align="right">{{item.total}}</td>
+</tr>
+</template>
+<tr>
+<td colspan="4" align="right">
+<p class="fw-600 fs-15">{{totalProductos}}</p>
+</td>
+</tr>
+</tbody>
+</table>
+</div>
+</div>
+</div>
+</template>
+<style>.grid-container{display:grid;grid-template-columns:minmax(270px,350px) auto;gap:10px}.column1{border:1px solid #ccc;border-radius:5px}.column2{border:1px solid #ccc;border-radius:5px}.column-title{border-radius:5px 5px 0 0;color:#fff!important;padding:5px 10px 5px 10px;background:#424242;height:30px;justify-content:space-between;display:flex;align-items:center}@media(max-width:767px){.grid-container{grid-template-columns:1fr}.column2{margin-top:10px}}</style>
+<script>var xThisComprasList,valDateMonthShowListCompras=''
+async function xInitComprasList(){xLoadListComprasByMonth(null)
+xPopupLoad.xopen();$('#txt_list_compra_fecha_compra').on('change',function(){if(valDateMonthShowListCompras!=$(this).val()){valDateMonthShowListCompras=$(this).val()
+xLoadListComprasByMonth(valDateMonthShowListCompras)}})}
+async function xLoadListComprasByMonth(_dateMonthSeletec=null){xPopupLoad.xopen();const _date=new Date()
+_dateMonthSeletec=_dateMonthSeletec===null?_date.getFullYear()+"-"+(("0"+(_date.getMonth()+1)).slice(-2)):_dateMonthSeletec
+txt_list_compra_fecha_compra.value=(_dateMonthSeletec)
+valDateMonthShowListCompras=$('#txt_list_compra_fecha_compra').val()
+const _dataSend={mm:_dateMonthSeletec.split('-')[1],yy:_dateMonthSeletec.split('-')[0]}
+const _httpFecht=new httpFecht();const rpt=await _httpFecht.postJson('../../bdphp/log_009.php?op=22',_dataSend)
+if(rpt.success){xThisComprasList.listComprasByMonth=rpt.datos.map(x=>{x.selected=false
+x.classRow='xCursor'
+return x;})
+xThisComprasList.totalCompras=xThisComprasList.listComprasByMonth.map(x=>parseFloat(removeComas(x.total))).reduce((a,b)=>a+b,0)
+xThisComprasList.totalCompras=xThisComprasList.totalCompras.toFixed(2)}
+if(xThisComprasList.listComprasByMonth.length>0){xThisComprasList.objCompraSeleted=xThisComprasList.listComprasByMonth[0]
+rowListCompraSelected(xThisComprasList.objCompraSeleted);showDetalleListCompraByMont();}
+xPopupLoad.xclose();}
+async function listComprasByMonthDetalle(event){const idCompra=event.dataId
+xThisComprasList.objCompraSeleted=xThisComprasList.listComprasByMonth.find(x=>x.idcompra==idCompra)
+rowListCompraSelected(xThisComprasList.objCompraSeleted);showDetalleListCompraByMont();}
+async function showDetalleListCompraByMont(){xPopupLoad.xopen();const _httpFecht=new httpFecht();const _data={idcompra:xThisComprasList.objCompraSeleted.idcompra}
+const rpt=await _httpFecht.postJson('../../bdphp/log_009.php?op=2103',_data)
+if(rpt.success){xThisComprasList.listProductosByCompra=rpt.datos
+xThisComprasList.totalProductos=rpt.datos.map(x=>parseFloat(removeComas(x.total))).reduce((a,b)=>a+b,0)
+xThisComprasList.totalProductos=xThisComprasList.totalProductos.toFixed(2)}
+xPopupLoad.xclose();}
+function rowListCompraSelected(itemSelected){xThisComprasList.listComprasByMonth.forEach(x=>{if(x.idcompra==itemSelected.idcompra){x.selected=true
+x.classRow='xCursor selected'}else{x.selected=false
+x.classRow='xCursor'}})
+xThisComprasList.listComprasByMonth=JSON.parse(JSON.stringify(xThisComprasList.listComprasByMonth))}
+Polymer({is:'x-compras-list',properties:{objproveedor:{type:Object,notify:true,reflectToAttribute:true,observer:'proveedorChanged',},listCompras:[],listProductosByCompra:[],totalCompras:Number,totalProductos:Number,objCompraSeleted:[],},refresh:function(){xLoadListComprasByMonth(null)},attached:function(){xThisComprasList=this;xInitComprasList();},displayIndex:function(index){return xCeroIzq(index+1,1);},})</script>
 </dom-module>

@@ -3,7 +3,7 @@
 <link rel="import" href="./x-compras-list.html">
 <dom-module id="x-compras">
 <template>
-<paper-dialog id="dialog_additem_pro" modal entry-animation="scale-up-animation" exit-animation="fade-out-animation" with-backdrop>
+<paper-dialog id="dialog_additem_pro" class="dialog_redondo" modal entry-animation="scale-up-animation" exit-animation="fade-out-animation" with-backdrop>
 <div class="xContent">
 <h3>Registrar nuevo producto</h3>
 <br>
@@ -28,7 +28,7 @@
 <br><br><br>
 </div>
 </paper-dialog>
-<paper-dialog modal id="dialog_pago" class="tall xNoScroll" entry-animation="scale-up-animation" exit-animation="fade-out-animation" with-backdrop>
+<paper-dialog modal id="dialog_pago" class="tall xNoScroll dialog_redondo" entry-animation="scale-up-animation" exit-animation="fade-out-animation" with-backdrop>
 <div id="div_pago">
 <x-pago id="component_pago_pro"></x-pago>
 </div>
@@ -98,7 +98,7 @@
 </div>
 <div class="xEncanezadoCard xFondoRowAmarillo4">
 <p>Estos productos ingresa a:</p>
-<select id="sel_alamcen" class="xTextRow2" inline></select>
+<select id="sel_alamcen" class="selected-template-1" inline></select>
 </div>
 <div class="xEncanezadoCard xHoverOpaco xTransicion3s" id="div_proveedor">
 <p><strong>Datos del proveedor</strong></p>
@@ -106,13 +106,13 @@
 <div id="div_ínput">
 <form id="frm_proveedor" method="post" action="#">
 <div>
-<div>
-<input type="text" id="descripcion" name="descripcion" placeholder="🔍 Nombre / Razon social" onChange="conMayusculas(this)" class="xMiInput xPasarEnter2" style="width:50%;min-width:250px" inline>
+<div class="mb-1">
+<input type="text" id="descripcion" name="descripcion" placeholder="🔍 Nombre / Razon social" onChange="conMayusculas(this)" class="xPasarEnter2 selected-template-1" style="width:50%;min-width:250px">
+<input type="text" id="telefono" name="telefono" placeholder="Telefono" onChange="conMayusculas(this)" class="selected-template-1 xPasarEnter2" style="width:44%;min-width:200px">
 </div>
-<input type="text" id="dni" name="dni" placeholder="DNI / RUC" class="xMiInput xPasarEnter2" onChange="conMayusculas(this)" style="width:50%;min-width:200px" inline>
-<input type="text" id="telefono" name="telefono" placeholder="Telefono" onChange="conMayusculas(this)" class="xMiInput xPasarEnter2" style="width:44%;min-width:200px" inline>
+<input type="text" id="dni" name="dni" placeholder="DNI / RUC" class="selected-template-1 xPasarEnter2" onChange="conMayusculas(this)" style="width:50%;min-width:200px">
+<input type="text" id="direccion" name="direccion" placeholder="Direccion" class="selected-template-1 xPasarEnter2" onChange="conMayusculas(this)" style="width:44%;min-width:200px">
 </div>
-<input type="text" id="direccion" name="direccion" placeholder="Direccion" class="xMiInput xPasarEnter2" onChange="conMayusculas(this)">
 <div class="xInvisible">
 <input type="text" id="idorg" name="idorg">
 <input type="text" id="idsede" name="idsede">

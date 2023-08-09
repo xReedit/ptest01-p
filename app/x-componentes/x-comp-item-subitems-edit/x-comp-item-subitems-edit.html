@@ -15,13 +15,23 @@
 <input type="text" class="xMiInput xPasarEnter2 w-100" id="txt_content_titulo" placeholder="Titulo">
 </div>
 </th>
-<th><paper-fab mini icon="add" onclick="xSaveNewContentSubItem()" class="xDerecha"></paper-fab></th>
+<th colspan="2"><paper-fab mini icon="add" onclick="xSaveNewContentSubItem()" class="xDerecha"></paper-fab></th>
 </thead>
 <tbody>
 <template is="dom-repeat" items="[[listContent]]" as="item">
-<tr data-index="[[index]]" data-t="item_subitem_content_detalle" data-id="{{item.iditem_subitem_content_detalle}}" class="xCursor">
-<td onclick="selectOptionContentItem(this)">{{item.titulo}}</td>
-<td><span class="xDeleteRow" title="Anular" onclick="xBorrarItem(this)"></span></td>
+<tr data-index="[[index]]" data-t="item_subitem_content_detalle" data-id="{{item.iditem_subitem_content_detalle}}" data-id-content="{{item.iditem_subitem_content}}" class="xCursor">
+<td onclick="selectOptionContentItem(this)">
+<span id="titulo-seleccionable">
+{{item.titulo}}
+</span>
+<input type="text" class="xMiInput xPasarEnter2 xInvisible" id="text-edit-seleccionable" onblur="xEditItemTituloSeleccionableOnBlur(this)">
+</td>
+<td>
+<span class="xEditRow" title="Editar" onclick="xEditItemTituloSeleccionable(this)"></span>
+</td>
+<td>
+<span class="xDeleteRow" title="Borrar" onclick="xBorrarItem(this)"></span>
+</td>
 </tr>
 </template>
 </tbody>
@@ -106,7 +116,7 @@ xThisComSubItemEdit.isCompartido=true;}
 function xloadSubitems(iditemContent){$.ajax({type:'POST',url:'../../bdphp/log_005.php?op=801',data:{i:iditemContent}}).done(function(dtSubItem){dtSubItem=JSON.parse(dtSubItem);xThisComSubItemEdit.listCompSubitems=dtSubItem.datos;sumCantSubitem();});xcheck_subitem_required.checked=parseInt(xThisComSubItemEdit.contentSelect.subitem_required_select)===1?true:false;xcheck_show_cant_item.checked=parseInt(xThisComSubItemEdit.contentSelect.show_cant_item)===1?true:false;xcheck_controlable.checked=parseInt(xThisComSubItemEdit.contentSelect.controlable)===1?true:false;txt_sub_condicion_cant.value=xThisComSubItemEdit.contentSelect.subitem_cant_select;}
 function sumCantSubitem(){const hayPorcion=xThisComSubItemEdit.listCompSubitems.filter(x=>x.tipo==='Porcion').length>0?true:false;const hayProducto=xThisComSubItemEdit.listCompSubitems.filter(x=>x.tipo==='Producto').length>0?true:false;if(hayPorcion||hayProducto){return;}
 xThisComSubItemEdit.cantidadSubItems=xThisComSubItemEdit.listCompSubitems.map(x=>parseInt(x.cantidad)).reduce((a,b)=>a+b,0);xThisComSubItemEdit.cantidadSubItems=isNaN(xThisComSubItemEdit.cantidadSubItems)?'-':xThisComSubItemEdit.cantidadSubItems;addSubItemItem();}
-function selectOptionContentItem(obj){const index=obj.parentElement.dataIndex;xThisComSubItemEdit.contentSelect=xThisComSubItemEdit.listContent[index];iditemContentSelect=xThisComSubItemEdit.contentSelect.iditem_subitem_content;xThisComSubItemEdit.isCompartido=xThisComSubItemEdit.contentSelect.compartido==='0'?false:true;xloadSubitems(iditemContentSelect);xThisComSubItemEdit.selected=1;}
+function selectOptionContentItem(obj){const _span=$(obj).find('span')[0];const _spanIsVisible=$(_span).hasClass('xInvisible')?false:true;if(!_spanIsVisible)return;const index=obj.parentElement.dataIndex;xThisComSubItemEdit.contentSelect=xThisComSubItemEdit.listContent[index];iditemContentSelect=xThisComSubItemEdit.contentSelect.iditem_subitem_content;xThisComSubItemEdit.isCompartido=xThisComSubItemEdit.contentSelect.compartido==='0'?false:true;xloadSubitems(iditemContentSelect);xThisComSubItemEdit.selected=1;}
 function enterAddSubItem(e){if(e.keyCode===13){addSubItem();}}
 function addSubItem(){const isPorcion=!xThisComSubItemEdit.inputProcionHidden;const isProducto=!xThisComSubItemEdit.inputProductoHidden;const isLibre=!xThisComSubItemEdit.inputLibreHidden;var descripcion_item=txt_sub_des.value;if(isProducto){if(xNewItemPro){alert('Debe seleccionar un producto de lista');return;}
 descripcion_item=des_item_producto.value;}
@@ -117,7 +127,7 @@ $.ajax({type:'POST',url:'../../bdphp/log_005.php?op=8',data:{item:dataSubItem}})
 function addSubItemItem(){const sumCantSubiTems=parseInt(xThisComSubItemEdit.cantidadSubItems)?parseInt(xThisComSubItemEdit.cantidadSubItems):null
 const isSumCantSubItems=sumCantSubiTems?true:false
 const dataSubItem={iditem:iditemSelect,iditem_subitem_content:iditemContentSelect,cant_select:txt_sub_condicion_cant.value,required_select:xcheck_subitem_required.checked?1:0,show_cant_item:xcheck_show_cant_item.checked?1:0,controlable:xcheck_controlable.checked?1:0,is_sum_cant_subitems:isSumCantSubItems?1:0,cantidad:sumCantSubiTems}
-$.ajax({type:'POST',url:'../../bdphp/log_005.php?op=800',data:{item:dataSubItem}}).done(function(a){console.log('ok');});}
+$.ajax({type:'POST',url:'../../bdphp/log_005.php?op=800',data:{item:dataSubItem}})}
 function xModRow_subitem(obj,tipo){var xvalObj=$(obj).text().trim();const txt_aling=tipo!=3?'xAlinearDerecha':'';if($(obj).find('input').length>0){$(obj).find('input').select();return;}
 $(obj).html('<input type="text" class="xMiInput xPasarEnter2 '+txt_aling+'" onblur="xModBlur_subitem(this,'+tipo+')" value="'+xvalObj+'" select>').trigger('create');$(obj).find('input').select();}
 function xModBlur_subitem(obj,tipo){var xvalObj=$(obj).val();var xtb=$(obj).parents('table');if(tipo==1){xvalObj=xMoneda(xvalObj)}
@@ -139,4 +149,9 @@ function xCargarPorcionItemSub(){var xObjTxtItemProPor=$("#des_item_porcion");xO
 xNewItemPorcion=false;return false;},focus:function(event,ui){return false;},change:function(event,ui){if(ui.item===null){xidproducto_porcionado="";xNewItemPorcion=true;}else{xNewItemPorcion=false;}
 return false;}});}
 function xBorrarItemSubItem(obj){xRowObj=obj.parentNode.parentNode;xIdROw=$(xRowObj).attr('data-id')||xRowObj.dataId;iditem=$(xRowObj).attr('data-iditem')||xRowObj.iditem;}
+function xEditItemTituloSeleccionable(obj){const _tr=obj.parentElement.parentElement;const _input=$(_tr).find('#text-edit-seleccionable')[0];const _span=$(_tr).find('#titulo-seleccionable')[0];$(_input).removeClass('xInvisible');$(_span).addClass('xInvisible');$(_input).val($(_span).text().trim());$(_input).focus();$(_input).select();}
+function xEditItemTituloSeleccionableOnBlur(obj){const _tr=obj.parentElement.parentElement;const _input=$(_tr).find('#text-edit-seleccionable')[0];const _span=$(_tr).find('#titulo-seleccionable')[0];$(_span).removeClass('xInvisible');$(_input).addClass('xInvisible');const _valueInput=$(_input).val().trim()
+if(_valueInput!==''){$(_span).text($(_input).val().trim());}
+const _index=_tr.dataIndex;const _iditem_subitem_content=_tr.dataIdContent;const _data={iditem_subitem_content:_iditem_subitem_content,titulo:_valueInput}
+$.ajax({type:'POST',url:'../../bdphp/log_005.php?op=808',data:{item:_data}})}
 Polymer({is:'x-comp-item-subitems-edit',properties:{frommonitor:{type:Object,value:false},itemselected:Object,iditem:Number,listContent:{type:Object,notify:true,reflectToAttribute:true},listCompSubitems:{type:Object,notify:true,reflectToAttribute:true},isCompartido:false,inputLibreHidden:false,inputProductoHidden:true,inputProcionHidden:true,dtProItem:Object,dtProItem_porcion:Object,dtListContentCompartido:Object,contentSelect:Object,cantidadSubItems:0},attached:function(){this.selected=0;xThisComSubItemEdit=this;inputLibreHidden=false;inputProductoHidden=true;inputProcionHidden=true;},loadSubItemIni:function(){xThisComSubItemEdit.listCompSubitems=[];xThisComSubItemEdit.listContent=[];xThisComSubItemEdit.contentSelect=[];xThisComSubItemEdit.cantidadSubItems=0;xcheck_subitem_required.checked=false;xcheck_show_cant_item.checked=false;xcheck_controlable.checked=false;txt_sub_condicion_cant.value='';this.selected=0;xInitSubItemsEdit();}})/*]]>*/</script>

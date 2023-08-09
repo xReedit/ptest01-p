@@ -2991,7 +2991,7 @@
 			$bd->xConsulta($sql);
 			break;
 		case 1702://load detalles de ingredientes
-			$sql="SELECT iditem,descripcion,cantidad,costo, idporcion, necesario FROM item_ingrediente WHERE iditem=".$_POST['i']." AND estado=0 order by iditem_ingrediente";
+			$sql="SELECT iditem,descripcion,cantidad,costo, idporcion, necesario, idproducto_stock, viene_de FROM item_ingrediente WHERE iditem=".$_POST['i']." AND estado=0 order by iditem_ingrediente";
 			$bd->xConsulta($sql);
 			break;
 		///productos y porciones

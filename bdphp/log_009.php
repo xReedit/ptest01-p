@@ -281,7 +281,7 @@
                     ,tp.descripcion nom_tipo_pago, p.descripcion nom_proveedor,a.descripcion nom_almacen
                     ,u.nombres nom_usuario
                 from compra c
-                    inner join proveedor p using(idproveedor)
+                    left join proveedor p using(idproveedor)
                     inner join tipo_pago tp using(idtipo_pago)
                     inner join almacen a using(idalmacen)
                     inner join usuario u on c.idusuario = u.idusuario 
@@ -307,28 +307,68 @@
 
             $sql = "select rp.idcliente,format(sum(rpd.importe),2) total, GROUP_CONCAT(rpd.idregistro_pago_detalle) , rp.idregistro_pago, c.nombres nom_cliente, c.ruc as num_dni, c.direccion, c.telefono
                 ,format(sum(rpd.importe),2) total, count(rp.idregistro_pago) cantidad       
-                , format(COALESCE(cpc.importe, 0), 2) pago, format(COALESCE(cpc.debe,0),2) debe
+                , format(COALESCE(cpc.importe, 0), 2) pago
+                , format((sum(rpd.importe) - COALESCE(cpc.importe, 0)),2) debe
                 ,c.telefono
             from cliente_sede cs
                 inner join cliente c on cs.idcliente = c.idcliente 
                 inner join registro_pago rp on cs.idcliente = rp.idcliente
                 inner join registro_pago_detalle rpd using(idregistro_pago)
-                left join cliente_paga_credito cpc on cpc.idcliente = cs.idcliente and cpc.idsede = cs.idsede 
-            where rpd.idtipo_pago = 3 and (cs.idsede=$g_idsede and rp.idsede=$g_idsede) and rpd.flag_pagado=0
+                left join (select cc.idcliente, cc.idsede, sum(cpcd.importe) importe, cc.debe 
+                    from cliente_paga_credito cc
+                    inner join cliente_paga_credito_detalle cpcd using(idcliente_paga_credito)
+                    where cc.idsede =$g_idsede
+                    GROUP by cc.idcliente
+                ) cpc on cpc.idcliente = cs.idcliente
+            where rpd.idtipo_pago = 3 and (cs.idsede=$g_idsede and rp.idsede=$g_idsede) and cast(debe as UNSIGNED) > 0
             GROUP by cs.idcliente
+            order by rp.idregistro_pago desc, cast(debe as UNSIGNED) desc";
+
+            $bd->xConsulta($sql);
+            break;
+        case 23001: // historial
+            $sql = "select rp.idcliente,format(sum(rpd.importe),2) total, GROUP_CONCAT(rpd.idregistro_pago_detalle) , rp.idregistro_pago, c.nombres nom_cliente, c.ruc as num_dni, c.direccion, c.telefono
+                ,format(sum(rpd.importe),2) total, count(rp.idregistro_pago) cantidad       
+                , format(COALESCE(cpc.importe, 0), 2) pago
+                , format((sum(rpd.importe) - COALESCE(cpc.importe, 0)),2) debe
+                ,c.telefono
+            from cliente_sede cs
+                inner join cliente c on cs.idcliente = c.idcliente 
+                inner join registro_pago rp on cs.idcliente = rp.idcliente
+                inner join registro_pago_detalle rpd using(idregistro_pago)
+                left join (select cc.idcliente, cc.idsede, sum(cpcd.importe) importe, cc.debe 
+                        from cliente_paga_credito cc
+                        inner join cliente_paga_credito_detalle cpcd using(idcliente_paga_credito)
+                        where cc.idsede =$g_idsede GROUP by cc.idcliente
+                    ) cpc on cpc.idcliente = cs.idcliente and cpc.idsede = cs.idsede                 
+            where rpd.idtipo_pago = 3 and (cs.idsede=$g_idsede and rp.idsede=$g_idsede)
+            GROUP by cs.idcliente
+            order by cast(debe as UNSIGNED) desc, rp.idregistro_pago";
+
+            $bd->xConsulta($sql);
+            break;
+        case 2301: // lista de consumos x cliente
+            $postBody = json_decode(file_get_contents('php://input'));
+            $sql = "select rp.idregistro_pago, rpd.idregistro_pago_detalle,STR_TO_DATE(rp.fecha, '%d/%m/%Y') fecha , rp.total, rpd.importe, format(rpd.pagado,2) pagado
+                ,CONCAT('Pasaron: ',DATEDIFF(now(),STR_TO_DATE(rp.fecha, '%d/%m/%Y')), ' dia(s)') as pasaron
+                ,format((rpd.importe - rpd.pagado),2) debe
+                ,rpd.flag_pagado
+            from registro_pago rp 
+                inner join registro_pago_detalle rpd using(idregistro_pago)
+            where rp.idcliente=$postBody->idcliente and rpd.idtipo_pago = 3 and rp.idsede = $g_idsede and rpd.flag_pagado = 0
             order by rp.idregistro_pago desc";
 
             $bd->xConsulta($sql);
             break;
-
-        case 2301: // lista de consumos x cliente
+        case 230101: // lista de consumos x cliente HISTORIAL
             $postBody = json_decode(file_get_contents('php://input'));
             $sql = "select rp.idregistro_pago, rpd.idregistro_pago_detalle,STR_TO_DATE(rp.fecha, '%d/%m/%Y') fecha , rp.total, rpd.importe, format(rpd.pagado,2) pagado
-                ,DATEDIFF(now(),STR_TO_DATE(rp.fecha, '%d/%m/%Y')) as pasaron
                 ,format((rpd.importe - rpd.pagado),2) debe
+                ,if ( rpd.flag_pagado = 0,  CONCAT('Pasaron: ',DATEDIFF(now(),STR_TO_DATE(rp.fecha, '%d/%m/%Y')), ' dia(s)'), 'Pagado') as pasaron
+                ,rpd.flag_pagado
             from registro_pago rp 
                 inner join registro_pago_detalle rpd using(idregistro_pago)
-            where rp.idcliente=$postBody->idcliente and rpd.idtipo_pago = 3 and rp.idsede = $g_idsede and rpd.flag_pagado = 0
+            where rp.idcliente=$postBody->idcliente and rpd.idtipo_pago = 3 and rp.idsede = $g_idsede
             order by rp.idregistro_pago desc";
 
             $bd->xConsulta($sql);

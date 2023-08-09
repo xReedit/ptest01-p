@@ -14,7 +14,7 @@
 <template is="dom-repeat" items="{{listTabla}}" as="item">
 <tr>
 <td>
-<div style="display:flex">
+<div style="display:flex;align-items:flex-start">
 <x-comp-find-tipo-pago-option class="tpf_option" novisibles$={{item.novisibles}} deshabilitado$="{{item.deshabilitado}}" ispagoappop$="[[ispagoapp]]" onclick="xCalcImporte()" id="comp-pago-option">
 </x-comp-find-tipo-pago-option>
 <div class="xMiBoton_icon_option" hidden$="{{item.hiddenIconBorrar}}" data-index="{{index}}" onclick="_borrarRow(this)">

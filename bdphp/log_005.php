@@ -420,6 +420,11 @@
 			$sql = "SELECT iditem_subitem_content as value, titulo as label from item_subitem_content where idsede = ".$g_idsede." and compartido='1' and estado = 0 ORDER by titulo";
 			$bd->xConsulta($sql);
 			break;
+		case 808: //modificar titulo del seleccionable
+			$arrItem=$_POST['item'];
+			$sql = "update item_subitem_content set titulo = '".$arrItem['titulo']."' where iditem_subitem_content = ".$arrItem['iditem_subitem_content'];	
+			$bd->xConsulta($sql);
+			break;
 		// case 806: // borrar subitem_content y de subitem_content_detalle
 		// 	$sql="delete from item_subitem_content where iditem_subitem_content = ".$_POST['idcontent'];
 		// 	break;
@@ -1612,6 +1617,6 @@
 							and rp.idusuario!=$g_idusuario
 						GROUP by rp.idusuario";
 				$bd->xConsulta($sql);
-				break;
+				break;			
 	}
 ?>
