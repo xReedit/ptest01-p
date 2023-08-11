@@ -1339,7 +1339,7 @@
 					$date2 = $option['value2'];	
 
 					if ($date1 == $date2 ) {
-						$fecha = " STR_TO_DATE(fecha, '%d/%m/%Y') = STR_TO_DATE($date1, '%d/%m/%Y') ";
+						$fecha = " STR_TO_DATE(fecha, '%d/%m/%Y') = STR_TO_DATE($date1, '%Y-%m-%d') ";
 					
 						$sql = "SELECT * from print_server_detalle where idsede = $idsede and idprint_server_estructura = 4 and $fecha";
 						$bd->xConsulta($sql);	

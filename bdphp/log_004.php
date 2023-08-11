@@ -261,7 +261,7 @@
 			$sql="select psd.idprint_server_detalle, psd.fecha, psd.hora, psd.descripcion_doc, u.nombres usuario from print_server_detalle psd  
 			inner join usuario u on u.idusuario =psd.idusuario 
 			where psd.idusuario = ".$_SESSION['idusuario']." and psd.idprint_server_estructura = 4
-				and HOUR(TIMEDIFF(STR_TO_DATE(concat(psd.fecha, ' ', psd.hora), '%d/%m/%Y %H:%i:%s'), NOW())) < 10
+				and HOUR(TIMEDIFF(STR_TO_DATE(concat(psd.fecha, ' ', psd.hora), '%d/%m/%Y %H:%i:%s'), NOW())) < 72
 			order by psd.idprint_server_detalle desc limit 5";
 			$bd->xConsulta($sql);
 			break;
