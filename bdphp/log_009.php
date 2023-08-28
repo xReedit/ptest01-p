@@ -320,7 +320,7 @@
                     where cc.idsede =$g_idsede
                     GROUP by cc.idcliente
                 ) cpc on cpc.idcliente = cs.idcliente
-            where rpd.idtipo_pago = 3 and (cs.idsede=$g_idsede and rp.idsede=$g_idsede) and cast(debe as UNSIGNED) > 0
+            where rpd.idtipo_pago = 3 and (cs.idsede=$g_idsede and rp.idsede=$g_idsede)
             GROUP by cs.idcliente
             order by rp.idregistro_pago desc, cast(debe as UNSIGNED) desc";
 
