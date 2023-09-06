@@ -590,14 +590,26 @@
 				$new = $_POST['new'];
 				$idsede = $idsede == 0 ? $g_idsede : $idsede;
 
-				if ( $new == "1" ) {
-					$meta_m = $meta * 30;
-					$meta_y = $meta_m * 12;
-					$sql = "insert into sede_meta(idorg, idsede, diaria, mensual, anual, fecha) values ($g_ido, $g_idsede,'$meta', '$meta_m', '$meta_y', CURDATE())";
+				$meta_m = $meta * 30;
+				$meta_y = $meta_m * 12;
+
+				// si existe registro solo actualizar
+				$sql = "select count(*) from sede_meta where idsede = $idsede";
+				$existe = $bd->xDevolverUnDato($sql);
+
+				if ( $existe == 0 ) {
+					$new = "1";
 				} else {
-					$sql="update sede_meta set diaria='$meta' where idsede = $idsede";
+					$new = "0";
+				}
+				
+				if ( $new == "1" ) {
+					$sql = "insert into sede_meta(idorg, idsede, diaria, mensual, anual, fecha) values ($g_ido, $g_idsede,'$meta', '$meta_m', '$meta_y', CURDATE())";
+				} else {					
+					$sql="update sede_meta set diaria='$meta', mensual='$meta_m', anual='$meta_y' where idsede = $idsede";
 				}
 				$bd->xConsulta($sql);
+				
 			break;
 		case 1606: // chequear si existe cierre de caja para volver a imprimirlo
 			$fecha = $_POST['fecha'];

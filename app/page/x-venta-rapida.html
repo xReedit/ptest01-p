@@ -352,6 +352,9 @@ function xListoDlgVR(){xVerMipedidoVR();dialog_item.close();}
 function xOpenPanelDeVR(){dialog_opciones_adcionales.open();}
 function xClosePanelDeVR(){$(".itemsDivx.a").removeClass('open');}
 function xOpenPedidosCuentaPendientes(){$(contentVentaRapida).addClass('xInvisible');$(contentPedidosPendientesCobrar).removeClass('xInvisible');_pedido_pagar_cuenta.loadPedidosPendientesCobrar();}
+function xRestorePedidoLocalStorageVR(){let isPedidoFromStorageVR=window.localStorage.getItem("::app3_sys_dta_pe_sk")
+if(isPedidoFromStorageVR){xArrayPedidoObj=JSON.parse(isPedidoFromStorageVR);xVerMipedidoVR();}}
 Polymer({is:'x-venta-rapida',properties:{xt_org:Number,xt_idsede:Number,xt_idus:Number,xdt_items:Object,xt_nombre_sede:String,xt_eslogan:String,hidden_container_registro_pago:boolean=false,valid_form_cliente_pago:boolean=false,valid_monto_pago:boolean=false,xIconScreen:String,objSubItemQuitar:Object,importeTotalPedido:Number,showCompDescuento:Boolean},attached:function(){this.selected_us=0;this.showCompDescuento=false
-this.xIconScreen='icons:fullscreen';xThisVentaRapida=this;xIniVentaRapida();_cpSocketOpen();$("#x-main").removeClass('xContent');$("#x-main").removeClass('content');$("#panel_toolbar").addClass('xInvisible');},detached:function(){document.defaultAction=false;document['onkeydown']=empty;clearInterval(xGeneralRelojUpdateItemsSolo);_cpSocketClose();enableScrollRefresh()
+this.xIconScreen='icons:fullscreen';xThisVentaRapida=this;xIniVentaRapida();_cpSocketOpen();xRestorePedidoLocalStorageVR()
+$("#x-main").removeClass('xContent');$("#x-main").removeClass('content');$("#panel_toolbar").addClass('xInvisible');},detached:function(){document.defaultAction=false;document['onkeydown']=empty;clearInterval(xGeneralRelojUpdateItemsSolo);_cpSocketClose();enableScrollRefresh()
 $("#x-main").addClass('xContent');$("#x-main").addClass('content');$("#panel_toolbar").removeClass('xInvisible');}})/*]]>*/</script>

@@ -4,7 +4,8 @@
 </template>
 </dom-module>
 <style>.comp-val-num-meta{display:flex;flex-wrap:nowrap;justify-content:center;align-items:baseline;width:30px;margin:0 auto}</style>
-<script>/*<![CDATA[*/var xThisComMetaVenta,compLastColorTestMeta='';setTimeout(()=>{try{if(socketCP){socketCP.isRegistroVenta$.subscribe(res=>{xIniCompMetaVenta();});}}catch(error){setTimeout(()=>{socketCP.isRegistroVenta$.subscribe(res=>{xIniCompMetaVenta();});},2000);console.log('socketCP 1s');}},4000);function xIniCompMetaVenta(){let nomClassMetaNum='text-danger';xThisComMetaVenta.valNumMeta=0;const _url='../../bdphp/log_componentes.php?op=21'
+<script>/*<![CDATA[*/var xThisComMetaVenta,compLastColorTestMeta='';setTimeout(()=>{try{if(socketCP){socketCP.isRegistroVenta$.subscribe(res=>{xIniCompMetaVenta();});}}catch(error){try{setTimeout(()=>{socketCP.isRegistroVenta$.subscribe(res=>{xIniCompMetaVenta();});},2000);}catch(error){}
+console.log('socketCP 1s');}},4000);function xIniCompMetaVenta(){let nomClassMetaNum='text-danger';xThisComMetaVenta.valNumMeta=0;const _url='../../bdphp/log_componentes.php?op=21'
 $.ajax({type:'POST',url:_url}).done(function(res){res=JSON.parse(res);if(res.success){$('.comp-val-num-meta').addClass('animate__flash animate__heartBeat');const _numMeta=res.datos[0].pct;if(_numMeta>100){nomClassMetaNum='text-info';}
 if(_numMeta>=80&&_numMeta<=100){nomClassMetaNum='text-success';}
 if(_numMeta<80&&_numMeta>=40){nomClassMetaNum='text-warning';}

@@ -16,20 +16,32 @@
 <p><span class="fw-600">Fecha: </span> {{ fechaDistribuicion }}</p>
 <p><span class="fw-600">Obersvaciones: </span> {{ observacionesDistribuicion }} </p>
 </div>
-<hr>
-<div>
-<table width="100%">
+<div style="overflow:auto;background:aliceblue;border-radius:5px">
+<table width="100% fs-12">
 <thead>
 <th align="left">Producto</th>
 <th align="center">Cantidad</th>
+<th align="center">Costo</th>
 </thead>
 <tbody>
 <template is="dom-repeat" items="{{listItemAddDistribuicionD}}" as="item">
 <tr>
 <td align="left">{{ item.descripcion }}</td>
 <td align="center">{{ item.cantidad }}</td>
+<td align="center">{{ item.costo }}</td>
 </tr>
 </template>
+<tr>
+<td align="right">
+<p class="fw-600 fs-15">Total</p>
+</td>
+<td align="center">
+<p class="fw-600 fs-15">{{ arrTotalesProductosDistribuicion.cantidad }}</p>
+</td>
+<td align="center">
+<p class="fw-600 fs-15">{{ arrTotalesProductosDistribuicion.costo }}</p>
+</td>
+</tr>
 </tbody>
 </table>
 </div>
@@ -48,7 +60,7 @@
 <div hidden$="[[ showDetalleDistribuicion ]]">
 <div class="d-flexx justify-content-between align-items-center">
 <p class="fs-15 fw-600">Listado de Distribuicion</p>
-<button class="btn btn-sm btn-info" onclick="goDetalleDistribuicion()"> + Nuevo</button>
+<button class="btn btn-sm btn-primary" onclick="goDetalleDistribuicion()"> + Nuevo</button>
 </div>
 <br>
 <table width="100%">
@@ -70,7 +82,7 @@
 <td>{{ item.desde }}</td>
 <td>{{ item.hasta }}</td>
 <td>{{ item.detalle }}</td>
-<td align="right"><button class="btn btn-sm btn-success" data-id="{{item.iddistribuicion}}" onclick="xloadDetalleDistribuicion(this)">Ver</button></td>
+<td align="right"><button class="btn btn-sm btn-xsm xBoton_flat_2" data-id="{{item.iddistribuicion}}" onclick="xloadDetalleDistribuicion(this)">Ver</button></td>
 </tr>
 </template>
 </tbody>
@@ -102,9 +114,10 @@
 <br><br>
 <table width="100%">
 <thead>
-<td width="60%">Producto</td>
+<td width="50%">Producto</td>
 <td>Stock</td>
-<td>Cantidad</td>
+<td>Cant. Distribuir</td>
+<td>Costo</td>
 <td></td>
 </thead>
 <tbody>
@@ -116,7 +129,10 @@
 <input type="number" readonly="true" class="xMiInput xPasarEnter2 fs-12" id="text_stock_producto" placeholder="Stock Actual">
 </td>
 <td>
-<input type="number" class="xMiInput xPasarEnter2 fs-12" id="text_cantidad_producto" placeholder="Cantidad">
+<input type="number" class="xMiInput xPasarEnter2 fs-12" id="text_cantidad_producto" placeholder="Cantidad" onchange="xCalcPrecioCompraDistribuicion(this)" onkeyup="xCalcPrecioCompraDistribuicion(this)">
+</td>
+<td>
+<input type="text" readonly="true" class="xMiInput xPasarEnter2 fs-12" id="text_costo_producto_distribuicion" placeholder="P. Compra" onkeypress="addProductoListDistribuicion()">
 </td>
 <td>
 <button class="btn btn-sm btn-success" onclick="addProductoListDistribuicion()">+</button>
@@ -126,11 +142,18 @@
 <tr data-id="[[item.idproducto_stock]]">
 <td>{{ item.descripcion }}</td>
 <td align="right" colspan="2"> {{ item.cantidad }} </td>
+<td align="right"> {{ item.costo }} </td>
 <td>
 <span class="xDeleteRow ml-2" title="Anular" onclick="removeItemListDistribuicion(this)"></span>
 </td>
 </tr>
 </template>
+<tr>
+<td colspan="2" align="right"><p class="fw-600 fs-15">Total</p></td>
+<td align="right"><p class="fw-600 fs-15">{{ arrTotalesProductosDistribuicion.cantidad }}</p></td>
+<td align="right"><p class="fw-600 fs-15">{{ arrTotalesProductosDistribuicion.costo }}</p></td>
+<td></td>
+</tr>
 </tbody>
 </table>
 <br><br><br>
@@ -140,7 +163,7 @@
 <hr>
 <br>
 <div class="d-flexx">
-<button class="btn btn-info" disabled$="[[isDisabledGuardar]]" onclick="guardarDistribuicionNew()">Guardar Distribuicion</button>
+<button class="btn btn-primary" disabled$="[[isDisabledGuardar]]" onclick="guardarDistribuicionNew()">Guardar Distribuicion</button>
 <button class="btn btn-success ml-2" hidden$="[[!isGuardadoDistribuicion]]" onclick="cocinarImpresionDistribuicion()"> Imprimir </button>
 <button class="btn btn-secondary ml-3" onclick="goDetalleDistribuicion()"> Atras </button>
 </div>
@@ -157,7 +180,7 @@ if(nextBox.disabled){nextBox=inputs[a+2]}
 if(nextBox==undefined){return;}
 nextBox.focus();nextBox.select();}
 event.stopPropagation();e.stopPropagation();e.stopImmediatePropagation();return false;}});$("._xcant").on('keyup',function(e){var code=e.which;if(code==13||code==186){xAddItemRow();}});$("#sel_alamcenDE").on('change',function(){xThisDisttribucion.idAlmacenDistribuicionFiltro=$("#sel_alamcenDE option:selected").val();})
-const _compProductoAlmacenDistribuicion=document.getElementById('compProductoAlmacenDistribuicion');_compProductoAlmacenDistribuicion.addEventListener('productoSeleted',(e)=>{console.log('e',e.detail);text_stock_producto.value=e.detail.stock||0;})
+const _compProductoAlmacenDistribuicion=document.getElementById('compProductoAlmacenDistribuicion');_compProductoAlmacenDistribuicion.addEventListener('productoSeleted',(e)=>{text_stock_producto.value=e.detail.stock||0;})
 $("#text_cantidad_producto").on('keyup',function(e){var code=e.which;if(code==13||code==186){addProductoListDistribuicion();}});}
 function xGuardarDistribuicion(){var xarray_db=new Array();xPopupLoad.xopen();$("#tb_almacen_items .row").each(function(index,element){xarray_db.push({'idproducto_stock':$(element).find('#td_idupdate').text(),'idalmacen_de':$(element).find('#td_almacen_de').text(),'idalmacen_a':$(element).find('#td_almacen_a').text(),'idproducto':$(element).find('#td_dproducto').text(),'cantidad':$(element).find('#td_cantidad').text()});})
 $.ajax({type:'POST',url:'../../bdphp/log.php?op=16006',data:{array_db:xarray_db}}).done(function(dtsuccess){xPopupLoad.xclose();xNuevaDisrtribuicion();xloadProductoItem();})}
@@ -174,16 +197,19 @@ $(xrow_duplicado).find('#row_stock').text(xcant_row_tb);$(xrow_duplicado).css('f
 function xCargarProductoItem(){var xPrecio_pro_calc=0;var xObjTxtItemPro=$("#des_item");xObjTxtItemPro.autocomplete({autoFocus:true,source:xThisDisttribucion.dtProItem,select:function(event,ui){xObjTxtItemPro.val(ui.item.label);xObjTxtItemPro.attr('data-id',ui.item.value);xObjTxtItemPro.attr('data-des-familia',ui.item.familia);$("#txt_stock").val(ui.item.stock);xnom_producto_sel=ui.item.label;xIdProducto_sel=ui.item.value;xIdAlmacen_item_pro_sel=ui.item.idproducto_stock;return false;},focus:function(event,ui){return false;},change:function(event,ui){if(ui.item===null){xObjTxtItemPro.attr('data-value',"");xObjTxtItemPro.attr('data-id',"");xnom_producto_sel="";xIdAlmacen_item_pro_sel='';xIdProducto_sel='';$("#txt_stock").val("");xNewItemPro=true;}else{xNewItemPro=false;$("#frm_item_pro #idproducto").val(ui.item.value);}
 return false;}});}
 function xloadProductoItem(){xPopupLoad.xopen();$.ajax({type:'POST',url:'../../bdphp/log.php?op=16001',data:{i:xidAlmacen}}).done(function(DtItems){var xDtItems=$.parseJSON(DtItems);xThisDisttribucion.dtProItem=xDtItems.datos;xCargarProductoItem();xPopupLoad.xclose();})}
-function xloadAlamcen(){$.ajax({type:'POST',url:'../../bdphp/log.php?op=1604'}).done(function(DtAlm){xDtAlam=$.parseJSON(DtAlm);var xcandena_alm='';xDtAlam=xDtAlam.datos;for(var i=0;i<xDtAlam.length;i++){xcandena_alm=String(xcandena_alm+'<option value="'+xDtAlam[i].idalmacen+'">'+xDtAlam[i].descripcion+'</option>')};$("#sel_alamcenDE").html(xcandena_alm).trigger('create');$("#sel_alamcenA").html(xcandena_alm).trigger('create');xidAlmacen=$("#sel_alamcenDE option:selected").val()
+function xloadAlamcen(){$.ajax({type:'POST',url:'../../bdphp/log.php?op=1604'}).done(function(DtAlm){xDtAlam=$.parseJSON(DtAlm);var xcandena_alm='';xDtAlam=xDtAlam.datos;for(var i=0;i<xDtAlam.length;i++){if(i==0){xThisDisttribucion.idAlmacenDistribuicionFiltro=xDtAlam[i].idalmacen;}
+xcandena_alm=String(xcandena_alm+'<option value="'+xDtAlam[i].idalmacen+'">'+xDtAlam[i].descripcion+'</option>')};$("#sel_alamcenDE").html(xcandena_alm).trigger('create');$("#sel_alamcenA").html(xcandena_alm).trigger('create');xidAlmacen=$("#sel_alamcenDE option:selected").val()
 xloadProductoItem()})}
 function xBorrarItemLocalPro(obj){var xObj=$(obj).parent().parent();var xtb=xObj.parents('table');var xtb_row_id=xObj.attr('id');xObj.fadeTo(550,0,function(){$(this).remove();$('#tb_input #'+xtb_row_id).remove();});}
 function xResetInputPro(){$("#des_item").val('');$("#des_item").attr('data-id','')
 $("#cant_item").val('');$("#txt_stock").val('');$("#des_item").focus();}
 function setIsToAlmacen(){xThisDisttribucion.isToAlmacen=!xThisDisttribucion.isToAlmacen;}
 function addProductoListDistribuicion(){const _productoSelected=compProductoAlmacen.getProductoSeletedAlmacen();if(!_productoSelected){return;}else{rowItemAdd.cantidad=text_cantidad_producto.value;if(parseFloat(rowItemAdd.cantidad)>parseFloat(_productoSelected.stock)){alert('Cantidad mayor al disponible');return;}
-rowItemAdd.descripcion=_productoSelected.label;rowItemAdd.idproducto_stock=_productoSelected.value;rowItemAdd.idproducto=_productoSelected.idproducto;setItemListDistribuicion();}}
+rowItemAdd.descripcion=_productoSelected.label;rowItemAdd.idproducto_stock=_productoSelected.value;rowItemAdd.idproducto=_productoSelected.idproducto;rowItemAdd.costo=text_costo_producto_distribuicion.value
+setItemListDistribuicion();}}
 function removeItemListDistribuicion(obj){const xRowObj=obj.parentNode.parentNode;const indexPS=xRowObj.dataId;listItemDistribuicion=listItemDistribuicion.filter(x=>x.idproducto_stock!==indexPS);setListListDistribuicion();}
-function setItemListDistribuicion(){listItemDistribuicion=xThisDisttribucion.listItemAddDistribuicion||[];listItemDistribuicion.push(rowItemAdd);setListListDistribuicion();compProductoAlmacen.resetText();text_cantidad_producto.value='';text_stock_producto.value='';compProductoAlmacen.focusText();}
+function setItemListDistribuicion(){listItemDistribuicion=xThisDisttribucion.listItemAddDistribuicion||[];listItemDistribuicion.push(rowItemAdd);setListListDistribuicion();compProductoAlmacen.resetText();text_cantidad_producto.value='';text_stock_producto.value='';text_costo_producto_distribuicion.value='';compProductoAlmacen.focusText();getArrTotalesProductosDistribuicion(xThisDisttribucion.listItemAddDistribuicion)}
+function getArrTotalesProductosDistribuicion(listProductosD){const _arrTotales=listProductosD.reduce((acum,item)=>{acum.cantidad+=parseFloat(item.cantidad);acum.costo+=parseFloat(item.costo);return acum;},{cantidad:0,costo:0});_arrTotales.costo=_arrTotales.costo.toFixed(2);_arrTotales.costo=isNaN(_arrTotales.costo)?0:_arrTotales.costo;xThisDisttribucion.arrTotalesProductosDistribuicion=_arrTotales;}
 function setListListDistribuicion(){xThisDisttribucion.isDisabledGuardar=listItemDistribuicion.length===0;xThisDisttribucion.listItemAddDistribuicion=JSON.parse(JSON.stringify(listItemDistribuicion));}
 async function guardarDistribuicionNew(){xPopupLoad.xopen();if(xThisDisttribucion.listItemAddDistribuicion.length===0){return;}
 const _sedeComp=document.getElementById('sedeComp');const _idsedeA=_sedeComp.getSede();const xIdAlmacen_A=$("#sel_alamcenA option:selected").val();xThisDisttribucion.idAlmacenDistribuicionFiltro=$("#sel_alamcenDE option:selected").val();const _dataSend={op:4,list:xThisDisttribucion.listItemAddDistribuicion,detalle:txt_detalle.value,idalmacen_de:xThisDisttribucion.idAlmacenDistribuicionFiltro,is_to_sede:xThisDisttribucion.isToAlmacen?0:1,idalmacen_a:xIdAlmacen_A,idsede_a:_idsedeA.idsede}
@@ -192,6 +218,8 @@ xThisDisttribucion.isDisabledGuardar=true;lastIdDistribuicion=rpt.respuesta;xPop
 function cocinarImpresionDistribuicion(){const printer=xgetImpresora(-5);const _sedeComp=document.getElementById('sedeComp');const _idsedeA=_sedeComp.getSede();const adondelabel=xThisDisttribucion.isToAlmacen?sel_alamcenA.selectedOptions[0].text:'LOCAL '+_idsedeA.nombre;const _dataPrintD={lista:xThisDisttribucion.listItemAddDistribuicion,impresora:printer,subtotales:[],encabezado:{tipo:'DISTRIBUICION',titulo:'DISTRIBUICION',correlativo_lista:lastIdDistribuicion,otro:`De:${sel_alamcenDE.selectedOptions[0].text}->A:${adondelabel}`,observaciones:txt_detalle.value}}
 xImprimirCualquierLista(_dataPrintD);}
 function xlistaDistribuicion(){$.ajax({type:'POST',url:'../../bdphp/log_009.php?op=401'}).done(function(res){var _resList=JSON.parse(res);xThisDisttribucion.listDistribuicion=_resList.datos;});}
-function xloadDetalleDistribuicion(obj){const xRowObj=obj.parentNode.parentNode;const itemDistribuicion=xThisDisttribucion.listDistribuicion[xRowObj.dataId];$.ajax({type:'POST',url:'../../bdphp/log_009.php?op=402',data:{id:itemDistribuicion.iddistribuicion}}).done(function(res){var _resList=JSON.parse(res);xThisDisttribucion.listItemAddDistribuicionD=_resList.datos;xThisDisttribucion.observacionesDistribuicion=itemDistribuicion.detalle;xThisDisttribucion.fechaDistribuicion=itemDistribuicion.fecha;xThisDisttribucion.desdeDistribuicion=itemDistribuicion.desde;xThisDisttribucion.hastaDistribuicion=itemDistribuicion.hasta;dialog_detalle_distribuicion.open();});}
+function xloadDetalleDistribuicion(obj){const xRowObj=obj.parentNode.parentNode;const itemDistribuicion=xThisDisttribucion.listDistribuicion[xRowObj.dataId];$.ajax({type:'POST',url:'../../bdphp/log_009.php?op=402',data:{id:itemDistribuicion.iddistribuicion}}).done(function(res){var _resList=JSON.parse(res);xThisDisttribucion.listItemAddDistribuicionD=_resList.datos;xThisDisttribucion.observacionesDistribuicion=itemDistribuicion.detalle;xThisDisttribucion.fechaDistribuicion=itemDistribuicion.fecha;xThisDisttribucion.desdeDistribuicion=itemDistribuicion.desde;xThisDisttribucion.hastaDistribuicion=itemDistribuicion.hasta;getArrTotalesProductosDistribuicion(xThisDisttribucion.listItemAddDistribuicionD)
+dialog_detalle_distribuicion.open();});}
 function goDetalleDistribuicion(){xThisDisttribucion.showDetalleDistribuicion=!xThisDisttribucion.showDetalleDistribuicion;if(!xThisDisttribucion.showDetalleDistribuicion){xThisDisttribucion.listItemAddDistribuicion=[];listItemDistribuicion=[];xThisDisttribucion.isGuardadoDistribuicion=false;}}
-Polymer({is:'x-distribuicion',properties:{xt_org:Number,xt_idsede:Number,xt_idus:Number,dtProItem:Object,idAlmacenDistribuicionFiltro:Number,listDistribuicion:[],listItemAddDistribuicion:[],listItemAddDistribuicionD:[],showDetalleDistribuicion:Boolean,isToAlmacen:Boolean,isDisabledGuardar:Boolean,fechaDistribuicion:String,observacionesDistribuicion:String,desdeDistribuicion:String,hastaDistribuicion:String,isGuardadoDistribuicion:Boolean},attached:function(){this.isDisabledGuardar=true;this.showDetalleDistribuicion=false;this.isToAlmacen=true;this.isGuardadoDistribuicion=false;xThisDisttribucion=this;xIniDistribuicion();_cpSocketOpen();},displayIndex:function(index){return xCeroIzq(index+1,1);},})/*]]>*/</script>
+function xCalcPrecioCompraDistribuicion(obj){const _cantidadProducto=obj.value;const _productoSelected=compProductoAlmacen.getProductoSeletedAlmacen();if(!_productoSelected){return;}else{const _precioCompra=_productoSelected.precio_unitario;const _precioCompraTotal=parseFloat(_precioCompra)*parseFloat(_cantidadProducto);text_costo_producto_distribuicion.value=isNaN(_precioCompraTotal)?0:_precioCompraTotal.toFixed(2);}}
+Polymer({is:'x-distribuicion',properties:{xt_org:Number,xt_idsede:Number,xt_idus:Number,dtProItem:Object,idAlmacenDistribuicionFiltro:Number,listDistribuicion:[],listItemAddDistribuicion:[],listItemAddDistribuicionD:[],showDetalleDistribuicion:Boolean,isToAlmacen:Boolean,isDisabledGuardar:Boolean,fechaDistribuicion:String,observacionesDistribuicion:String,desdeDistribuicion:String,hastaDistribuicion:String,isGuardadoDistribuicion:Boolean,arrTotalesProductosDistribuicion:{}},attached:function(){this.isDisabledGuardar=true;this.showDetalleDistribuicion=false;this.isToAlmacen=true;this.isGuardadoDistribuicion=false;xThisDisttribucion=this;xIniDistribuicion();_cpSocketOpen();},displayIndex:function(index){return xCeroIzq(index+1,1);},})/*]]>*/</script>

@@ -75,7 +75,7 @@
             break;
         case 70101://load clientes - input autocomplete search val input            
             $inputValue = $_POST['val'];
-            $sql = "select c.idcliente, c.idorg, c.nombres, c.f_nac, c.ruc, c.direccion, cs.telefono, c.credito, c.estado, c.pwa_id, c.email, c.calificacion, c.dni_num_verificador, c.direccion_delivery_no_map, c.referencia from cliente_sede cs inner join cliente c on cs.idcliente = c.idcliente where cs.idsede = $g_idsede and nombres like '%$inputValue%' order by nombres";
+            $sql = "select c.idcliente, c.idorg, c.nombres, c.f_nac, c.ruc, c.direccion, cs.telefono, c.credito, c.estado, c.pwa_id, c.email, c.calificacion, c.dni_num_verificador, c.direccion_delivery_no_map, c.referencia from cliente_sede cs inner join cliente c on cs.idcliente = c.idcliente where cs.idsede = $g_idsede and nombres like '%$inputValue%' order by nombres limit 5";
             $bd->xConsulta($sql);
             break;
         case 8://load cargos
@@ -184,7 +184,7 @@
 
             $sql="
                 SELECT ps.idproducto_stock as value, concat(a.descripcion, ' | ', pf.descripcion , ' | ', p.descripcion) as label 
-                    ,ps.stock, ps.idproducto
+                    ,ps.stock, ps.idproducto, p.precio, p.precio_unitario
                 FROM producto AS p
                     inner join producto_stock ps on ps.idproducto = p.idproducto 
                     inner join almacen a on a.idalmacen = ps.idalmacen

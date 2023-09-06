@@ -86,7 +86,13 @@
 </div>
 <div class="d-flexx p-3 bg-dark justify-content-around">
 <span class="pr-5 text_puntos"><i class="fa fa-flag pr-1"></i>Meta Diaria de Venta</span>
-<x-comp-meta-venta fontsize=fs-17 class=text-right></x-comp-meta-venta>
+<div class=tooltip>
+<x-comp-meta-venta fontsize=fs-17 class="text-right xCursor"></x-comp-meta-venta>
+<div class="tooltiptext right p-2">
+<p>Porcentaje alcanzado de la meta diaria de ventas</p>
+<button class="btn btn-sm btn-primary" onclick=xCambiarMetaDiariaCP()>Cambiar Meta</button>
+</div>
+</div>
 </div>
 <div class=xLineaSombra></div>
 <div class=ul_menu2>
