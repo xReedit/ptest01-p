@@ -1516,12 +1516,12 @@
 			$sql_pedido_detalle='';
 
 			//registra pedido borrado
-			$sqlpedido_borrado="insert into pedido_borrados (idpedido,idpedido_detalle,iditem,idcarta_lista,idusuario,idusuario_permiso,importe,fecha,hora,procede_tabla, fecha_cierre, cantidad) 
-											values(".$idpedido.",".$idpedido_detalle.",".$iditem.",".$idcarta_lista.",".$_POST["u"].",".$_SESSION['idusuario'].",".$precio_unitario_item.",'".$fecha_now."','".$hora_now."',".$tabla_procede.", '', 1); ";
+			$sqlpedido_borrado="insert into pedido_borrados (idpedido,idpedido_detalle,iditem,idcarta_lista,idusuario,idusuario_permiso,importe,fecha,hora,procede_tabla, fecha_cierre, cantidad, flag_recupera_stock) 
+											values(".$idpedido.",".$idpedido_detalle.",".$iditem.",".$idcarta_lista.",".$_POST["u"].",".$_SESSION['idusuario'].",".$precio_unitario_item.",'".$fecha_now."','".$hora_now."',".$tabla_procede.", '', 1,'".$isRecuperarStock."'); ";
 
 			$lastIdPedidoBorrado = $bd->xConsulta_UltimoId($sqlpedido_borrado);
 
-			if ( $isRecuperarStock == '1' ) { // si se recupera stock 160822
+			if ( $isRecuperarStock == '1' ) { // si se recupera stock 160822 -- por el tigger
 				$sql_recuperar = "update pedido_borrados set estado=2 where idpedido_borrados = $lastIdPedidoBorrado";
 				$bd->xConsulta_NoReturn($sql_recuperar);
 			}
@@ -2157,7 +2157,7 @@
 						$sql_pdt="update pedido as p	
 								inner join (select idpedido, sum(pagado) pagado from pedido_detalle
 											where idpedido=$arrIdP GROUP by idpedido) as pd on pd.idpedido = p.idpedido
-								set p.estado = if(pd.pagado=0,3,4)		
+								set p.estado = if(pd.pagado=0,3,4), p.motivo_anular='".$motivo_anular."'		
 								where pd.idpedido = $arrIdP";
 						
 						$bd->xConsulta_NoReturn($sql_pdt);
@@ -2179,8 +2179,8 @@
 			}
 
 			//registrar en pedidos_borrados.// en este caso los sub item se borran de los pedidos seleccionados
-			$sqlpedido_borrado="insert into pedido_borrados (idpedido,idpedido_detalle,iditem,idcarta_lista,idusuario,idusuario_permiso,importe,fecha,hora,procede_tabla, cantidad) 
-													SELECT idpedido,idpedido_detalle,iditem,idcarta_lista,".$_SESSION["idusuario"].",".$_POST['u'].",IF(ptotal*1=0,ptotal_r,ptotal),'".$fecha_now."','".$hora_now."', procede_tabla, cantidad 
+			$sqlpedido_borrado="insert into pedido_borrados (idpedido,idpedido_detalle,iditem,idcarta_lista,idusuario,idusuario_permiso,importe,fecha,hora,procede_tabla, cantidad, flag_recupera_stock) 
+													SELECT idpedido,idpedido_detalle,iditem,idcarta_lista,".$_SESSION["idusuario"].",".$_POST['u'].",IF(ptotal*1=0,ptotal_r,ptotal),'".$fecha_now."','".$hora_now."', procede_tabla, cantidad, '".$isRecuperarStock."' 
 													FROM pedido_detalle WHERE ".$condicion_pdb."; ";
 
 			$bd->xConsulta_NoReturn($sqlpedido_borrado);
