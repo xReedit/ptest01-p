@@ -395,7 +395,7 @@
 		
 		// $correlativo_dia, 'correlativo_comprobante' => '' para que no me mande generar factura
 		// $x_respuesta = json_encode(array('idpedido' => $id_pedido, 'numpedido' => $numpedido, 'correlativo_dia' => $correlativo_dia, 'correlativo_comprobante' => '', 'sql_pedido_detalle' => $sql_pedido_detalle, 'sqlPedido' => $sqlPedido));
-		$x_respuesta = json_encode(array('idpedido' => $id_pedido, 'numpedido' => $numpedido, 'correlativo_dia' => $correlativo_dia, 'correlativo_comprobante' => '', 'sql_detalle' => $sql_pedido_detalle));
+		$x_respuesta = json_encode(array('idpedido' => $id_pedido, 'numpedido' => $numpedido, 'correlativo_dia' => $correlativo_dia, 'correlativo_comprobante' => '', 'sql_detalle' => $sql_pedido_detalle, 'sql_pedido' => $sqlPedido));
 
 
 		// SI ES PAGO TOTAL
@@ -1635,6 +1635,11 @@
 		$datos_cliente = is_object($datos_cliente) || is_array($datos_cliente) ? $datos_cliente : json_decode($datos_cliente, true);
 
 		$nomclie=$datos_cliente['nombres'];
+
+		// 200923 quitamos el apostrofe de la cadena
+		$nomclie = str_replace("'", "", $nomclie);
+
+
 		$idclie=$datos_cliente['idcliente'];
 		$num_doc=$datos_cliente['num_doc'];
 		$direccion=$datos_cliente['direccion'];

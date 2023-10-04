@@ -476,5 +476,19 @@
             $sql="update distribuicion set idusuario_recibe=$g_us, fecha_recibe=now() where iddistribuicion = $postBody->iddistribuicion"; 
             $bd->xConsulta($sql);
             break;
+        
+        case 30: // configuracion de el costo de entrega de la tienda en linea            
+            $sql="select * from sede_costo_delivery where idsede = $g_idsede";
+            $bd->xConsulta($sql);
+            break;
+        case 3001: // guardar configuracion 
+            $postBody = json_decode(file_get_contents('php://input'));
+            if ($postBody->isRegisterNew == 1) {
+                $sql="insert into sede_costo_delivery(idsede, parametros) values ($g_idsede, '$postBody->parametros')"; 
+            } else {
+                $sql="update sede_costo_delivery set parametros = '$postBody->parametros' where idsede = $g_idsede";
+            }
+            $bd->xConsulta($sql);            
+            break;
     }
 ?>    
