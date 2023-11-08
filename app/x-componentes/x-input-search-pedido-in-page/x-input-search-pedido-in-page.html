@@ -1,0 +1,111 @@
+<dom-module id="x-input-search-pedido-in-page">    
+    <template is="dom">            
+    <div id="search-container">        
+        <span hidden$="[[!isVisibleCantidadEncontrados]]" class="label-input-cant-serch">[[cantElementosEncontrados]] | </span>
+        <span hidden$="[[!isVisibleCantidadEncontrados]]" class="label-input-btn-x xCursor" onclick="clearBusquedaCompInputSearchInPage()"><i class="fa fa-close"></i></span>
+        <form autocomplete="off">
+            <input type="text" autocomplete="off" class="text-input-search-page" id="comp-input-serch-in-page" name="comp-input-serch-in-page" placeholder="🔎 Buscar..." onkeyup="_searchStringInPageActive(this)">                
+        </form>
+    </div>
+    </template>
+    <style>   
+        .text-input-search-page {
+            height: 28px;
+            padding: 4px 10px;
+            border-radius: 5px;
+            width: 80px;
+            font-size: 14px;
+            border: 2px solid white;
+        }
+
+        .label-input-cant-serch {
+            float: right;
+            position: absolute;
+            margin-left: 70px;
+            color: #9e9e9e;
+            margin-top: 11px;
+        }
+
+        .label-input-btn-x {
+            float: right;
+            position: absolute;
+            margin-left: 85px;
+            color: #9e9e9e;
+            margin-top: 11px;
+        }
+    </style>
+    <script>
+        var xThisCompInputSearchPedidoInPage;
+        
+
+        function xIniCompInputSearchPedidoInPage() {
+            $(document.body).on('keydown', '#comp-input-serch-in-page', function (e) {                
+
+                if (e.keyCode == 13) {
+                    var xval_bus_m = parseInt($(this).val());
+                    $(".xMiCardPedido.xOcupado").each(function (index, element) {
+                        var xnum_obj = parseInt($(element).find(".numero").text());
+                        if (xnum_obj == xval_bus_m) {
+                            lastDataPedidoInsert = null; // el utlimo pedido agregado desde control pedidos
+                            xLoadDetallesPedido($(element))
+                            $("#comp-input-serch-in-page").select();
+                            // event.stopPropagation();
+                            e.stopPropagation();
+                            e.stopImmediatePropagation();
+
+                            return;
+                        }
+                        $("#comp-input-serch-in-page").val('');
+                    })
+                }
+                // event.stopPropagation();
+                
+                e.stopPropagation();
+                e.stopImmediatePropagation();
+            })
+
+        }
+
+        function _searchStringInPageActive(obj) {
+            const _palabra_buscar = obj ? obj.value : '';
+            const _cantElementosEncontrados = searchStringInPageActive(_palabra_buscar)
+
+            xThisCompInputSearchPedidoInPage.cantElementosEncontrados = _cantElementosEncontrados;
+            xThisCompInputSearchPedidoInPage.isVisibleCantidadEncontrados = _cantElementosEncontrados > 0;  
+        }
+
+        function clearBusquedaCompInputSearchInPage() {
+            xThisCompInputSearchPedidoInPage.cantElementosEncontrados = 0;
+            xThisCompInputSearchPedidoInPage.isVisibleCantidadEncontrados = false;  
+            $('.text-input-search-page').val('');
+            $('.text-input-search-page').focus()
+            _searchStringInPageActive();        
+        }
+
+        Polymer({
+                is: 'x-input-search-pedido-in-page',
+                properties: {
+                    isVisibleCantidadEncontrados: {
+                        type: Boolean,
+                        value: false
+                    },
+                    cantElementosEncontrados: {
+                        type: Number,
+                        value: 0
+                    }
+                },
+                ready: function () {
+                    xThisCompInputSearchPedidoInPage = this;
+                    xIniCompInputSearchPedidoInPage();
+                },
+                focus: function () {
+                    $('.text-input-search-page').focus()
+                },
+                selected: function () {
+                    $('.text-input-search-page').select()
+                }
+            })
+
+    </script>
+
+</dom-module>

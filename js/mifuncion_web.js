@@ -109,3 +109,7 @@ const arrGroupBy=function(xs,key){return xs.reduce(function(rv,x){(rv[x[key]]=rv
 function enableScrollRefresh(){$('body').css('overscroll-behavior','auto');}
 function getColorTipoPago(idtipo_pago){const _classTp=['badge badge-secondary','badge badge-primary','badge bg-papaya','badge','badge badge-warning','badge badge-info','badge badge-dark']
 return _classTp[idtipo_pago-1];}
+function removeSpecialCharString(string){return string.replace(/['`]/g,'');}
+function searchStringInPageActive(palabra){var elementosResaltados=document.querySelectorAll('.show-element-located-in-page');elementosResaltados.forEach(function(elemento){elemento.classList.remove('show-element-located-in-page');});if(palabra.length<3)return;var contenido=document.body.innerText||document.body.textContent;var regex=new RegExp(palabra,'i');var coincidencias=contenido.match(regex);var cantidadElementosEncontrados=0;if(coincidencias){cantidadElementosEncontrados=0;var gridDivContentePedidos=document.querySelector('.grid-contente-pedidos');if(gridDivContentePedidos){Array.from(gridDivContentePedidos.querySelectorAll('p, span')).filter(function(elemento){var contenidoElemento=elemento.innerText||elemento.textContent;if(contenidoElemento.match(regex)){cantidadElementosEncontrados++
+elemento.classList.add('show-element-located-in-page');}});}}
+return cantidadElementosEncontrados;}

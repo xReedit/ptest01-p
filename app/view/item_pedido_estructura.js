@@ -19,4 +19,4 @@ _arrRpt[_tipoConsumoItem.idtipo_consumo][i.id]=i;}})
 return _arrRpt.filter(x=>x);}
 function xEstructuraItemsAgruparPrintJsonComprobante(items){return xEstructuraItemsGroupFormatoImpresion(items,"seccion");}
 function xEstructuraItemsGroupFormatoImpresion(xs,key){const arr_rpt_json=xs;arr_rpt_json.des='**';let rpt={}
-rpt[0]=arr_rpt_json;console.log(rpt);return rpt;}
+rpt[0]=arr_rpt_json;return rpt;}

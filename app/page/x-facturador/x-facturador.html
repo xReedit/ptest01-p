@@ -57,6 +57,8 @@
 <input type="number" class="xMiInput xPasarEnter2" style="width:200px" placeholder="Telefono" onkeyup="showMsjTelefono(this)" required id="txt_telefono" espaciar>
 <p class="fs-11 pl-2 fw-600 text-info" hidden$="[[!isShowMsjTelefono]]">Se enviará el comprobante al WhatsApp.</p>
 <p class="fs-11 pl-2 fw-600 text-secondary" hidden$="[[isShowMsjTelefono]]">Para enviar el comprobante al WhatsApp.</p>
+<br>
+<input type="text" class="xMiInput xPasarEnter2" style="width:200px" placeholder="Observaciones" id="txt_observaciones_cpe" espaciar>
 <input type="text" class="xMiInput xInvisible" style="width:98%" placeholder="Cliente" onChange="conMayusculas(this)" id="txt_nombres" espaciar required$="[[!modificarCliente]]" readonly$="[[!modificarCliente]]">
 </div>
 </div>
@@ -188,7 +190,7 @@ xThisFacturador.isShowSearchSunat=new_rpt.buscarSunat;rpt.valid=true;rpt.msj="ok
 $("#progress_cliente").addClass("xInvisible");});}
 function NumDocNoValid(rpt){_formValid=rpt.valid;xValidarBtnProcesar();$("#txt_msj").text(rpt.msj)
 $("#txt_msj").removeClass('xInvisible');$("#txt_ruc").select();$("#txt_ruc").focus();}
-function xNuevoCliente(){_formValid=false;xValidarBtnProcesar();xThisFacturador.isShowMsjBoletaRequireDNI=false;xThisFacturador.modificarCliente=true;xIdCliente_pago='';_arrCliente=[];_inputAutocompleteFacObj.inputValue='';$('#txt_nombres').val('');$('#txt_direccion').val('');$('#txt_telefono').val('');xThisFacturador.isShowMsjTelefono=false;$("#txt_ruc").select();$("#txt_ruc").focus();}
+function xNuevoCliente(){_formValid=false;xValidarBtnProcesar();xThisFacturador.isShowMsjBoletaRequireDNI=false;xThisFacturador.modificarCliente=true;xIdCliente_pago='';_arrCliente=[];_inputAutocompleteFacObj.inputValue='';$('#txt_nombres').val('');$('#txt_direccion').val('');$('#txt_telefono').val('');$('#txt_observaciones_cpe').val('');xThisFacturador.isShowMsjTelefono=false;$("#txt_ruc").select();$("#txt_ruc").focus();}
 function validNomClienteFac(){if(cnf_ComprobanteSel.codsunat==='03'){xThisFacturador.formValid=clie_nombres_fac.$.input_clie_nombres_auto.$.input.value===''||clie_nombres_fac.$.input_clie_nombres_auto.$.input.value.length>4?true:false;}}
 function xCalcTotal(){const xCan_item=$("#cant_item").val()===''?0:parseFloat($("#cant_item").val());const xPUnitario=$("#punitario").val()===''?0:parseFloat($("#punitario").val());const ptotal=(xCan_item*xPUnitario).toFixed(2)||0;$("#ptotal").val(ptotal);}
 function xAddItem(){const xCan_item=$("#cant_item").val();_labelElemetFind=_labelElemetFind!==''?_labelElemetFind:compItemProductoFac.getTextInput();xDes_item=_labelElemetFind;const xPUnitario=$("#punitario").val();const xPTotal=$("#ptotal").val();if(xCan_item===''||xDes_item===''||xPUnitario===''||xPTotal===''){return}
@@ -220,7 +222,7 @@ xPopupLoad.xopen();if(cnf_ComprobanteSel.idtipo_comprobante==='1'){await xMandar
 return;}
 $.ajax({type:'POST',url:'../../bdphp/log_002.php',data:{op:'102',data:arrCpeFac,arrItems:_arrItems}}).done(async function(ultimoIdCpeFac){_idregistro=[0,ultimoIdCpeFac];await xMandarCocinarImpresionComprobante(arr_comprobante.correlativo,_idregistro);xProcessCpeFinish()});}
 function xProcessCpeFinish(){setTimeout(()=>{xThisFacturador.proccessCPEF=false;},1000);}
-async function xMandarCocinarImpresionComprobante(correlativo,_idregistro){if(!xThisFacturador.cpe_show){arr_comprobante.fecha_manual=txt_fecha_cpe_manual;arr_comprobante=cnf_ComprobanteSel;arr_comprobante.correlativo=correlativo;arr_comprobante.forma_de_pago=comprobanteFormaPago;itemsConEstructuraPrint=xCargarDatosAEstructuraImpresion(xThisFacturador.arrItems);itemsConEstructuraPrint=itemsConEstructuraPrint.filter(x=>x);rptDoc=await xCocinarImprimirComprobante(itemsConEstructuraPrint,_arrTotal,arr_comprobante,_arrCliente,_idregistro,-2,false)}
+async function xMandarCocinarImpresionComprobante(correlativo,_idregistro){if(!xThisFacturador.cpe_show){arr_comprobante.fecha_manual=txt_fecha_cpe_manual;arr_comprobante=cnf_ComprobanteSel;arr_comprobante.correlativo=correlativo;arr_comprobante.forma_de_pago=comprobanteFormaPago;arr_comprobante.observaciones=$('#txt_observaciones_cpe').val();itemsConEstructuraPrint=xCargarDatosAEstructuraImpresion(xThisFacturador.arrItems);itemsConEstructuraPrint=itemsConEstructuraPrint.filter(x=>x);rptDoc=await xCocinarImprimirComprobante(itemsConEstructuraPrint,_arrTotal,arr_comprobante,_arrCliente,_idregistro,-2,false)}
 if(rptDoc.ok=false){alert(rptDoc.msj);return;}
 if(impresoraSelect.idimpresora===-1){const hash=rptDoc[0]?rptDoc[0].hash:rptDoc.hash;if(hash==='www.papaya.com.pe'){xPopupLoad.xclose();alert('Error con la conexion al servicio de Sunat. No puede descargar el pdf. Pero si puede imprimirlo. Este comprobante sera enviado a sunat al cerrar caja.');return;}
 xThisFacturador.cpe_show=true;xSoapSunat_DownloadFile('pdf',rptDoc[0].external_id);xPopupLoad.xclose();return;}else{xThisFacturador.cpe_show=true;xLLamarPrintFac();}}

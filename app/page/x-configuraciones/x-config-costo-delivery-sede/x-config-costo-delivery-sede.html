@@ -1,188 +1,79 @@
 <dom-module id="x-config-costo-delivery-sede">
-    <template is="dom">
-        <div hidden$=[[linkEnabled]] class="text-center">
-            <i class="fa fa-plug fa-3x"></i>
-            <h3 class="fw-600">Su tienda en línea no esta habilitada.</h3>
-            <p>Solicite a soporte tecnico que habilite su tienda en línea.</p>            
-        </div>
-        
-        <div hidden$ = [[!linkEnabled]]>
-            <h3 class="fw-600">Tienda en línea - Costo de Entrega</h3>
-            <p>Configure el costo de entrega de sus deliverys según la distancia.</p>
-            <div class="xLinea2"></div>
-            <br>
-
-            <div class="div-tab-distancia">            
-            <table class="w-100">
-                <tr>
-                    <td>
-                        <p class="fs-18 fw-600">Cobertura en Kilometros</p>
-                        <p>Distancia limite en kilometros a la redonda que atenderá</p>
-                    </td>
-                    <td>
-                        <input type="number" class="selected-template-1 fs-20 text-center" id="txt_conf_delivery_km_limite" value$="{{objParametros.km_limite}}">
-                    </td>
-                </tr>
-                <tr>
-
-                    <td>                        
-                        <p class="fs-18 fw-600">Costo Básico</p>
-                        <p>Costo básico del servicio de entrega</p>
-                    </td>
-                    <td>
-                        <input type="number" class="selected-template-1 fs-20 text-center" id="txt_conf_delivery_km_base_costo" value$=[[objParametros.km_base_costo]]>
-                    </td>
-                </tr>
-                <tr>
-                    <td>                        
-                        <p class="fs-18 fw-600">Kilometros Base</p>
-                        <p>Distancia en kilometros a la redonda que atenderá con el precio básico</p>
-                    </td>
-                    <td>
-                        <input type="number" class="selected-template-1 fs-20 text-center" id="txt_conf_delivery_km_base" value$=[[objParametros.km_base]]>
-                    </td>
-                </tr>
-                <tr>
-                    <td>
-                        <p class="fs-18 fw-600">Costo Kilometro Adicional</p>
-                        <p>Si la distancia es mayor a la especificada en <strong>Kilometro Base</strong>, cual sera el costo del kilometro adicional?</p>
-                    </td>
-                    <td>
-                        <input type="number"  class="selected-template-1 fs-20 text-center" id="txt_conf_delivery_km_adicional_costo" value$=[[objParametros.km_adicional_costo]]>
-                    </td>
-                </tr>   
-                            
-            </table>
-            </div>
-            <br>
-            <div>
-                <p class="fs-18 fw-600">Link Tienda en Línea</p>
-                <p>Comparta este link de su tienda en línea con sus clientes, les llevara directo a su carta.</p>
-                <div class="d-flexx">
-                    <input id="text-link-tienda-linea-conf-sede" class="selected-template-1 fw-600 fs-15 div-input-tienda-online" type="text" readonly value=[[linkCarta]]>
-                    <button class="btn btn-sm btn-secondary btn-margin-copiar" onclick="xCopiarLinkConfDeliverySede()"> <i class="fa fa-copy"></i> Copiar</button>
-                </div>
-
-            </div>
-
-            <br><br>
-            <button class="btn btn-primary" onclick="xSaveConfigDeliverySede()">Listo, guardar</button>
-
-
-
-        </div>
-
-    </template>
-<style>
-    .div-tab-distancia {
-        width: 100%;
-        max-width: 600px;
-    }
-
-    .div-input-tienda-online {
-        width: 100%;
-        max-width: 380px;
-    }
-
-    .btn-margin-copiar {
-        margin-left: -25px;
-    }
-</style>
-<script>
-    let xThisCostoDeliverySede
-    
-    async function xIniCostoDeliverySede() {
-        // cargar datos de la sede
-        const dataSede = xm_log_get('datos_org_all_sede');        
-        const _linkCarta = dataSede[0].link_carta;
-        xThisCostoDeliverySede.linkEnabled = _linkCarta != '';
-        xThisCostoDeliverySede.linkCarta = `https://express.papaya.com.pe/carta/${_linkCarta}`;
-        
-
-        const _httpFecht = new httpFecht();
-        const rpt = await _httpFecht.postJson('../../bdphp/log_009.php?op=30')
-        if (rpt.success) {            
-            xThisCostoDeliverySede.isRegisterNew = false;
-            if ( rpt.datos.length == 0 ){
-                xThisCostoDeliverySede.objParametros = {
-                    km_limite: 5,
-                    km_base_costo: 3,
-                    km_base: 2,
-                    km_adicional_costo: 1
-                }
-
-                xThisCostoDeliverySede.isRegisterNew = true;
-
-                return;
-            }
-
-            xThisCostoDeliverySede.objInfoSede = rpt.datos[0];
-            xThisCostoDeliverySede.objParametros = JSON.parse(xThisCostoDeliverySede.objInfoSede.parametros);
-        } 
-    }
-
-    async function xSaveConfigDeliverySede() {
-        const _dataParametros = {
-            km_limite: $('#txt_conf_delivery_km_limite').val(),
-            km_base_costo: $('#txt_conf_delivery_km_base_costo').val(),
-            km_base: $('#txt_conf_delivery_km_base').val(),
-            km_adicional_costo: $('#txt_conf_delivery_km_adicional_costo').val()
-        }
-        
-        // guardar cambios
-        xPopupLoad.xopen();
-        const _httpFecht = new httpFecht();
-        const rpt = await _httpFecht.postJson('../../bdphp/log_009.php?op=3001',{parametros: JSON.stringify(_dataParametros), isRegisterNew: xThisCostoDeliverySede.isRegisterNew ? 1 : 0 })
-        xPopupLoad.xclose();        
-
-        if (rpt.success) {
-            xThisCostoDeliverySede.objParametros = _dataParametros;
-            // mostrar con el control toast
-            xm_all_xToastOpen('Configuración guardada correctamente', 1000);
-        } else {
-            xm_all_xToastOpen('Error al guardar configuración', 1000);
-        }        
-
-        xThisCostoDeliverySede.fire('xSaveConfigCostoDeliverySede')
-    }
-
-    function xCopiarLinkConfDeliverySede() {
-        const input = document.getElementById('text-link-tienda-linea-conf-sede');
-
-        navigator.clipboard.writeText(input.value)
-            .then(() => {
-                xm_all_xToastOpen('Listo link copiado', 1000);
-            })
-            .catch(err => {                
-                xm_all_xToastOpen('Error al copiar al portapapeles', 2000);
-            });
-        
-    }
-
-    Polymer({
-            is: 'x-config-costo-delivery-sede',
-            properties: {       
-                objInfoSede: {},
-                objParametros: {
-                    type: Object,
-                    notify: true,
-                    value: {
-                        km_limite: 5,
-                        km_base_costo: 3,
-                        km_base: 2,
-                        km_adicional_costo: 1
-                    }
-                },
-                linkCarta: String,
-                linkEnabled: Boolean,
-                isRegisterNew: Boolean
-            },
-            attached: function () {
-                this.linkEnabled = true;
-                this.isRegisterNew = false
-                xThisCostoDeliverySede = this;
-                xIniCostoDeliverySede();
-            }
-        })
-</script>
+<template is="dom">
+<div hidden$=[[linkEnabled]] class="text-center">
+<i class="fa fa-plug fa-3x"></i>
+<h3 class="fw-600">Su tienda en línea no esta habilitada.</h3>
+<p>Solicite a soporte tecnico que habilite su tienda en línea.</p>
+</div>
+<div hidden$=[[!linkEnabled]]>
+<h3 class="fw-600">Tienda en línea - Costo de Entrega</h3>
+<p>Configure el costo de entrega de sus deliverys según la distancia.</p>
+<div class="xLinea2"></div>
+<br>
+<div class="div-tab-distancia">
+<table class="w-100">
+<tr>
+<td>
+<p class="fs-18 fw-600">Cobertura en Kilometros</p>
+<p>Distancia limite en kilometros a la redonda que atenderá</p>
+</td>
+<td>
+<input type="number" class="selected-template-1 fs-20 text-center" id="txt_conf_delivery_km_limite" value$="{{objParametros.km_limite}}">
+</td>
+</tr>
+<tr>
+<td>
+<p class="fs-18 fw-600">Costo Básico</p>
+<p>Costo básico del servicio de entrega</p>
+</td>
+<td>
+<input type="number" class="selected-template-1 fs-20 text-center" id="txt_conf_delivery_km_base_costo" value$=[[objParametros.km_base_costo]]>
+</td>
+</tr>
+<tr>
+<td>
+<p class="fs-18 fw-600">Kilometros Base</p>
+<p>Distancia en kilometros a la redonda que atenderá con el precio básico</p>
+</td>
+<td>
+<input type="number" class="selected-template-1 fs-20 text-center" id="txt_conf_delivery_km_base" value$=[[objParametros.km_base]]>
+</td>
+</tr>
+<tr>
+<td>
+<p class="fs-18 fw-600">Costo Kilometro Adicional</p>
+<p>Si la distancia es mayor a la especificada en <strong>Kilometro Base</strong>, cual sera el costo del kilometro adicional?</p>
+</td>
+<td>
+<input type="number" class="selected-template-1 fs-20 text-center" id="txt_conf_delivery_km_adicional_costo" value$=[[objParametros.km_adicional_costo]]>
+</td>
+</tr>
+</table>
+</div>
+<br>
+<div>
+<p class="fs-18 fw-600">Link Tienda en Línea</p>
+<p>Comparta este link de su tienda en línea con sus clientes, les llevara directo a su carta.</p>
+<div class="d-flexx">
+<input id="text-link-tienda-linea-conf-sede" class="selected-template-1 fw-600 fs-15 div-input-tienda-online" type="text" readonly value=[[linkCarta]]>
+<button class="btn btn-sm btn-secondary btn-margin-copiar" onclick="xCopiarLinkConfDeliverySede()"> <i class="fa fa-copy"></i> Copiar</button>
+</div>
+</div>
+<br><br>
+<button class="btn btn-primary" onclick="xSaveConfigDeliverySede()">Listo, guardar</button>
+</div>
+</template>
+<style>.div-tab-distancia{width:100%;max-width:600px}.div-input-tienda-online{width:100%;max-width:380px}.btn-margin-copiar{margin-left:-25px}</style>
+<script>let xThisCostoDeliverySede
+async function xIniCostoDeliverySede(){const dataSede=xm_log_get('datos_org_all_sede');const _linkCarta=dataSede[0].link_carta;xThisCostoDeliverySede.linkEnabled=_linkCarta!='';xThisCostoDeliverySede.linkCarta=`https:const _httpFecht=new httpFecht();const rpt=await _httpFecht.postJson('../../bdphp/log_009.php?op=30')
+if(rpt.success){xThisCostoDeliverySede.isRegisterNew=false;if(rpt.datos.length==0){xThisCostoDeliverySede.objParametros={km_limite:5,km_base_costo:3,km_base:2,km_adicional_costo:1}
+xThisCostoDeliverySede.isRegisterNew=true;return;}
+xThisCostoDeliverySede.objInfoSede=rpt.datos[0];xThisCostoDeliverySede.objParametros=JSON.parse(xThisCostoDeliverySede.objInfoSede.parametros);}}
+async function xSaveConfigDeliverySede(){const _dataParametros={km_limite:$('#txt_conf_delivery_km_limite').val(),km_base_costo:$('#txt_conf_delivery_km_base_costo').val(),km_base:$('#txt_conf_delivery_km_base').val(),km_adicional_costo:$('#txt_conf_delivery_km_adicional_costo').val()}
+xPopupLoad.xopen();const _httpFecht=new httpFecht();const rpt=await _httpFecht.postJson('../../bdphp/log_009.php?op=3001',{parametros:JSON.stringify(_dataParametros),isRegisterNew:xThisCostoDeliverySede.isRegisterNew?1:0})
+xPopupLoad.xclose();if(rpt.success){xThisCostoDeliverySede.objParametros=_dataParametros;xm_all_xToastOpen('Configuración guardada correctamente',1000);}else{xm_all_xToastOpen('Error al guardar configuración',1000);}
+xThisCostoDeliverySede.fire('xSaveConfigCostoDeliverySede')}
+function xCopiarLinkConfDeliverySede(){const input=document.getElementById('text-link-tienda-linea-conf-sede');navigator.clipboard.writeText(input.value).then(()=>{xm_all_xToastOpen('Listo link copiado',1000);}).catch(err=>{xm_all_xToastOpen('Error al copiar al portapapeles',2000);});}
+Polymer({is:'x-config-costo-delivery-sede',properties:{objInfoSede:{},objParametros:{type:Object,notify:true,value:{km_limite:5,km_base_costo:3,km_base:2,km_adicional_costo:1}},linkCarta:String,linkEnabled:Boolean,isRegisterNew:Boolean},attached:function(){this.linkEnabled=true;this.isRegisterNew=false
+xThisCostoDeliverySede=this;xIniCostoDeliverySede();}})</script>
 </dom-module>

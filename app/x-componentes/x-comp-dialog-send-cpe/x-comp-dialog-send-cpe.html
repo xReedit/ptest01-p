@@ -1,0 +1,101 @@
+<dom-module id="x-comp-dialog-send-cpe">
+<template>
+    <script type="text/javascript" src="../../view/socket.service.p.js"></script>
+
+    <paper-dialog class="dialog_redondo" id="comp_dialog_send_whatsapp_cpe" style="width: 300px;" modal
+        entry-animation="scale-up-animation" exit-animation="fade-out-animation">
+        <div style="text-align: center">
+            <img src="../../../images/whatsapp.png" alt="">
+            <p id="dgl_sunat_msj">Enviar comprobante por WhatsApp.<br> <span class="fw-600">[[objcpe.numero]] </span></p><br>
+    
+            <input type="number" class="xMiInput xfont18 text-center" placeholder="Numero de Telefono" autofocus
+                id="txt_wtp" onkeyup="xCompChangeNumWhatsAppCpe(this)" enlinea>
+    
+            <br><br>
+            <div id="comp_send_cpe_dgl_loading_whatsapp" class="xInvisible">
+                <p>Enviando...</p>
+                <paper-progress indeterminate style="width: 100%;"></paper-progress>
+            </div>
+            <br>
+            <div id="comp-cep-div-btns-wsp">
+                <button dialog-dismiss class="xBoton2 xPlomo">Cancelar</button>
+                <button id="btn-send-whatsapp" onclick="xCompSendCPEWhatsApp()" class="xBoton2 xVerde"
+                    disabled$="[[ !showBtnSendWhatsapp ]]">Enviar</button>
+            </div>
+        </div>
+    </paper-dialog>
+</template>
+
+<script>
+    var xThisComDialogSendCPE;
+
+    function xCompChangeNumWhatsAppCpe(obj) {
+        xThisComDialogSendCPE.showBtnSendWhatsapp = obj.value.length > 8;
+    }
+
+    function xCompSendCPEWhatsApp() {
+            const dtSede = xm_log_get("datos_org_sede")[0];
+            const _userId = dtSede.id_api_comprobante; // whastapp
+            // const external_id_cpe = xThisComDialogSendCPE.objcpe.external_id;
+            try {
+                
+            
+                const _payloadPdf = {
+                    telefono: txt_wtp.value,
+                    external_id: xThisComDialogSendCPE.objcpe.external_id,
+                    user_id: _userId,
+                    numero_comprobante: xThisComDialogSendCPE.objcpe.numero,
+                    comercio: dtSede.sedenombre,
+                    telefono: dtSede.telefono
+                };
+                
+
+                $(comp_send_cpe_dgl_loading_whatsapp).removeClass('xInvisible');
+                $('#comp-cep-div-btns-wsp').addClass('xInvisible');
+
+                setTimeout(() => {
+                    $(comp_send_cpe_dgl_loading_whatsapp).addClass('xInvisible');
+                    comp_dialog_send_whatsapp_cpe.close();
+                    _cpSocketComprobanteWhatApp(_payloadPdf);
+
+                    xThisComDialogSendCPE.objcpe = {};
+                    xThisComDialogSendCPE.showBtnSendWhatsapp = false;
+                    $('#comp-cep-div-btns-wsp').removeClass('xInvisible');                    
+                }, 3000);
+            } catch (error) {
+                console.error(error);
+            }
+        }
+
+
+
+    Polymer({
+        is: 'x-comp-dialog-send-cpe',
+        properties: {
+            objcpe: {
+                type: Object,
+                notify: true
+            },
+            showBtnSendWhatsapp: {
+                type: Boolean,
+                value: false
+            }
+        },
+        attached: function () {
+            this.showBtnSendWhatsapp = false;
+            xThisComDialogSendCPE = this;
+            // xCompDatosDelInitDir();
+        },
+        open: function (obj) {
+            this.showBtnSendWhatsapp = false;
+            this.objcpe = obj;            
+            this.$.comp_dialog_send_whatsapp_cpe.open();
+        },
+        close: function () {
+            this.$.comp_dialog_send_whatsapp_cpe.close();
+        },
+
+    })
+</script>
+
+</dom-module>
