@@ -140,7 +140,15 @@
 <table class="w-100 content-table-delivery">
 <thead>
 <th align="left" colspan="8"><span class="text-primary fw-600 fs-15">[[cantRegistroPagos]]</span> Registros encontrados</th>
-<th align="right"><button class="btn btn-sm btn-success" onclick="xGenerarReporteExcelRegistroPago()"><i class="fa fa-file-excel-o"></i> Exportar</button></th>
+<th align="right">
+<div class="dropdown">
+<button class="btn btn-sm btn-success"><i class="fa fa-file-excel-o"></i> Exportar <i class="fa fa-angle-down"></i></button>
+<div class="dropdown-content">
+<a href="#" onclick="xGenerarReporteExcelRegistroPago()">Resumen</a>
+<a href="#" onclick="xGenerarReporteExcelRegistroPagoDetallado()">Detallado</a>
+</div>
+</div>
+</th>
 </thead>
 <thead style="height:50px">
 <th>#</th>
@@ -276,6 +284,57 @@ Reenviar
 </tbody>
 </table>
 </div>
+<div class="xInvisible">
+<table width="100%" id="tbRegistroPagoDetalle">
+<thead>
+<th>#</th>
+<th>Fecha</th>
+<th>Hora</th>
+<th>Caja</th>
+<th>Canal</th>
+<th>Mesa</th>
+<th>Atendido Por</th>
+<th>Cliente</th>
+<th>Tipo Doc</th>
+<th>Serie</th>
+<th>Num Doc</th>
+<th>Producto</th>
+<th>Cantidad</th>
+<th>Precio Und</th>
+<th>Total</th>
+<th>Seccion</th>
+<th>Area</th>
+<th>Estado</th>
+</thead>
+<tbody id="tbodyRegistroPagoDetalle">
+<template is="dom-repeat" items="[[listRegistroPagoExportDetallado]]" as="item">
+<tr>
+<td>{{item.num}}</td>
+<td>{{item.fecha_des}}</td>
+<td>{{item.hora}}</td>
+<td>{{item.us_caja}}</td>
+<td>{{item.des_consumo}}</td>
+<td>{{item.nummesa}}</td>
+<td>{{item.nom_usuario_show}}</td>
+<td>{{item.nom_cliente}}</td>
+<td>{{item.des_comprobante}}</td>
+<td>{{item.comprobante_serie}}</td>
+<td>{{item.comprobante_num}}</td>
+<td>{{item.producto_descripcion}}</td>
+<td>{{item.producto_cant}}</td>
+<td>{{item.producto_punitario}}</td>
+<td>{{item.producto_total_r}}</td>
+<td>{{item.producto_seccion}}</td>
+<td>{{item.producto_impresora}}</td>
+<td>{{item.des_estado}}</td>
+<template is="dom-repeat" items="{{item.dynamicColumn}}" as="subitem">
+<td>{{ subitem }}</td>
+</template>
+</tr>
+</template>
+</tbody>
+</table>
+</div>
 <br><br>
 </template>
 <style>.div-dato-registro{border-radius:8px;background:white;padding:5px 15px 5px 15px;text-align:center;border:1px solid #bdbdbd;margin-left:10px}.row-anulado{background:#ffe8f0;text-decoration:line-through;color:red}.div-correlativo{inline-size:230px;overflow-wrap:break-word}.header-registro-venta{background:#d4d4d4;padding:20px 25px 10px;margin-top:-32px;margin-right:-32px;margin-left:-32px}.bg-delivery{background-color:#f8f6c2}.bg-llevar{background-color:#81fad3}.bg-mesa{background-color:#46d9f2}.div-indicador{display:flex;flex-direction:column;justify-content:center}</style>
@@ -347,7 +406,17 @@ function buscarEnLista(val){val=val.toLowerCase();const _listBusqueda=listRegist
 var _numRegisterBusqueda=_listBusqueda.length+1||0;var importeTotalRegistrado=0,numTotalComprobantes=0,listTipoPago=[];_listBusqueda.map(x=>{_numRegisterBusqueda--;x.num=xCeroIzq(_numRegisterBusqueda);x.des_pago.split(',').map(t=>{const _descTPC=t.split('-')[0];const ishayTP=listTipoPago.length===0?null:listTipoPago.filter(x=>x.id.toLowerCase()===_descTPC.toLowerCase())[0];if(ishayTP){ishayTP.cantidad++;}else{const _rowTPC={id:primeraConMayusculas(_descTPC.toLowerCase()),cantidad:1};listTipoPago.push(_rowTPC);}});const _importeTotalRegistro=x.anulado?0:parseFloat(x.total);importeTotalRegistrado=importeTotalRegistrado+_importeTotalRegistro;numTotalComprobantes+=x.comprobante!==''?1:0;})
 xThisHistVenta.listCantidadPagos=listTipoPago;xThisHistVenta.importeTotalRegistrado=numeroConComas(importeTotalRegistrado.toFixed(2));xThisHistVenta.numComprobantesEmitidos=xCeroIzq(numTotalComprobantes,2);}
 function xGenerarReporteExcelRegistroPago(){tableToExcel('tbRegistroPago','Registro de Pago');}
+function xGenerarReporteExcelRegistroPagoDetallado(){data_pagination.pageFecha=p_fecha!==''?p_fecha:xDevolverFecha();xPopupLoad.xopen();try{$.ajax({type:'POST',url:'../../bdphp/log.php?op=2000101',data:{pagination:data_pagination}}).done(function(res){const _rptData=JSON.parse(res);if(!_rptData.success){xPopupLoad.xclose();return;}
+const _listData=_rptData.datos;let prevId=null;var xNumRegistroDetalle=_listData.length+1||0;$('#tbRegistroPagoDetalle thead tr th.th_dynamic').remove();const dynamicColumnsTable=Object.keys(_listData[0]).filter((key)=>key.startsWith('_'));console.log('dynamicColumnsTable',dynamicColumnsTable);const thead=document.querySelector('#tbRegistroPagoDetalle thead tr');dynamicColumnsTable.forEach(column=>{const th=document.createElement('th');th.textContent=column;th.classList.add('th_dynamic')
+thead.appendChild(th);});let listRowValuesDynamic=[]
+_listData.map((x)=>{xNumRegistroDetalle--;x.num=xCeroIzq(xNumRegistroDetalle);const _fecha=x.fecha.split(' ');x.fecha_des=_fecha[0];x.hora=_fecha[1];x.us_caja=x.us_caja.split(' ')[0];x.correlativo_dia=x.correlativo_dia.split(',');x.correlativo_dia=x.correlativo_dia.join(' - ');var listNomUsuarios=x.nom_usuario.split(',')
+listNomUsuarios=listNomUsuarios.map(n=>n.split(' ')[0]);x.nom_usuario=listNomUsuarios.join(',');x.nom_usuario_show=x.nom_usuario.split(',');x.nom_usuario_show=x.nom_usuario_show.join(' - ');x.anulado=x.estado==="1";x.des_estado=x.anulado?'Anulado':'Cobrado';x.des_consumo=x.des_consumo==='CONSUMIR EN EL LOCAL'?'EN LOCAL':x.des_consumo;x.des_comprobante=x.comprobante===''?'':x.comprobante==='B'?'BOLETA':'FACTURA';x.comprobante_serie=''
+x.comprobante_num=''
+x.isShowComprobante=x.des_comprobante!=='';if(x.isShowComprobante){const _numComprobante=x.num_comprobante.split('-');x.comprobante_serie=_numComprobante[0];x.comprobante_num=x.num_comprobante[1];}
+const dynamicColumns=Object.keys(x).filter((key)=>key.startsWith('_'));if(prevId===null||prevId!==x.idregistro_pago){prevId=x.idregistro_pago;}else{dynamicColumns.forEach((column)=>{x[column]=' ';});}
+x.dynamicColumn=[]
+dynamicColumns.forEach((column)=>{x.dynamicColumn.push(x[column]);});});xThisHistVenta.listRegistroPagoExportDetallado=JSON.parse(JSON.stringify(_listData));setTimeout(()=>{tableToExcel('tbRegistroPagoDetalle','Registro de Pago Detallado');xPopupLoad.xclose();},1500);})}catch(error){xPopupLoad.xclose();console.error(error);}}
 function xRegistroPagoReenviarComprobante(obj){const _idRegistroPago=obj.dataId;const _rowItem=xThisHistVenta.listRegistroPagoFilter.find(x=>x.idregistro_pago===_idRegistroPago);const _objCPE={numero:_rowItem.num_comprobante,external_id:_rowItem.cpe_external_id,}
 const _compDialogSendCPE_RP=document.getElementById('compDialogSendCPE_RP');_compDialogSendCPE_RP.open(_objCPE)}
-Polymer({is:'x-historial_venta',properties:{xdtPedDet:Object,isCierreCaja:Boolean,xYaTieneComprobante:boolean=true,xYaPedidoCerrado:boolean=true,xIsPuedeReimprimirCPE:boolean=false,listRegistro:[],importeTotalRegistrado:Number,numComprobantesEmitidos:Number,cantRegistroPagos:Number,listCantidadPagos:[],listCobradoPorFilter:[],listCanalConsumoFilter:[],listAtendidoPorFilter:[],listMetodoPagoFilter:[],listTipoComprobanteFilter:[],listRegistroPagoMaster:[],listRegistroPagoFilter:[],listRegistroPagoFilterTmp:[],},attached:function(){this.xIsPuedeReimprimirCPE=false;this.xYaTieneComprobante=true;this.xYaPedidoCerrado=true;this.isCierreCaja=false;xThisHistVenta=this;xIniHistVenta();setTimeout(()=>{_cpSocketOpen();},1000);},detached:function(){_cpSocketClose();},displayIndex:function(index){return xCeroIzq(index+1,1);}})/*]]>*/</script>
+Polymer({is:'x-historial_venta',properties:{xdtPedDet:Object,isCierreCaja:Boolean,xYaTieneComprobante:boolean=true,xYaPedidoCerrado:boolean=true,xIsPuedeReimprimirCPE:boolean=false,listRegistro:[],importeTotalRegistrado:Number,numComprobantesEmitidos:Number,cantRegistroPagos:Number,listCantidadPagos:[],listCobradoPorFilter:[],listCanalConsumoFilter:[],listAtendidoPorFilter:[],listMetodoPagoFilter:[],listTipoComprobanteFilter:[],listRegistroPagoMaster:[],listRegistroPagoFilter:[],listRegistroPagoFilterTmp:[],listRegistroPagoExportDetallado:[],listRegistroPagoExportDetalladoRowsDynamic:String,},attached:function(){this.xIsPuedeReimprimirCPE=false;this.xYaTieneComprobante=true;this.xYaPedidoCerrado=true;this.isCierreCaja=false;xThisHistVenta=this;xIniHistVenta();setTimeout(()=>{_cpSocketOpen();},1000);},detached:function(){_cpSocketClose();},displayIndex:function(index){return xCeroIzq(index+1,1);}})/*]]>*/</script>
 </dom-module>

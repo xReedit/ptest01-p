@@ -3295,6 +3295,12 @@
 
 			$bd->xConsulta($sql);
 			break;
+		case 2000101:// historial de ventas -detallado
+			$pagination = $_POST['pagination'];
+			$fecha = $pagination['pageFecha'];
+			$sql = "call procedure_reporte_ventas_diario($g_idsede, '$fecha', $g_us)";
+			$bd->xConsulta($sql);
+			break;
 		case 20002: // detalles
 			$sql = "
 				SELECT rpp.idregistro_pago,GROUP_CONCAT(DISTINCT rpp.idpedido) AS idpedido,SUBSTRING_INDEX(rp.fecha,' ',-1) AS hora,rp.total,rp.estado,rp.cierre,rp.motivo_anular,tp.idtipo_comprobante
