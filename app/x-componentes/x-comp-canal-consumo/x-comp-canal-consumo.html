@@ -1,17 +1,1 @@
-<dom-module id="x-comp-canal-consumo">
-<template is="dom">
-<div class="d-flexx justify-content-center">
-<template is="dom-repeat" items="{{listCanConsumo}}" as="item">
-<div class="option-tcc xMiBoton_icon_option" selected$="{{item.seleccionado}}" data-id="{{item.idtipo_consumo}}" data-index="{{index}}" onclick="selectOptionTCC(this)">
-<img src$="../../images/{{item.img}}" alt="img-tpc">
-<p class="">{{ item.descripcion }}</p>
-</div>
-</template>
-</div>
-</template>
-</dom-module>
-<style>.option-tcc{text-align:center;width:75px;padding:5px}.option-tcc p{font-size:9px;margin:0;line-height:12px}</style>
-<script>var xThisComCanalConsumo;function getIniCanalConsumo(){$.ajax({type:'POST',url:'../../bdphp/log_componentes.php?op=18'}).done(function(dt){var listCC=JSON.parse(dt);listCC.datos.map((x,i)=>{x.seleccionado=false;if(i===0){x.seleccionado=true;xThisComCanalConsumo.canalSeleted=x;}
-if(x.descripcion.indexOf('LOCAL')>-1){x.descripcion='LOCAL'}});xThisComCanalConsumo.listCanConsumo=listCC.datos;});xThisComCanalConsumo.getValorIncial(xThisComCanalConsumo.canalSeleted);}
-function selectOptionTCC(obj){const index=obj.dataIndex;const idSelect=obj.dataId;xThisComCanalConsumo.canalSeleted=xThisComCanalConsumo.listCanConsumo[index];xThisComCanalConsumo.listCanConsumo.map(x=>x.seleccionado=false);xThisComCanalConsumo.canalSeleted.seleccionado=true;$(obj).parent().find('.xMiBoton_icon_option').each((i,e)=>{e.dataIndex===index?$(e).attr('selected',true):$(e).removeAttr('selected');});xThisComCanalConsumo.getValorIncial(xThisComCanalConsumo.canalSeleted);}
-Polymer({is:'x-comp-canal-consumo',properties:{listCanConsumo:[],canalSeleted:Object},attached:function(){xThisComCanalConsumo=this;getIniCanalConsumo();},getValorIncial:function(val){this.fire('getValorIncial',{values:val});}})</script>
+<dom-module id="x-comp-canal-consumo"><template is="dom"><div class="d-flexx justify-content-center"><template is="dom-repeat"items="{{listCanConsumo}}"as="item"><div class="option-tcc xMiBoton_icon_option"selected$="{{item.seleccionado}}"data-id="{{item.idtipo_consumo}}"data-index="{{index}}"onclick="selectOptionTCC(this)"><img src$="../../images/{{item.img}}"alt="img-tpc"><p class="">{{ item.descripcion }}</div></template></div></template></dom-module><style>.option-tcc{text-align:center;width:75px;padding:5px}.option-tcc p{font-size:9px;margin:0;line-height:12px}</style><script>var xThisComCanalConsumo;function getIniCanalConsumo(){$.ajax({type:"POST",url:"../../bdphp/log_componentes.php?op=18"}).done(function(o){o=JSON.parse(o);o.datos.map((o,n)=>{o.seleccionado=!1,0===n&&(o.seleccionado=!0,xThisComCanalConsumo.canalSeleted=o),-1<o.descripcion.indexOf("LOCAL")&&(o.descripcion="LOCAL")}),xThisComCanalConsumo.listCanConsumo=o.datos}),xThisComCanalConsumo.getValorIncial(xThisComCanalConsumo.canalSeleted)}function selectOptionTCC(o){const a=o.dataIndex;o.dataId;xThisComCanalConsumo.canalSeleted=xThisComCanalConsumo.listCanConsumo[a],xThisComCanalConsumo.listCanConsumo.map(o=>o.seleccionado=!1),xThisComCanalConsumo.canalSeleted.seleccionado=!0,$(o).parent().find(".xMiBoton_icon_option").each((o,n)=>{n.dataIndex===a?$(n).attr("selected",!0):$(n).removeAttr("selected")}),xThisComCanalConsumo.getValorIncial(xThisComCanalConsumo.canalSeleted)}Polymer({is:"x-comp-canal-consumo",properties:{listCanConsumo:[],canalSeleted:Object},attached:function(){xThisComCanalConsumo=this,getIniCanalConsumo()},getValorIncial:function(o){this.fire("getValorIncial",{values:o})}})</script>

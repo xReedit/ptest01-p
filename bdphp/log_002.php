@@ -2,20 +2,20 @@
     //log comprobantes electronicos
     // session_set_cookie_params('4000'); // 1 hour
     // session_regenerate_id(true); 
-    session_start();    
+    session_start();	
     //header("Cache-Control: no-cache,no-store");
 
     // header('Access-Control-Allow-Origin: *');
     // header("Content-type: application/json; charset=utf-8");
     // header("Content-type: application/json; charset=utf-8");
-    header('content-type: text/html; charset: utf-8');
-    header('Content-Type: text/event-stream');
-    header('Cache-Control: no-cache');
-    include "ManejoBD.php";
-    $bd=new xManejoBD("restobar");
+	header('content-type: text/html; charset: utf-8');
+	header('Content-Type: text/event-stream');
+	header('Cache-Control: no-cache');
+	include "ManejoBD.php";
+	$bd=new xManejoBD("restobar");
 
-    date_default_timezone_set('America/Lima');
-    
+	date_default_timezone_set('America/Lima');
+	
     $op = $_POST['op'];
 
     $g_idorg = $_SESSION['ido'];
@@ -231,7 +231,7 @@
         //     if ($x_array_comprobante['idtipo_comprobante'] != "0"){ // 0 = ninguno | no imprimir comprobante
 
         
-        //         $sql_doc_correlativo="select (correlativo + 1) as d1  from tipo_comprobante_serie where idtipo_comprobante_serie = ".$idtipo_comprobante_serie;      
+        //         $sql_doc_correlativo="select (correlativo + 1) as d1  from tipo_comprobante_serie where idtipo_comprobante_serie = ".$idtipo_comprobante_serie;		
         //         $correlativo_comprobante = $bd->xDevolverUnDato($sql_doc_correlativo);
 
         //         // guardamos el correlativo
@@ -257,18 +257,18 @@
             $filtroFechaCount = $fecha === '' ? '' : " and $filtroAplicarFecha";
             $filtro = $pagination['pageFilter'] === '' ? '' : " and CONCAT(c.hora,tp.descripcion,c.numero,c.nomcliente,c.fecha,(
                 if (c.anulado=1,'Anulado',
-                        CASE
-                            WHEN c.estado_api = 0 and c.estado_sunat = 0 THEN 'Aceptado'
-                            WHEN (c.estado_api = 1 and c.estado_sunat != 0) THEN 'Sin registrar'
-                            WHEN (tp.codsunat='03' and  c.estado_api = 0 and c.estado_sunat != 0) THEN 'Boleta registrada'
-                            WHEN (tp.codsunat!='03' and c.estado_api = 0 and c.estado_sunat != 0) THEN 'Boleta no aceptada'
-                        END)
+						CASE
+							WHEN c.estado_api = 0 and c.estado_sunat = 0 THEN 'Aceptado'
+							WHEN (c.estado_api = 1 and c.estado_sunat != 0) THEN 'Sin registrar'
+							WHEN (tp.codsunat='03' and  c.estado_api = 0 and c.estado_sunat != 0) THEN 'Boleta registrada'
+							WHEN (tp.codsunat!='03' and c.estado_api = 0 and c.estado_sunat != 0) THEN 'Boleta no aceptada'
+						END)
             )) LIKE '%".$pagination['pageFilter']."%' ";
 
             $sql="
                 SELECT tp.descripcion as nom_comprobante, tp.codsunat, cnc.numero nota_credito , c.* from ce as c
                     inner join tipo_comprobante_serie as tps on tps.idtipo_comprobante_serie=c.idtipo_comprobante_serie
-                    inner join tipo_comprobante as tp on tp.idtipo_comprobante=tps.idtipo_comprobante   
+                    inner join tipo_comprobante as tp on tp.idtipo_comprobante=tps.idtipo_comprobante	
                     left join ce_nota_credito cnc on c.idce_nota_credito = cnc.idce_nota_credito
                 where (c.idorg=".$_SESSION['ido']." and c.idsede=".$_SESSION['idsede'].") ".$filtro." ".$filtroFecha." 
                 ORDER BY c.idce desc limit ".$pagination['pageLimit']." OFFSET ".$pagination['pageDesde'];
@@ -277,7 +277,7 @@
             $sqlCount="
                 SELECT count(c.idce) as d1 from ce as c
                     inner join tipo_comprobante_serie as tps on tps.idtipo_comprobante_serie=c.idtipo_comprobante_serie
-                    inner join tipo_comprobante as tp on tp.idtipo_comprobante=tps.idtipo_comprobante   
+                    inner join tipo_comprobante as tp on tp.idtipo_comprobante=tps.idtipo_comprobante	
                 where (c.idorg=".$_SESSION['ido']." and c.idsede=".$_SESSION['idsede'].") ".$filtro." ".$filtroFechaCount;            
             
             $rowCount = $bd->xDevolverUnDato($sqlCount);
@@ -292,18 +292,18 @@
             $filtroFecha = $fecha === '' ? '' : " HAVING $filtroAplicarFecha";            
             $filtro = $pagination['pageFilter'] === '' ? '' : " and CONCAT(c.hora,tp.descripcion,c.numero,c.nomcliente,c.fecha,(
                 if (c.anulado=1,'Anulado',
-                        CASE
-                            WHEN c.estado_api = 0 and c.estado_sunat = 0 THEN 'Aceptado'
-                            WHEN (c.estado_api = 1 and c.estado_sunat != 0) THEN 'Sin registrar'
-                            WHEN (tp.codsunat='03' and  c.estado_api = 0 and c.estado_sunat != 0) THEN 'Boleta registrada'
-                            WHEN (tp.codsunat!='03' and c.estado_api = 0 and c.estado_sunat != 0) THEN 'Boleta no aceptada'
-                        END)
+						CASE
+							WHEN c.estado_api = 0 and c.estado_sunat = 0 THEN 'Aceptado'
+							WHEN (c.estado_api = 1 and c.estado_sunat != 0) THEN 'Sin registrar'
+							WHEN (tp.codsunat='03' and  c.estado_api = 0 and c.estado_sunat != 0) THEN 'Boleta registrada'
+							WHEN (tp.codsunat!='03' and c.estado_api = 0 and c.estado_sunat != 0) THEN 'Boleta no aceptada'
+						END)
             )) LIKE '%".$pagination['pageFilter']."%' ";
 
             $sql="
                 SELECT ifnull(clie.ruc,'') as ruc, tp.descripcion as nom_comprobante, tp.codsunat , c.* from ce as c
                     inner join tipo_comprobante_serie as tps on tps.idtipo_comprobante_serie=c.idtipo_comprobante_serie
-                    inner join tipo_comprobante as tp on tp.idtipo_comprobante=tps.idtipo_comprobante   
+                    inner join tipo_comprobante as tp on tp.idtipo_comprobante=tps.idtipo_comprobante	
                     left join cliente as clie on c.nomcliente=clie.nombres
                 where (c.idorg=".$_SESSION['ido']." and c.idsede=".$_SESSION['idsede'].") ".$filtro." 
                 GROUP by c.idce
@@ -318,7 +318,7 @@
             $filtroAplicarFecha = $fecha === '' ? '' : " and (MONTH(STR_TO_DATE(c.fecha ,'%d/%m/%Y')) = MONTH(STR_TO_DATE('$fecha' ,'%d/%m/%Y')) and YEAR(STR_TO_DATE(c.fecha ,'%d/%m/%Y')) = YEAR(STR_TO_DATE('$fecha' ,'%d/%m/%Y')))";
             $sql="SELECT tp.descripcion as nom_comprobante, count(c.idtipo_comprobante_serie) cantidad, format(SUM(total),2) total from ce as c
                     inner join tipo_comprobante_serie as tps on tps.idtipo_comprobante_serie=c.idtipo_comprobante_serie
-                    inner join tipo_comprobante as tp on tp.idtipo_comprobante=tps.idtipo_comprobante   
+                    inner join tipo_comprobante as tp on tp.idtipo_comprobante=tps.idtipo_comprobante	
                 where (c.idsede=".$_SESSION['idsede'].") $filtroAplicarFecha                
                 group by c.idtipo_comprobante_serie";
             $bd->xConsulta($sql);

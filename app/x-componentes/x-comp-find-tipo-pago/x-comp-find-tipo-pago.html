@@ -1,17 +1,1 @@
-<link rel="import" href="../../web_components/polymer/polymer.html">
-<link rel="import" href="../../web_components/paper-dropdown-menu/paper-dropdown-menu.html">
-<link rel="import" href="../../web_components/iron-dropdown/iron-dropdown.html">
-<dom-module id="x-comp-find-tipo-pago">
-<template is="dom-bind">
-<div>
-<select id="compFindListTipoPago" class="xTextRow2 xCursor" onchange="selectOptionTipoPago()">
-<template is="dom-repeat" items="{{list}}" as="categoria">
-<option value="[[index]]">[[categoria.descripcion]] </option>
-</template>
-</select>
-</div>
-</template>
-<script>var xThisComTipoPago;function getAllTipoPago(){$.ajax({type:'GET',url:'../../bdphp/log_componentes.php?op=6'}).done(function(dtValues){dtValues=$.parseJSON(dtValues);xThisComTipoPago.list=dtValues.datos;xThisComTipoPago.list_tipo_pago=xThisComTipoPago.list[0];xThisComTipoPago.list_tipo_pago.index=0;xThisComTipoPago.valIdInt=xThisComTipoPago.list_tipo_pago;xThisComTipoPago.getValorIncial(xThisComTipoPago.list_tipo_pago);});}
-function selectOptionTipoPago(){const index=xThisComTipoPago.$.compFindListTipoPago.value;xThisComTipoPago.list_tipo_pago=xThisComTipoPago.list[index];xThisComTipoPago.list_tipo_pago.index=index}
-Polymer({is:'x-comp-find-tipo-pago',properties:{list:[],list_tipo_pago:{type:Object,reflectToAttribute:true,notify:true,value:function(){return{};},observer:'tipoPagoNameChanged'},valIdInt:{type:Object,notify:true,reflectToAttribute:true},},listeners:{'onchange':'getTipoPago'},tipoPagoNameChanged:function(categoria){return categoria;},getTipoPago(){return this.list_tipo_pago;},attached:function(){xThisComTipoPago=this;getAllTipoPago();},getValorIncial:function(val){this.fire('getValorIncial',{values:val});}})</script>
-</dom-module>
+<link rel="import"href="../../web_components/polymer/polymer.html"><link rel="import"href="../../web_components/paper-dropdown-menu/paper-dropdown-menu.html"><link rel="import"href="../../web_components/iron-dropdown/iron-dropdown.html"><dom-module id="x-comp-find-tipo-pago"><template is="dom-bind"><div><select id="compFindListTipoPago"class="xTextRow2 xCursor"onchange="selectOptionTipoPago()"><template is="dom-repeat"items="{{list}}"as="categoria"><option value="[[index]]">[[categoria.descripcion]]</template></select></div></template><script>var xThisComTipoPago;function getAllTipoPago(){$.ajax({type:"GET",url:"../../bdphp/log_componentes.php?op=6"}).done(function(o){o=$.parseJSON(o),xThisComTipoPago.list=o.datos,xThisComTipoPago.list_tipo_pago=xThisComTipoPago.list[0],xThisComTipoPago.list_tipo_pago.index=0,xThisComTipoPago.valIdInt=xThisComTipoPago.list_tipo_pago,xThisComTipoPago.getValorIncial(xThisComTipoPago.list_tipo_pago)})}function selectOptionTipoPago(){var o=xThisComTipoPago.$.compFindListTipoPago.value;xThisComTipoPago.list_tipo_pago=xThisComTipoPago.list[o],xThisComTipoPago.list_tipo_pago.index=o}Polymer({is:"x-comp-find-tipo-pago",properties:{list:[],list_tipo_pago:{type:Object,reflectToAttribute:!0,notify:!0,value:function(){return{}},observer:"tipoPagoNameChanged"},valIdInt:{type:Object,notify:!0,reflectToAttribute:!0}},listeners:{onchange:"getTipoPago"},tipoPagoNameChanged:function(o){return o},getTipoPago(){return this.list_tipo_pago},attached:function(){xThisComTipoPago=this,getAllTipoPago()},getValorIncial:function(o){this.fire("getValorIncial",{values:o})},reset:()=>{xThisComTipoPago.list_tipo_pago=xThisComTipoPago.list[0],xThisComTipoPago.list_tipo_pago.index=0,xThisComTipoPago.valIdInt=xThisComTipoPago.list_tipo_pago,xThisComTipoPago.getValorIncial(xThisComTipoPago.list_tipo_pago)}})</script></dom-module>

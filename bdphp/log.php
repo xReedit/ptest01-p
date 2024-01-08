@@ -1502,6 +1502,7 @@
 			// no aumenta porque borramos el procedimiento almacenado
 			// 19102018 -- estara en la pagina pedido borrados - para restablecer o no stock
 			$arrIE=$_POST['xarr'];
+			$motivo_anular= isset($_POST['xMotivo']) ? $_POST['xMotivo'] : '';
 			$isRecuperarStock = isset($_POST['xisRecuperarStock']) ? $_POST['xisRecuperarStock'] : '0';
 
 			$tabla_procede=$arrIE['procede'];
@@ -1535,7 +1536,8 @@
 				$sql_pedido="update pedido set total=format(total-".$precio_unitario_item.",2),estado=if(total<=0,3,0) where idpedido=".$idpedido."; update pedido_subtotales set importe=format(importe-".$precio_unitario_item.",2) where idpedido=".$idpedido." and descripcion='TOTAL'; ";
 				//descuenta en subtotal
 			}
-			$sql_pedido_detalle='update pedido_detalle set cantidad=cantidad-1, ptotal=format(ptotal-'.$precio_unitario_item.',2), estado=if(cantidad<=0,1,0), modificado=1 where idpedido_detalle='.$idpedido_detalle.'; ';
+			
+			$sql_pedido_detalle="update pedido_detalle set cantidad=cantidad-1, ptotal=format(ptotal-".$precio_unitario_item.",2), estado=if(cantidad<=0,1,0), modificado=1, motivo_borrado='".$motivo_anular."' where idpedido_detalle=".$idpedido_detalle."; ";
 
 			//descuenta
 			//ejecutar
@@ -2275,7 +2277,7 @@
 			$bd->xConsulta($sql);
 			break;
 		case 70112: // usuario administradores para permiso remoto
-			$sql = "select idusuario, nombres from usuario where idsede = $g_idsede and rol = 1 and nombres != 'SISTEMA' and estado = 0";
+			$sql = "select idusuario, nombres, telefono from usuario where idsede = $g_idsede and rol = 1 and nombres != 'SISTEMA' and estado = 0";
 			$bd->xConsulta($sql);
 			break;
 		case 70113: // guardar permiso remoto
@@ -3405,8 +3407,8 @@
 			$bd->xConsulta($sql);
 			break;
 		case 2004:// tipos de pago history
-			$sql="
-				SELECT rpd.idregistro_pago,tp.descripcion AS tipo_pago, format(rpd.importe,2) as importe
+			$sql="SELECT rpd.idregistro_pago_detalle, rpd.idregistro_pago, rpd.idtipo_pago,tp.descripcion AS tipo_pago, format(rpd.importe,2) as importe				
+				,rpd.permission_change
 				FROM registro_pago AS rp
 					INNER JOIN registro_pago_detalle AS rpd using(idregistro_pago)
 					INNER JOIN tipo_pago AS tp using(idtipo_pago)
@@ -3646,7 +3648,8 @@ function encode_dataUS(){
 					'otros_datos'=>xDtUS(308),
 					'generales'=> xDtUS(307),
 					'datos_org_sede'=> xDtUS(3012), // datos org y sede // facturacion
-					'datos_org_all_sede'=> xDtUS(3013) // datos org y sede // facturacion
+					'datos_org_all_sede'=> xDtUS(3013), // datos org y sede // facturacion
+					'datos_sede_variables'=> xDtUS(3016)
 				]];  /*,
 		,
 	];/*
@@ -3749,6 +3752,9 @@ function xDtUS($op_us){
 			break;
 		case 3015: // codigos error facturacion electronica
 			$sql_us = "select * from ce_alerta ca where estado = 0";
+			break;
+		case 3016: // datos variables de la sede
+			$sql_us = "select * from sede_opciones where idsede = $g_idsede limit 1";
 			break;
 	}
 	$rows = [];

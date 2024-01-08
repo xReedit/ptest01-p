@@ -3,28 +3,28 @@
     // produccion
 
     session_start();
-    //header("Cache-Control: no-cache,no-store");
-    header("Access-Control-Allow-Origin: *");
-    header('Content-Type: application/json;charset=utf-8');
-    header('content-type: text/html; charset: utf-8');
-    header('Content-Type: text/event-stream');
-    header('Cache-Control: no-cache');
-    include "ManejoBD.php";
-    $bd=new xManejoBD("restobar");
+	//header("Cache-Control: no-cache,no-store");
+	header("Access-Control-Allow-Origin: *");
+	header('Content-Type: application/json;charset=utf-8');
+	header('content-type: text/html; charset: utf-8');
+	header('Content-Type: text/event-stream');
+	header('Cache-Control: no-cache');
+	include "ManejoBD.php";
+	$bd=new xManejoBD("restobar");
 
 
     $op = $_POST['op']; // a = registro pedido | d=registro cliente | b=registro pago total | c=registro pago parcial
     if (!isset($op)) { 
         $op = $_GET['op'];
     }
-    if (!isset($op)) {
-        $postBody = json_decode(file_get_contents('php://input'));
-        $op = $postBody->op;
-    }
+	if (!isset($op)) {
+		$postBody = json_decode(file_get_contents('php://input'));
+		$op = $postBody->op;
+	}
 
     $g_ido = $_SESSION['ido'];
-    $g_idsede = $_SESSION['idsede'];
-    $g_us = $_SESSION['idusuario'];
+	$g_idsede = $_SESSION['idsede'];
+	$g_us = $_SESSION['idusuario'];
 
     switch ($op) {
         case '1': // crear almacen produccion u obtener idalmacen
@@ -143,7 +143,7 @@
                     select COUNT(pb.idpedido_borrados) cant from pedido_borrados pb 
                     inner join usuario u using(idusuario)
                     inner join sede s using(idsede)
-                    where s.idsede = $g_idsede and pb.fecha_cierre = ''
+                    where s.idsede = $g_idsede and STR_TO_DATE(pb.fecha, '%d/%m/%Y') >= CURDATE() - INTERVAL 2 DAY and pb.fecha_cierre = '' 
             ";
             $bd->xConsulta($sql);
             break;
@@ -185,7 +185,7 @@
         case 112: //load producto familias
             $sql="select pf.idproducto_familia, pf.descripcion, COALESCE(count(pf.idproducto_familia), 0) cantidad_relacionados from producto_familia pf 
                     left join producto p on p.idproducto_familia = pf.idproducto_familia 
-                where pf.idsede = $g_idsede and pf.estado = 0   
+                where pf.idsede = $g_idsede and pf.estado = 0	
                 GROUP by pf.idproducto_familia
                 order by pf.descripcion";
             $bd->xConsulta($sql);
@@ -294,7 +294,7 @@
             break;
         case 23: // cuentas por cobrar - ventas al credito            
             // $sql="select rp.idcliente, rp.idregistro_pago, c.nombres nom_cliente, c.ruc as num_dni, c.direccion, c.telefono
-            //         ,format(sum(rp.total),2) total, count(rp.idregistro_pago) cantidad       
+            //         ,format(sum(rp.total),2) total, count(rp.idregistro_pago) cantidad 		
             //         , format(COALESCE(cpc.importe, 0), 2) pago, format(COALESCE(cpc.debe,0),2) debe
             //         ,c.telefono, c.ruc 
             //     from cliente c
@@ -306,7 +306,7 @@
             // order by rp.idregistro_pago desc";
 
             $sql = "select rp.idcliente,format(sum(rpd.importe),2) total, GROUP_CONCAT(rpd.idregistro_pago_detalle) , rp.idregistro_pago, c.nombres nom_cliente, c.ruc as num_dni, c.direccion, c.telefono
-                ,format(sum(rpd.importe),2) total, count(rp.idregistro_pago) cantidad       
+                ,format(sum(rpd.importe),2) total, count(rp.idregistro_pago) cantidad 		
                 , format(COALESCE(cpc.importe, 0), 2) pago
                 , format((sum(rpd.importe) - COALESCE(cpc.importe, 0)),2) debe
                 ,c.telefono
@@ -315,11 +315,11 @@
                 inner join registro_pago rp on cs.idcliente = rp.idcliente
                 inner join registro_pago_detalle rpd using(idregistro_pago)
                 left join (select cc.idcliente, cc.idsede, sum(cpcd.importe) importe, cc.debe 
-                    from cliente_paga_credito cc
-                    inner join cliente_paga_credito_detalle cpcd using(idcliente_paga_credito)
-                    where cc.idsede =$g_idsede
-                    GROUP by cc.idcliente
-                ) cpc on cpc.idcliente = cs.idcliente
+                	from cliente_paga_credito cc
+            		inner join cliente_paga_credito_detalle cpcd using(idcliente_paga_credito)
+		            where cc.idsede =$g_idsede
+            		GROUP by cc.idcliente
+            	) cpc on cpc.idcliente = cs.idcliente
             where rpd.idtipo_pago = 3 and (cs.idsede=$g_idsede and rp.idsede=$g_idsede)
             GROUP by cs.idcliente
             order by rp.idregistro_pago desc, cast(debe as UNSIGNED) desc";
@@ -328,7 +328,7 @@
             break;
         case 23001: // historial
             $sql = "select rp.idcliente,format(sum(rpd.importe),2) total, GROUP_CONCAT(rpd.idregistro_pago_detalle) , rp.idregistro_pago, c.nombres nom_cliente, c.ruc as num_dni, c.direccion, c.telefono
-                ,format(sum(rpd.importe),2) total, count(rp.idregistro_pago) cantidad       
+                ,format(sum(rpd.importe),2) total, count(rp.idregistro_pago) cantidad 		
                 , format(COALESCE(cpc.importe, 0), 2) pago
                 , format((sum(rpd.importe) - COALESCE(cpc.importe, 0)),2) debe
                 ,c.telefono
@@ -413,9 +413,9 @@
         case 2303: // historial de pagos credito por cliente
             $postBody = json_decode(file_get_contents('php://input'));
             $sql = "select cp.idcliente_paga_credito, cp.fecha_hora, format(cp.importe,2) importe
-                ,u.nombres nom_usuario, tp.descripcion nom_tipo_pago, cp.idtipo_pago
+	            ,u.nombres nom_usuario, tp.descripcion nom_tipo_pago, cp.idtipo_pago
                 from cliente_paga_credito_detalle cp
-                    inner join cliente_paga_credito cpc using(idcliente_paga_credito)
+                	inner join cliente_paga_credito cpc using(idcliente_paga_credito)
                     inner join usuario u on cp.idusuario = u.idusuario 
                     inner join tipo_pago tp using(idtipo_pago)
                 where cpc.idcliente = $postBody->idcliente and cpc.idsede = $g_idsede
@@ -428,10 +428,10 @@
         case 24: 
             $postBody = json_decode(file_get_contents('php://input'));
             $sql="select d.iddistribuicion, sd.nombre sede_de, ad.descripcion almacen_de, ud.usuario usuario_de
-                ,d.fecha, d.detalle 
+                ,d.fecha, d.detalle	
                 ,sa.nombre sede_a
                 , ua.usuario idusuario_recibe
-                , d.fecha_recibe
+	            , d.fecha_recibe
                 , if (COALESCE(d.idusuario_recibe,0) = 0,0,1) recibido
             from distribuicion d 
                 inner join sede sd on sd.idsede = d.idsede 
@@ -499,5 +499,28 @@
             $sql="update tipo_comprobante_serie set is_deshabilitado_cpe = 1, estado = 1 where idsede = $g_idsede and estado = 0 and idtipo_comprobante in (2,3)";  
             $bd->xConsulta($sql);
             break;
+        case 40: // permiso remoto
+            $data = file_get_contents('php://input');
+            $postBody = json_decode($data);
+
+
+            // Generar un ID único
+            $uniqueId = uniqid();
+
+            // Truncar el ID a 6 caracteres
+            $shortUniqueId = substr($uniqueId, 0, 10);
+
+            $sql="insert into permiso_remoto(idsede, idusuario_solicita, idusuario_admin, fecha, hora, data, link) 
+                values ($g_idsede, $g_us, $postBody->idusuario_admin, curdate(), curtime(), '$data', '$shortUniqueId')";  
+            $bd->xConsulta_NoReturn($sql);     
+            
+            echo json_encode(array('success' => true, 'link' => $shortUniqueId));
+            break;
+        case 4001: // trae la lista de solicitudes atendidas
+            $sql="select pr.* from permiso_remoto pr                
+                where pr.idsede = $g_idsede and pr.atendido=1 and pr.ejecutado=0
+                order by pr.idpermiso_remoto desc";
+            $bd->xConsulta($sql);
+            break;        
     }
 ?>    

@@ -1,17 +1,1 @@
-<link rel="import" href="../../web_components/polymer/polymer.html">
-<link rel="import" href="../../web_components/paper-dropdown-menu/paper-dropdown-menu.html">
-<link rel="import" href="../../web_components/iron-dropdown/iron-dropdown.html">
-<dom-module id="x-comp-find-tipo-ingreso">
-<template is="dom-bind">
-<div>
-<select id="compFindListCategoria" class="xTextRow2 xCursor" onchange="selectOptionIngreso()">
-<template is="dom-repeat" items="{{list}}" as="categoria">
-<option value="[[index]]">[[categoria.descripcion]] </option>
-</template>
-</select>
-</div>
-</template>
-<script>var xThisComTipoIngreso;function getAllTipoIngreso(){$.ajax({type:'GET',url:'../../bdphp/log_componentes.php?op=5'}).done(function(dtValues){dtValues=$.parseJSON(dtValues);xThisComTipoIngreso.list=dtValues.datos;xThisComTipoIngreso.list_tipo_ingreso=xThisComTipoIngreso.list[0];xThisComTipoIngreso.list_tipo_ingreso.index=0;xThisComTipoIngreso.valIdInt=xThisComTipoIngreso.list_tipo_ingreso;xThisComTipoIngreso.getValorIncial(xThisComTipoIngreso.list_tipo_ingreso);});}
-function selectOptionIngreso(){const index=xThisComTipoIngreso.$.compFindListCategoria.value;xThisComTipoIngreso.list_tipo_ingreso=xThisComTipoIngreso.list[index];xThisComTipoIngreso.list_tipo_ingreso.index=index}
-Polymer({is:'x-comp-find-tipo-ingreso',properties:{list:[],list_tipo_ingreso:{type:Object,reflectToAttribute:true,notify:true,value:function(){return{};},observer:'tipoIngresoNameChanged'},valIdInt:{type:Object,notify:true,reflectToAttribute:true},},listeners:{'onchange':'getTipoIngreso'},tipoIngresoNameChanged:function(categoria){return categoria;},getTipoIngreso(){return this.list_tipo_ingreso;},attached:function(){xThisComTipoIngreso=this;getAllTipoIngreso();},getValorIncial:function(val){this.fire('getValorIncial',{values:val});}})</script>
-</dom-module>
+<link rel="import"href="../../web_components/polymer/polymer.html"><link rel="import"href="../../web_components/paper-dropdown-menu/paper-dropdown-menu.html"><link rel="import"href="../../web_components/iron-dropdown/iron-dropdown.html"><dom-module id="x-comp-find-tipo-ingreso"><template is="dom-bind"><div><select id="compFindListCategoria"class="xTextRow2 xCursor"onchange="selectOptionIngreso()"><template is="dom-repeat"items="{{list}}"as="categoria"><option value="[[index]]">[[categoria.descripcion]]</template></select></div></template><script>var xThisComTipoIngreso;function getAllTipoIngreso(){$.ajax({type:"GET",url:"../../bdphp/log_componentes.php?op=5"}).done(function(o){o=$.parseJSON(o),xThisComTipoIngreso.list=o.datos,xThisComTipoIngreso.list_tipo_ingreso=xThisComTipoIngreso.list[0],xThisComTipoIngreso.list_tipo_ingreso.index=0,xThisComTipoIngreso.valIdInt=xThisComTipoIngreso.list_tipo_ingreso,xThisComTipoIngreso.getValorIncial(xThisComTipoIngreso.list_tipo_ingreso)})}function selectOptionIngreso(){var o=xThisComTipoIngreso.$.compFindListCategoria.value;xThisComTipoIngreso.list_tipo_ingreso=xThisComTipoIngreso.list[o],xThisComTipoIngreso.list_tipo_ingreso.index=o}Polymer({is:"x-comp-find-tipo-ingreso",properties:{list:[],list_tipo_ingreso:{type:Object,reflectToAttribute:!0,notify:!0,value:function(){return{}},observer:"tipoIngresoNameChanged"},valIdInt:{type:Object,notify:!0,reflectToAttribute:!0}},listeners:{onchange:"getTipoIngreso"},tipoIngresoNameChanged:function(o){return o},getTipoIngreso(){return this.list_tipo_ingreso},attached:function(){xThisComTipoIngreso=this,getAllTipoIngreso()},getValorIncial:function(o){this.fire("getValorIncial",{values:o})}})</script></dom-module>

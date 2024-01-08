@@ -1,17 +1,1 @@
-<link rel="import" href="../../web_components/polymer/polymer.html">
-<link rel="import" href="../../web_components/paper-dropdown-menu/paper-dropdown-menu.html">
-<link rel="import" href="../../web_components/iron-dropdown/iron-dropdown.html">
-<dom-module id="x-comp-find-cargo">
-<template is="dom-bind">
-<div>
-<select id="compFindListCargo" class="xTextRow2 xCursor" onchange="selectOptionCargo()">
-<template is="dom-repeat" items="{{list}}" as="categoria">
-<option value="[[index]]">[[categoria.descripcion]] </option>
-</template>
-</select>
-</div>
-</template>
-<script>var xThisComCargo;function getAllCargo(){$.ajax({type:'GET',url:'../../bdphp/log_componentes.php?op=8'}).done(function(dtValues){dtValues=$.parseJSON(dtValues);xThisComCargo.list=dtValues.datos;xThisComCargo.list_cargo=xThisComCargo.list[0];xThisComCargo.list_cargo.index=0;xThisComCargo.valIdInt=xThisComCargo.list_cargo;xThisComCargo.getValorIncial(xThisComCargo.list_cargo);});}
-function selectOptionCargo(){const index=xThisComCargo.$.compFindListCargo.value;xThisComCargo.list_cargo=xThisComCargo.list[index];xThisComCargo.list_cargo.index=index}
-Polymer({is:'x-comp-find-cargo',properties:{_style:String,list:[],list_cargo:{type:Object,reflectToAttribute:true,notify:true,value:function(){return{};},observer:'cargoNameChanged'},valIdInt:{type:Object,notify:true,reflectToAttribute:true},},listeners:{'onchange':'getCargo'},cargoNameChanged:function(categoria){return categoria;},getCargo(){return xThisComCargo.list_cargo;},setValue(id){var _index;xThisComCargo.list.map((x,index)=>{if(x.idcargo===id){_index=index;return;}});compFindListCargo.selectedIndex=_index;selectOptionCargo();},attached:function(){xThisComCargo=this;getAllCargo();},getValorIncial:function(val){this.fire('getValorIncial',{values:val});}})</script>
-</dom-module>
+<link rel="import"href="../../web_components/polymer/polymer.html"><link rel="import"href="../../web_components/paper-dropdown-menu/paper-dropdown-menu.html"><link rel="import"href="../../web_components/iron-dropdown/iron-dropdown.html"><dom-module id="x-comp-find-cargo"><template is="dom-bind"><div><select id="compFindListCargo"class="xTextRow2 xCursor"onchange="selectOptionCargo()"><template is="dom-repeat"items="{{list}}"as="categoria"><option value="[[index]]">[[categoria.descripcion]]</template></select></div></template><script>var xThisComCargo;function getAllCargo(){$.ajax({type:"GET",url:"../../bdphp/log_componentes.php?op=8"}).done(function(o){o=$.parseJSON(o),xThisComCargo.list=o.datos,xThisComCargo.list_cargo=xThisComCargo.list[0],xThisComCargo.list_cargo.index=0,xThisComCargo.valIdInt=xThisComCargo.list_cargo,xThisComCargo.getValorIncial(xThisComCargo.list_cargo)})}function selectOptionCargo(){var o=xThisComCargo.$.compFindListCargo.value;xThisComCargo.list_cargo=xThisComCargo.list[o],xThisComCargo.list_cargo.index=o}Polymer({is:"x-comp-find-cargo",properties:{_style:String,list:[],list_cargo:{type:Object,reflectToAttribute:!0,notify:!0,value:function(){return{}},observer:"cargoNameChanged"},valIdInt:{type:Object,notify:!0,reflectToAttribute:!0}},listeners:{onchange:"getCargo"},cargoNameChanged:function(o){return o},getCargo(){return xThisComCargo.list_cargo},setValue(a){var r;xThisComCargo.list.map((o,t)=>{o.idcargo===a&&(r=t)}),compFindListCargo.selectedIndex=r,selectOptionCargo()},attached:function(){xThisComCargo=this,getAllCargo()},getValorIncial:function(o){this.fire("getValorIncial",{values:o})}})</script></dom-module>

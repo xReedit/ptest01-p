@@ -1,6 +1,7 @@
 <?php
 session_start();	
 header('Content-Type: text/event-stream');
+header('Content-Type: application/json;charset=utf-8');
 header('Cache-Control: no-cache');
 date_default_timezone_set('America/Lima');
 
@@ -50,7 +51,7 @@ switch($_GET['op'])
 			echo $numero_pedidos_actual_2.",".$hora;
 			break;
 		case 3: // comprobar conexion
-			echo true; 
+			echo json_encode(array('success' => true, 'id' => $g_idsede));	
 			break;
 	}
 

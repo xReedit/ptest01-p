@@ -92,7 +92,7 @@ if($Campo_comparar!="") //caparar
 
 	//$_SESSION['IdValTabla']="";
 
-	//print $xSql;
+	// print $xSql;
 	//$bd->xCerrarSesion();
 	//print $xSql;
 

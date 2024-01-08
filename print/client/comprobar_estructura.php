@@ -1,8 +1,8 @@
-<?php   
+<?php	
 
     header('Access-Control-Allow-Origin: *'); 
 
-    // version de estructura cliente
+	// version de estructura cliente
     $listEstructuras = $_POST['arrEstructura'];
     $pase = true;
     $mensaje='inicia';

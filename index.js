@@ -1,1 +1,1 @@
-$(this).one("pageshow",function(){var e="";e="logueese.html",document.location.href=e});
+$(this).one("pageshow",function(){document.location.href="logueese.html"});

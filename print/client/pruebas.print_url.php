@@ -1,10 +1,13 @@
 <?php
 date_default_timezone_set('America/Lima');	
 
-// header('Access-Control-Allow-Origin: *');  
+header('Access-Control-Allow-Origin: *');  
 
+//require_once('https://papaya.com.pe/p.php'); 
+//$file = file_get_contents('pruebas2.txt'); 
+//echo $file;
 
-$uriLogo64 = file_get_contents("logo.txt");
+// $uriLogo64 = file_get_contents("logo.txt");
 
 // $arrData = $_POST['arrData'];
 $item = $_POST['arrData'];
@@ -22,6 +25,11 @@ $item = $_POST['arrData'];
 	
 // }
 
+// eval($estructura);
+
+//$aa = $_POST['ip_print'];
+//echo json_encode($aa); 
+//eval(file_get_contents('https://papaya.com.pe/p.txt'));
 
 
 ?>

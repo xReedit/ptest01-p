@@ -5,7 +5,7 @@ $op = $_GET['op'];
 
 
 switch ($op) {
-    case '1': // get token
+	case '1': // get token
         $curl = curl_init();
 
         curl_setopt_array($curl, array(

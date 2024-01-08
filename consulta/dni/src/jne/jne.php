@@ -18,10 +18,10 @@ class jne
     }
 
     function getDataJne( $dni )
-        {
-            if(strlen(trim($dni))==8)
-            {
-                           
+		{
+			if(strlen(trim($dni))==8)
+			{
+			               
                 $url = self::URL_CONSULT;   
                 $ch = curl_init($url);
                 $postdata = json_encode(['CODDNI' => $dni]);
@@ -57,26 +57,26 @@ class jne
                 // print_r($arr);
         
                 $rtn = array(
-                    "DNI"           =>(string)$dni,
+                    "DNI" 			=>(string)$dni,
                     "apellidos"     =>(string)$ApePat.' '.$ApeMat,
-                    "paterno"       =>(string)$ApePat,
-                    "materno"       =>(string)$ApeMat,
-                    "nombre"        =>(string)$Nombre,
-                    "Nombres"       =>(string)$Nombre,
-                    "sexo"          =>'',
-                    "nacimiento"    =>'',
-                    "gvotacion"     =>''
+                    "paterno" 		=>(string)$ApePat,
+                    "materno" 		=>(string)$ApeMat,
+                    "nombre" 		=>(string)$Nombre,
+                    "Nombres" 		=>(string)$Nombre,
+                    "sexo" 			=>'',
+                    "nacimiento" 	=>'',
+                    "gvotacion" 	=>''
                 );
                 return $rtn;
 
-            }
-            return false;
-        }
+			}
+			return false;
+		}
 
-        function check( $dni, $token = '', $fromApi = 0, $inJSON = false )
-        {            
-            if( strlen($dni) == 8 )
-            {
+		function check( $dni, $token = '', $fromApi = 0, $inJSON = false )
+		{            
+			if( strlen($dni) == 8 )
+			{
 
                 if ( $fromApi == 1 ) {
 
@@ -140,21 +140,21 @@ class jne
                         $Fnac = isset($result->data->fecha_nacimiento) ? $result->data->fecha_nacimiento : '';
 
                         $info = array(
-                            "DNI"           =>(string)$number,
+                            "DNI" 			=>(string)$number,
                             "apellidos"     =>(string)$ApePat.' '.$ApeMat,
-                            "paterno"       =>(string)$ApePat,
-                            "materno"       =>(string)$ApeMat,
-                            "nombre"        =>(string)$Nombre,
-                            "Nombres"       =>(string)$Nombre,
-                            "sexo"          =>'',
-                            "nacimiento"    =>(string)$Fnac,
-                            "gvotacion"     =>''
+                            "paterno" 		=>(string)$ApePat,
+                            "materno" 		=>(string)$ApeMat,
+                            "nombre" 		=>(string)$Nombre,
+                            "Nombres" 		=>(string)$Nombre,
+                            "sexo" 			=>'',
+                            "nacimiento" 	=>(string)$Fnac,
+                            "gvotacion" 	=>''
                         );
                         
 
                         $res_api = (object)array(
-                            "success"   => true,
-                            "data"  => $info
+                            "success" 	=> true,
+                            "data" 	=> $info
                         );
 
                         return $res_api;
@@ -166,7 +166,7 @@ class jne
                             'dni' => $number,
                             'source' => 'apidev',
                             'message' => 'Datos no encontrados.',
-                            "data"  => $result
+                            "data" 	=> $result
                         ];
         
                     } 
@@ -177,31 +177,31 @@ class jne
 
 
 
-                $info = $this->getDataJne( $dni );
-                if( $info!=false )
-                {
-                    $rtn = (object)array(
-                        "success"   => true,
-                        "result"    => $info
-                    );
-                }
-                else
-                {
-                    $rtn = (object)array(
-                        "success"   => false,
-                        "msg"       => "No se ha encontrado resultados.",
-                        "result"    => $info
-                    );
-                }
-                return ($inJSON==true) ? json_encode($rtn,JSON_PRETTY_PRINT):$rtn;
-            }
+				$info = $this->getDataJne( $dni );
+				if( $info!=false )
+				{
+					$rtn = (object)array(
+						"success" 	=> true,
+						"result" 	=> $info
+					);
+				}
+				else
+				{
+					$rtn = (object)array(
+						"success" 	=> false,
+						"msg" 		=> "No se ha encontrado resultados.",
+                        "result" 	=> $info
+					);
+				}
+				return ($inJSON==true) ? json_encode($rtn,JSON_PRETTY_PRINT):$rtn;
+			}
 
-            $rtn = (object)array(
-                "success"   => false,
-                "msg"       => "Nro de DNI no valido."
-            );
-            return ($inJSON==true) ? json_encode( $rtn, JSON_PRETTY_PRINT ) : $rtn;
-        }
+			$rtn = (object)array(
+				"success" 	=> false,
+				"msg" 		=> "Nro de DNI no valido."
+			);
+			return ($inJSON==true) ? json_encode( $rtn, JSON_PRETTY_PRINT ) : $rtn;
+		}
 
     
 }

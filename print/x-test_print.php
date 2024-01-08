@@ -137,28 +137,28 @@ if($logo_post!=''){
 		
 		$printer -> setEmphasis(false);
 		// sub item len > 50
-		$des_sub_item = '-> 1 Entre pierna, Papas fritas, Bien cocido, Aji, Aji especial de casa, Mayonesa, Mostaza';
-		$des_sub_item_p2 = '';
-		$des_sub_item_p3 = '';
+		// $des_sub_item = '-> 1 Entre pierna, Papas fritas, Bien cocido, Aji, Aji especial de casa, Mayonesa, Mostaza';
+		// $des_sub_item_p2 = '';
+		// $des_sub_item_p3 = '';
 		
-		if(strlen($des_sub_item) > $espacioLeftCols){
-			$des_sub_item_p2=substr($des_sub_item,$espacioLeftCols,strlen($des_sub_item));
-			$des_sub_item=substr($des_sub_item,0,$espacioLeftCols)."-";
-		}
+		// if(strlen($des_sub_item) > $espacioLeftCols){
+		// 	$des_sub_item_p2=substr($des_sub_item,$espacioLeftCols,strlen($des_sub_item));
+		// 	$des_sub_item=substr($des_sub_item,0,$espacioLeftCols)."-";
+		// }
 
-		if(strlen($des_sub_item_p2) > $espacioLeftCols){
-			$des_sub_item_p3=substr($des_sub_item_p2,$espacioLeftCols,strlen($des_sub_item_p2));
-			$des_sub_item_p2=substr($des_sub_item_p2,0,$espacioLeftCols)."-";
-		}
+		// if(strlen($des_sub_item_p2) > $espacioLeftCols){
+		// 	$des_sub_item_p3=substr($des_sub_item_p2,$espacioLeftCols,strlen($des_sub_item_p2));
+		// 	$des_sub_item_p2=substr($des_sub_item_p2,0,$espacioLeftCols)."-";
+		// }
 
-		$printer -> text(new item_subitem($des_sub_item, '+2.00'));			
-		if($des_sub_item_p2!=''){$printer -> text(new item_subitem($des_sub_item_p2, ''));}
-		if($des_sub_item_p3!=''){$printer -> text(new item_subitem($des_sub_item_p3, ''));}
+		// $printer -> text(new item_subitem($des_sub_item, '+2.00'));			
+		// if($des_sub_item_p2!=''){$printer -> text(new item_subitem($des_sub_item_p2, ''));}
+		// if($des_sub_item_p3!=''){$printer -> text(new item_subitem($des_sub_item_p3, ''));}
 
 		///
 		
-		$printer -> text(new item_subitem('-> 02 entrepierna solo cremas mas', ''));		
-		$printer -> text(new item_subitem('-> 02 pecho especial', '+5.00'));
+		$printer -> text(new item_subitem('-> 1 Pierna', '.'));		
+		// $printer -> text(new item_subitem('-> 02 pecho especial', '+5.00'));
 		// $printer -> text("\n");
 		// $printer -> text(new item_subitem('..', ''));
 		$printer -> feed();

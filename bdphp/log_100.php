@@ -4,20 +4,20 @@
     // corrige la opcion log.php op=100 // debe borrarse
     //     
 
-    session_start();    
-    header('content-type: text/html; charset: utf-8');
-    header('Content-Type: text/event-stream');
-    header('Cache-Control: no-cache');
-    include "ManejoBD.php";
-    $bd=new xManejoBD("restobar");
+    session_start();	
+	header('content-type: text/html; charset: utf-8');
+	header('Content-Type: text/event-stream');
+	header('Cache-Control: no-cache');
+	include "ManejoBD.php";
+	$bd=new xManejoBD("restobar");
 
-    date_default_timezone_set('America/Lima');
+	date_default_timezone_set('America/Lima');
 
-    $op = $_GET['op'];
-    
-    $g_ido = $_SESSION['ido'];
-    $g_idsede = $_SESSION['idsede'];
-    $g_us = $_SESSION['idusuario'];
+	$op = $_GET['op'];
+	
+	$g_ido = $_SESSION['ido'];
+	$g_idsede = $_SESSION['idsede'];
+	$g_us = $_SESSION['idusuario'];
 
     switch ($op) {
         case '1': // compras

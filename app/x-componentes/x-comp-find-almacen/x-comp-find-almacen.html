@@ -1,18 +1,1 @@
-<link rel="import" href="../../web_components/polymer/polymer.html">
-<link rel="import" href="../../web_components/paper-dropdown-menu/paper-dropdown-menu.html">
-<link rel="import" href="../../web_components/iron-dropdown/iron-dropdown.html">
-<dom-module id="x-comp-find-almacen">
-<template is="dom-bind">
-<div>
-<select id="compFindListAlmacen" class$="[[clasecss]]" onchange="selectOptionAlmacen()">
-<template is="dom-repeat" items="{{list}}" as="categoria">
-<option value="[[index]]">[[categoria.descripcion]] </option>
-</template>
-</select>
-</div>
-</template>
-<script>var xThisComAlmacen;function getAllTipoAlmacen(){xThisComAlmacen.clasecss=xThisComAlmacen.clasecss===''?'xTextRow2 xCursor':xThisComAlmacen.clasecss;$.ajax({type:'POST',url:'../../bdphp/log_componentes.php?op=11'}).done(function(dtValues){dtValues=$.parseJSON(dtValues);if(xThisComAlmacen.opninguno){dtValues.datos.unshift({idalmacen:"0",descripcion:"NINGUNO"})}
-xThisComAlmacen.list=dtValues.datos;xThisComAlmacen.list_almacen=xThisComAlmacen.list[0];xThisComAlmacen.list_almacen.index=0;xThisComAlmacen.valIdInt=xThisComAlmacen.list_almacen;xThisComAlmacen.getValorIncial(xThisComAlmacen.list_almacen);});}
-function selectOptionAlmacen(){const index=xThisComAlmacen.$.compFindListAlmacen.value;xThisComAlmacen.list_almacen=xThisComAlmacen.list[index];xThisComAlmacen.list_almacen.index=index}
-Polymer({is:'x-comp-find-almacen',properties:{opninguno:{type:Boolean,notify:true,reflectToAttribute:true,value:false},clasecss:String,list:[],list_almacen:{type:Object,reflectToAttribute:true,notify:true,value:function(){return{};},observer:'almacenNameChanged'},valIdInt:{type:Object,notify:true,reflectToAttribute:true},},listeners:{'onchange':'getAlmacen'},almacenNameChanged:function(categoria){return categoria;},getAlmacen(){return xThisComAlmacen.list_almacen;},attached:function(){xThisComAlmacen=this;getAllTipoAlmacen();},getValorIncial:function(val){this.fire('getValorIncial',{values:val});}})</script>
-</dom-module>
+<link rel="import"href="../../web_components/polymer/polymer.html"><link rel="import"href="../../web_components/paper-dropdown-menu/paper-dropdown-menu.html"><link rel="import"href="../../web_components/iron-dropdown/iron-dropdown.html"><dom-module id="x-comp-find-almacen"><template is="dom-bind"><div><select id="compFindListAlmacen"class$="[[clasecss]]"onchange="selectOptionAlmacen()"><template is="dom-repeat"items="{{list}}"as="categoria"><option value="[[index]]">[[categoria.descripcion]]</template></select></div></template><script>var xThisComAlmacen;function getAllTipoAlmacen(){xThisComAlmacen.clasecss=""===xThisComAlmacen.clasecss?"xTextRow2 xCursor":xThisComAlmacen.clasecss,$.ajax({type:"POST",url:"../../bdphp/log_componentes.php?op=11"}).done(function(e){e=$.parseJSON(e),xThisComAlmacen.opninguno&&e.datos.unshift({idalmacen:"0",descripcion:"NINGUNO"}),xThisComAlmacen.list=e.datos,xThisComAlmacen.list_almacen=xThisComAlmacen.list[0],xThisComAlmacen.list_almacen.index=0,xThisComAlmacen.valIdInt=xThisComAlmacen.list_almacen,xThisComAlmacen.getValorIncial(xThisComAlmacen.list_almacen)})}function selectOptionAlmacen(){var e=xThisComAlmacen.$.compFindListAlmacen.value;xThisComAlmacen.list_almacen=xThisComAlmacen.list[e],xThisComAlmacen.list_almacen.index=e}Polymer({is:"x-comp-find-almacen",properties:{opninguno:{type:Boolean,notify:!0,reflectToAttribute:!0,value:!1},clasecss:String,list:[],list_almacen:{type:Object,reflectToAttribute:!0,notify:!0,value:function(){return{}},observer:"almacenNameChanged"},valIdInt:{type:Object,notify:!0,reflectToAttribute:!0}},listeners:{onchange:"getAlmacen"},almacenNameChanged:function(e){return e},getAlmacen(){return xThisComAlmacen.list_almacen},attached:function(){xThisComAlmacen=this,getAllTipoAlmacen()},getValorIncial:function(e){this.fire("getValorIncial",{values:e})}})</script></dom-module>

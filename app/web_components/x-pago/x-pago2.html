@@ -1,0 +1,1447 @@
+<link rel="import" href="../paper-progress/paper-progress.html">
+<link rel="import" href="../paper-dropdown-menu/paper-dropdown-menu.html">
+<link rel="import" href="../paper-item/paper-item.html">
+<link rel="import" href="../paper-input/paper-textarea.html">
+<!-- <link rel="import" href="../paper-input-autocomplete/paper-input-autocomplete.html"> -->
+<link rel="import" href="../../x-componentes/x-comp-find-input-cliente/x-comp-find-input-cliente.html">
+<link rel="import" href="../../x-componentes/x-comp-find-comprobante/x-comp-find-comprobante.html">
+<link rel="import" href="../../x-componentes/x-comp-find-tipo-pago-option/x-comp-find-tipo-pago-option.html">
+<link rel="import" href="../../x-componentes/x-comp-table-forma-pago/x-comp-table-forma-pago.html">
+
+<dom-module id="x-pago2">
+	<template>
+		<div style="max-width:580px; min-width:480px;">
+			<div class="xEnca_pago">
+				<h2 class="ptotal">{{total}}</h2>
+				<p class="pdif" id="pdif">{{diferencia}}</p>
+			</div>
+			<div class="ancho_ini">				
+				<br>
+				<div class="container-cliente-comprobante" hidden="[[!hidden_container_pago]]">					
+
+					<div id="container-cliente">
+						<div>
+							<label for="xsel_tp_doc" class="xfont12 xColorRow_Plomo">Comprobante a imprimir: </label>
+							<x-comp-find-comprobante apply-class="xTextRow2 xfont16 xCursor"
+								id="comp_sel_comprobante" 
+								onchange="xSelectedTpComprobante(comprobantes)"></x-comp-find-comprobante>
+						</div>
+						
+						<!-- <select id="xsel_tp_doc" class="xTextRow2 xfont16 xCursor xsel_tp_doc"
+							onchange="xSelectedTpComprobante(this.value);">
+						</select> -->
+						<form action="" id="form_pago_cliente" is="iron-form" style="line-height: 0.2;">
+
+							<!-- <paper-icon-button icon="icons:search" title="Buscar DNI"
+								onclick="xValidarDNIRUCDel(txt_delivery_dni.value, event, false)"
+								style=""></paper-icon-button> -->
+
+							<paper-icon-button 
+								style="float: right; bottom: -10px;" 
+								src="../../../images/_add_cliente.png" alt="clienteadd"
+								title="Agregar cliente" onclick="xThisPago2.hidden_container_cliente=false;">
+							</paper-icon-button>
+
+							<paper-input label="[[placeholder_clie]]" onkeyup="xValidarDNIRUC(this.value, event)"
+								autofocus char-counter maxlength="11" pattern="[0-9]*"
+								error-message={{mensajeErrorDocumento}} class="xPasarEnter2" id="sel_cliente">
+							</paper-input>
+
+							<paper-icon-button icon="icons:search" title="Buscar DNI"
+								onclick="xValidarDNIRUC(null, event, false)"
+								style="position: relative;
+								right: 10px;
+								margin-top: -48px;
+								float: right;">								
+							</paper-icon-button>
+
+							<paper-icon-button hidden$="[[!isShowSearchSunat]]" icon="icons:refresh" title="Obtner datos actualizados"
+								onclick="xValidarDNIRUC(null, event, false, true)"
+								style="
+								position: relative;
+								right: 50px;
+								margin-top: -42px;
+								float: right;
+								background: springgreen;
+								padding: 2px;
+								border-radius: 5px;
+							">
+							</paper-icon-button>
+
+							<div class="xInvisible" id="progress_cliente">
+								<paper-progress indeterminate style="width: 100%; float: left; margin-top: -19px">
+								</paper-progress>
+							</div>
+
+							<div id="datos_cliente" hidden=[[hidden_container_cliente]]>
+								<!-- <paper-input label="Nombres | Razon Social" onkeyup="EmitirValidacionFormCliente()"
+									id="clie_nombres" onChange="conMayusculas(this)" class="xPasarEnter2"
+									required="[[ComprobanteRequiereCliente]]" auto-validate></paper-input>
+								<br> -->
+								
+								<!-- <paper-input-autocomplete id="clie_nombres_auto" label="Nombres | Razon Social" search-property="nombres"									
+									autocomplete-search-length="2" disable-show-clear="true"></paper-input-autocomplete> -->
+
+								<x-comp-find-input-cliente id="clie_nombres" 
+									label="Nombres | Razon Social | Buscar"
+									required="[[ComprobanteRequiereCliente]]" class="xPasarEnter2">
+								</x-comp-find-input-cliente>
+
+								<paper-textarea autofocus label="Direccion" max-rows="2" id="clie_direccion"
+									onChange="conMayusculas(this)" class="xPasarEnter2 clie_direccion"></paper-textarea>
+
+								<div>
+									<paper-textarea autofocus label="Telefono WhatsApp" max-rows="1" id="clie_telefono"
+										onChange="conMayusculas(this)"
+										class="xPasarEnter2"></paper-textarea>
+									<!-- <div class="bg-warning">
+										No Imprimir
+									</div> -->
+								</div>
+								<div class="d-flexx align-items-center justify-content-between">
+									<p style="line-height: 18px; display: flex; align-items: center;">Se enviara el comprobante <br>al WhatsApp de este número. <img src="../../../images/whatsapp.png" width="16px"></p>
+									<div>
+										<div hidden="[[!isBtnPrinterCpe]]" class="btn btn-sm border btn-print-cpe" style="background: lightgray" id="btn-print-no" onclick="xSetisPrinterCpe(true)"> <i class="fa fa-check fs-15 text-success fs-600 mr-1"></i>Si Imprimir</div>
+										<div hidden$="[[isBtnPrinterCpe]]" class="btn btn-sm btn-warning border btn-print-cpe" id="btn-print-si" onclick="xSetisPrinterCpe(false)"> <i class="fa fa-close fs-15 text-danger fs-600 mr-1"></i>No Imprimir</div>
+									</div>
+								</div>
+
+								<!-- <input type="text" placeholder="Telefono WhatsApp" id="clie_telefono" onChange="conMayusculas(this)" class="xPasarEnter2 xTextRow2 fs-20 w-100 mr-1" espaciar> -->
+								
+
+							</div>
+						</form>
+					</div>
+					<br>
+				</div>
+
+				<!-- <input type="text" placeholder="[[placeholder_clie]]" onChange="conMayusculas(this)" class="xMiInput xfont18 xPasarEnter2" id="sel_cliente" anchofull autofocus> -->
+				<div id="container-pago" hidden="[[hidden_container_pago]]">
+					<!-- <paper-fab icon="add" onclick="xAddTipoPago()" title="Agregar Tipo de Pago" tabindex="0"
+						class="btnAdd2"></paper-fab>
+					<br> -->
+					<x-comp-table-forma-pago id="comp-table-fp" importetotal$="{{importe_total_cobrar}}" ispagoapp$="[[pedidoPagadoFromAPP]]"></x-comp-table-forma-pago>
+					<br>
+
+					<!-- <table class="xtable3 xRowPading2" style="width: 100%;" id="tb_tp">
+						<thead>
+							<th width="70%" align="left">Forma de pago</th>
+							<th align="left">Monto</th>
+						</thead>
+						<tbody>
+							<tr>
+								<td>	
+									<x-comp-find-tipo-pago-option deshabilitado="true"></x-comp-find-tipo-pago-option> -->
+									<!-- <div style="display: flex">										
+										<div class="xMiBoton_icon_option" selected>
+											<img src="../../../images/_tp_01.png">
+											<p>Efectivo</p>
+										</div>										
+										<div class="xMiBoton_icon_option">
+											<img src="../../../images/_tp_02.png">
+											<p>Tarjeta</p>
+										</div>
+										<div class="xMiBoton_icon_option">
+											<img src="../../../images/_tp_03.png">
+											<p>Credito</p>
+										</div>
+									</div> -->
+								<!-- </td>
+								<td><input type="number" min="1" pattern="[0-9]+([\.,][0-9]+)?" step="any"  class="xMiInput xfont16 xtxtCentro xmonto" id="xmonto" onblur="xRetornaMoneda(this)" anchofull></td>
+							</tr>
+						</tbody> -->
+						<!--tr class="row xSinBorde" data-idpago="">
+							<td>
+								<select id="xsel_tp" class="xTextRow2 xfont16 xCursor xsel_tp">
+									<option value="1">EFECTIVO</option>
+									<option value="2">CREDITO</option>
+									<option value="3">TARJETA</option>
+								</select>
+							</td>
+							<td><input type="number" min="1" pattern="[0-9]+([\.,][0-9]+)?" step="any"  class="xMiInput xfont16 xtxtCentro xmonto" id="xmonto" onblur="xRetornaMoneda(this)" anchofull></td>
+							<td class="xInvisible xmonto_sumar"></td>
+						</tr-->
+					<!-- </table> -->
+
+					<!-- <br> -->
+					<!--div class="xBoton2 xAzul" dialog-confirm  onclick="xGuardarPago();">Listo, guardar pago</div>
+					<div class="xBoton2 xPlomo" dialog-dismiss>Regresar</div-->
+					<!-- <br> -->
+				</div>
+				<br>
+			</div>
+		</div>
+		<div>
+			<div class="xLinea"></div>
+			<br>
+			<div hidden="[[!hidden_container_pago]]">
+				<button class="xBoton2 xPlomo" onclick="xCancelarCerrar();" id="btn_regresar_cuenta">Regresar</button>
+				<button class="xBoton2 xAzul" hidden="[[!modoSoloComprobante]]"					
+					onclick="xThisPago2.setVisibleContainerPago();"
+					id="btn_pago_next" disabled="[[!valid_form_cliente_pago]]">
+					<div>[F10] Listo, imprimir comprobante</div>
+					<!-- disabled="[[!btnDisabledInitModoComprobante]]" -->
+					<!-- <div hidden="[[modoSoloComprobante]]">[F10] Siguente</div> -->
+				</button>
+				<button class="xBoton2 xAzul" hidden="[[modoSoloComprobante]]"
+					onclick="xThisPago2.setVisibleContainerPago();" id="btn_pago_next"
+					disabled$="[[!valid_form_cliente_pago]]">
+					<!-- valid_form_cliente_pago || <div hidden="[[!modoSoloComprobante]]">[F10] Listo, imprimir comprobante</div> -->
+					<div>[F10] Siguente</div>
+				</button>
+			</div>
+
+			<!-- deshabilita verificaion de importe para habilitar btn -->
+			<!-- disabled="[[!valid_monto_pago]]" -->
+			<div hidden="[[hidden_container_pago]]">
+				<div hidden$="[[!tipoPagoRequiereCliente]]">
+					<p class="xColorRow_Rojo">Este medio de pago requiere un cliente.<br> Por
+						favor regrese y registre o seleccione un cliente.</p><br>
+				</div>				
+				<div class="xBoton2 xPlomo" onclick="xThisPago2.setVisibleContainerPago();"
+					id="btn_regresar_comprobante">Regresar</div>
+				<button class="xBoton2 xAzul" 
+					hidden$ = "[[tipoPagoRequiereCliente]]"
+					disabled$="[[!change_monto_pago_valid]]"					
+					onclick="xListoRegistraPago();"
+					id="btn_pagoX">[F10] Listo, registrar pago</button>
+				
+				
+				
+			</div>			
+		</div>
+
+	</template>
+
+	<style type="text/css">
+		
+		/* .btn-print-cpe {
+			float: right;
+			margin-top: -48px;
+			margin-right: 2px;
+		} */
+
+		.xEnca_pago {
+			background: #23369e;
+			text-align: center;
+			padding: 10px;
+			border-radius: 5px 5px 0px 0px;
+		}
+
+		.xEnca_pago .ptotal {
+			color: #FFF;
+		}
+
+		.xEnca_pago .pdif {
+			font-size: 18px;
+		}
+
+		.xsel_tp {
+			float: left;
+			margin-top: 3px;
+		}
+
+		.pdif_rojo {
+			color: #ffea00;
+		}
+
+		.pdif_verde {
+			color: #76ff03
+		}
+
+		.container-cliente-comprobante {
+			padding: 5px;
+			margin-top: -10px;
+			background-color: #fdfcdc;
+		}
+
+		.ancho_ini {
+			/* width: 380px; */
+			width: 100%;
+		}
+
+		/* paper-progress {
+	  --paper-progress-active-color: #e91e63;;
+	} */
+
+		:root {
+			--font-size: 12px;
+
+			--paper-input-container-input: {
+				font-size: var(--font-size);
+			}
+
+			--paper-input-container-label: {
+				font-size: 13px;
+			}
+
+			
+		}
+
+		
+		@media screen and (max-width:720px) {
+			.ancho_ini {
+				width: 100%;
+			}
+		}
+	</style>
+</dom-module>
+<script>
+	var xThisPago2
+	, xdialoag_pago
+	, xDiferencia = 0
+	, xtotal_recibido = 0
+	, xtb_tp
+	, xSel_tp = []
+	, xSel_tp_comprobante = []
+	, xdif_limite = 0
+	, xsuma_total = 0
+	, xsuma_diferencia = 0
+	, xIdCliente_pago = ''
+	, xObjContent
+	, xEnterTxtImporte = 0
+	, xDatosValidos = false // valida los datos si todos son correctos
+	, tipoComprovanteSelecionado = {} // el comprobane que selecciona
+	, modoSoloComprobante = false
+	, modoSoloProveedor = false
+	, btnDisabledInitModoComprobante = true
+	, registrando = false, _inputAutocomplete, _inputAutocompleteObj, objSelComprobante
+	, xtipoP=[], xCompTableFP;
+
+	// modoSoloProveedor = solo pantalla de pago
+
+	
+
+	function xIiniPago() {
+		//xLoadTipoMoneda_TPPago();
+		xtb_tp = $("#tb_tp");
+		// xLoadCliente();
+		xLoadTipoPago();
+		// xLoadTipoComprobante();		
+
+		xEnterTxtImporte = 0;
+
+		// si se imprime comprobante
+		xGetIsPrinterCpe();
+
+		_inputAutocomplete = document.getElementById('clie_nombres');
+		_inputAutocompleteObj = _inputAutocomplete.$.input_clie_nombres_auto;
+		_inputAutocomplete.addEventListener('input-autocomplete-selected', (event) => {
+			const cliente = event.detail;
+			xThisPago2.clienteModel = cliente;
+			xThisPago2.tipoPagoRequiereCliente = false;
+			// xThisPago2.valid_form_cliente_pago = true;			
+			
+			xIdCliente_pago = cliente.idcliente;
+			$("#sel_cliente").val(cliente.ruc);
+			$("#clie_direccion").val(cliente.direccion);
+			$("#clie_telefono").val(cliente.telefono);		
+			EmitirValidacionFormCliente();
+		});
+
+		objSelComprobante=document.getElementById('comp_sel_comprobante');
+		objSelComprobante.addEventListener('_onchange', (e) => {
+			xSelectedTpComprobante(e.detail);
+			e.stopPropagation();
+			e.stopImmediatePropagation();
+		} )
+
+		$('#form_pago_cliente #clie_nombres').on('keyup', function (e) {
+			var code = e.which;
+			if (code == 13 || code == 186) {
+				// $("#clie_direccion").focus();
+				// var area =  document.querySelector('iron-autogrow-textarea ');
+				// area.textarea.focus();
+				// xThisPago2.$.clie_direccion.$$("input").focus()
+				// $("#clie_direccion").filter('input:first').focus();
+				// xThisPago2.$.clie_direccion.$.input.$.textarea.selectionEnd
+				// xThisPago2.$.clie_direccion.$.input.focus();
+				// xThisPago2.$.clie_direccion.$.input.focus=true
+
+				// xThisPago2.$.clie_direccion.$.input.$.textarea.selectionStart = 0;
+				// xThisPago2.$.clie_direccion.$.input.$.textarea.selectionEnd = 5;
+				xThisPago2.$.clie_direccion.$.input.$.textarea.select();
+				xThisPago2.$.clie_direccion.$.input.$.textarea.focus();
+				// $("paper-textarea").focus();
+				// $("paper-textarea")[0].$.input.focus()
+
+				// area.focus();
+			}
+		})
+
+		$('.xPasarEnter2').on('keyup', function (e) {
+			var code = e.which;
+			if (code == 13 || code == 186) {
+				var inputs = $('input'); // storage a array of Inputs
+				var a = inputs.index(document.activeElement);
+				if (inputs[a + 1] !== null) {
+					var nextBox = inputs[a + 1];
+					if (nextBox.disabled) {
+						nextBox = inputs[a + 2]
+					}
+					nextBox.focus();
+					//event.preventDefault();
+				}
+				return false;
+			}
+		});
+
+		// $(document.body).on('focus', '.xmonto', function (e) {
+		// 	$(this).select();
+		// 	// event.stopPropagation();
+		// 	e.stopPropagation();
+		// 	e.stopImmediatePropagation()
+		// })
+
+		// $(document.body).on('keyup', '.xmonto', function (e) {
+		// 	xval_obj = parseFloat($(this).val());
+		// 	const xobjSelRow = $(this).parents('tr').find('.xsel_tp option:selected');
+		// 	const xlimite = xobjSelRow.attr('data-limite');
+			
+		// 	$(this).parents('tr').find('.xmonto_sumar').text(xval_obj);
+
+		// 	if (e.keyCode == 13) {
+		// 		xEnterTxtImporte = 1;
+		// 	}
+		// 	xSumarTotales_row();						
+
+		// 	if (xlimite == '0') {
+		// 		if (xval_obj > xsuma_diferencia) {
+		// 			$(this).val(xMoneda(xsuma_diferencia));
+		// 			$(this).parents('tr').find('.xmonto_sumar').text(xsuma_diferencia);
+		// 		}
+		// 	} else {
+		// 		xResetValMontoNoLimite();
+		// 	}
+
+		// 	//xSumarTotales_row();
+
+
+
+		// 	// event.stopPropagation();
+		// 	e.stopPropagation();
+		// 	e.stopImmediatePropagation()			
+		// });
+
+		// $(document.body).on('keyup', 'table#table_op_fp input.xmonto', function (e) {
+		// 	// xval_obj = parseFloat($(this).val());
+		// 	// const xobjSelRow = $(this).parents('tr').find('.xsel_tp option:selected');
+		// 	// const xlimite = xobjSelRow.attr('data-limite');
+			
+		// 	// $(this).parents('tr').find('.xmonto_sumar').text(xval_obj);
+
+		// 	if (e.keyCode === 13) {
+		// 		// xEnterTxtImporte = 1;
+		// 		xListoRegistraPago();
+		// 	}
+		// 	// xSumarTotales_row();						
+
+		// 	// if (xlimite == '0') {
+		// 	// 	if (xval_obj > xsuma_diferencia) {
+		// 	// 		$(this).val(xMoneda(xsuma_diferencia));
+		// 	// 		$(this).parents('tr').find('.xmonto_sumar').text(xsuma_diferencia);
+		// 	// 	}
+		// 	// } else {
+		// 	// 	xResetValMontoNoLimite();
+		// 	// }
+
+		// 	//xSumarTotales_row();
+
+
+
+		// 	// event.stopPropagation();
+		// 	e.stopPropagation();
+		// 	e.stopImmediatePropagation()
+			
+		// });
+
+		
+
+
+		$("#txt_pago_cliente").on('change', function () {
+			xSumarTotales_row();
+		})
+
+		// $(document.body).on('change', '.xsel_tp', function (e) {
+		// 	var xdif_print = xsuma_diferencia;
+		// 	const xreqCliente = e.target.options[e.target.selectedIndex].dataset.reqcliente;
+		// 	xThisPago2.tipoPagoRequiereCliente = xreqCliente === '1' && xThisPago2.clienteModel.nombres == '' ? true : false;
+
+		// 	if ($(xtb_tp).find('.row').length == 1) {
+		// 		xdif_print = xThisPago2.total
+		// 	} else {
+		// 		if (xsuma_diferencia == xThisPago2.total) {
+		// 			xdif_print = xsuma_total;
+		// 		}
+		// 	}
+
+
+		// 	$(this).parents('tr').find('.xmonto').val(xMoneda(xdif_print))
+		// 	$(this).parents('tr').find('.xmonto_sumar').text(xdif_print)
+		// 	$(this).parents('tr').find('.xmonto').focus();
+		// 	$(this).parents('tr').find('.xmonto').select();
+
+		// 	xSumarTotales_row();
+
+		// 	// event.stopPropagation();
+		// 	e.stopPropagation();
+		// 	e.stopImmediatePropagation()
+		// });
+
+		// $(document.body).on('keydown', function (e) {
+		$(window).on('keydown', function (e) {
+		// $(xThisPago2).addEventListener('keydown', function (e) {
+			var evt = e;
+			if (evt.keyCode == 121) {
+				if ( xThisPago2.importe_total_cobrar === 0 ) {return; }
+				if (!xThisPago2.modoSoloComprobante) {
+					if (!xThisPago2.hidden_container_pago && !xThisPago2.tipoPagoRequiereCliente) {
+						// habilita la opcion de validar importe
+						// if (xThisPago2.valid_monto_pago) { xListoRegistraPago() }
+						// xSumarTotales_row();
+						if ( !xThisPago2.valid_form_cliente_pago ) {return}
+						xListoRegistraPago();
+					} else {
+						if ( !xThisPago2.valid_form_cliente_pago ) {return}
+						xThisPago2.setVisibleContainerPago();
+					}
+				} else {
+					// xSumarTotales_row(); // para que mande el xSend
+					// xListoRegistraPago()
+					xVerContainerPago();
+				}
+			}
+
+			// event.stopPropagation();
+			e.stopPropagation();
+			e.stopImmediatePropagation();
+		});
+
+
+		// $(document).on('change', '.xsel_tp_doc', function(e) {	
+		// 	var idTipoComprobante = parseInt(this.value);
+
+		// 	if ( idTipoComprobante === 0 ) {
+		// 		$("#container-cliente").addClass('xInvisible');
+		// 	} else {
+		// 		$("#container-cliente").removeClass('xInvisible');
+		// 	}
+
+		// 	event.stopPropagation();
+		// 	e.stopPropagation();
+		// 	e.stopImmediatePropagation()
+		// });
+		
+		xtipoP = [];
+		var xdif_text='', xPase=0;
+		xCompTableFP=document.getElementById('comp-table-fp');
+		xCompTableFP.addEventListener('xCompTableChange', function (e) {
+			// console.log('valor table pago ', e.detail);
+			const evento = e.detail.evento;
+			xtipoP = e.detail.datos;
+			
+			const xsuma_total=e.target.valImporteRestante;
+			if (xsuma_total <= 0) {
+				xdif_text = 'Vuelto: ' + xMoneda((xsuma_total * -1));
+				$("#pdif").removeClass('pdif_rojo');
+				$("#pdif").addClass('pdif_verde');
+				xPase = 1;
+				xThisPago2.change_monto_pago_valid = true;
+			} else {
+				xdif_text = 'Falta: ' + xMoneda(xsuma_total);
+				$("#pdif").removeClass('pdif_verde');
+				$("#pdif").addClass('pdif_rojo');
+				xPase=0;
+				if ( xsuma_total >0 ){ xThisPago2.change_monto_pago_valid = false; }
+				// EmitirValidacionFormMontoPago(false);	
+			}
+
+			xThisPago2.diferencia = xdif_text;
+			xThisPago2.tipoPagoRequiereCliente = xtipoP.filter(x => x.reqcliente==="1").length > 0 ? true : false;
+			if ( xThisPago2.clienteModel && xThisPago2.tipoPagoRequiereCliente) {
+				xThisPago2.tipoPagoRequiereCliente = xThisPago2.clienteModel.nombres === '' ? true : false;
+			}
+
+			xFireSend(xPase)
+
+			if ( evento && evento.keyCode === 13) {
+				xListoRegistraPago();
+			}
+		});
+
+	}
+
+	/// 0918 ///
+
+	async function xValidarDNIRUC(valor, e, tecla=true, buscarSoloSunat = false) {
+		var servicio = 'ruc';
+		valor = valor ? valor : sel_cliente.value;
+		xThisPago2.mensajeErrorDocumento = '';
+
+		if (!xThisPago2.$.sel_cliente.validate()) {
+			xThisPago2.$.sel_cliente.invalid = true;
+			xThisPago2.mensajeErrorDocumento = 'Solo numeros';
+			return;
+		}
+
+		if (xThisPago2.ComprobanteRequiereCliente && e.keyCode !== 13 && tecla === true) {
+			// si requeiere cliente
+			if (xThisPago2.tipoComprovanteSelecionado.codsunat === '01') { // si es factura acepta solo ruc
+				xThisPago2.placeholder_clie = 'Cliente RUC';
+				if (valor.length < 11) {
+					xThisPago2.$.sel_cliente.invalid = true;
+					xThisPago2.mensajeErrorDocumento = 'Nro de RUC no valido';
+					// return;
+				}
+			} else {
+				xThisPago2.placeholder_clie = 'Cliente DNI o RUC';
+			}
+			// $("#clie_nombres").val('');
+			_inputAutocompleteObj.inputValue = '';
+			$("#clie_direccion").val('');
+			$("#clie_telefono").val('');
+			
+			xIdCliente_pago = '';
+			EmitirValidacionFormCliente();
+			return;
+		}
+
+		if (valor.length <= 8) {
+			xThisPago2.placeholder_clie = "DNI";
+			servicio = 'dni';
+			// xThisPago2.ComprobanteRequiereCliente = false;
+		} else {
+			xThisPago2.placeholder_clie = "RUC";
+			if (valor.length < 11) {
+				xThisPago2.$.sel_cliente.invalid = true;
+				xThisPago2.mensajeErrorDocumento = 'Nro de RUC no valido';
+				return;
+			}
+
+			// xThisPago2.ComprobanteRequiereCliente = true;
+		}
+
+		if (valor.length === 0) {
+			xThisPago2.placeholder_clie = 'Cliente DNI o RUC';
+			// $("#clie_nombres").val('');
+			_inputAutocompleteObj.inputValue = '';
+			$("#clie_direccion").val('');
+			$("#clie_telefono").val('');
+			
+			xIdCliente_pago = '';
+			return;
+		}
+
+		EmitirValidacionFormCliente();
+
+		if (e.keyCode === 13 || !tecla) { // buscar cliente
+			xThisPago2.$.sel_cliente.invalid = false;
+
+			if (xThisPago2.tipoComprovanteSelecionado.codsunat === '01' && valor.length <
+				11) { // si es factura acepta solo ruc
+				xThisPago2.$.sel_cliente.invalid = true;
+				xThisPago2.mensajeErrorDocumento = 'Nro de RUC no valido';
+				// event.stopPropagation();
+				e.stopPropagation();
+				e.stopImmediatePropagation();
+
+				return;
+			}
+
+			if (valor.length < 8) {
+				xThisPago2.$.sel_cliente.invalid = true;
+				xThisPago2.mensajeErrorDocumento = 'N de documento no valido.';
+
+				// $("#clie_nombres").val('');
+				_inputAutocompleteObj.inputValue = '';
+				$("#clie_direccion").val('');
+				$("#clie_telefono").val('');
+				
+				// $("#datos_cliente").addClass("xInvisible");
+				xThisPago2.hidden_container_cliente = true;
+
+				// event.stopPropagation();
+				e.stopPropagation();
+				e.stopImmediatePropagation();
+				return;
+			}
+
+			$("#progress_cliente").removeClass("xInvisible");
+			// $("#datos_cliente").addClass("xInvisible");
+			// xThisPago2.hidden_container_cliente = true;
+
+
+			xGetFindCliente(valor, servicio, buscarSoloSunat, (rpt) => {
+				if (rpt.success) {
+					xThisPago2.valid_form_cliente_pago = true; // cliente valido
+					xThisPago2.hidden_container_cliente = false;
+					xThisPago2.isShowSearchSunat = rpt.buscarSunat;
+					// $("#datos_cliente").removeClass("xInvisible");
+					// xThisPago2.$.clie_nombres.focus();
+					// var testele = document.getElementById('clie_nombres');
+					setTimeout(() => {
+						xThisPago2.mensajeErrorDocumento = '';
+						//xThisPago2.$.clie_nombres.$.input.focus();
+					}, 100);
+
+				} else {
+					xThisPago2.$.sel_cliente.invalid = true;
+					xThisPago2.mensajeErrorDocumento = rpt.msg;
+					xThisPago2.hidden_container_cliente = true;
+
+					xThisPago2.valid_form_cliente_pago = false; // cliente no valido valido
+					// $("#datos_cliente").addClass("xInvisible");
+				}
+
+				xIdCliente_pago = rpt.idcliente;
+				// $("#clie_nombres").val(rpt.nombres);
+				_inputAutocompleteObj.inputValue = rpt.nombres;
+				$("#clie_direccion").val(rpt.direccion);
+				$("#clie_telefono").val(rpt.telefono);
+
+				xThisPago2.changeDatosClienteSave = rpt;
+				
+
+				$("#progress_cliente").addClass("xInvisible");
+				EmitirValidacionFormCliente();
+			});
+
+		}
+	}
+
+	// function xLoadTipoComprobante() {
+	// 	$.ajax({
+	// 			type: 'POST',
+	// 			url: '../../bdphp/log.php?op=603'
+	// 		})
+	// 		.done(function (dtTpC) {
+	// 			var dtTpCom = $.parseJSON(dtTpC);
+	// 			dtTpCom = dtTpCom.datos;
+	// 			xThisPago2.dt_tp_comprobante = dtTpCom;
+
+	// 			var xelement_select_tp_doc = $("#xsel_tp_doc");
+	// 			var xcadena_new_row_comprobante = '';
+	// 			xSel_tp_comprobante = [];
+	// 			for (var i = 0; i < dtTpCom.length; i++) {
+	// 				xcadena_new_row_comprobante = xcadena_new_row_comprobante + '<option data-requiere-cliente=' +
+	// 					dtTpCom[i].requiere_cliente +
+	// 					' data-idtipo-comprobante=' + dtTpCom[i].idtipo_comprobante +
+	// 					' data-codigo-sunat=' + dtTpCom[i].codsunat +
+	// 					' data-serie=' + dtTpCom[i].serie +
+	// 					' data-inicial="' + dtTpCom[i].inicial + '"' +
+	// 					' value="' + dtTpCom[i].idtipo_comprobante_serie + '">' + dtTpCom[i].descripcion + '</option>';
+	// 			};
+	// 			xelement_select_tp_doc.find('option').remove();
+	// 			// $("#tb_tp .row").remove();
+	// 			xelement_select_tp_doc.append(xcadena_new_row_comprobante).trigger('create');
+
+	// 			// xPreSelectTipoComprobante();
+
+	// 			// if ( xThisPago2.tipoComprovanteSelecionado === {} ) { xSelectedTpComprobante();  }
+	// 			xSelectedTpComprobante();
+	// 		})
+	// }
+
+	// function xPreSelectTipoComprobante() {
+	// 	var xIdPreselectTpComprobante =  window.localStorage.getItem('::app3_sys_tpc') ? window.localStorage.getItem('::app3_sys_tpc') : 1;
+	// 	$('#xsel_tp_doc').val(xIdPreselectTpComprobante);
+
+
+	// 	xSelectedTpComprobante(xIdPreselectTpComprobante);
+	// }
+
+	function xSelectedTpComprobante(event) {
+		// var idTipoComprobante = parseInt(valor);	
+		const _selObj = event ? event : objSelComprobante.getValorSelecionado();
+		// console.log('comprobante sel ', _selObj);
+
+		xThisPago2.ComprobanteRequiereCliente = parseInt(_selObj.requiere_cliente) === 0 ? false : true; //requiere
+		
+		// si el importe a pagar es mayor a 700 requiere cliente
+		if (parseFloat(xThisPago2.total) > 700) {
+			if ( _selObj.codsunat === '03' || _selObj.codsunat === '01') {
+				xThisPago2.ComprobanteRequiereCliente = true;
+			}
+		}
+		
+		_inputAutocompleteObj.inputValue = '';
+		$("#clie_direccion").val('');
+		$("#clie_telefono").val('');
+		
+
+				
+		xThisPago2.tipoComprovanteSelecionado = _selObj;		
+
+		// if (_selObj.idtipo_comprobante === "0") {
+		// 	$("#container-cliente").addClass('xInvisible');
+		// } else {
+		// 	$("#container-cliente").removeClass('xInvisible');
+		// }
+
+		xThisPago2.btnDisabledInitModoComprobante = _selObj.idtipo_comprobante === "0" ? false : true;
+		xThisPago2.hidden_container_cliente = _selObj.idtipo_comprobante === "0" ? true : xThisPago2.ComprobanteRequiereCliente;
+
+		xThisPago2.fire('xSelectTipoComprobante', xThisPago2.tipoComprovanteSelecionado);
+
+		EmitirValidacionFormCliente();
+
+	}
+	// emitir tipocomprobante
+	// function _xSelectedTpComprobante(event) {
+	// 	// var idTipoComprobante = parseInt(valor);	
+	// 	console.log('sel ', event);
+	// 	console.log('seleccionado comp ', objSelComprobante.getValorSelecionado());
+	// 	const obj_option_select = $("#xsel_tp_doc option:selected");
+	// 	valor = $("#xsel_tp_doc option:selected").val();
+	// 	var descripcion = $(obj_option_select).text();
+	// 	var codsunat = $(obj_option_select).attr('data-codigo-sunat');
+	// 	var inicial = $(obj_option_select).attr('data-inicial');
+	// 	var serie = $(obj_option_select).attr('data-serie');
+	// 	var idtipo_comprobante = $(obj_option_select).attr('data-idtipo-comprobante');
+	// 	var option_requiere_cliente = parseInt($(obj_option_select).attr('data-requiere-cliente'));
+
+	// 	xThisPago2.ComprobanteRequiereCliente = option_requiere_cliente === 0 ? false : true; //requiere ingresar cliente		
+
+	// 	if (parseFloat(xThisPago2.total) > 700) {
+	// 		xThisPago2.ComprobanteRequiereCliente = true;
+	// 	}		
+
+	// 	// $("#clie_nombres").val('');
+	// 	_inputAutocompleteObj.inputValue = '';
+	// 	$("#clie_direccion").val('');
+
+	// 	// console.log(xThisPago2.ComprobanteRequiereCliente);
+
+	// 	xThisPago2.tipoComprovanteSelecionado = {
+	// 		'idtipo_comprobante_serie': valor,
+	// 		'idtipo_comprobante': idtipo_comprobante,
+	// 		'codsunat': codsunat,
+	// 		'serie': serie,
+	// 		'descripcion': descripcion,
+	// 		'inicial': inicial,
+	// 		// 'correlativo_api': aa
+	// 	};
+
+	// 	if (xThisPago2.tipoComprovanteSelecionado.idtipo_comprobante === 0) {
+	// 		$("#container-cliente").addClass('xInvisible');
+	// 	} else {
+	// 		$("#container-cliente").removeClass('xInvisible');
+	// 	}
+
+	// 	// activa boton para emitir comprobantes si el tpc es !=0 = ninguno	
+	// 	xThisPago2.btnDisabledInitModoComprobante = idtipo_comprobante === "0" ? false : true;
+	// 	xThisPago2.hidden_container_cliente = idtipo_comprobante === "0" ? true : xThisPago2.ComprobanteRequiereCliente;
+
+	// 	xThisPago2.fire('xSelectTipoComprobante', xThisPago2.tipoComprovanteSelecionado);
+
+	// 	EmitirValidacionFormCliente();
+	// }
+
+	function xVerContainerPago() {		
+		if (!xThisPago2.modoSoloComprobante) {
+			xThisPago2.tipoPagoRequiereCliente = _inputAutocompleteObj.inputValue == '' && xThisPago2.tipoPagoRequiereCliente ?
+			true : false;
+			
+			xThisPago2.hidden_container_pago = !xThisPago2.hidden_container_pago;
+			if (!xThisPago2.hidden_container_pago) {
+				// $('.xmonto').last().focus();
+				if ( isSynOsWinOrMac() ) {
+					$('table#table_op_fp input.xmonto').last().focus();
+					$('table#table_op_fp input.xmonto').last().select();
+				}
+			}
+			xThisPago2.fire('xContainerPagoVisible', xThisPago2.hidden_container_pago);
+			xFireSend(true);
+		} else {
+			// xSumarTotales_row(); // para que dispare xSend
+			xFireSend(true);
+			xListoRegistraPago();
+		}
+	}
+
+	function EmitirValidacionFormCliente() {
+		// console.log(xThisPago2.$.form_pago_cliente);
+		// var validForm = xThisPago2.$.form_pago_cliente.checkValidity();
+		// var validForm = !xThisPago2.$.sel_cliente.invalid && xThisPago2.$.form_pago_cliente[1].validate();
+
+		// var validForm = xThisPago2.$.sel_cliente.validate() && xThisPago2.$.form_pago_cliente[1].validate();
+		// xThisPago2.valid_form_cliente_pago = validForm;
+		// xThisPago2.fire('xFormClienteValid', validForm);
+
+		var validForm = !xThisPago2.ComprobanteRequiereCliente;
+		if (xThisPago2.ComprobanteRequiereCliente) { // requiere factura 0 el monto es >= 700
+			if ( xThisPago2.tipoComprovanteSelecionado.codsunat === '01' ){ // si es factura tiene que ser ruc
+				validForm = xThisPago2.$.sel_cliente.value.length === 11 && clie_nombres.$.input_clie_nombres_auto.$.input.value != '' && clie_nombres.$.input_clie_nombres_auto.$.input.value.length > 4 ? true : false;
+			} else if ( xThisPago2.tipoComprovanteSelecionado.codsunat === '03' ){ // si es boleta
+				validForm = clie_nombres.$.input_clie_nombres_auto.$.input.value !='' && clie_nombres.$.input_clie_nombres_auto.$.input.value.length > 4 ? true : false;
+			}
+		} 
+
+		// si coloca nombre debe tener minimo 5 digitos
+		if ( xThisPago2.tipoComprovanteSelecionado && !xThisPago2.ComprobanteRequiereCliente ) {
+			if ( xThisPago2.tipoComprovanteSelecionado.codsunat === '03' ){
+				validForm = clie_nombres.$.input_clie_nombres_auto.$.input.value ==='' || clie_nombres.$.input_clie_nombres_auto.$.input.value.length > 4 ? true : false;
+			}
+		}
+
+		xThisPago2.valid_form_cliente_pago = validForm;
+		xThisPago2.fire('xFormClienteValid', validForm);
+	}
+
+	function EmitirValidacionFormMontoPago(val) {
+
+	}
+
+	function xCancelarCerrar() {
+		xThisPago2.fire('xCancelarCerrar', true);
+	}
+
+	function xListoRegistraPago() {
+		if (!xThisPago2.change_monto_pago_valid) {return}		
+		if (registrando) return;
+		registrando = true;
+		xSumarTotales_row();
+		// xThisPago2.hidden_container_pago = true; //regresa a la pantalla inicial
+		// xThisPago2.setVisiblePanel1();
+		xThisPago2.fire('xListoRegistraPago', true);
+
+		/// loading - para no disparar varias veces mientras se esta ejecutando
+		setTimeout(() => {
+			registrando = false;
+			try {				
+				_cpSocketVentaRegistrado();
+			} catch (error) {}
+		}, 2000);
+	}
+
+
+	function xSumarTotales_row() {
+		// [if (xThisPago2.total == '') {
+		// 	return
+		// }
+		// var xPase = 0;
+		// xsuma_total = 0;
+		// xsuma_total_txt = 0;
+		// xsuma_diferencia = 0;
+		// xtb_tp.find('.row .xmonto_sumar').each(function (index, element) {
+		// 	var xval_obj_row = parseFloat($(element).text());
+		// 	if (isNaN(xval_obj_row)) {
+		// 		xval_obj_row = 0
+		// 	}
+		// 	xsuma_total_txt = (parseFloat(xsuma_total_txt) + parseFloat(xval_obj_row));
+		// 	if ($(element).parents('tr').find('.xmonto').is(":focus")) {
+		// 		return;
+		// 	}
+		// 	xsuma_diferencia = (parseFloat(xsuma_diferencia) + parseFloat(xval_obj_row));
+		// })
+		// xsuma_total = parseFloat(xThisPago2.total) - xsuma_total_txt;
+		// xsuma_diferencia = parseFloat(xThisPago2.total) - xsuma_diferencia;
+		// if (xsuma_diferencia < 0) {
+		// 	// EmitirValidacionFormMontoPago(true);
+		// 	// EmitirValidacionFormCliente(true);
+		// 	xsuma_diferencia = 0;
+		// } 
+		// // else {
+		// // 	EmitirValidacionFormCliente(false);
+		// // }
+		// //alert(xsuma_total+ '   '+xsuma_diferencia)
+
+		// if (xsuma_total <= 0) {
+		// 	xdif_text = 'Vuelto: ' + xMoneda((xsuma_total * -1));
+		// 	$("#pdif").removeClass('pdif_rojo');
+		// 	$("#pdif").addClass('pdif_verde');
+		// 	xPase = 1;
+		// 	xThisPago2.change_monto_pago_valid = true;
+		// } else {
+		// 	xdif_text = 'Falta: ' + xMoneda(xsuma_total);
+		// 	$("#pdif").removeClass('pdif_verde');
+		// 	$("#pdif").addClass('pdif_rojo');
+		// 	if ( xsuma_total_txt >0 ){ xThisPago2.change_monto_pago_valid = false; }
+		// 	// EmitirValidacionFormMontoPago(false);	
+		// }
+		// var xRpts = [];
+		// xtipoP = [];
+
+
+		// $("#tb_tp .row").each(function (index, element) {
+		// 	var id_tp_row = $(element).find(".xsel_tp option:selected").val();
+		// 	var val_row = $(element).find("#xmonto_obj_tp").val();
+		// 	if (parseFloat(val_row) > parseFloat(xThisPago2.total)) {
+		// 		val_row = xThisPago2.total
+		// 	}
+
+		// 	if (parseFloat(val_row) === 0) {
+		// 		val_row = xThisPago2.total;
+		// 	}
+			
+		// 	xtipoP.push({
+		// 		'id': id_tp_row,
+		// 		'importe': val_row
+		// 	});
+		// })
+
+		// var nom_nota = $("#sel_cliente").val();
+		// // var clie_direccion=$("#sel_cliente").val();		
+		// xThisPago2.clienteModel = {
+		// 	'idcliente': xIdCliente_pago,
+		// 	'num_doc': $("#sel_cliente").val(),
+		// 	'nombres': _inputAutocompleteObj.inputValue, //$("#clie_nombres").val(),
+		// 	'direccion': $("#clie_direccion").val()
+		// }
+		// // xThisPago2.clienteModel.idcliente = $("#sel_cliente").val();
+		// // xThisPago2.clienteModel.num_doc = $("#sel_cliente").val();
+		// // xThisPago2.clienteModel.nombres = $("#clie_nombres").val(); 
+		// // xThisPago2.clienteModel.direccion = $("#clie_direccion").val(); 
+
+		// if (xThisPago2.tipoComprovanteSelecionado === {}) {
+		// 	xSelectedTpComprobante();
+		// }
+
+		
+
+		// xRpts.push({
+		// 	'ok': xPase,
+		// 	'valid': xDatosValidos,
+		// 	'cliente': xThisPago2.clienteModel,
+		// 	'comprobante': xThisPago2.tipoComprovanteSelecionado,
+		// 	'idcliente': xIdCliente_pago,
+		// 	'nota_compra': nom_nota,
+		// 	'nomcliente': nom_nota,
+		// 	xtipo_pagos: xtipoP,
+		// 	'paseEnterTxt': xEnterTxtImporte
+		// });
+
+		// if (xPase == 0) {
+		// 	// $("#btn_pago").attr('disabled', true);
+		// 	xThisPago2.valid_monto_pago = false;
+		// } else {
+		// 	// btn_pago.removeAttribute("disabled")
+		// 	xThisPago2.valid_monto_pago = true;
+		// }
+
+		// xThisPago2.fire('xSend', {
+		// 	xRpts
+		// });
+		// // xThisPago2.diferencia = xdif_text;
+
+		// xEnterTxtImporte = 0;]
+	}
+
+	function xFireSend(xPase) {
+		var nom_nota = $("#sel_cliente").val(), xRpts = [];
+		// var clie_direccion=$("#sel_cliente").val();		
+		xThisPago2.clienteModel = {
+			'idcliente': xIdCliente_pago,
+			'num_doc': $("#sel_cliente").val(),
+			'nombres': _inputAutocompleteObj.inputValue, //$("#clie_nombres").val(),
+			'direccion': $("#clie_direccion").val(),
+			'telefono': $("#clie_telefono").val(),
+		}
+
+		const _clienteRptBD = xThisPago2.changeDatosClienteSave;
+		let is_update_cliente = true;
+		if ( _clienteRptBD ) {
+			is_update_cliente = _clienteRptBD?.direccion !== xThisPago2.clienteModel.direccion;
+			is_update_cliente = _clienteRptBD.telefono !== xThisPago2.clienteModel.telefono;
+		}
+		
+
+		// if ( xThisPago2.clienteModel.nombres === '' ) {
+		// 	xThisPago2.clienteModel.idcliente = $("#sel_cliente").val();
+		// 	xThisPago2.clienteModel.num_doc = $("#sel_cliente").val();
+		// 	xThisPago2.clienteModel.nombres = $("#clie_nombres").val(); 
+		// 	xThisPago2.clienteModel.direccion = $("#clie_direccion").val(); 
+		// }
+
+
+		if (xThisPago2.tipoComprovanteSelecionado === {}) {
+			xSelectedTpComprobante();
+		}
+
+		
+
+		xRpts.push({
+			'ok': xPase,
+			'valid': xDatosValidos,
+			'cliente': xThisPago2.clienteModel,
+			'comprobante': xThisPago2.tipoComprovanteSelecionado,
+			'idcliente': xIdCliente_pago,
+			'nota_compra': nom_nota,
+			'nomcliente': nom_nota,
+			'xtipo_pagos': xtipoP,
+			'paseEnterTxt': xEnterTxtImporte,
+			'is_printer_cpe': xThisPago2.isBtnPrinterCpe,
+			'is_update_cliente': is_update_cliente
+		});
+
+		if (xPase == 0) {
+			// $("#btn_pago").attr('disabled', true);
+			xThisPago2.valid_monto_pago = false;
+		} else {
+			// btn_pago.removeAttribute("disabled")
+			xThisPago2.valid_monto_pago = true;
+		}
+
+		xThisPago2.fire('xSend', {
+			xRpts
+		});
+		// xThisPago2.diferencia
+	}
+
+	// function xResetValMontoNoLimite() {
+	// 	xtb_tp.find('.row').each(function (index, element) {
+	// 		if ($(element).find('.xsel_tp option:selected').attr('data-limite') == '0') {
+	// 			$(element).find(".xmonto").val('0');
+	// 			$(element).find(".xmonto_sumar").text('0');
+	// 		}
+	// 	})
+	// }
+
+	function xResetValuesInit() {
+		xRpts = [];
+		_inputAutocompleteObj.inputValue = '';
+
+		xThisPago2.clienteModel = {};
+		xThisPago2.importe_total_cobrar = 0;		
+	}
+
+	function xLoadTipoPago() {
+		$.ajax({
+				type: 'POST',
+				url: '../../bdphp/log.php?op=6'
+			})
+			.done(function (dtTp) {
+				var dtTp = $.parseJSON(dtTp);
+				dtTp = dtTp.datos;
+				xThisPago2.dt_tp = dtTp;
+
+				xSel_tp = [];
+				for (var i = 0; i < dtTp.length; i++) {
+					var xidtp = dtTp[i].idtipo_pago;
+					xSel_tp[xidtp] = {
+						'des': dtTp[i].descripcion,
+						'limite': dtTp[i].limite,
+						'reqcliente': dtTp[i].requiere_cliente,
+						'visible': true
+					}
+				};
+				xAddTipoPago();
+
+				// inicia
+				xThisPago2.hidden_container_pago = true;
+				xThisPago2.fire('xContainerPagoVisible', xThisPago2.hidden_container_pago);
+			})
+	}
+
+
+
+
+	function xResetOpSel() {
+		for (i in xSel_tp) {
+			xSel_tp[i].visible = true;
+		};
+	}
+
+	function xArmarSelectTP() {
+		var xcadena_tp = '';
+		for (i in xSel_tp) {
+			if (xSel_tp[i].visible == false) {
+				continue;
+			}
+			xcadena_tp = String(xcadena_tp + '<option value="' + i + '" data-reqcliente="'+ xSel_tp[i].reqcliente +'" data-limite="' + xSel_tp[i].limite + '">' +
+				xSel_tp[i].des + '</option>');
+		};
+		if (xcadena_tp != '') {
+			xcadena_tp = '<select id="xsel_tpago" class="xTextRow2 xfont16 xCursor xsel_tp">' + xcadena_tp + '</select>';
+		}
+		return xcadena_tp;
+	}
+
+	function xAddTipoPago() {
+		if (xThisPago2.total == '') {
+			return
+		}
+		xSumarTotales_row();
+		if (xtb_tp.find('.row').length > 0 && xsuma_total <= 0) {
+			return;
+		}
+		// xtb_tp.find('.row').each(function (index, element) {
+		// 	var xval_idp_obj = $(element).find(".xsel_tp option:selected").val();
+		// 	$(element).attr('data-idpago', xval_idp_obj);
+		// 	xSel_tp[xval_idp_obj].visible = false;
+		// 	$(element).find(".xsel_tp").attr('disabled', 'disabled')
+		// 	$(element).attr('data-cerrado', '1');
+		// })
+
+		// var xselect_char = xArmarSelectTP();
+		// if (xselect_char == '') {
+		// 	return;
+		// }
+		// var xcadena_new_row = '<tr class="row xSinBorde" data-idpago="" data-cerrado><td>' + xselect_char +
+		// 	'</td><td><input type="number" min="0.01" pattern="[0-9]+([\.,][0-9]+)?" step="any" class="xMiInput xfont16 xtxtCentro xmonto xPasarEnter2" id="xmonto_obj_tp" onblur="xRetornaMoneda(this)" anchofull autofocus value="' +
+		// 	xMoneda(xsuma_diferencia) + '" data-diferencia="' + xsuma_diferencia +
+		// 	'"></td><td class="xInvisible xmonto_sumar">' + xMoneda(xsuma_diferencia) + '</td></tr>';
+		// xtb_tp.append(xcadena_new_row).trigger('create');
+
+		//document.getElementById("xmonto_obj_tp").focus();
+		//$(xtb_tp).find('#xmonto_obj_tp').focus();
+
+		//xmonto_obj_tp.select();		
+		xThisPago2.focus();
+		xtb_tp.find('.xmonto:last-child').focus();
+		xtb_tp.find('.xmonto:last-child').select();
+		// xSumarTotales_row();
+
+		// xThisPago2.hidden_container_pago = true;
+		// xThisPago2.fire('xContainerPagoVisible', xThisPago2.hidden_container_pago);	
+	}
+
+	function xValoresIniciales() {
+		if (xThisPago2._tipo == 1) { //venta // cobrar importe vendido
+			xThisPago2.placeholder_clie = 'Cliente DNI o RUC';
+		} else { //compra // pagar importe de compra
+			xThisPago2.placeholder_clie = 'Nota de compra';
+			$("#pdif").addClass('xInvisible');
+			$("#sel_cliente").val('Compras del ' + xDevolverFecha())
+		}
+		$("#sel_cliente").focus();
+
+	}
+
+	function xSetFocusInit() {
+		setTimeout(() => {
+			xThisPago2.$.sel_cliente.focus();
+			$("#form_pago_cliente #sel_cliente").focus();
+		}, 500);
+		// console.log('focus');
+	}
+
+	function _reloadDatalientes() {
+		_inputAutocomplete.reloadllClientes();
+	}
+
+	function xGetIsPrinterCpe() {
+		let _isPrinterCpeVal = parseInt(localStorage.getItem('::app3_sys_print_cpe'));
+		_isPrinterCpeVal = isNaN(_isPrinterCpeVal) ? 1 : _isPrinterCpeVal;
+		xThisPago2.isBtnPrinterCpe = _isPrinterCpeVal === 1;
+	}
+
+	function xSetisPrinterCpe(val) {
+		const _val = !val ? 1 : 0;
+		localStorage.setItem('::app3_sys_print_cpe', _val);
+		xThisPago2.isBtnPrinterCpe = !val;
+	}
+
+	// function _selectCliente(event) {
+	// 	console.log('cliente selected', event.cliente);
+	// }
+
+	// function xLoadClientePago() {
+	// 	$.ajax({ type: 'POST', url: '../../bdphp/log.php?op=601'})
+	// 	.done( function (DtProv) {
+	// 		var xDtProv=$.parseJSON(DtProv);
+	// 		xThisPago2.dataClientes=xDtProv.datos;
+	// 		xCargarClientesPago();
+	// 	});
+	// }
+
+	// function xCargarClientesPago() {
+		
+	// 	var autocompleteSuggestions = document.getElementById('clie_nombres_auto');
+	// 	autocompleteSuggestions.source = xThisPago2.dataClientes;
+
+	// 	// var xObjTxtProveedor=$("#form_pago_cliente #clie_nombres input");
+	// 	// var frm_clie = $("#form_pago_cliente");
+	// 	// xObjTxtProveedor.autocomplete({
+	// 	// 	autoFocus:true,
+	// 	// 	source:xThisPago2.dataClientes,
+	// 	// 	select: function( event, ui ) {
+	// 	// 		xsel_cliente=ui.item.idcliente;
+	// 	// 		xObjTxtProveedor.val(ui.item.nombres);
+	// 	//         xObjTxtProveedor.attr('data-id',xsel_cliente);
+	// 	//         // $("#form_pago_cliente #idproveedor").val(xsel_proveedor);
+	// 	//         frm_clie.find("#clie_direccion").val(ui.item.direccion);
+	// 	// 		frm_clie.find("#sel_cliente").val(ui.item.ruc);
+	// 	// 		frm_clie.find("#clie_telefono").val(ui.item.telefono);
+	// 	//         return false;
+	// 	//     },
+	// 	//     focus:function(event, ui){return false;},
+	// 	//     change:function( event, ui ) {
+	// 	//     	if(ui.item===null){
+	// 	//     		xObjTxtProveedor.attr('data-id',"");
+	// 	//     		xsel_cliente="";		    		
+	// 	//     	}
+	// 	//     	return false;
+	// 	//     }
+	// 	// });
+	// }
+
+
+	Polymer({
+		is: 'x-pago2',
+		properties: {
+			total: {
+				type: String,
+				value: ''
+			},
+			diferencia: String,
+			mensajeErrorDocumento: {
+				type: String,
+				value: 'Solo Numeros'
+			},
+			placeholder_clie: {
+				type: String,
+				value: 'Cliente | Publico en General'
+			},
+			importe_total_cobrar: {
+				type: Number,
+				value: 0
+			},
+			progres_busca_cliente: boolean = false,
+			hidden_container_pago: boolean = true,
+			hidden_container_cliente: boolean = true,
+			hidden_container_registro_pago: boolean = false,
+			valid_form_cliente_pago: boolean = false,
+			valid_monto_pago: boolean = true,
+			change_monto_pago_valid: boolean = true, // deshabilita boton f10 registrar pago si el importe recibido no es default o es menor
+			ComprobanteRequiereCliente: boolean = false,
+			tipoPagoRequiereCliente: boolean = false,
+			pedidoPagadoFromAPP: boolean = false, // el pedido fue pagado desde la app papaya express
+			// modoSoloComprobante: boolean = false,
+			_tipo: {
+				type: Number,
+				value: 1,
+				notify: true
+			},
+			val: String,
+			dt_tp: Object,
+			dt_tp_comprobante: Object,
+			clienteModel: Object,
+			dataClientes: Object,
+			isShowSearchSunat: Boolean,
+			isBtnPrinterCpe: Boolean,
+			changeDatosClienteSave: Object
+		},
+		attached: function () {
+			//this.total='83.00';
+			this.modoSoloComprobante = false;
+			this.diferencia = '--'
+			this.isShowSearchSunat = false;
+			this.isBtnPrinterCpe = false;
+			this.changeDatosClienteSave = null;
+			//this.placeholder_clie='Cliente | Publico en General';		
+			xThisPago2 = this;
+			xIiniPago();
+			xValoresIniciales();			
+		},
+		open: function (reponde) {
+			xdialoag_pago.open();
+		},
+		setIsPedidoPagadoFromAPP: function (val = false) {
+			// Si el epdido ya fue pagado con tarjeta desde papaya express
+			this.pedidoPagadoFromAPP = val;
+			xCompTableFP.setRsetList();
+
+			// console.log('set this.pedidoPagadoFromAPP', this.pedidoPagadoFromAPP);
+		},
+		setVal: function (val) {
+			// xThisPago2.total = val;
+			// xThisPago2.importe_total_cobrar = val;
+			xThisPago2.ComprobanteRequiereCliente = parseFloat(val) > 700 ? true : false;
+			xThisPago2.hidden_container_cliente = xThisPago2.ComprobanteRequiereCliente;
+			xThisPago2.tipoPagoRequiereCliente = false;
+			// EmitirValidacionFormCliente();
+
+			// $("#tb_tp .row").remove();
+			// xResetOpSel();
+			// xAddTipoPago();
+			// $(".xmonto").val('00');
+			xCompTableFP.resetFormaPago();
+			xThisPago2.total = val;
+			xThisPago2.importe_total_cobrar = val;
+
+			xThisPago2.$.form_pago_cliente.reset();
+
+
+
+			xThisPago2.placeholder_clie = 'Cliente DNI o RUC';
+			// $("#clie_nombres").val('');
+			_inputAutocompleteObj.inputValue = '';
+			$("#clie_direccion").val('');
+			$("#clie_telefono").val('');
+			
+			xIdCliente_pago = '';
+
+			xThisPago2.$.sel_cliente.value = '';
+			xThisPago2.$.sel_cliente.focus();
+
+			// $("#datos_cliente").addClass("xInvisible");
+			EmitirValidacionFormCliente();
+			xSelectedTpComprobante();
+			//xLoadCliente();
+		},
+		setVisibleContainerPago: function () {
+			if (this.modoSoloProveedor) {
+				xCancelarCerrar();
+				return;
+			}
+			if (!xThisPago2.$.form_pago_cliente.checkValidity()) {
+				EmitirValidacionFormCliente();
+				return;
+			} // si el formulario no es valido // si no esta correcto el ruc o si el comprobante exige cliente
+			
+			xVerContainerPago();
+		},
+		setVisiblePanel1: function () { // visible panel 1 = datos comprobante y cliente //aca
+			xThisPago2.$.form_pago_cliente.reset();
+			xSelectedTpComprobante();
+			// xThisPago2.valid_form_cliente_pago = false;
+			// xThisPago2.fire('xFormClienteValid', false);
+			xThisPago2.hidden_container_pago = true;
+
+		},
+		setObjConntet: function (objC) {
+			// xLoadCliente();
+			xObjContent = objC;
+		},
+		setFocusTxt: function () {
+			$(".xmonto:first").focus();
+			xThisPago2.$.sel_cliente.value = '';
+		},
+		setFocusIinit: function () {
+			// $("#form_pago_cliente #sel_cliente").focus();
+			// xThisPago2.$.sel_cliente.value='';
+			setTimeout(() => {
+				xThisPago2.$.sel_cliente.focus;
+				$("#form_pago_cliente #sel_cliente").focus();
+			}, 500);
+			// console.log('focus');
+		},
+		setModoSoloComprobante: function (val = true) {
+			// solo para ingresar datos del cliente e imprimir comprabantes
+			// desde registro de pagos, pedido pagado
+			this.modoSoloComprobante = val;
+		},		
+		setModoSoloProveedor: function () {
+			// solo pantalla de pago, esto se usara en compras y para registrar solo pagos (no tiene en cuenta: cliente o proveedor)
+			this.modoSoloProveedor = true;
+			this.hidden_container_pago = false;
+		},
+		focus: function () {
+			// if (xThisPago2.$.xsel_tp_doc.sele)
+		},
+		xopen: function () {
+			xdialoag_pago.open();
+		},
+		xclose: function () {
+			xdialoag_pago.close();
+		},
+		reloadInputDatalientes() {
+			_reloadDatalientes()
+		},
+		setResetFormaPago: ()=> {
+			xCompTableFP.resetFormaPago();
+			xResetValuesInit();
+		}
+	})
+</script>
