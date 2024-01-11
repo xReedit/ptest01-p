@@ -497,7 +497,7 @@
             $bd->xConsulta_NoReturn($sql);
 
             $sql="update tipo_comprobante_serie set is_deshabilitado_cpe = 1, estado = 1 where idsede = $g_idsede and estado = 0 and idtipo_comprobante in (2,3)";  
-            $bd->xConsulta($sql);
+            $bd->xConsulta_NoReturn($sql);
             break;
         case 40: // permiso remoto
             $data = file_get_contents('php://input');
