@@ -270,4 +270,9 @@
             
             $bd->xConsulta($sql);
             break;
+        case 2206:// buscar ubigeos
+            $search = $_POST["search"];
+            $sql = "select IDDIST value, NOMBDIST label, NOMBDEP departamento, NOMBPROV provincia, NOMBDIST ciudad  from ubigeos where NOMBDIST like '%$search%' limit 10";
+            $bd->xConsulta($sql);            
+            break;
     }
