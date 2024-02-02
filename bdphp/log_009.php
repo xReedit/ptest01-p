@@ -179,7 +179,8 @@
             break;
         case 111; //load productos
             $postBody = json_decode(file_get_contents('php://input'));
-            $sql="call procedure_producto_historial($postBody->idproducto, $postBody->idproducto_stock, $g_idsede, $postBody->idalmacen)";
+            $pages = isset($postBody->pages) ? $postBody->pages :json_encode('{"limit":"10", "offset":"0"}');
+            $sql="call procedure_producto_historial($postBody->idproducto, $postBody->idproducto_stock, $g_idsede, $postBody->idalmacen, $pages)";
             $bd->xConsulta($sql);
             break;
         case 112: //load producto familias
@@ -459,7 +460,7 @@
                         select pp.idproducto, pp.descripcion from producto pp
                         where pp.idsede = $g_idsede
                     ) as p on trim(upper(p.descripcion)) = upper(trim(SUBSTRING_INDEX(dd.descripcion, '|', -1)))
-                where dd.iddistribuicion = $postBody->iddistribuicion";
+                where dd.iddistribuicion = $postBody->iddistribuicion limit 90";
             $bd->xConsulta($sql);
             break;
 

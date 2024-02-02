@@ -3124,7 +3124,7 @@
 			}
 
 			//guardar en almacen_ie
-			$sql_ai='insert into almacen_ie (idorg,idsede,idusuario,idalmacen,tipo,fecha,idproducto_motivo_es,motivo) values ('.$g_ido.','.$g_idsede.','.$_SESSION['idusuario'].','.$idalmacen.','.$tipo.',"'.$fecha_now.'",'.$idmotivo.',"'.$motivo.'")';
+			$sql_ai='insert into almacen_ie (idorg,idsede,idusuario,idalmacen,tipo,fecha,idproducto_motivo_es,motivo,fecha_hora, hora) values ('.$g_ido.','.$g_idsede.','.$_SESSION['idusuario'].','.$idalmacen.','.$tipo.',"'.$fecha_now.'",'.$idmotivo.',"'.$motivo.'", now(), date_format(now(),"%H:%i:%s"))';
 			$xIdUltimoIE=$bd->xConsulta_UltimoId($sql_ai);
 
 			/*if($sql_ai_producto!=''){
