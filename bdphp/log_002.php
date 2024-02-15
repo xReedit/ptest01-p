@@ -315,6 +315,9 @@
         
         case '602': // resumen de comprobantes emitidos totales
             $fecha = $_POST['fecha_mes'];
+            if ($fecha === '') {
+                $fecha = date('d/m/Y');
+            }
             $filtroAplicarFecha = $fecha === '' ? '' : " and (MONTH(STR_TO_DATE(c.fecha ,'%d/%m/%Y')) = MONTH(STR_TO_DATE('$fecha' ,'%d/%m/%Y')) and YEAR(STR_TO_DATE(c.fecha ,'%d/%m/%Y')) = YEAR(STR_TO_DATE('$fecha' ,'%d/%m/%Y')))";
             $sql="SELECT tp.descripcion as nom_comprobante, count(c.idtipo_comprobante_serie) cantidad, format(SUM(total),2) total from ce as c
                     inner join tipo_comprobante_serie as tps on tps.idtipo_comprobante_serie=c.idtipo_comprobante_serie

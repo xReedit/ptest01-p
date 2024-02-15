@@ -13,14 +13,25 @@
 	$bd=new xManejoBD("restobar");
 
 
-    $op = $_POST['op']; // a = registro pedido | d=registro cliente | b=registro pago total | c=registro pago parcial
-    if (!isset($op)) { 
+    // $op = $_POST['op']; // a = registro pedido | d=registro cliente | b=registro pago total | c=registro pago parcial
+    // if (!isset($op)) { 
+    //     $op = $_GET['op'];
+    // }
+	// if (!isset($op)) {
+	// 	$postBody = json_decode(file_get_contents('php://input'));
+	// 	$op = $postBody->op;
+	// }
+
+    if (isset($_POST['op'])) {
+        $op = $_POST['op'];
+    } else if (isset($_GET['op'])) {
         $op = $_GET['op'];
+    } else {
+        $postBody = json_decode(file_get_contents('php://input'));
+        if (isset($postBody->op)) {
+            $op = $postBody->op;
+        }
     }
-	if (!isset($op)) {
-		$postBody = json_decode(file_get_contents('php://input'));
-		$op = $postBody->op;
-	}
 
     $g_ido = $_SESSION['ido'];
 	$g_idsede = $_SESSION['idsede'];

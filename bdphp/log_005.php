@@ -877,6 +877,10 @@
 				case 'fecha':
 						$_sql = "select COALESCE (min(idingreso_varios), 0) d1 from ingreso_varios where idsede = $idsede and fecha >= date_sub(curdate(), INTERVAL 1 day) limit 2";
 						$firstIdPedidoToDay = $bd->xDevolverUnDato($_sql);
+						if ($firstIdPedidoToDay == 0) {
+							$_sql = "SELECT MAX(idingreso_varios) FROM ingreso_varios WHERE idsede = $idsede";
+							$firstIdPedidoToDay = $bd->xDevolverUnDato($_sql);
+						}
 						// if ( $fecha == 0 ) { 				
 							$hoy = "if (p.cierre = '', 1, 0 )";
 							$fecha = " and p.idingreso_varios >= $firstIdPedidoToDay ";

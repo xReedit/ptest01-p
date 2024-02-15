@@ -851,7 +851,7 @@
 		$cadena_tp='';
 		if ( count($x_array_tipo_pago) == 1 ) {
 			$importe_detalle_pago = $importe_total;
-			$idTipoPago = $x_array_tipo_pago[0]['id'];
+			$idTipoPago = isset($x_array_tipo_pago[0]['id']) ? $x_array_tipo_pago[0]['id'] : "1"; // si es null coloca 1 efectivo	
 			$idTipoPago = isset($idTipoPago) ? $idTipoPago : "1"; // si es null coloca 1 efectivo
 			$cadena_tp=$cadena_tp."(".$idregistro_pago.",".$idTipoPago.",'".$importe_detalle_pago."'),";
 		} else {
@@ -1643,7 +1643,7 @@
 		$idclie=$datos_cliente['idcliente'];
 		$num_doc=$datos_cliente['num_doc'];
 		$direccion=$datos_cliente['direccion'];
-		$referencia=$datos_cliente['referencia'];
+		$referencia=isset($datos_cliente['referencia']) ? $datos_cliente['referencia'] : '';
 		// $direccion_delivery_no_map=$datos_cliente['direccion_delivery_no_map'];
 		$f_nac=$datos_cliente['f_nac'];
 		$telefono=is_array($datos_cliente) && array_key_exists('telefono', $datos_cliente) ? $datos_cliente['telefono'] : '';
