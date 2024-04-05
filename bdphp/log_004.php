@@ -258,14 +258,27 @@
 			break;
 
 		case 12:
-			$sql="select psd.idprint_server_detalle, psd.fecha, psd.hora, psd.descripcion_doc, u.nombres usuario from print_server_detalle psd  
+			$sql="select psd.idprint_server_detalle, psd.fecha, psd.hora, psd.descripcion_doc, u.nombres usuario, u.idusuario from print_server_detalle psd  
 			inner join usuario u on u.idusuario =psd.idusuario 
 			where psd.idusuario = ".$_SESSION['idusuario']." and psd.idprint_server_estructura = 4
 				and HOUR(TIMEDIFF(STR_TO_DATE(concat(psd.fecha, ' ', psd.hora), '%d/%m/%Y %H:%i:%s'), NOW())) < 72
 			order by psd.idprint_server_detalle desc limit 5";
 			$bd->xConsulta($sql);
 			break;
+		
+		case 12001: // revisa si hay pendiente cierre para ofrecer el consolidado
+			$sql = "select u.nombres from registro_pago rp 
+					inner join usuario u on rp.idusuario = u.idusuario 
+				where  DATE_SUB(CURDATE(), INTERVAL 2 DAY)  < STR_TO_DATE(rp.fecha, '%d/%m/%Y %H:%i:%s') 
+					and rp.idsede=$g_idsede and rp.cierre =0 
+				GROUP by rp.idusuario";
+			$bd->xConsulta($sql);
+			break;
 
+		case 12002: // devuele las fecha de incio y fin del consolidado
+			$sql = "call procedure_get_fechas_consolidado($g_idsede)";
+			$bd->xConsulta($sql);
+			break;
 		case 13: // compras
 			$pagination = $_POST['pagination'];
             $fecha = $pagination['pageFecha'];
@@ -382,6 +395,8 @@
 			where iv.idusuario =$g_idusuario and iv.cierre=0 and iv.estado=0";
 			$bd->xConsulta($sql);
 			break;
+
+		
 	}
 
 ?>

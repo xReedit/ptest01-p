@@ -2252,6 +2252,10 @@
 			$sql = "call procedure_run_cierre($idus,$idBitacora, '')";
 			$bd->xConsulta($sql);
 			break;
+		case 70002: // consolidado de caja
+			$sql = "call procedure_cierre_caja_consolidado($g_idsede)";
+			$bd->xConsulta($sql);
+			break;
 		case 70111: // verificar cuadre
 			$idus = $_SESSION['idusuario'];
 			$arrItem = json_encode($_POST['item']);

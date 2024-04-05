@@ -13,6 +13,7 @@
 	$bd=new xManejoBD("restobar");
 
 
+
     // $op = $_POST['op']; // a = registro pedido | d=registro cliente | b=registro pago total | c=registro pago parcial
     // if (!isset($op)) { 
     //     $op = $_GET['op'];
@@ -93,7 +94,7 @@
             $data = str_replace("\\n", "", $data);       
             $sql = "call procedure_guardar_promocion($g_idsede, $g_ido, $g_us,'$data')";
             $rpt = $bd->xDevolverUnDatoSP($sql);
-            echo json_encode(array('respuesta' => $rpt));
+            echo json_encode(array('respuesta' => $rpt, 'sql', $sql));
 
             break;
 
@@ -532,6 +533,39 @@
             $sql="select pr.* from permiso_remoto pr                
                 where pr.idsede = $g_idsede and pr.atendido=1 and pr.ejecutado=0
                 order by pr.idpermiso_remoto desc";
+            $bd->xConsulta($sql);
+            break;    
+        case 50: // guardar areas y mesas
+            $postBody = json_decode(file_get_contents('php://input'));            
+            $listAreas = $postBody->listAreas;
+            
+            try {
+                $bd->beginTransaction();            
+                $bd->prepare("UPDATE area_mesa set estado='1' WHERE idsede = ?");
+                $bd->execute([$g_idsede]);                
+
+    
+                $bd->prepare("INSERT INTO area_mesa(idsede, idorg, titulo, descripcion, num_mesa_ini, num_mesa_fin, idimpresora_precuenta) VALUES ($g_idsede, $g_ido, ?, '', ?, ?, 0)");
+                foreach ($listAreas as $item) {
+                    $bd->execute([
+                        $item->titulo,
+                        $item->desde,
+                        $item->hasta
+                    ]);                
+                }
+
+                $bd->commit();
+                                    
+                echo json_encode(array('success' => true));
+            }
+            catch (Exception $e) {
+                $bd->rollBack();
+                echo json_encode(array('success' => false, 'error' => $e->getMessage()));
+            }
+            
+            break;    
+        case 5001: // load areas
+            $sql="select idarea_mesa, titulo, REPLACE(titulo, ' ', '') AS title, descripcion, num_mesa_ini as desde, num_mesa_fin as hasta, idimpresora_precuenta  from area_mesa where idsede = $g_idsede and estado = 0";
             $bd->xConsulta($sql);
             break;        
     }

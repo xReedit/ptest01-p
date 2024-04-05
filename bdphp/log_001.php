@@ -756,8 +756,130 @@
     }
 
 
+	function getJsonData($data) {
+		$jsonData = json_encode($data);
+		return is_object($jsonData) || is_array($jsonData) ? $jsonData : json_decode($jsonData, true);
+	}
 
+	// 0324
 	function cocinar_pago_total_fetch($rpt_cocina_pedido = "") {
+		global $bd;
+		global $x_idpedido;
+		global $x_idcliente;
+
+		$_idsede = $_SESSION['idsede'];
+		$_idorg = $_SESSION['ido'];
+		$_idusuario = $_SESSION['idusuario'];
+
+		$postBody = json_decode(file_get_contents('php://input'));
+
+		$x_array_pedido_header = getJsonData($postBody->p_header);
+		$x_array_tipo_pago = getJsonData($postBody->p_tipo_pago);
+		$x_array_subtotales = getJsonData($postBody->p_subtotales);
+		$x_array_comprobante= getJsonData($postBody->p_comprobante);
+		$array_items = isset($postBody->p_items_seleccionados) ? getJsonData($postBody->p_items_seleccionados) : -1;
+		$is_hay_array_items=isset($postBody->p_items_seleccionados) ? 1 : 0;
+
+		$id_pedido = $x_idpedido ? $x_idpedido : $x_array_pedido_header['idPedidoSeleccionados'];
+		$tipo_consumo = $x_array_pedido_header['tipo_consumo'];
+		$idc=$x_array_pedido_header['idclie'] == ''? ($x_idcliente == '' ? 0 : $x_idcliente) : $x_array_pedido_header['idclie'];
+
+		// $importe_total es el ultimo subtotal
+		$importe_total = $x_array_subtotales[count($x_array_subtotales) - 1]['importe'];
+		// asegurase que este en formato 0.00
+		$importe_total = number_format((float)$importe_total, 2, '.', '');
+
+		
+
+		try {
+			$bd->beginTransaction();
+			
+
+		// 	// Preparación de la consulta SQL
+			$bd->prepare("INSERT INTO registro_pago(idorg, idsede, idusuario, idcliente, fecha, total, idtipo_consumo) VALUES (?, ?, ?, ?, DATE_FORMAT(now(),'%d/%m/%Y %H:%i:%s'), ?, ?)");
+			$bd->execute([
+				$_idorg,
+				$_idsede,
+				$_idusuario,
+				$idc,
+				$importe_total,
+				$tipo_consumo]);
+			$idregistro_pago = $bd->lastInsertId();
+						
+			
+			$bd->prepare("INSERT INTO registro_pago_detalle (idregistro_pago, idtipo_pago, importe) VALUES (?, ?, ?)");
+			foreach ($x_array_tipo_pago as $tipo_pago) {				
+				$bd->execute([					
+					$idregistro_pago,
+					$tipo_pago['id'],
+					$tipo_pago['importe']
+				]);
+			}
+
+		// 	// registro pago pedido - detalle
+			$sql_idpd="select idpedido,idpedido_detalle, cantidad,ptotal from pedido_detalle where idpedido in (".$id_pedido.") and (estado=0 and pagado=0)";
+			$rows_pedido_detalle=$bd->xConsulta2($sql_idpd);
+
+			$bd->prepare("INSERT INTO registro_pago_pedido(idregistro_pago, idpedido, idpedido_detalle, cantidad, total) VALUES (?, ?, ?, ?, ?)");
+			foreach ($rows_pedido_detalle as $pedido_detalle) {
+				$bd->execute([					
+					$idregistro_pago,
+					$pedido_detalle['idpedido'],
+					$pedido_detalle['idpedido_detalle'],
+					$pedido_detalle['cantidad'],
+					$pedido_detalle['ptotal']
+				]);
+			}
+
+			$bd->prepare("INSERT INTO registro_pago_subtotal (idregistro_pago, idorg, idsede, descripcion, importe, tachado) VALUES (?, ?, ?, ?, ?, ?)");
+			foreach ($x_array_subtotales as $subtotal) {
+				$tachado = isset($subtotal['tachado']) && $subtotal['tachado'] === true ? 1 : 0; 
+				$importe_row = $tachado === 1 ? $subtotal['importe_tachado'] : $subtotal['importe'];
+				$importe_row = number_format((float)$importe_row, 2, '.', '');
+				$bd->execute([					
+					$idregistro_pago,
+					$_idorg,
+					$_idsede,
+					$subtotal['descripcion'],
+					$importe_row,
+					$tachado
+				]);
+			}
+
+			
+			// compronante de pago ultimo correlativo
+			$correlativo_comprobante = '';					
+			$idtipo_comprobante_serie = $x_array_comprobante['idtipo_comprobante'];
+			
+			if ($x_array_comprobante['idtipo_comprobante'] != "0") { // 0 = none | do not print comprobante
+				$bd->prepare("call procedure_get_num_comprobante(?)");
+				$bd->execute([$idtipo_comprobante_serie]);
+				$correlativo_comprobante = $bd->fetchColumn();
+			}
+
+			$bd->commit();
+
+			$x_respuesta = json_encode(array(
+				'correlativo_comprobante' => $correlativo_comprobante,
+				'idregistro_pago' => $idregistro_pago
+			));
+
+			if ( $rpt_cocina_pedido !== '') {			
+				$rpt_cocina_pedido = json_decode($rpt_cocina_pedido);		
+				$rpt_cocina_pedido->idregistro_pago = $idregistro_pago;
+				$rpt_cocina_pedido->correlativo_comprobante = $correlativo_comprobante;
+
+				echo json_encode($rpt_cocina_pedido);
+			} else {
+				echo $x_respuesta;		
+			}
+		} catch(PDOException $e) {
+			$bd->rollback();
+			echo json_encode(array('error' => $e->getMessage()));
+		}
+	}
+
+	function cocinar_pago_total_fetch_anterior($rpt_cocina_pedido = "") {
 
 
 		global $bd;
