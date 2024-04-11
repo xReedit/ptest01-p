@@ -258,7 +258,8 @@
             $bd->xConsulta($sql);
             break;
         case 2204: // cargar opciones de la sede
-            $sql = "select * from sede_opciones where idsede = $g_idsede";
+            $idsede_selected = $_POST["idsede"];
+            $sql = "select * from sede_opciones where idsede = $idsede_selected";
             $bd->xConsulta($sql);
             break;
         case 2205: // guardar opciones de la sede
