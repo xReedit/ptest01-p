@@ -395,6 +395,19 @@
 			where iv.idusuario =$g_idusuario and iv.cierre=0 and iv.estado=0";
 			$bd->xConsulta($sql);
 			break;
+		 case 1800: // update igv desde configuracion admin}
+			$data = $_POST['data'];
+			$idsede = $data['idsede'];
+			$igv = $data['igv'];
+			$activo = $data['activo'];
+			$sql = "update conf_print_detalle set porcentaje = $igv, activo = $activo  where idsede = $idsede and descripcion = 'I.G.V'";
+			$bd->xConsulta($sql);
+			break;
+		case 1801: //verifica si igv esta activo
+			$idsede = $_POST['idsede'];
+			$sql = "select activo, porcentaje from conf_print_detalle where idsede = $idsede and descripcion = 'I.G.V'";
+			$bd->xConsulta($sql);
+			break;
 
 		
 	}

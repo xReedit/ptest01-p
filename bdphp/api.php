@@ -12,9 +12,18 @@ header('Cache-Control: no-cache');
 include "ManejoBD.php";
 $bd=new xManejoBD("restobar");
 
+date_default_timezone_set('America/Lima');
+
+$g_ido = isset($_SESSION['ido']) ? $_SESSION['ido'] : 0; 
+$g_idsede = isset($_SESSION['idsede']) ? $_SESSION['idsede'] : 0;
+$g_us = isset($_SESSION['idusuario']) ? $_SESSION['idusuario'] : 0;
+
+
 $path = trim(parse_url($_SERVER['REQUEST_URI'], PHP_URL_PATH), '/');
 $pathParts = explode('/', $path);
 $method = $_SERVER['REQUEST_METHOD'];
+
+
 
 $URL_API_RESTOBAR = 'http://192.168.1.217:20223/api-restobar';
 
@@ -35,6 +44,17 @@ $routes = [
             $response = $bd->fetchAll();
             $bd->commit();
             echo json_encode(array('success' => true, 'data' => $response));
+
+        },
+        'get-hours-clouse' => function($params) {
+            global $bd;
+            global $g_idsede;            
+                         
+            $bd->prepare("SELECT hora_cierre_dia FROM sede_opciones WHERE idsede = ?");
+            $bd->execute([$g_idsede]);
+            $response = $bd->fetchAll();
+            $bd->commit();
+            echo json_encode(array('success' => true, 'data' => $response, 'g_idsede' => $g_idsede));
 
         },
     ],
