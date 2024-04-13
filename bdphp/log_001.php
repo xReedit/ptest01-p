@@ -849,7 +849,7 @@
 			
 			// compronante de pago ultimo correlativo
 			$correlativo_comprobante = '';					
-			$idtipo_comprobante_serie = $x_array_comprobante['idtipo_comprobante'];
+			$idtipo_comprobante_serie = $x_array_comprobante['idtipo_comprobante_serie'];
 			
 			if ($x_array_comprobante['idtipo_comprobante'] != "0") { // 0 = none | do not print comprobante
 				$bd->prepare("call procedure_get_num_comprobante(?)");
