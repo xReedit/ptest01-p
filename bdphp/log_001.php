@@ -762,7 +762,7 @@
 	}
 
 	// 0324
-	function cocinar_pago_total_fetch($rpt_cocina_pedido = "") {
+	function cocinar_pago_total_fetch_anterior($rpt_cocina_pedido = "") {
 		global $bd;
 		global $x_idpedido;
 		global $x_idcliente;
@@ -879,7 +879,7 @@
 		}
 	}
 
-	function cocinar_pago_total_fetch_anterior($rpt_cocina_pedido = "") {
+	function cocinar_pago_total_fetch($rpt_cocina_pedido = "") {
 
 
 		global $bd;
@@ -1830,6 +1830,7 @@
 
 	// registra el cliente en la sede
 	function cocinar_registro_cliente_sede() {
+		global $bd;
 		$idclie = $_POST['idcliente'];
 		$sql = "call procedure_registrar_cliente_sede(".$_SESSION['idsede'].",".$idclie.", '')";				
 		$bd->xConsulta_NoReturn($sql);
@@ -1839,6 +1840,7 @@
 	// devuelve el correlativo del comprobante
 	function getCorrelativoComprobante() {
 		global $bd;
+		global $x_from;
 		global $x_correlativo_comprobante;
 		/// buscamos el ultimo correlativo
 		$x_array_comprobante = $_POST['p_comprobante'];
@@ -1934,7 +1936,8 @@
 	}
 
 	// reserva stock -- mi pedido para no salir volando con stock
-	function reservarStockItemsPedido() {		
+	function reservarStockItemsPedido() {
+		global $bd;	
 		$data = $_POST['i'];
 		$cantidad = $data['cantidad'];
 		if ($data['procede']==0){
@@ -1953,6 +1956,7 @@
 
 	// restaura stock -- mi pedido
 	function restauraStockItemsPedido() {
+		global $bd;
 		$data = $_POST['i'];
 			$_sql="";
 			foreach ($data as $sub_item){
