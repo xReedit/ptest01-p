@@ -857,7 +857,7 @@
 				 inner join tipo_consumo tpc on tpc.idtipo_consumo = rp.idtipo_consumo
 				 left join tipo_comprobante_serie tcs on rp.idtipo_comprobante_serie = tcs.idtipo_comprobante_serie
 				 LEFT join tipo_comprobante tc on tcs.idtipo_comprobante = tc.idtipo_comprobante 
-				 where $fecha and rp.idsede = $idsede
+				 where $fecha and rp.idsede = $idsede and rp.estado = 0
 			 order by rpd.idregistro_pago desc";
 			 
 			// echo $sql;
