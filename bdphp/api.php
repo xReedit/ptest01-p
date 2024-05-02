@@ -24,8 +24,11 @@ $pathParts = explode('/', $path);
 $method = $_SERVER['REQUEST_METHOD'];
 
 
+# demo
+// $URL_API_RESTOBAR = 'http://192.168.1.47:20223/api-restobar';
 
-$URL_API_RESTOBAR = 'http://192.168.1.217:20223/api-restobar';
+#produccion
+$URL_API_RESTOBAR = 'https://papaya.com.pe/api-restobar';
 
 $routes = [
     'GET' => [
