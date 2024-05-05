@@ -772,37 +772,66 @@
 			$rango = $_POST['rango'];
 
 			$idsede = $idsede == 0 ? $g_idsede : $idsede;
+
+			// obtenemos la hora de cierre
+			$sql_hora_cierre = "select hora_cierre_dia d1 from sede_opciones where idsede = $idsede";
+			$hora_cierre = $bd->xDevolverUnDato($sql_hora_cierre);
+
+			// si no se obtuvo un registro, establecer la hora de cierre a '00:00:00'
+			if ($hora_cierre === false) {
+				$hora_cierre = '00:00:00';
+			}
+
+			
 			
 
 			switch ($rango) {
 				case 'fecha':
-					$lastIdRegistroPago = $bd->xDevolverUnDato("select COALESCE (min(idregistro_pago), 0) d1 from registro_pago where idsede = $idsede and STR_TO_DATE(fecha, '%d/%m/%Y') >= date_sub(curdate(), INTERVAL 2 day) limit 2");	
-					// if ( $fecha == 0 ) {
-						// $fecha = " and (STR_TO_DATE(rp.fecha_cierre, '%d/%m/%Y') =  DATE_ADD(CURDATE(), INTERVAL -1 DAY))";
-						$fecha = " rp.idregistro_pago >= $lastIdRegistroPago and rp.cierre = 0"; //(rp.cierre = 0 and STR_TO_DATE(rp.fecha, '%d/%m/%Y') BETWEEN DATE_SUB(CURDATE(), INTERVAL 2 DAY) AND CURDATE())";
-						$hoy = "if (STR_TO_DATE(rp.fecha, '%d/%m/%Y') = curdate(), 1, 0 )";
-					// } else {
-					// 	$hoy = "if (STR_TO_DATE(rp.fecha, '%d/%m/%Y') = STR_TO_DATE('$fecha', '%d/%m/%Y'), 1, 0 )";				
-					// 	$fecha = " and (STR_TO_DATE(rp.fecha, '%d/%m/%Y') BETWEEN  DATE_ADD(STR_TO_DATE('$fecha', '%d/%m/%Y'), INTERVAL -1 DAY) and STR_TO_DATE('$fecha', '%d/%m/%Y'))";
-					// }
-
+				// Calcular la fecha y hora de inicio y cierre
+					$fecha_hora_inicio = date('d/m/Y H:i:s', strtotime(date('Y-m-d') . ' ' . $hora_cierre));
+					$fecha_hora_cierre = date('d/m/Y H:i:s', strtotime('1 day ' . date('Y-m-d') . ' ' . $hora_cierre));
+					// $fecha_hora_cierre = "DATE_ADD(CURDATE(), INTERVAL '$hora_cierre' HOUR_MINUTE_SECOND)";
+					
+					$lastIdRegistroPago = $bd->xDevolverUnDato("select COALESCE (min(idregistro_pago), 0) d1 from registro_pago where idsede = $idsede and STR_TO_DATE(fecha, '%d/%m/%Y') >= date_sub(curdate(), INTERVAL 3 day) limit 2");						
+					$fecha = " rp.idregistro_pago >= $lastIdRegistroPago and rp.cierre = 0"; //(rp.cierre = 0 and STR_TO_DATE(rp.fecha, '%d/%m/%Y') BETWEEN DATE_SUB(CURDATE(), INTERVAL 2 DAY) AND CURDATE())";
+					$hoy = " if (STR_TO_DATE(rp.fecha, '%d/%m/%Y %H:%i:%s') BETWEEN STR_TO_DATE('$fecha_hora_inicio', '%d/%m/%Y %H:%i:%s') and STR_TO_DATE('$fecha_hora_cierre', '%d/%m/%Y %H:%i:%s'), 1, 0 )";					
 					$columm_add = '';
 					break;
 				case 'semana':
-						$hoy = "if(WEEK(STR_TO_DATE(rp.fecha, '%d/%m/%Y')) = WEEK(now()), 1 ,0)";
-						$fecha = " STR_TO_DATE(rp.fecha, '%d/%m/%Y') between date_sub(now(),INTERVAL 2 WEEK) and now()";					
-						$columm_add = ", WEEK(STR_TO_DATE(rp.fecha, '%d/%m/%Y')) num_semana, if(WEEK(STR_TO_DATE(rp.fecha, '%d/%m/%Y')) = WEEK(now()), 1 ,0) semana_actual
+					// obtenemos la ultima fecha de registro de pagos
+					$sqlLastFechaRegistroPago = "select fecha d1 from registro_pago where idsede = $idsede order by idregistro_pago desc limit 1";
+					$max_date = $bd->xDevolverUnDato($sqlLastFechaRegistroPago);
+
+					// Calcular la fecha y hora de inicio y cierre
+					$fecha_hora_inicio = date('d/m/Y H:i:s', strtotime('-1 week ' . date('Y-m-d') . ' ' . $hora_cierre));					
+					$fecha_hora_cierre = date('d/m/Y H:i:s', strtotime(date('Y-m-d') . ' ' . $hora_cierre . ' +1 day'));
+
+					// $hoy = "if(WEEK(STR_TO_DATE(rp.fecha, '%d/%m/%Y')) = WEEK(now()), 1 ,0)";
+					$hoy = "if(WEEK(STR_TO_DATE(rp.fecha, '%d/%m/%Y'),1) = WEEK(STR_TO_DATE('$max_date', '%d/%m/%Y'), 1), 1 ,0)";
+					$fecha = "STR_TO_DATE(rp.fecha, '%d/%m/%Y %H:%i:%s') BETWEEN STR_TO_DATE('$fecha_hora_inicio', '%d/%m/%Y %H:%i:%s') and STR_TO_DATE('$fecha_hora_cierre', '%d/%m/%Y %H:%i:%s')";
+						
+					$columm_add = " , WEEK(STR_TO_DATE(rp.fecha, '%d/%m/%Y'), 1) num_semana, if(WEEK(STR_TO_DATE(rp.fecha, '%d/%m/%Y'),1) = WEEK(STR_TO_DATE('$max_date', '%d/%m/%Y'),1), 1 ,0) semana_actual
 						, DAYNAME(STR_TO_DATE(rp.fecha, '%d/%m/%Y')) nom_dia
-						, DAYOFWEEK(STR_TO_DATE(rp.fecha, '%d/%m/%Y')) num_dia";
+						, CASE WHEN DAYOFWEEK(STR_TO_DATE(rp.fecha, '%d/%m/%Y')) = 1 THEN 7 ELSE DAYOFWEEK(STR_TO_DATE(rp.fecha, '%d/%m/%Y')) - 1 END num_dia";
 					break;
 				case 'mes':
 					$option = $_POST['option'];
 					$mm = $option['num_mm'];
 					$yy = $option['num_yy'];
 					$first_day_month = $option['value'].'-01'; // el primer dia mes
-					
 
-					$_sql = "select concat(min(rp.idregistro_pago),',',max(rp.idregistro_pago)) from registro_pago rp where idsede=$idsede and STR_TO_DATE(rp.fecha, '%d/%m/%Y') BETWEEN date_sub('$first_day_month',INTERVAL 1 MONTH) and LAST_DAY('$first_day_month')";
+					// // Calcular la fecha y hora de inicio y cierre				
+					
+					$first_day_last_month = date('Y-m-d', strtotime("$yy-$mm-01 -1 month"));
+					$first_day_next_month = date('Y-m-d', strtotime("$yy-$mm-01 first day of next month"));
+
+					$fecha_hora_inicio = date('d/m/Y H:i:s', strtotime($first_day_last_month . ' ' . $hora_cierre));
+					$fecha_hora_cierre = date('d/m/Y H:i:s', strtotime($first_day_next_month . ' ' . $hora_cierre));
+					
+					// $_sql = "select concat(min(rp.idregistro_pago),',',max(rp.idregistro_pago)) from registro_pago rp where idsede=$idsede and STR_TO_DATE(rp.fecha, '%d/%m/%Y') BETWEEN date_sub('$first_day_month',INTERVAL 1 MONTH) and LAST_DAY('$first_day_month')";
+					// $_sql = "select concat(min(rp.idregistro_pago),',',max(rp.idregistro_pago)) from registro_pago rp where idsede=$idsede and STR_TO_DATE(rp.fecha, '%d/%m/%Y %H:%i:%s') BETWEEN $fecha_hora_inicio and $fecha_hora_cierre";
+					$_sql = "select concat(min(rp.idregistro_pago),',',max(rp.idregistro_pago)) from registro_pago rp where idsede=$idsede and STR_TO_DATE(rp.fecha, '%d/%m/%Y %H:%i:%s') BETWEEN STR_TO_DATE('$fecha_hora_inicio', '%d/%m/%Y %H:%i:%s') and STR_TO_DATE('$fecha_hora_cierre', '%d/%m/%Y %H:%i:%s')";
+				
 					$minMaxID = $bd->xDevolverUnDato($_sql);					
 					$minMaxID = explode(",", $minMaxID);
 					$lastIdRegistroPago = $minMaxID[1];
@@ -813,16 +842,22 @@
 					
 					// $fecha = $fecha == 0 ? 'now()' : "STR_TO_DATE('$fecha', '%d/%m/%Y')";
 					// $hoy = "if(MONTH(STR_TO_DATE(rp.fecha, '%d/%m/%Y')) = MONTH($fecha), 1 ,if(MONTH(STR_TO_DATE(rp.fecha, '%d/%m/%Y')) < MONTH($fecha) - 1, 2, 0 ))";
-					$hoy = "if(MONTH(STR_TO_DATE(rp.fecha, '%d/%m/%Y')) = $mm, 1 ,if(MONTH(STR_TO_DATE(rp.fecha, '%d/%m/%Y')) < $mm - 1, 2, 0 ))";
+					$hoy = " if(MONTH(STR_TO_DATE(rp.fecha, '%d/%m/%Y')) = $mm, 1 ,if(MONTH(STR_TO_DATE(rp.fecha, '%d/%m/%Y')) < $mm - 1, 2, 0 ))";					
 					$fecha = " (rp.idregistro_pago between $firstIdRegistroPago and $lastIdRegistroPago)"; // and  STR_TO_DATE(rp.fecha, '%d/%m/%Y') between date_sub($fecha,INTERVAL 2 MONTH) and $fecha";					
 					break;
 				
 				case 'rango':
 					$option = $_POST['option'];					
 					$date1 = $option['value1'];
-					$date2 = $option['value2'];					
+					$date2 = $option['value2'];
 
-					$_sql = "select concat(min(rp.idregistro_pago),',',max(rp.idregistro_pago)) from registro_pago rp where idsede=$idsede and STR_TO_DATE(rp.fecha, '%d/%m/%Y') BETWEEN cast('$date1' as date) and cast('$date2' as date)";
+					// Calcular la fecha y hora de inicio y cierre
+					$fecha_hora_inicio = date('d/m/Y H:i:s', strtotime($date1 . ' ' . $hora_cierre));
+					// $fecha_hora_cierre = date('d/m/Y H:i:s', strtotime($date2 . ' ' . $hora_cierre));
+					$fecha_hora_cierre = date('d/m/Y H:i:s', strtotime('1 day ' . date('Y-m-d') . ' ' . $hora_cierre));
+
+					// $_sql = "select concat(min(rp.idregistro_pago),',',max(rp.idregistro_pago)) from registro_pago rp where idsede=$idsede and STR_TO_DATE(rp.fecha, '%d/%m/%Y') BETWEEN cast('$date1' as date) and cast('$date2' as date)";
+					$_sql = "select concat(min(rp.idregistro_pago),',',max(rp.idregistro_pago)) from registro_pago rp where idsede=$idsede and STR_TO_DATE(rp.fecha, '%d/%m/%Y %H:%i:%s') BETWEEN STR_TO_DATE('$fecha_hora_inicio', '%d/%m/%Y %H:%i:%s') and STR_TO_DATE('$fecha_hora_cierre', '%d/%m/%Y %H:%i:%s')";
 					$minMaxID = $bd->xDevolverUnDato($_sql);					
 					$minMaxID = explode(",", $minMaxID);
 					$lastIdRegistroPago = $minMaxID[1];
@@ -833,18 +868,6 @@
 					$fecha = " (rp.idregistro_pago between $firstIdRegistroPago and $lastIdRegistroPago)";
 					break;
 			}
-			
-			// $idsede = $idsede == 0 ? $g_idsede : $idsede;
-			// $sql="SELECT p.idpedido, p.fecha, CURDATE() f_registro, if (p.is_from_client_pwa = 1, 'APP', tpc.descripcion) destpc, s.descripcion dessec, i.descripcion ides, u.usuario usuario
-			// 		,pd.ptotal_r importe, pd.cantidad_r cantidad
-			// 	from pedido p
-			// 		inner join pedido_detalle pd on pd.idpedido = p.idpedido
-			// 		inner join tipo_consumo tpc on tpc.idtipo_consumo = p.idtipo_consumo	
-			// 		inner join item i on i.iditem = pd.iditem
-			// 		inner join seccion s on s.idseccion = pd.idseccion
-			// 		left join usuario u on u.idusuario = p.idusuario
-			// 	where p.idsede= $idsede and p.estado!=3 and pd.estado = 0 and STR_TO_DATE(p.fecha, '%d/%m/%Y') = $fecha";
-			// $bd->xConsulta($sql);
 
 			
 
@@ -873,9 +896,21 @@
 
 			$idsede = $idsede == 0 ? $g_idsede : $idsede;
 
+			// obtenemos la hora de cierre
+			$sql_hora_cierre = "select hora_cierre_dia d1 from sede_opciones where idsede = $idsede";
+			$hora_cierre = $bd->xDevolverUnDato($sql_hora_cierre);
+
+			// si no se obtuvo un registro, establecer la hora de cierre a '00:00:00'
+			if ($hora_cierre === false) {
+				$hora_cierre = '00:00:00';
+			}
+
 			switch ($rango) {
 				case 'fecha':
-						$_sql = "select COALESCE (min(idingreso_varios), 0) d1 from ingreso_varios where idsede = $idsede and fecha >= date_sub(curdate(), INTERVAL 1 day) limit 2";
+						$fecha_hora_inicio = date('d/m/Y H:i:s', strtotime(date('Y-m-d') . ' ' . $hora_cierre));
+						$fecha_hora_cierre = date('d/m/Y H:i:s', strtotime('1 day ' . date('Y-m-d') . ' ' . $hora_cierre));
+
+						$_sql = "select COALESCE (min(idingreso_varios), 0) d1 from ingreso_varios where idsede = $idsede and fecha >= $fecha_hora_inicio limit 2";
 						$firstIdPedidoToDay = $bd->xDevolverUnDato($_sql);
 						if ($firstIdPedidoToDay == 0) {
 							$_sql = "SELECT MAX(idingreso_varios) FROM ingreso_varios WHERE idsede = $idsede";
