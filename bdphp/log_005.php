@@ -778,7 +778,7 @@
 			$hora_cierre = $bd->xDevolverUnDato($sql_hora_cierre);
 
 			// si no se obtuvo un registro, establecer la hora de cierre a '00:00:00'
-			if ($hora_cierre === false) {
+			if (!isset($hora_cierre)) {
 				$hora_cierre = '00:00:00';
 			}
 
@@ -794,7 +794,7 @@
 					
 					$lastIdRegistroPago = $bd->xDevolverUnDato("select COALESCE (min(idregistro_pago), 0) d1 from registro_pago where idsede = $idsede and STR_TO_DATE(fecha, '%d/%m/%Y') >= date_sub(curdate(), INTERVAL 3 day) limit 2");						
 					$fecha = " rp.idregistro_pago >= $lastIdRegistroPago and rp.cierre = 0"; //(rp.cierre = 0 and STR_TO_DATE(rp.fecha, '%d/%m/%Y') BETWEEN DATE_SUB(CURDATE(), INTERVAL 2 DAY) AND CURDATE())";
-					$hoy = " if (STR_TO_DATE(rp.fecha, '%d/%m/%Y %H:%i:%s') BETWEEN STR_TO_DATE('$fecha_hora_inicio', '%d/%m/%Y %H:%i:%s') and STR_TO_DATE('$fecha_hora_cierre', '%d/%m/%Y %H:%i:%s'), 1, 0 )";					
+					$hoy = "if (STR_TO_DATE(rp.fecha, '%d/%m/%Y %H:%i:%s') BETWEEN STR_TO_DATE('$fecha_hora_inicio', '%d/%m/%Y %H:%i:%s') and STR_TO_DATE('$fecha_hora_cierre', '%d/%m/%Y %H:%i:%s'), 1, 0 )";					
 					$columm_add = '';
 					break;
 				case 'semana':
