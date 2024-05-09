@@ -901,7 +901,7 @@
 			$hora_cierre = $bd->xDevolverUnDato($sql_hora_cierre);
 
 			// si no se obtuvo un registro, establecer la hora de cierre a '00:00:00'
-			if ($hora_cierre === false) {
+			if (!isset($hora_cierre)) {
 				$hora_cierre = '00:00:00';
 			}
 
