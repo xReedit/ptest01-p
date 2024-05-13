@@ -851,14 +851,14 @@
 					$date1 = $option['value1'];
 					$date2 = $option['value2'];
 
-				// Calcular la fecha y hora de inicio y cierre
+					// Calcular la fecha y hora de inicio y cierre
 					$fecha_hora_cierre_calc = date('Y-m-d H:i:s', strtotime($date2 . ' ' . $hora_cierre));
 					$fecha_hora_inicio = date('d/m/Y H:i:s', strtotime($date1 . ' ' . $hora_cierre));
 					$fecha_hora_cierre = date('d/m/Y H:i:s', strtotime($fecha_hora_cierre_calc . ' +1 day'));
-					
+
 					// $_sql = "select concat(min(rp.idregistro_pago),',',max(rp.idregistro_pago)) from registro_pago rp where idsede=$idsede and STR_TO_DATE(rp.fecha, '%d/%m/%Y') BETWEEN cast('$date1' as date) and cast('$date2' as date)";
 					$_sql = "select concat(min(rp.idregistro_pago),',',max(rp.idregistro_pago)) from registro_pago rp where idsede=$idsede and STR_TO_DATE(rp.fecha, '%d/%m/%Y %H:%i:%s') BETWEEN STR_TO_DATE('$fecha_hora_inicio', '%d/%m/%Y %H:%i:%s') and STR_TO_DATE('$fecha_hora_cierre', '%d/%m/%Y %H:%i:%s')";
-					$minMaxID = $bd->xDevolverUnDato($_sql);					
+					$minMaxID = $bd->xDevolverUnDato($_sql);
 					$minMaxID = explode(",", $minMaxID);
 					$lastIdRegistroPago = $minMaxID[1];
 					$firstIdRegistroPago = $minMaxID[0];
