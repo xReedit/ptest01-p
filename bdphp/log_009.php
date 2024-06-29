@@ -540,13 +540,12 @@
             $listAreas = $postBody->listAreas;
             
             try {
-                $bd->beginTransaction();            
-                $bd->prepare("UPDATE area_mesa set estado='1' WHERE idsede = ?");
-                $bd->execute([$g_idsede]);                
-
+                $sql = "UPDATE area_mesa set estado='1' WHERE idsede = $g_idsede";
+                $bd->xConsulta_NoReturn($sql);
+                
     
-                $bd->prepare("INSERT INTO area_mesa(idsede, idorg, titulo, descripcion, num_mesa_ini, num_mesa_fin, idimpresora_precuenta) VALUES ($g_idsede, $g_ido, ?, '', ?, ?, 0)");
-                foreach ($listAreas as $item) {
+                $bd->prepare("INSERT INTO area_mesa(idsede, idorg, descripcion, idimpresora_precuenta, titulo, num_mesa_ini, num_mesa_fin) VALUES ($g_idsede, $g_ido, '', 0, ?, ?, ?)");
+                foreach ($listAreas as $item) {                    
                     $bd->execute([
                         $item->titulo,
                         $item->desde,
@@ -554,7 +553,7 @@
                     ]);                
                 }
 
-                $bd->commit();
+                $bd->xCommit();
                                     
                 echo json_encode(array('success' => true));
             }
@@ -567,6 +566,180 @@
         case 5001: // load areas
             $sql="select idarea_mesa, titulo, REPLACE(titulo, ' ', '') AS title, descripcion, num_mesa_ini as desde, num_mesa_fin as hasta, idimpresora_precuenta  from area_mesa where idsede = $g_idsede and estado = 0";
             $bd->xConsulta($sql);
+            break;        
+        case 60: // cupones
+            $postBody = json_decode(file_get_contents('php://input'));
+
+            if ($postBody->idcupon != 0) {
+                // Actualizar cupon
+                $idcupon = $postBody->idcupon;
+                $sql = "UPDATE cupon SET idsede = $g_idsede, idusuario = $g_us, fecha_creacion = NOW(), fecha_inicio = '$postBody->fecha_inicio', fecha_termina = '$postBody->fecha_fin', fecha_inicio_emitir = '$postBody->fecha_inicio_emitir', titulo = '$postBody->titulo', descripcion = '$postBody->descripcion', is_automatico = '$postBody->is_automatico', cantidad_maxima = '$postBody->cantidad_maxima', cupon_manual = '$postBody->cupon_manual' WHERE idcupon = $postBody->idcupon";
+                $bd->xConsulta($sql);
+            
+                // Eliminar todos los detalles existentes
+                $sql = "DELETE FROM cupon_detalle WHERE idcupon = $postBody->idcupon";
+                $bd->xConsulta($sql);
+            } else {
+                // insertar cupon
+                $sql="insert into cupon(idsede, idusuario, fecha_creacion, fecha_inicio, fecha_termina, fecha_inicio_emitir, titulo, descripcion, is_automatico, cantidad_maxima, cupon_manual) 
+                    values ($g_idsede, $g_us, NOW(), '$postBody->fecha_inicio','$postBody->fecha_fin','$postBody->fecha_inicio_emitir', '$postBody->titulo', '$postBody->descripcion' , '$postBody->is_automatico', '$postBody->cantidad_maxima', '$postBody->cupon_manual')";
+                $idcupon = $bd->xConsulta_UltimoId($sql);
+    
+                
+            }
+
+            // insertar detalle
+            $listDetalle = $postBody->listDetalle;
+            foreach ($listDetalle as $item) {
+                $iditem = isset($item->iditem) ? $item->iditem : '0';
+                $idproducto_stock = isset($item->idproducto_stock) ? $item->idproducto_stock : '0';
+                $idseccion = isset($item->idseccion) ? $item->idseccion : '0';
+
+                $sql = "insert into cupon_detalle(idcupon, tipo, iditem, idproducto_stock, idseccion, precio, dsct,precio_final,tipo_dsct, descripcion) 
+                        values ($idcupon, '$item->descripcion_tipo', $iditem, $idproducto_stock, $idseccion, '$item->precio', '$item->descuento', '$item->precio_final', '$item->tipo_descuento', '$item->descripcion_producto')";
+                $bd->xConsulta($sql);
+            }
+
+
+            echo json_encode(array('success' => 'ok'));
+            break;
+        case 6001: // load list cupones
+            $sql="select c.idcupon, c.activo, DATE_FORMAT(c.fecha_creacion, '%d/%m/%Y') fecha_creacion, DATE_FORMAT(c.fecha_inicio, '%d/%m/%Y') fecha_inicio, DATE_FORMAT(c.fecha_termina, '%d/%m/%Y')fecha_termina, DATE_FORMAT(c.fecha_inicio_emitir, '%d/%m/%Y') fecha_inicio_emitir, c.titulo, c.is_automatico, c.cantidad_maxima, c.cupon_manual, c.descripcion, c.cantidad_emitido, c.cantidad_activado , u.usuario
+                from cupon c 
+                inner join usuario u on c.idusuario = u.idusuario
+                where c.idsede = $g_idsede
+                order by c.idcupon desc";
+            $bd->xConsulta($sql);
+            break;
+        case 6002: // load datos de cupon para modificar
+            $postBody = json_decode(file_get_contents('php://input'));
+            $idcupon = $postBody->idcupon;
+
+            $sql="select *
+                from cupon c                 
+                where c.idsede = $g_idsede and c.idcupon = $idcupon";
+            
+            $datosCupon = json_decode($bd->xConsulta3($sql));
+
+            // detalles del cupon
+            $sql1 = "select cd.*
+                from cupon_detalle cd                 
+                where cd.idcupon = $idcupon";
+
+            $datosDetalle = json_decode($bd->xConsulta3($sql1));
+
+            echo json_encode(array('cupon' => $datosCupon, 'list' => $datosDetalle));
+
+            break;
+        case 6003: //activar o desactivar cupon
+            $postBody = json_decode(file_get_contents('php://input'));
+            $sql="update cupon set activo = $postBody->activo where idcupon = $postBody->idcupon";
+            $bd->xConsulta($sql);
+            break;
+        case 6004: // cargar cupones activos y que esten en rango de fecha
+            $sql= "SELECT 
+                    c.idcupon, 
+                    c.titulo, 
+                    c.descripcion, 
+                    c.fecha_inicio, 
+                    c.fecha_termina, 
+                    c.fecha_inicio_emitir, 
+                    c.cupon_manual, 
+                    c.cantidad_maxima, 
+                    c.is_automatico,
+                    JSON_ARRAYAGG(JSON_OBJECT('tipo_dsct',cd.tipo_dsct, 'dsct', cd.dsct, 'descripcion', cd.descripcion, 'iditem', cd.iditem, 'idseccion', cd.idseccion, 'idproducto_stock', cd.idproducto_stock)) AS cupon_detalle
+                FROM 
+                    cupon c 
+                INNER JOIN 
+                    cupon_detalle cd ON c.idcupon = cd.idcupon
+                WHERE 
+                    c.idsede = $g_idsede
+                    AND c.activo = 0 
+                    AND c.fecha_inicio_emitir <= CURDATE() 
+                    AND c.fecha_termina >= CURDATE() 
+                    AND c.estado=0
+                GROUP BY 
+                    c.idcupon;";
+            $bd->xConsulta($sql);
+            break;
+        case 6005: //generar codigo cupon numeros aleatorios de 5 digitos
+            $postBody = json_decode(file_get_contents('php://input'));
+            $codigo = rand(10000, 99999);
+            
+            // guardar en la tabla cupon_codigo
+            $sql = "insert into cupon_codigo(idcupon, idsede, codigo, fecha_creacion, fecha_uso, activado, estado) 
+                values ($postBody->idcupon, $g_idsede, '$codigo', now(), '', 0, 0)";
+            $bd->xConsulta_NoReturn($sql);
+
+            echo json_encode(array('codigo' => $codigo));
+            break;
+        case 6006: // busca el cupon dado en cupon_codigo
+            $postBody = json_decode(file_get_contents('php://input'));
+            $codigo = $postBody->codigo;
+            $sql = "select cc.idcupon_codigo, cc.idcupon, cc.codigo, cc.fecha_creacion, cc.fecha_uso, cc.activado, cc.estado, c.titulo, c.descripcion, c.fecha_inicio, c.fecha_termina, c.fecha_inicio_emitir, c.cupon_manual, c.cantidad_maxima, c.is_automatico
+                from cupon_codigo cc
+                inner join cupon c on c.idcupon = cc.idcupon
+                where cc.codigo = '$codigo' and cc.idsede = $g_idsede and cc.estado = 0";
+            $bd->xConsulta($sql);
+            break;
+        case 6007: // cupon canjeado
+            $postBody = json_decode(file_get_contents('php://input'));
+            $idcupon = $postBody->idcupon;
+            $idcupon_codigo = $postBody->idcupon_codigo;
+            if (isset($idcupon_codigo) ) {
+                $sql = "update cupon_codigo set activado = 1, fecha_uso = now(), idusuario = $g_us where idcupon_codigo = $idcupon_codigo and idsede = $g_idsede";
+                $bd->xConsulta_NoReturn($sql);
+            }
+
+            // aumentar la cantidad de activaciones del cupon
+            $sql = "update cupon set cantidad_activado = cantidad_activado + 1 where idcupon = $idcupon";
+            $bd->xConsulta_NoReturn($sql);
+
+            echo json_encode(array('success' => 'ok'));            
+            break;
+        case 6008: // contar cupon emitido
+            $postBody = json_decode(file_get_contents('php://input'));
+            $idcupon = $postBody->idcupon;
+            $sql = "update cupon set cantidad_emitido = cantidad_emitido + 1 where idcupon = $idcupon";
+            $bd->xConsulta($sql);
+            break;
+        case 70: // historial consumo cliente
+            $postBody = json_decode(file_get_contents('php://input'));
+            $yy = $postBody->yy;
+            $idsCliente = $postBody->ids;
+
+            $sql = "select concat(min(idregistro_pago),',',max(idregistro_pago)) from registro_pago rp 
+                where idsede=$g_idsede and YEAR(fecha_hora) = '$yy' limit 1";
+            $idregistro_pago_yy = $bd->xDevolverUnDato($sql);
+            $minId = explode(',', $idregistro_pago_yy)[0];
+            $maxId = explode(',', $idregistro_pago_yy)[1];
+
+            $sql = "
+                SELECT  cs.idcliente, SUBSTRING_INDEX(rp.fecha, ' ', 1) fecha_consumo, sum(rp.total) total 
+                from cliente_sede cs 
+                inner join cliente c on c.idcliente = cs.idcliente 
+                inner join registro_pago rp on rp.idcliente = cs.idcliente
+                where cs.idsede = $g_idsede and rp.idregistro_pago between $minId and $maxId
+                and c.idcliente in ($idsCliente) and c.nombres != ''
+                GROUP by fecha_consumo
+                order by rp.idregistro_pago desc
+            ";
+            
+            $listConsumo = json_decode($bd->xConsulta3($sql));
+
+            $sql= "SELECT  sum(pd.cantidad_r) cantidad_item, pd.descripcion, sum(pd.ptotal_r)  total_item
+                from registro_pago rp 
+                inner join registro_pago_pedido rpp on rpp.idregistro_pago = rp.idregistro_pago 
+                inner join pedido_detalle pd on pd.idpedido_detalle = rpp.idpedido_detalle 
+                where rp.idsede = $g_idsede and rp.idregistro_pago between $minId and $maxId
+                    and rp.idcliente in ($idsCliente)
+                GROUP by pd.iditem
+                order by total_item desc, cantidad_item desc limit 10";
+
+            $listProductos = json_decode($bd->xConsulta3($sql));
+
+            echo json_encode(array('consumo' => $listConsumo, 'productos' => $listProductos));
+                    
             break;        
     }
 ?>    

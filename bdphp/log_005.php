@@ -147,20 +147,36 @@
 			// $filtroFecha = $fecha === '' ? ' and cierre=0 ' : " AND SUBSTRING_INDEX(fecha,' ',1) = '".$fecha."' ";
 			// $filtroFechaCount = $fecha === '' ? '' : " and (SUBSTRING_INDEX(c.fecha,' ',1)= '".$fecha."')";
 
-			$sql = "
-				SELECT  c.idcliente, c.idorg, c.nombres, c.f_nac, c.f_registro, c.ruc, c.direccion, c.credito,c.pwa_id,c.email,c.calificacion,c.direccion_delivery_no_map,c.referencia
-					, if(LENGTH(c.ruc)>8, 'PJ', 'PN') as tipo 
-					, format(cs.importe_consumo,2) importe_consumo
-					, TIMESTAMPDIFF(DAY, CURDATE(), STR_TO_DATE(concat(SUBSTRING(f_nac,1,6), YEAR(NOW())), '%d/%m/%Y')) dias_cumple
-					, if ( c.f_nac = 'null', '',  c.f_nac) f_nacimiento
-					, if(c.telefono = '', cs.telefono, c.telefono) telefono
-				from cliente_sede cs
-					inner join cliente c on cs.idcliente = c.idcliente						
-				where cs.estado=0 and cs.idsede = $g_idsede $filtrocumple $filtro
-				GROUP by cs.idcliente
-				order by cs.importe_consumo desc, c.nombres asc limit ".$pagination['pageLimit']." OFFSET ".$pagination['pageDesde'];			
+			// $sql = "
+			// 	SELECT  c.idcliente, c.idorg, c.nombres, c.f_nac, c.f_registro, c.ruc, c.direccion, c.credito,c.pwa_id,c.email,c.calificacion,c.direccion_delivery_no_map,c.referencia
+			// 		, if(LENGTH(c.ruc)>8, 'PJ', 'PN') as tipo 
+			// 		, format(cs.importe_consumo,2) importe_consumo
+			// 		, TIMESTAMPDIFF(DAY, CURDATE(), STR_TO_DATE(concat(SUBSTRING(f_nac,1,6), YEAR(NOW())), '%d/%m/%Y')) dias_cumple
+			// 		, if ( c.f_nac = 'null', '',  c.f_nac) f_nacimiento
+			// 		, if(c.telefono = '', cs.telefono, c.telefono) telefono
+			// 	from cliente_sede cs
+			// 		inner join cliente c on cs.idcliente = c.idcliente						
+			// 	where cs.estado=0 and cs.idsede = $g_idsede $filtrocumple $filtro
+			// 	GROUP by cs.idcliente
+			// 	order by cs.importe_consumo desc, c.nombres asc limit ".$pagination['pageLimit']." OFFSET ".$pagination['pageDesde'];			
 
-				
+			// 0624
+			$sql = "SELECT  cs.idcliente, cs.idcliente_sede, c.f_nac, c.f_registro, c.nombres, c.telefono, c.ruc, c.direccion, c.credito,c.pwa_id,c.email,c.calificacion,c.direccion_delivery_no_map,c.referencia				
+				, GROUP_CONCAT(DISTINCT  c.idcliente) ids
+				, if(LENGTH(c.ruc)>8, 'PJ', 'PN') as tipo 
+				, TIMESTAMPDIFF(DAY, CURDATE(), STR_TO_DATE(concat(SUBSTRING(f_nac,1,6), YEAR(NOW())), '%d/%m/%Y')) dias_cumple
+				, if ( c.f_nac = 'null', '',  c.f_nac) f_nacimiento
+				, if(c.telefono = '', cs.telefono, c.telefono) telefono
+				, sum(rp.total) importe_consumo 
+				, count(rp.idregistro_pago) as cantidad_consumo
+				from cliente_sede cs 
+				inner join cliente c on c.idcliente = cs.idcliente 
+				inner join registro_pago rp on rp.idcliente = cs.idcliente
+				where cs.idsede = $g_idsede and c.nombres != '' $filtrocumple $filtro 
+				group by c.nombres
+				order by importe_consumo desc limit ".$pagination['pageLimit']." OFFSET ".$pagination['pageDesde'];
+
+
 			// $sql = "
 			// 	SELECT  c.*, if(LENGTH(c.ruc)>8, 'PJ', 'PN') as tipo 
 			// 		, rp.importe_consumo
@@ -180,7 +196,7 @@
 			// 	where (p.idorg=".$g_ido." or c.idorg=".$g_ido.")".$filtro." and c.nombres != '' and c.estado=0
 			// 	order by c.nombres asc limit ".$pagination['pageLimit']." OFFSET ".$pagination['pageDesde'];
 			
-			$sqlCount="SELECT count(cs.idcliente) from cliente_sede cs inner join cliente c on cs.idcliente = c.idcliente where cs.idsede = $g_idsede$filtrocumple$filtro and c.nombres != '' and c.estado=0";				
+			$sqlCount="SELECT count(cs.idcliente) from cliente_sede cs inner join cliente c on cs.idcliente = c.idcliente where cs.idsede = $g_idsede $filtrocumple $filtro and c.nombres != '' and c.estado=0";				
 				
 			// echo $sqlCount;
             
@@ -377,7 +393,7 @@
 			echo $sql;
 			break;
 		case 801: // subitems // load						
-			$sql = "select i.*, if(i.idporcion > 0 ,'Porcion', if(i.idproducto > 0, 'Producto', 'Libre')) as tipo from item_subitem i where i.iditem_subitem_content = ".$_POST['i']." and i.estado=0";
+			$sql = "select i.*, if(i.idporcion > 0 ,'Porcion', if(i.idproducto or idproducto_stock IS NOT NULL > 0, 'Producto', 'Libre')) as tipo from item_subitem i where i.iditem_subitem_content = ".$_POST['i']." and i.estado=0";
 			$bd->xConsulta($sql);
 			break;
 		case 802: // subitems // item
@@ -788,31 +804,34 @@
 			switch ($rango) {
 				case 'fecha':
 				// Calcular la fecha y hora de inicio y cierre
-					$fecha_hora_inicio = date('d/m/Y H:i:s', strtotime(date('Y-m-d') . ' ' . $hora_cierre));
-					$fecha_hora_cierre = date('d/m/Y H:i:s', strtotime('1 day ' . date('Y-m-d') . ' ' . $hora_cierre));
+					// $fecha_hora_inicio = date('d/m/Y H:i:s', strtotime(date('Y-m-d') . ' ' . $hora_cierre));
+					// $fecha_hora_cierre = date('d/m/Y H:i:s', strtotime('1 day ' . date('Y-m-d') . ' ' . $hora_cierre));
+					$fecha_hora_inicio = date('Y-m-d H:i:s', strtotime(date('Y-m-d') . ' ' . $hora_cierre));
+					$fecha_hora_cierre = date('Y-m-d H:i:s', strtotime('1 day ' . date('Y-m-d') . ' ' . $hora_cierre));
+
 					// $fecha_hora_cierre = "DATE_ADD(CURDATE(), INTERVAL '$hora_cierre' HOUR_MINUTE_SECOND)";
 					
-					$lastIdRegistroPago = $bd->xDevolverUnDato("select COALESCE (min(idregistro_pago), 0) d1 from registro_pago where idsede = $idsede and STR_TO_DATE(fecha, '%d/%m/%Y') >= date_sub(curdate(), INTERVAL 3 day) limit 2");						
+					$lastIdRegistroPago = $bd->xDevolverUnDato("select COALESCE (min(idregistro_pago), 0) d1 from registro_pago where idsede = $idsede and fecha_hora >= date_sub(curdate(), INTERVAL 3 day) limit 2");						
 					$fecha = " rp.idregistro_pago >= $lastIdRegistroPago and rp.cierre = 0"; //(rp.cierre = 0 and STR_TO_DATE(rp.fecha, '%d/%m/%Y') BETWEEN DATE_SUB(CURDATE(), INTERVAL 2 DAY) AND CURDATE())";
-					$hoy = "if (STR_TO_DATE(rp.fecha, '%d/%m/%Y %H:%i:%s') BETWEEN STR_TO_DATE('$fecha_hora_inicio', '%d/%m/%Y %H:%i:%s') and STR_TO_DATE('$fecha_hora_cierre', '%d/%m/%Y %H:%i:%s'), 1, 0 )";					
+					$hoy = "if (rp.fecha_hora BETWEEN '$fecha_hora_inicio' and '$fecha_hora_cierre', 1, 0 )";					
 					$columm_add = '';
 					break;
 				case 'semana':
 					// obtenemos la ultima fecha de registro de pagos
-					$sqlLastFechaRegistroPago = "select fecha d1 from registro_pago where idsede = $idsede order by idregistro_pago desc limit 1";
+					$sqlLastFechaRegistroPago = "select fecha_hora d1 from registro_pago where idsede = $idsede order by idregistro_pago desc limit 1";
 					$max_date = $bd->xDevolverUnDato($sqlLastFechaRegistroPago);
 
 					// Calcular la fecha y hora de inicio y cierre
-					$fecha_hora_inicio = date('d/m/Y H:i:s', strtotime('-1 week ' . date('Y-m-d') . ' ' . $hora_cierre));					
-					$fecha_hora_cierre = date('d/m/Y H:i:s', strtotime(date('Y-m-d') . ' ' . $hora_cierre . ' +1 day'));
+					$fecha_hora_inicio = date('Y-m-d H:i:s', strtotime('-1 week ' . date('Y-m-d') . ' ' . $hora_cierre));
+					$fecha_hora_cierre = date('Y-m-d H:i:s', strtotime(date('Y-m-d') . ' ' . $hora_cierre . ' +1 day'));
 
 					// $hoy = "if(WEEK(STR_TO_DATE(rp.fecha, '%d/%m/%Y')) = WEEK(now()), 1 ,0)";
-					$hoy = "if(WEEK(STR_TO_DATE(rp.fecha, '%d/%m/%Y'),1) = WEEK(STR_TO_DATE('$max_date', '%d/%m/%Y'), 1), 1 ,0)";
-					$fecha = "STR_TO_DATE(rp.fecha, '%d/%m/%Y %H:%i:%s') BETWEEN STR_TO_DATE('$fecha_hora_inicio', '%d/%m/%Y %H:%i:%s') and STR_TO_DATE('$fecha_hora_cierre', '%d/%m/%Y %H:%i:%s')";
+					$hoy = "if(WEEK(rp.fecha_hora) = WEEK(now()), 1 ,0)";
+					$fecha = "rp.fecha_hora BETWEEN '$fecha_hora_inicio' and '$fecha_hora_cierre'";
 						
-					$columm_add = " , WEEK(STR_TO_DATE(rp.fecha, '%d/%m/%Y'), 1) num_semana, if(WEEK(STR_TO_DATE(rp.fecha, '%d/%m/%Y'),1) = WEEK(STR_TO_DATE('$max_date', '%d/%m/%Y'),1), 1 ,0) semana_actual
-						, DAYNAME(STR_TO_DATE(rp.fecha, '%d/%m/%Y')) nom_dia
-						, CASE WHEN DAYOFWEEK(STR_TO_DATE(rp.fecha, '%d/%m/%Y')) = 1 THEN 7 ELSE DAYOFWEEK(STR_TO_DATE(rp.fecha, '%d/%m/%Y')) - 1 END num_dia";
+					$columm_add = " , WEEK(rp.fecha_hora, 1) num_semana, if(WEEK(rp.fecha_hora,1) = WEEK('$max_date',1), 1 ,0) semana_actual
+						, DAYNAME(rp.fecha_hora) nom_dia
+						, CASE WHEN DAYOFWEEK(rp.fecha_hora) = 1 THEN 7 ELSE DAYOFWEEK(rp.fecha_hora) - 1 END num_dia";
 					break;
 				case 'mes':
 					$option = $_POST['option'];
@@ -825,24 +844,24 @@
 					$first_day_last_month = date('Y-m-d', strtotime("$yy-$mm-01 -1 month"));
 					$first_day_next_month = date('Y-m-d', strtotime("$yy-$mm-01 first day of next month"));
 
-					$fecha_hora_inicio = date('d/m/Y H:i:s', strtotime($first_day_last_month . ' ' . $hora_cierre));
-					$fecha_hora_cierre = date('d/m/Y H:i:s', strtotime($first_day_next_month . ' ' . $hora_cierre));
+					$fecha_hora_inicio = date('Y-m-d H:i:s', strtotime($first_day_last_month . ' ' . $hora_cierre));
+					$fecha_hora_cierre = date('Y-m-d H:i:s', strtotime($first_day_next_month . ' ' . $hora_cierre));
 					
 					// $_sql = "select concat(min(rp.idregistro_pago),',',max(rp.idregistro_pago)) from registro_pago rp where idsede=$idsede and STR_TO_DATE(rp.fecha, '%d/%m/%Y') BETWEEN date_sub('$first_day_month',INTERVAL 1 MONTH) and LAST_DAY('$first_day_month')";
 					// $_sql = "select concat(min(rp.idregistro_pago),',',max(rp.idregistro_pago)) from registro_pago rp where idsede=$idsede and STR_TO_DATE(rp.fecha, '%d/%m/%Y %H:%i:%s') BETWEEN $fecha_hora_inicio and $fecha_hora_cierre";
-					$_sql = "select concat(min(rp.idregistro_pago),',',max(rp.idregistro_pago)) from registro_pago rp where idsede=$idsede and STR_TO_DATE(rp.fecha, '%d/%m/%Y %H:%i:%s') BETWEEN STR_TO_DATE('$fecha_hora_inicio', '%d/%m/%Y %H:%i:%s') and STR_TO_DATE('$fecha_hora_cierre', '%d/%m/%Y %H:%i:%s')";
+					$_sql = "select concat(min(rp.idregistro_pago),',',max(rp.idregistro_pago)) from registro_pago rp where idsede=$idsede and rp.fecha_hora BETWEEN '$fecha_hora_inicio' and '$fecha_hora_cierre'";
 				
 					$minMaxID = $bd->xDevolverUnDato($_sql);					
 					$minMaxID = explode(",", $minMaxID);
 					$lastIdRegistroPago = $minMaxID[1];
 					$firstIdRegistroPago = $minMaxID[0];
 
-					$columm_add = ", MONTHNAME(STR_TO_DATE(rp.fecha, '%d/%m/%Y')) nom_mes
-					, MONTH(STR_TO_DATE(rp.fecha, '%d/%m/%Y')) num_mes";
+					$columm_add = ", MONTHNAME(rp.fecha_hora) nom_mes
+					, MONTH(rp.fecha_hora) num_mes";
 					
 					// $fecha = $fecha == 0 ? 'now()' : "STR_TO_DATE('$fecha', '%d/%m/%Y')";
 					// $hoy = "if(MONTH(STR_TO_DATE(rp.fecha, '%d/%m/%Y')) = MONTH($fecha), 1 ,if(MONTH(STR_TO_DATE(rp.fecha, '%d/%m/%Y')) < MONTH($fecha) - 1, 2, 0 ))";
-					$hoy = " if(MONTH(STR_TO_DATE(rp.fecha, '%d/%m/%Y')) = $mm, 1 ,if(MONTH(STR_TO_DATE(rp.fecha, '%d/%m/%Y')) < $mm - 1, 2, 0 ))";					
+					$hoy = " if(MONTH(rp.fecha_hora) = $mm, 1 ,if(MONTH(rp.fecha_hora) < $mm - 1, 2, 0 ))";					
 					$fecha = " (rp.idregistro_pago between $firstIdRegistroPago and $lastIdRegistroPago)"; // and  STR_TO_DATE(rp.fecha, '%d/%m/%Y') between date_sub($fecha,INTERVAL 2 MONTH) and $fecha";					
 					break;
 				
@@ -851,14 +870,14 @@
 					$date1 = $option['value1'];
 					$date2 = $option['value2'];
 
-					// Calcular la fecha y hora de inicio y cierre
+				// Calcular la fecha y hora de inicio y cierre
 					$fecha_hora_cierre_calc = date('Y-m-d H:i:s', strtotime($date2 . ' ' . $hora_cierre));
-					$fecha_hora_inicio = date('d/m/Y H:i:s', strtotime($date1 . ' ' . $hora_cierre));
-					$fecha_hora_cierre = date('d/m/Y H:i:s', strtotime($fecha_hora_cierre_calc . ' +1 day'));
-
+					$fecha_hora_inicio = date('Y-m-d H:i:s', strtotime($date1 . ' ' . $hora_cierre));
+					$fecha_hora_cierre = date('Y-m-d H:i:s', strtotime($fecha_hora_cierre_calc . ' +1 day'));
+					
 					// $_sql = "select concat(min(rp.idregistro_pago),',',max(rp.idregistro_pago)) from registro_pago rp where idsede=$idsede and STR_TO_DATE(rp.fecha, '%d/%m/%Y') BETWEEN cast('$date1' as date) and cast('$date2' as date)";
-					$_sql = "select concat(min(rp.idregistro_pago),',',max(rp.idregistro_pago)) from registro_pago rp where idsede=$idsede and STR_TO_DATE(rp.fecha, '%d/%m/%Y %H:%i:%s') BETWEEN STR_TO_DATE('$fecha_hora_inicio', '%d/%m/%Y %H:%i:%s') and STR_TO_DATE('$fecha_hora_cierre', '%d/%m/%Y %H:%i:%s')";
-					$minMaxID = $bd->xDevolverUnDato($_sql);
+					$_sql = "select concat(min(rp.idregistro_pago),',',max(rp.idregistro_pago)) from registro_pago rp where idsede=$idsede and rp.fecha_hora BETWEEN '$fecha_hora_inicio' and '$fecha_hora_cierre'";
+					$minMaxID = $bd->xDevolverUnDato($_sql);					
 					$minMaxID = explode(",", $minMaxID);
 					$lastIdRegistroPago = $minMaxID[1];
 					$firstIdRegistroPago = $minMaxID[0];
@@ -871,7 +890,7 @@
 
 			
 
-			$sql = "SELECT rpd.*, STR_TO_DATE(rp.fecha, '%d/%m/%Y') fecha, DATE_FORMAT(STR_TO_DATE(rp.fecha, '%d/%m/%Y %H:%i:%s %p'), '%H %p') hora, rp.estado, rp.fecha_cierre, tp.descripcion des_tp, tc.idtipo_comprobante, tc.descripcion comprobante, rp.correlativo 
+			$sql = "SELECT rpd.*, STR_TO_DATE(rp.fecha, '%d/%m/%Y') fecha, rp.fecha_hora, DATE_FORMAT(STR_TO_DATE(rp.fecha, '%d/%m/%Y %H:%i:%s %p'), '%H %p') hora, rp.estado, rp.fecha_cierre, tp.descripcion des_tp, tc.idtipo_comprobante, tc.descripcion comprobante, rp.correlativo 
 				, $hoy hoy, tp.img, tpc.descripcion destpc
 				$columm_add
 			from registro_pago_detalle rpd 
@@ -993,7 +1012,7 @@
 
 			switch ($rango) {
 				case 'fecha':
-						$_sql = "select COALESCE (min(idpedido), 0) d1 from pedido where idsede = $idsede and STR_TO_DATE(fecha, '%d/%m/%Y') >= date_sub(curdate(), INTERVAL 1 day) limit 2";
+						$_sql = "select COALESCE (min(idpedido), 0) d1 from pedido where idsede = $idsede and fecha_hora >= date_sub(curdate(), INTERVAL 1 day) limit 2";
 						$firstIdPedidoToDay = $bd->xDevolverUnDato($_sql);
 						// if ( $fecha == 0 ) { 				
 							$hoy = "if (p.cierre = '', 1, 0 )";
@@ -1013,7 +1032,7 @@
 						$yy = $option['num_yy'];
 						$first_day_month = $option['value'].'-01'; // el primer dia mes
 
-						$_sql = "select concat(min(rp.idpedido),',',max(rp.idpedido)) from pedido rp where idsede=$idsede and STR_TO_DATE(rp.fecha, '%d/%m/%Y') BETWEEN date_sub('$first_day_month',INTERVAL 1 MONTH) and LAST_DAY('$first_day_month')";
+						$_sql = "select concat(min(rp.idpedido),',',max(rp.idpedido)) from pedido rp where idsede=$idsede and fecha_hora BETWEEN date_sub('$first_day_month',INTERVAL 1 MONTH) and LAST_DAY('$first_day_month')";
 						$minMaxID = $bd->xDevolverUnDato($_sql);					
 						$minMaxID = explode(",", $minMaxID);
 						$lastIdRegistroPago = $minMaxID[1];
@@ -1032,7 +1051,7 @@
 						$date1 = $option['value1'];
 						$date2 = $option['value2'];					
 
-						$_sql = "select concat(min(rp.idpedido),',',max(rp.idpedido)) from pedido rp where idsede=$idsede and STR_TO_DATE(rp.fecha, '%d/%m/%Y') BETWEEN cast('$date1' as date) and cast('$date2' as date)";
+						$_sql = "select concat(min(rp.idpedido),',',max(rp.idpedido)) from pedido rp where idsede=$idsede and fecha_hora BETWEEN cast('$date1' as date) and cast('$date2' as date)";
 						$minMaxID = $bd->xDevolverUnDato($_sql);					
 						$minMaxID = explode(",", $minMaxID);
 						$lastIdRegistroPago = $minMaxID[1];
@@ -1047,7 +1066,7 @@
 
 			$sql = "select p.idpedido, p.estado, p.fecha_hora, p.total_r importe, pd.estado anulado 
 				, $hoy hoy, pd.ptotal_r importe_item
-				, WEEK(STR_TO_DATE(p.fecha, '%d/%m/%Y')) num_semana, if(WEEK(STR_TO_DATE(p.fecha, '%d/%m/%Y')) = WEEK(now()), 1 ,0) semana_actual
+				, WEEK(p.fecha_hora) num_semana, if(WEEK(p.fecha_hora) = WEEK(now()), 1 ,0) semana_actual
 				, tc.descripcion destpc
 				, p.flag_is_cliente as is_from_client_pwa
 			from pedido p

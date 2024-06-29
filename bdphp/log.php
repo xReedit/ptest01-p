@@ -1518,8 +1518,9 @@
 			$sql_pedido_detalle='';
 
 			//registra pedido borrado
-			$sqlpedido_borrado="insert into pedido_borrados (idpedido,idpedido_detalle,iditem,idcarta_lista,idusuario,idusuario_permiso,importe,fecha,hora,procede_tabla, fecha_cierre, cantidad, flag_recupera_stock) 
-											values(".$idpedido.",".$idpedido_detalle.",".$iditem.",".$idcarta_lista.",".$_POST["u"].",".$_SESSION['idusuario'].",".$precio_unitario_item.",'".$fecha_now."','".$hora_now."',".$tabla_procede.", '', 1,'".$isRecuperarStock."'); ";
+			$fecha_hora = date("Y-m-d H:i:s");
+			$sqlpedido_borrado="insert into pedido_borrados (idpedido,idpedido_detalle,iditem,idcarta_lista,idusuario,idusuario_permiso,importe,fecha,hora,procede_tabla, fecha_cierre, cantidad, flag_recupera_stock, fecha_hora) 
+											values(".$idpedido.",".$idpedido_detalle.",".$iditem.",".$idcarta_lista.",".$_POST["u"].",".$_SESSION['idusuario'].",".$precio_unitario_item.",'".$fecha_now."','".$hora_now."',".$tabla_procede.", '', 1,'".$isRecuperarStock."', '".$fecha_hora."'); ";
 
 			$lastIdPedidoBorrado = $bd->xConsulta_UltimoId($sqlpedido_borrado);
 
@@ -2181,9 +2182,10 @@
 				$sql_historial_rp="update registro_pago set estado=1, motivo_anular='".$motivo_anular."', idusuario_permiso=".$_POST['u']." where idregistro_pago=".$idregistro_pago_desde_h."; ";
 			}
 
+			$fecha_now = date('Y-m-d H:i:s');
 			//registrar en pedidos_borrados.// en este caso los sub item se borran de los pedidos seleccionados
-			$sqlpedido_borrado="insert into pedido_borrados (idpedido,idpedido_detalle,iditem,idcarta_lista,idusuario,idusuario_permiso,importe,fecha,hora,procede_tabla, cantidad, flag_recupera_stock) 
-													SELECT idpedido,idpedido_detalle,iditem,idcarta_lista,".$_SESSION["idusuario"].",".$_POST['u'].",IF(ptotal*1=0,ptotal_r,ptotal),'".$fecha_now."','".$hora_now."', procede_tabla, cantidad, '".$isRecuperarStock."' 
+			$sqlpedido_borrado="insert into pedido_borrados (idpedido,idpedido_detalle,iditem,idcarta_lista,idusuario,idusuario_permiso,importe,fecha,hora,procede_tabla, cantidad, flag_recupera_stock, fecha_hora) 
+													SELECT idpedido,idpedido_detalle,iditem,idcarta_lista,".$_SESSION["idusuario"].",".$_POST['u'].",IF(ptotal*1=0,ptotal_r,ptotal),'".$fecha_now."','".$hora_now."', procede_tabla, cantidad, '".$isRecuperarStock. "', '".$fecha_now."' 
 													FROM pedido_detalle WHERE ".$condicion_pdb."; ";
 
 			$bd->xConsulta_NoReturn($sqlpedido_borrado);
@@ -2865,6 +2867,16 @@
 			";
 			$bd->xConsulta($sql);
 			break;
+		case 160011: // load productos de la carta 
+			$sql= "SELECT ps.idproducto_stock as value, CONCAT(a.descripcion,' | ', p.descripcion) as label,p.precio_venta,p.precio,p.precio_unitario,pf.descripcion as familia, p.idproducto_familia,p.enlazar
+				FROM producto AS p
+					INNER JOIN producto_familia AS pf using(idproducto_familia)
+					inner join producto_stock ps on ps.idproducto = p.idproducto 
+					inner join almacen a on ps.idalmacen = a.idalmacen 
+				WHERE (p.idsede=$g_idsede) AND p.estado=0
+				order by a.bodega desc";
+			$bd->xConsulta($sql);
+			break;
 		case 16001: //load productos + familia y familia
 			/*$sql="
 				SELECT alm.idalmacen_items,p.idproducto as value, concat(pf.descripcion ,' | ',p.descripcion) as label, p.precio,p.precio_unitario,pf.descripcion as familia, p.idproducto_familia, alm.stock
@@ -2998,7 +3010,7 @@
 			$bd->xConsulta($sql);
 			break;
 		case 1702://load detalles de ingredientes
-			$sql="SELECT iditem,descripcion,cantidad,costo, idporcion, necesario, idproducto_stock, viene_de FROM item_ingrediente WHERE iditem=".$_POST['i']." AND estado=0 order by iditem_ingrediente";
+			$sql= "SELECT iditem_ingrediente,iditem,descripcion,cantidad,costo, idporcion, necesario, idproducto_stock, viene_de FROM item_ingrediente WHERE iditem=".$_POST['i']." AND estado=0 order by iditem_ingrediente";
 			$bd->xConsulta($sql);
 			break;
 		///productos y porciones

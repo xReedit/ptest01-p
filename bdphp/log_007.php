@@ -20,7 +20,8 @@
 				from us_cpc_sedes as s
 				INNER join us_cpc as u on s.idus_cpc=u.idus_cpc
 				left join sede se on se.id_api_comprobante = s.userid
-				where u.idusuario=$u and s.estado=0
+				left join sede_estado sd on sd.idsede=s.idsede
+				where u.idusuario=$u and s.estado=0 and sd.is_bloqueo_contador = '0'
 				GROUP by s.idus_cpc_sedes
 				ORDER BY razonsocial, nomsede, ciudad
 			";

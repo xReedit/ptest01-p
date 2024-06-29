@@ -19,11 +19,17 @@
 	
     switch ($op) {
 		case '1': //lista sede
-			$sql="
+			$sql= "
 				SELECT o.idorg, s.idsede, o.ruc, o.telefono, o.nombre as razonsocial, s.nombre as nomsede, s.ciudad, s.tipo, s.finicio
+					,sd.is_bloqueado, sd.is_baja, s.costo_restobar_fijo_mensual
+					, spc.importe importe_plan, spc.descripcion plan, ss.frecuencia
+					, ss.idsede_suscripcion, ss.idsede_plan_contratado
 				FROM org as o 
 					LEFT JOIN sede as s on s.idorg=o.idorg
-				WHERE o.estado=0 
+					LEFT join sede_estado sd on s.idsede=sd.idsede
+					left join sede_suscripcion ss on s.idsede=ss.idsede
+					left join sede_plan_contratado spc on ss.idsede_plan_contratado = spc.idsede_plan_contratado
+				WHERE o.estado=0 order by o.idorg, s.idsede, s.estado
 			";
 			$bd->xConsulta($sql);
 			break;		
@@ -70,7 +76,9 @@
 					VALUES(".$idorg.", ".$idsede.", 'BODEGA', 1, 0, 0);				
 
 				INSERT INTO tipo_consumo (idorg, idsede, descripcion, titulo, estado)
-						VALUES(".$idorg.", ".$idsede.", 'CONSUMIR EN EL LOCAL', 'LOCAL', 0), (".$idorg.", ".$idsede.", 'PARA LLEVAR', '', 0);
+						VALUES(".$idorg.", ".$idsede.", 'CONSUMIR EN EL LOCAL', 'LOCAL', 0), (".$idorg.", ".$idsede. ", 'PARA LLEVAR', '', 0);
+
+				INSERT INTO sede_estado (idsede,is_bloqueado, is_baja) values (".$idsede.", '0', '0');
 
 			";
 
@@ -408,7 +416,94 @@
 			$sql = "select activo, porcentaje from conf_print_detalle where idsede = $idsede and descripcion = 'I.G.V'";
 			$bd->xConsulta($sql);
 			break;
+		case 1802: // suscripcion
+			$data = $_POST['data'];
 
+			$ultimo_pago = date('Y-m', strtotime($data['ultimo_pago']));
+			// tomar como ultimo pago el ultimo dia del mes
+			$ultimo_pago = date('Y-m-t', strtotime($ultimo_pago));
+			$idsede_selected = $data['idsede'];
+
+			// buscar si ya esta suscrito
+			$sql = "select idsede_suscripcion from sede_suscripcion where idsede = $idsede_selected and activo = 0 and estado=0";
+			$rpt = $bd->xDevolverUnDato($sql);
+
+			if (isset($rpt)) {
+				$idsede_suscripcion = $rpt;
+				$sql = "update sede_suscripcion set idsede_plan_contratado = ".$data['idsede_plan_contratado'].", frecuencia = '".$data['frecuencia']. "', fecha_inicio = '".$data['fecha_inicio']."', ultimo_pago = '".$ultimo_pago."', nombre_contacto = '".$data['nombre_contacto']."', telefono_contacto = '".$data['telefono_contacto']."' where idsede_suscripcion = $idsede_suscripcion";
+			} else {
+				$sql = "insert into sede_suscripcion (idsede, idsede_plan_contratado, frecuencia, fecha_inicio, ultimo_pago, nombre_contacto, telefono_contacto) values 
+				(".$data['idsede'].", ".$data['idsede_plan_contratado'].", '".$data['frecuencia']."', '".$data['fecha_inicio']."', '".$ultimo_pago."', '".$data['nombre_contacto']."', '".$data['telefono_contacto']."')";
+			}
+
+			$bd->xConsulta($sql);
+			// echo $data;
+
+			break;
+		case 1803: // cargar datos sede_suscripcion
+			$idsede = $_POST['idsede'];
+			$sql = "select * from sede_suscripcion ss
+				where ss.idsede = $idsede and ss.activo = 0 and ss.estado=0";
+			$bd->xConsulta($sql);
+			break;
+		case 1804: // registrar pago suscripcion
+			$data = $_POST['data'];
+			$mes_pagado = date('Y-m', strtotime($data['ultimo_pago']));
+			// $ultimo_pago = date('Y-m', strtotime($data['ultimo_pago']));
+
+			// tomar como ultimo pago el ultimo dia del mes
+			$ultimo_pago = date('Y-m-t', strtotime($mes_pagado));
+
+			$idsede_selected = $data['idsede'];
+
+			$sql = "select idsede_suscripcion from sede_suscripcion where idsede = $idsede_selected";
+			$rpt = $bd->xDevolverUnDato($sql);
+			$idsede_suscripcion = $rpt;
+
+			// actualizamos fecha de pago suscripcion
+			$sql = "update sede_suscripcion set activo='0', idsede_plan_contratado = " . $data['idsede_plan_contratado'] . ", frecuencia = '" . $data['frecuencia'] . "', ultimo_pago = '" . $ultimo_pago . "' where idsede_suscripcion = $idsede_suscripcion";
+			$bd->xConsulta_NoReturn($sql);
+
+			// cambiar estados de sede
+			$sql = "update sede_estado set is_bloqueado = 0, is_bloqueo_contador = 0 where idsede = $idsede_selected";
+			$bd->xConsulta_NoReturn($sql);
+
+			// actualizamos el historial de pagos
+			$sql = "insert into sede_detalle_pago (idsede, fecha, importe, descripcion) value ($idsede_selected, curdate(), '". $data['importe_pagado']."', 'PAGO DE SUSCRIPCION ".$mes_pagado."')";
+			$bd->xConsulta($sql);
+			break;
+		case 1805: //guardar en sede_estado			
+			$idsede = $data['idsede'];
+			$sql = "insert into sede_estado (idsede,is_bloqueado, is_baja) values ($idsede, 0, 0)";
+			$bd->xConsulta_NoReturn($sql);
+			break;
+		case 19: // dar de baja sede			
+			$idsede = $_POST['idsede'];
+			$motivo = $_POST['motivo_baja_sede'];
+			$fecha = $_POST['fecha_baja_sede'];
+			
+			// sede_suscripcion
+			$sql = "update sede_suscripcion set activo = 1 where idsede = $idsede";
+			$bd->xConsulta_NoReturn($sql);
+
+			//sede_estado
+			$sql = "update sede_estado set is_bloqueado = 1, is_baja = 1, motivo_baja = '$motivo', fecha_baja = '$fecha' where idsede = $idsede";
+			$bd->xConsulta_NoReturn($sql);
+
+			echo 'ok';
+			break;
+		case 1901: //retablecer el servicio:
+			$idsede = $_POST['idsede'];
+
+			// sede_suscripcion
+			$sql = "update sede_suscripcion set activo = 0 where idsede = $idsede";
+			$bd->xConsulta_NoReturn($sql);
+
+			$sql = "update sede_estado set is_bloqueado = 0, is_baja = 0, motivo_baja = '', fecha_baja = '' where idsede = $idsede";
+			$bd->xConsulta_NoReturn($sql);
+
+			echo 'ok';
+			break;
 		
 	}
 

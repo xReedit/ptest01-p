@@ -26,9 +26,11 @@ $method = $_SERVER['REQUEST_METHOD'];
 
 # demo
 // $URL_API_RESTOBAR = 'http://192.168.1.47:20223/api-restobar';
+// $URL_API_BLOG = 'http://192.168.1.47:30000/api-blog';
 
 #produccion
 $URL_API_RESTOBAR = 'https://papaya.com.pe/api-restobar';
+$URL_API_BLOG='https://papaya.com.pe/api-blog';
 
 $routes = [
     'GET' => [
@@ -60,6 +62,37 @@ $routes = [
             echo json_encode(array('success' => true, 'data' => $response, 'g_idsede' => $g_idsede));
 
         },
+        'get-check-alert-service' => function($params) use ($URL_API_RESTOBAR) {
+            global $bd;
+            global $g_idsede;
+
+            $url = $URL_API_RESTOBAR . '/restobar/cobranza/advertencia/' . $g_idsede;
+            $response = curl($url, 'GET');
+            echo $response;
+
+        },
+        'get-version-changelog' => function($params) use ($URL_API_BLOG) {
+            global $bd;
+            global $g_us;
+
+            $url = $URL_API_BLOG . '/changelog/last-version';
+            $response = curl($url, 'GET', null, false);
+            $last_version = json_decode($response, true);
+
+            $sql_usuario = "SELECT last_version_changelog as d1 FROM usuario WHERE idusuario = $g_us";
+            $version_usuario = $bd->xDevolverUnDato($sql_usuario);
+            
+
+            if ($last_version['id'] != $version_usuario) {                
+                $bd->prepare("UPDATE usuario SET last_version_changelog = ? WHERE idusuario = ?");
+                $bd->execute([$last_version['id'], $g_us]);
+                $bd->commit();
+                echo json_encode(['success' => true, 'data' => $last_version]);  
+            } else {
+                echo json_encode(['success' =>false, 'data' => $last_version]);
+            }
+
+        },
     ],
     'POST' => [
         // Define POST routes in the same way
@@ -85,11 +118,12 @@ if (isset($routes[$method][$route])) {
 
 
 // funcion CURL
-function curl($url, $method, $data = null) {
+function curl($url, $method, $data = null, $return_echo = true) {
     $curl = curl_init();
     curl_setopt($curl, CURLOPT_URL, $url);
     curl_setopt($curl, CURLOPT_RETURNTRANSFER, true);
     curl_setopt($curl, CURLOPT_CUSTOMREQUEST, $method);
+    curl_setopt($curl, CURLOPT_TIMEOUT, 7); // Cancelar si tarda más de 7 segundos
     if ($data) {
         curl_setopt($curl, CURLOPT_POSTFIELDS, $data);
     }
@@ -98,9 +132,17 @@ function curl($url, $method, $data = null) {
     curl_close($curl);
     // return $response;
     if ($err) {
-        echo json_encode(['success' => false, 'error' => 'cURL Error #:' . $err]);        
+        if ($return_echo) {
+            echo json_encode(['success' => false, 'error' => 'cURL Error #:' . $err]);        
+        } else {
+            return json_encode(['success' => false, 'error' => 'cURL Error #:' . $err]);        
+        }
     } else {
-        echo $response;
+        if ($return_echo) {
+            echo $response;
+        } else {
+            return $response;
+        }        
     }
 
 }

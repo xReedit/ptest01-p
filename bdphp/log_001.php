@@ -97,8 +97,8 @@
 		 $count_items=0;
 		 $item_antes_solo_llevar=0;
 		 $solo_llevar=0;
-		 $tipo_consumo;
-		 $categoria;
+		//  $tipo_consumo;
+		//  $categoria;
 		 
 		 $sql_pedido_detalle='';
 		 $sql_sub_total='';
@@ -106,7 +106,7 @@
 		 $numpedido='';
 		 $correlativo_dia='';
 		 $viene_de_bodega=0;// para pedido_detalle
-		 $id_pedido;
+		//  $id_pedido;
 
 		 $is_delivery = 0; // 1 es delivery
 
@@ -796,7 +796,7 @@
 			
 
 		// 	// Preparación de la consulta SQL
-			$bd->prepare("INSERT INTO registro_pago(idorg, idsede, idusuario, idcliente, fecha, total, idtipo_consumo) VALUES (?, ?, ?, ?, DATE_FORMAT(now(),'%d/%m/%Y %H:%i:%s'), ?, ?)");
+			$bd->prepare("INSERT INTO registro_pago(idorg, idsede, idusuario, idcliente, fecha, total, idtipo_consumo, fecha_hora) VALUES (?, ?, ?, ?, DATE_FORMAT(now(),'%d/%m/%Y %H:%i:%s'), ?, ?, now())");
 			$bd->execute([
 				$_idorg,
 				$_idsede,
@@ -963,7 +963,7 @@
 
 		// $sqlrp="insert into registro_pago(idorg,idsede,idusuario,idcliente,fecha,total,idtipo_consumo, idtipo_comprobante_serie, correlativo) values (".$_SESSION['ido'].",".$_SESSION['idsede'].",".$_SESSION['idusuario'].",".$idc.",DATE_FORMAT(now(),'%d/%m/%Y %H:%i:%s'),'".$importe_total."',".$tipo_consumo.",".$idtipo_comprobante_serie.",'".$correlativo_comprobante."');";
 		
-		$sqlrp="insert into registro_pago(idorg,idsede,idusuario,idcliente,fecha,total,idtipo_consumo) values (".$_SESSION['ido'].",".$_SESSION['idsede'].",".$_SESSION['idusuario'].",".$idc.",DATE_FORMAT(now(),'%d/%m/%Y %H:%i:%s'),'".$importe_total."',".$tipo_consumo.");";
+		$sqlrp="insert into registro_pago(idorg,idsede,idusuario,idcliente,fecha,total,idtipo_consumo,fecha_hora) values (".$_SESSION['ido'].",".$_SESSION['idsede'].",".$_SESSION['idusuario'].",".$idc.",DATE_FORMAT(now(),'%d/%m/%Y %H:%i:%s'),'".$importe_total."',".$tipo_consumo.", NOW());";
 		$idregistro_pago=$bd->xConsulta_UltimoId($sqlrp);
 		
 
@@ -1128,7 +1128,7 @@
 
 		// $sqlrp="insert into registro_pago(idorg,idsede,idusuario,idcliente,fecha,total,idtipo_consumo, idtipo_comprobante_serie, correlativo) values (".$_SESSION['ido'].",".$_SESSION['idsede'].",".$_SESSION['idusuario'].",".$idc.",DATE_FORMAT(now(),'%d/%m/%Y %H:%i:%s'),'".$importe_total."',".$tipo_consumo.",".$idtipo_comprobante_serie.",'".$correlativo_comprobante."');";
 		
-		$sqlrp="insert into registro_pago(idorg,idsede,idusuario,idcliente,fecha,total,idtipo_consumo) values (".$_SESSION['ido'].",".$_SESSION['idsede'].",".$_SESSION['idusuario'].",".$idc.",DATE_FORMAT(now(),'%d/%m/%Y %H:%i:%s'),'".$importe_total."',".$tipo_consumo.");";
+		$sqlrp="insert into registro_pago(idorg,idsede,idusuario,idcliente,fecha,total,idtipo_consumo,fecha_hora) values (".$_SESSION['ido'].",".$_SESSION['idsede'].",".$_SESSION['idusuario'].",".$idc.",DATE_FORMAT(now(),'%d/%m/%Y %H:%i:%s'),'".$importe_total."',".$tipo_consumo.", NOW());";
 		$idregistro_pago=$bd->xConsulta_UltimoId($sqlrp);
 		// echo $sqlrp;
 
@@ -1285,7 +1285,7 @@
 
 		// $sqlrp="insert into registro_pago(idorg,idsede,idusuario,idcliente,fecha,total,idtipo_consumo, idtipo_comprobante_serie, correlativo) values (".$_SESSION['ido'].",".$_SESSION['idsede'].",".$_SESSION['idusuario'].",".$idc.",DATE_FORMAT(now(),'%d/%m/%Y %H:%i:%s'),'".$importe_total."',".$tipo_consumo.",".$idtipo_comprobante_serie.",'".$correlativo_comprobante."');";
 		$correlativo_comprobante = '';		
-		$sqlrp="insert into registro_pago(idorg,idsede,idusuario,idcliente,fecha,total,idtipo_consumo) values (".$_SESSION['ido'].",".$_SESSION['idsede'].",".$_SESSION['idusuario'].",".$idc.",DATE_FORMAT(now(),'%d/%m/%Y %H:%i:%s'),'".$importe_total."',".$tipo_consumo.");";
+		$sqlrp="insert into registro_pago(idorg,idsede,idusuario,idcliente,fecha,total,idtipo_consumo,fecha_hora) values (".$_SESSION['ido'].",".$_SESSION['idsede'].",".$_SESSION['idusuario'].",".$idc.",DATE_FORMAT(now(),'%d/%m/%Y %H:%i:%s'),'".$importe_total."',".$tipo_consumo.",NOW());";
 		$idregistro_pago=$bd->xConsulta_UltimoId($sqlrp);
 		
 
@@ -1645,7 +1645,7 @@
 
 		// $sqlrp="insert into registro_pago(idorg,idsede,idusuario,idcliente,fecha,total,idtipo_consumo, idtipo_comprobante_serie, correlativo) values (".$_SESSION['ido'].",".$_SESSION['idsede'].",".$_SESSION['idusuario'].",".$idc.",DATE_FORMAT(now(),'%d/%m/%Y %H:%i:%s'),'".$importe_total."',".$tipo_consumo.",".$idtipo_comprobante_serie.",'".$correlativo_comprobante."');";
 		$correlativo_comprobante='';
-		$sqlrp="insert into registro_pago(idorg,idsede,idusuario,idcliente,fecha,total,idtipo_consumo) values (".$_SESSION['ido'].",".$_SESSION['idsede'].",".$_SESSION['idusuario'].",".$idc.",DATE_FORMAT(now(),'%d/%m/%Y %H:%i:%s'),'".$importe_total."',".$tipo_consumo.");";
+		$sqlrp="insert into registro_pago(idorg,idsede,idusuario,idcliente,fecha,total,idtipo_consumo,fecha_hora) values (".$_SESSION['ido'].",".$_SESSION['idsede'].",".$_SESSION['idusuario'].",".$idc.",DATE_FORMAT(now(),'%d/%m/%Y %H:%i:%s'),'".$importe_total."',".$tipo_consumo.",NOW());";
 		$idregistro_pago=$bd->xConsulta_UltimoId($sqlrp);
 		// echo $sqlrp;
 

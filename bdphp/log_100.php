@@ -127,6 +127,34 @@
                 $bd->xMultiConsulta($buildSql);
             }
             break;
+        
+        case '301': //new recetas
+            $list = $_POST['list'];
+            // recorrer el list
+            foreach ($list as $item) {
+                if ($item['new'] == 1 && $item['borrado'] == 0) {
+                    $sql = "insert into item_ingrediente (descripcion, cantidad, costo, iditem, idporcion, idproducto_stock, viene_de, necesario) values ";
+                    $sql .= "('".$item['descripcion']."', ".$item['cantidad'].", ".$item['costo'].", ".$item['iditem'].", ".$item['idporcion'].", ".$item['idproducto_stock'].", '".$item['viene_de']."', '".$item['necesario']."');";
+                    $bd->xConsulta_NoReturn($sql);
+                }
+                
+                if ($item['modificado'] == 1 ) {
+                    $sql = "update item_ingrediente set necesario = '".$item['necesario']."' where iditem_ingrediente = ".$item['iditem_ingrediente'].";";
+                    $bd->xConsulta_NoReturn($sql);
+                }
+                
+                if ($item['borrado'] == 1 && $item['new'] == 0) {
+                    $sql = "delete from item_ingrediente where iditem_ingrediente = ".$item['iditem_ingrediente'].";";
+                    $bd->xConsulta_NoReturn($sql);
+                }
+            }
+
+            // colocar en carta_lista cantidad SP del item
+            $sql = "update carta_lista set cantidad = 'SP' where iditem = ".$item['iditem'].";";
+            $bd->xConsulta_NoReturn($sql);
+
+            echo 'ok';
+            break;
 
     }
 
