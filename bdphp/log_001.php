@@ -1790,9 +1790,14 @@
 				$sqlClienteNew="insert into cliente (idorg,nombres,direccion,referencia,ruc,f_nac, f_registro $row_direccion_delivery_no_map)values(".$_SESSION['ido'].",'".$nomclie."','".$direccion."','".$referencia."','".$num_doc."','".$f_nac."',DATE_FORMAT(now(),'%d/%m/%Y') $val_direccion_delivery_no_map)";
 				$idclie=$bd->xConsulta_UltimoId($sqlClienteNew);
 
-				// insertar en cliente_sede
-				$sql = "call procedure_registrar_cliente_sede(".$_SESSION['idsede'].",".$idclie.", '".$telefono."')";				
-				$bd->xConsulta_NoReturn($sql);
+				if (strpos($idclie, 'error') !== false) {
+					$idclie = 0;
+				} else {
+					// insertar en cliente_sede
+					$sql = "call procedure_registrar_cliente_sede(".$_SESSION['idsede'].",".$idclie.", '".$telefono."')";				
+					$bd->xConsulta_NoReturn($sql);
+				}
+
 				
 			}
 		} else {
