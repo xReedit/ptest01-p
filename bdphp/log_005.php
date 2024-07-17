@@ -797,6 +797,7 @@
 			if (!isset($hora_cierre)) {
 				$hora_cierre = '00:00:00';
 			}
+			
 
 			
 			
@@ -812,7 +813,7 @@
 					// $fecha_hora_cierre = "DATE_ADD(CURDATE(), INTERVAL '$hora_cierre' HOUR_MINUTE_SECOND)";
 					
 					$lastIdRegistroPago = $bd->xDevolverUnDato("select COALESCE (min(idregistro_pago), 0) d1 from registro_pago where idsede = $idsede and fecha_hora >= date_sub(curdate(), INTERVAL 3 day) limit 2");						
-					$fecha = " rp.idregistro_pago >= $lastIdRegistroPago and rp.cierre = 0"; //(rp.cierre = 0 and STR_TO_DATE(rp.fecha, '%d/%m/%Y') BETWEEN DATE_SUB(CURDATE(), INTERVAL 2 DAY) AND CURDATE())";
+					$fecha = " rp.idregistro_pago >= $lastIdRegistroPago"; //(rp.cierre = 0 and STR_TO_DATE(rp.fecha, '%d/%m/%Y') BETWEEN DATE_SUB(CURDATE(), INTERVAL 2 DAY) AND CURDATE())";
 					$hoy = "if (rp.fecha_hora BETWEEN '$fecha_hora_inicio' and '$fecha_hora_cierre', 1, 0 )";					
 					$columm_add = '';
 					break;
@@ -822,7 +823,8 @@
 					$max_date = $bd->xDevolverUnDato($sqlLastFechaRegistroPago);
 
 					// Calcular la fecha y hora de inicio y cierre
-					$fecha_hora_inicio = date('Y-m-d H:i:s', strtotime('-1 week ' . date('Y-m-d') . ' ' . $hora_cierre));
+					// $fecha_hora_inicio = date('Y-m-d H:i:s', strtotime('-1 week ' . date('Y-m-d') . ' ' . $hora_cierre));
+					$fecha_hora_inicio = date('Y-m-d H:i:s', strtotime('last week monday ' . $hora_cierre));
 					$fecha_hora_cierre = date('Y-m-d H:i:s', strtotime(date('Y-m-d') . ' ' . $hora_cierre . ' +1 day'));
 
 					// $hoy = "if(WEEK(STR_TO_DATE(rp.fecha, '%d/%m/%Y')) = WEEK(now()), 1 ,0)";

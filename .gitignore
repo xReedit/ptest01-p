@@ -1,5 +1,5 @@
 #ignore
 bdphp/ManejoBD.php
+app/view/config.const.js
 /print
 /file
-/app/view/config.const.js

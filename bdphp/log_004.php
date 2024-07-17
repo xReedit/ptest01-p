@@ -111,7 +111,7 @@
 			// 	where s_u.idus_cpc = ".$_POST['id']."
 			// 	order by o.nombre, s.idsede
 			// ";
-			$sql="select idus_cpc,idus_cpc_sedes,razonsocial,nomsede,serie,ciudad from us_cpc_sedes where idus_cpc = ".$_POST['id']." and estado=0 order by razonsocial,nomsede, ciudad";
+			$sql="select idus_cpc,idus_cpc_sedes,razonsocial,nomsede,serie,ciudad, mes_inicio from us_cpc_sedes where idus_cpc = ".$_POST['id']." and estado=0 order by razonsocial,nomsede, ciudad";
 			$bd->xConsulta($sql);
 			break;
 		case 40101: // get idus_cpc from idusuario
