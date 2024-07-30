@@ -155,7 +155,7 @@
                     select COUNT(pb.idpedido_borrados) cant from pedido_borrados pb 
                     inner join usuario u using(idusuario)
                     inner join sede s using(idsede)
-                    where s.idsede = $g_idsede and STR_TO_DATE(pb.fecha, '%d/%m/%Y') >= CURDATE() - INTERVAL 2 DAY and pb.fecha_cierre = '' 
+                    where s.idsede = $g_idsede and pb.fecha_hora >= CURDATE() - INTERVAL 2 DAY and pb.fecha_cierre = '' 
             ";
             $bd->xConsulta($sql);
             break;
