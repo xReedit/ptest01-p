@@ -141,6 +141,9 @@
                 case '1': // llamar repartidor
                     $sql = "update pedido set flag_solicita_repartidor_papaya = 1 where idpedido = ".$idpedido;
                     break;
+                case '2': // cancelar llamada repartidor
+                    $sql = "update pedido set flag_solicita_repartidor_papaya = 0 where idpedido = ".$idpedido;
+                    break;
             }
 
             $bd->xConsulta($sql);
@@ -573,7 +576,7 @@
             if ($postBody->idcupon != 0) {
                 // Actualizar cupon
                 $idcupon = $postBody->idcupon;
-                $sql = "UPDATE cupon SET idsede = $g_idsede, idusuario = $g_us, fecha_creacion = NOW(), fecha_inicio = '$postBody->fecha_inicio', fecha_termina = '$postBody->fecha_fin', fecha_inicio_emitir = '$postBody->fecha_inicio_emitir', titulo = '$postBody->titulo', descripcion = '$postBody->descripcion', is_automatico = '$postBody->is_automatico', cantidad_maxima = '$postBody->cantidad_maxima', cupon_manual = '$postBody->cupon_manual' WHERE idcupon = $postBody->idcupon";
+                $sql = "UPDATE cupon SET idsede = $g_idsede, idusuario = $g_us, fecha_creacion = NOW(), fecha_inicio = '$postBody->fecha_inicio', fecha_termina = '$postBody->fecha_fin', fecha_inicio_emitir = '$postBody->fecha_inicio_emitir', titulo = '$postBody->titulo', descripcion = '$postBody->descripcion', is_automatico = '$postBody->is_automatico', cantidad_maxima = '$postBody->cantidad_maxima', cupon_manual = '$postBody->cupon_manual', importe_minimo = '$postBody->importe_minimo', solo_clientes = '$postBody->solo_clientes' WHERE idcupon = $postBody->idcupon";
                 $bd->xConsulta($sql);
             
                 // Eliminar todos los detalles existentes
@@ -581,8 +584,8 @@
                 $bd->xConsulta($sql);
             } else {
                 // insertar cupon
-                $sql="insert into cupon(idsede, idusuario, fecha_creacion, fecha_inicio, fecha_termina, fecha_inicio_emitir, titulo, descripcion, is_automatico, cantidad_maxima, cupon_manual) 
-                    values ($g_idsede, $g_us, NOW(), '$postBody->fecha_inicio','$postBody->fecha_fin','$postBody->fecha_inicio_emitir', '$postBody->titulo', '$postBody->descripcion' , '$postBody->is_automatico', '$postBody->cantidad_maxima', '$postBody->cupon_manual')";
+                $sql="insert into cupon(idsede, idusuario, fecha_creacion, fecha_inicio, fecha_termina, fecha_inicio_emitir, titulo, descripcion, is_automatico, cantidad_maxima, cupon_manual, importe_minimo, solo_clientes) 
+                    values ($g_idsede, $g_us, NOW(), '$postBody->fecha_inicio','$postBody->fecha_fin','$postBody->fecha_inicio_emitir', '$postBody->titulo', '$postBody->descripcion' , '$postBody->is_automatico', '$postBody->cantidad_maxima', '$postBody->cupon_manual', '$postBody->importe_minimo', '$postBody->solo_clientes')";
                 $idcupon = $bd->xConsulta_UltimoId($sql);
     
                 
@@ -646,7 +649,9 @@
                     c.fecha_inicio_emitir, 
                     c.cupon_manual, 
                     c.cantidad_maxima, 
+                    c.importe_minimo,
                     c.is_automatico,
+                    c.solo_clientes,
                     JSON_ARRAYAGG(JSON_OBJECT('tipo_dsct',cd.tipo_dsct, 'dsct', cd.dsct, 'descripcion', cd.descripcion, 'iditem', cd.iditem, 'idseccion', cd.idseccion, 'idproducto_stock', cd.idproducto_stock)) AS cupon_detalle
                 FROM 
                     cupon c 

@@ -2989,14 +2989,25 @@
 			$bd->xConsulta($sql);
 			break;		
 		case 17://recetas y costos  //load items platos de la carta
-			$sql="
-				SELECT i.iditem, concat(IFNULL(s.descripcion,'----'),' | ',i.descripcion) AS descripcion, i.precio, i.costo, format(i.precio-i.costo,2) as rentabilidad
+			// $sql="
+			// 	SELECT i.iditem, concat(IFNULL(s.descripcion,'----'),' | ',i.descripcion) AS descripcion, i.precio, i.costo, format(i.precio-i.costo,2) as rentabilidad
+			// 	FROM item as i
+			// 		left JOIN carta_lista AS cl using(iditem)
+			// 		inner JOIN seccion AS s using(idseccion)
+			// 	WHERE (i.idsede=".$g_idsede.") and i.estado=0
+			// 	ORDER BY s.descripcion,i.descripcion
+			// ";
+
+			$sql = "SELECT i.iditem, concat(IFNULL(s.descripcion,'----'),' | ',i.descripcion) AS descripcion, i.precio, COALESCE (if(viene_de=2, p.costo_conversion * ii.cantidad, ii.costo),0) costo, format(i.precio - COALESCE (if(viene_de=2, p.costo_conversion * ii.cantidad, ii.costo),0),2) as rentabilidad
 				FROM item as i
 					left JOIN carta_lista AS cl using(iditem)
 					inner JOIN seccion AS s using(idseccion)
+					left join item_ingrediente ii on i.iditem = ii.iditem 
+					left join producto_stock ps on ii.idproducto_stock = ps.idproducto_stock 
+					left join producto  p on p.idproducto = ps.idproducto 
 				WHERE (i.idsede=".$g_idsede.") and i.estado=0
-				ORDER BY s.descripcion,i.descripcion
-			";
+				group by i.iditem
+				ORDER BY s.descripcion,i.descripcion";
 			$bd->xConsulta($sql);
 			break;
 		case 1701://listado de porciones para ingredientes
@@ -3010,7 +3021,13 @@
 			$bd->xConsulta($sql);
 			break;
 		case 1702://load detalles de ingredientes
-			$sql= "SELECT iditem_ingrediente,iditem,descripcion,cantidad,costo, idporcion, necesario, idproducto_stock, viene_de FROM item_ingrediente WHERE iditem=".$_POST['i']." AND estado=0 order by iditem_ingrediente";
+			// $sql= "SELECT iditem_ingrediente,iditem,descripcion,cantidad,costo, idporcion, necesario, idproducto_stock, viene_de, und_medida FROM item_ingrediente WHERE iditem=".$_POST['i']." AND estado=0 order by iditem_ingrediente";
+			$sql= "SELECT ii.iditem_ingrediente,ii.iditem,ii.descripcion,ii.cantidad,ii.cantidad_show, ii.idporcion, ii.necesario, ii.idproducto_stock, ii.viene_de, ii.und_medida,
+						if (viene_de=2, p.costo_conversion * ii.cantidad_show, ii.costo) costo
+					FROM item_ingrediente ii 
+					left join producto_stock ps on ii.idproducto_stock = ps.idproducto_stock 
+					left join producto  p on p.idproducto = ps.idproducto 
+					WHERE ii.iditem=".$_POST['i']." AND ii.estado=0 order by ii.iditem_ingrediente";
 			$bd->xConsulta($sql);
 			break;
 		///productos y porciones
@@ -3025,9 +3042,9 @@
 				GROUP BY alm.idalmacen, alm.idproducto
 				ORDER BY a.descripcion, p.descripcion
 			";*/
-			$sql="
+			$sql= "
 				SELECT ps.idproducto_stock,p.idproducto, ps.idalmacen,pf.descripcion AS familia, a.descripcion AS almacen, p.descripcion AS producto, ps.stock, IF(p.precio_venta='','0.00',format(p.precio_venta,2)) AS precio_venta, IF(p.stock_minimo='',0,p.stock_minimo) AS stock_minimo
-						,p.img, p.codigo_barra, p.precio, p.idproducto_familia, ps.idproducto_stock, p.venta_x_peso
+						,p.img, p.codigo_barra, p.precio, p.idproducto_familia, ps.idproducto_stock, p.venta_x_peso, p.para_receta, p.idunidad_kardex, p.idunidad_conversion, p.cantidad_presentacion
 				FROM producto AS p
 					INNER JOIN producto_stock AS ps using(idproducto)
 					INNER JOIN almacen AS a using(idalmacen)

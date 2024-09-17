@@ -182,9 +182,9 @@
             }
 
 
-			$sql="
+			$sql= "
                 SELECT ps.idproducto_stock as value, concat(a.descripcion, ' | ', pf.descripcion , ' | ', p.descripcion) as label 
-                    ,ps.stock, ps.idproducto, p.precio, p.precio_unitario
+                    ,ps.stock, ps.idproducto, p.precio, p.precio_unitario, p.para_receta, p.idunidad_conversion, p.idunidad_kardex, p.costo_conversion, p.factor_conversion
                 FROM producto AS p
                     inner join producto_stock ps on ps.idproducto = p.idproducto 
                     inner join almacen a on a.idalmacen = ps.idalmacen
@@ -275,5 +275,9 @@
             $search = $_POST["search"];
             $sql = "select IDDIST value, NOMBDIST label, NOMBDEP departamento, NOMBPROV provincia, NOMBDIST ciudad  from ubigeos where NOMBDIST like '%$search%' limit 10";
             $bd->xConsulta($sql);            
+            break;
+        case 23: // unidades de medida
+            $sql = "select * from unidad_medida where estado = 0";
+            $bd->xConsulta($sql);
             break;
     }

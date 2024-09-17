@@ -133,8 +133,8 @@
             // recorrer el list
             foreach ($list as $item) {
                 if ($item['new'] == 1 && $item['borrado'] == 0) {
-                    $sql = "insert into item_ingrediente (descripcion, cantidad, costo, iditem, idporcion, idproducto_stock, viene_de, necesario) values ";
-                    $sql .= "('".$item['descripcion']."', ".$item['cantidad'].", ".$item['costo'].", ".$item['iditem'].", ".$item['idporcion'].", ".$item['idproducto_stock'].", '".$item['viene_de']."', '".$item['necesario']."');";
+                    $sql = "insert into item_ingrediente (descripcion, cantidad, costo, iditem, idporcion, idproducto_stock, viene_de, necesario, und_medida, cantidad_show) values ";
+                    $sql .= "('".$item['descripcion']."', ".$item['cantidad'].", ".$item['costo'].", ".$item['iditem'].", ".$item['idporcion'].", ".$item['idproducto_stock'].", '".$item['viene_de']."', '".$item['necesario']. "', '" . $item['und_medida'] . "', '" . $item['cantidad_show'] . "');";
                     $bd->xConsulta_NoReturn($sql);
                 }
                 

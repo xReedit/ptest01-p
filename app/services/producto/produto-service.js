@@ -1,0 +1,1 @@
+class ProductoService{constructor(){this.httpFechtApi=new httpFecht}async calcCostoConversion(t,c){try{var o=await this.httpFechtApi.axiosExecuteJSON({type:"POST",url:"../services/producto/producto-service.php",data:{op:"calc-costo-conversion",idproducto:t,stock_actual:c}});return o}catch(t){}}calcCostoProductoReceta(t,c){}}

@@ -898,6 +898,9 @@
 		$x_array_tipo_pago = json_encode($postBody->p_tipo_pago);
 		$x_array_subtotales = json_encode($postBody->p_subtotales);
 		$x_array_comprobante= json_encode($postBody->p_comprobante);
+		// $is_descuento = isset($postBody->p_descuento) ? 1 : 0;
+		// $is_descuento = (isset($postBody->p_descuento) && $postBody->p_descuento !== null) ? 1 : 0;
+		// $x_array_descuento = $is_descuento == 1 ? json_encode($postBody->p_descuento) : null;
 		$array_items = isset($postBody->p_items_seleccionados) ? json_encode($postBody->p_items_seleccionados) : -1;
 		$is_hay_array_items=isset($postBody->p_items_seleccionados) ? 1 : 0;
 
@@ -906,6 +909,7 @@
 		$x_array_tipo_pago = is_object($x_array_tipo_pago) || is_array($x_array_tipo_pago) ? $x_array_tipo_pago : json_decode($x_array_tipo_pago, true);
 		$x_array_subtotales = is_object($x_array_subtotales) || is_array($x_array_subtotales) ? $x_array_subtotales : json_decode($x_array_subtotales, true);
 		$x_array_comprobante = is_object($x_array_comprobante) || is_array($x_array_comprobante) ? $x_array_comprobante : json_decode($x_array_comprobante, true);
+		// $x_array_descuento = is_object($x_array_descuento) || is_array($x_array_descuento) ? $x_array_descuento : json_decode($x_array_descuento, true);
 		
 
 		
@@ -963,9 +967,13 @@
 
 		// $sqlrp="insert into registro_pago(idorg,idsede,idusuario,idcliente,fecha,total,idtipo_consumo, idtipo_comprobante_serie, correlativo) values (".$_SESSION['ido'].",".$_SESSION['idsede'].",".$_SESSION['idusuario'].",".$idc.",DATE_FORMAT(now(),'%d/%m/%Y %H:%i:%s'),'".$importe_total."',".$tipo_consumo.",".$idtipo_comprobante_serie.",'".$correlativo_comprobante."');";
 		
+		// $idtipo_descuento = $is_descuento == 1 ? $x_array_descuento['idtipo_descuento'] : 0;
+		// $importe_descuento = $is_descuento == 1 ? $x_array_descuento['value'] : 0;
+
 		$sqlrp="insert into registro_pago(idorg,idsede,idusuario,idcliente,fecha,total,idtipo_consumo,fecha_hora) values (".$_SESSION['ido'].",".$_SESSION['idsede'].",".$_SESSION['idusuario'].",".$idc.",DATE_FORMAT(now(),'%d/%m/%Y %H:%i:%s'),'".$importe_total."',".$tipo_consumo.", NOW());";
 		$idregistro_pago=$bd->xConsulta_UltimoId($sqlrp);
-		
+
+				
 
                 
 		//registro tipo de pago // efectivo / tarjeta / etc
@@ -1017,25 +1025,25 @@
 		$bd->xConsulta_NoReturn($sql_subtotales);
 
 
-		
-		// $bd->xMultiConsultaNoReturn($sql_pago_pedido.$cadena_tp.$sql_subtotales);
-		// echo $cadena_tp;
-				
-		
-		
-		// print $correlativo_comprobante."|";
 
-		// $x_respuesta->b = $correlativo_comprobante;
-		// $x_respuesta = ['correlativo_comprobante' => $correlativo_comprobante];
+	// $bd->xMultiConsultaNoReturn($sql_pago_pedido.$cadena_tp.$sql_subtotales);
+	// echo $cadena_tp;
 
-		
+
+
+	// print $correlativo_comprobante."|";
+
+	// $x_respuesta->b = $correlativo_comprobante;
+	// $x_respuesta = ['correlativo_comprobante' => $correlativo_comprobante];
+
+		save_descuento($idregistro_pago, $postBody->p_descuento);
 
 		$x_respuesta = json_encode(array(
 			'correlativo_comprobante' => $correlativo_comprobante,
-			'idregistro_pago' => $idregistro_pago
+			'idregistro_pago' => $idregistro_pago			
 			// 'sql_pago_pedido' => $sql_pago_pedido
 		));
-		// print $x_respuesta.'|';
+		// print $x_respuesta.'|';		
 
 		if ( $rpt_cocina_pedido !== '') {			
 			$rpt_cocina_pedido = json_decode($rpt_cocina_pedido);		
@@ -1052,6 +1060,27 @@
 		
 		//+++++ info+++++++++ el update pedido idregistropago es un triggers en la tabla registro_pago_pedido
 
+	}
+
+	function save_descuento ($idregistro_pago, $p_descuento) {
+		global $bd;
+		$is_descuento = (isset($p_descuento) && $p_descuento !== null) ? 1 : 0;
+		// $x_array_descuento = $is_descuento == 1 ? json_encode($p_descuento) : null;
+
+		if ( $is_descuento == 1 ) {
+			$sql = "insert into registro_pago_descuento (idregistro_pago, idtipo_descuento, importe, valor, descripcion, idsede) values (?, ?, ?, ?, ?, ?)";
+			$bd->prepare($sql);
+			$bd->execute([
+				$idregistro_pago,
+				$p_descuento->idtipo_descuento,
+				$p_descuento->importe,
+				$p_descuento->valor,
+				$p_descuento->descripcion,
+				$_SESSION['idsede']
+			]);			
+		}
+
+		return $is_descuento;
 	}
 
 	function cocinar_pago_parcial_fetch() {
@@ -1218,6 +1247,8 @@
 		// $bd->xMultiConsultaNoReturn($sql_pago_pedido.$cadena_tp.$sql_subtotales);
 
 		$x_respuesta = json_encode(array('correlativo_comprobante' => $correlativo_comprobante, 'idregistro_pago' => $idregistro_pago));
+		save_descuento($idregistro_pago, $postBody->p_descuento);
+
 		print $x_respuesta;
 	}
 
@@ -1348,7 +1379,7 @@
 
 		
 
-		$x_respuesta = json_encode(array('correlativo_comprobante' => $correlativo_comprobante, 'idregistro_pago' => $idregistro_pago));
+		$x_respuesta = json_encode(array('correlativo_comprobante' => $correlativo_comprobante, 'idregistro_pago' => $idregistro_pago));		
 		print $x_respuesta.'|';
 
 		
