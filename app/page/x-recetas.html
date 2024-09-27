@@ -396,7 +396,6 @@
         var xcosto_ingrediente = $("#costo_item").val();
         var xcan_item = $("#cant_item").val();
 
-        // const und_conversion = xThis.isFromRecetaProducto ? xThis.undConvercion.abreviatura : '';
         const und_conversion = xThis.isFromRecetaProducto ? xThis.undConvercion ? xThis.undConvercion.abreviatura : '' : '';
 
         // if (xdes_ingrediente == "" || xcosto_ingrediente == "") { return; }
@@ -408,7 +407,7 @@
         const vieneDe = xThis.isFromRecetaProducto ? '2' : '1';
         const idProductoReceta = xThis.isFromRecetaProducto ? _productoSelected.value : 0;
         const _descripcionProducto = xThis.isFromRecetaProducto ? _productoSelected.label : xdes_ingrediente;
-        const _cantidad = xThis.isFromRecetaProducto ? xcan_item / _productoSelected.factor_conversion : xcan_item;
+        const _cantidad = xThis.isFromRecetaProducto && _productoSelected.idunidad_conversion ? xcan_item / _productoSelected.factor_conversion : xcan_item;
         xidproducto_porcionado = xThis.isFromRecetaProducto ? 0 : xidproducto_porcionado;
 
         if (_descripcionProducto == "" || xcosto_ingrediente == "") { return; }
