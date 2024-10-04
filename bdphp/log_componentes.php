@@ -280,4 +280,15 @@
             $sql = "select * from unidad_medida where estado = 0";
             $bd->xConsulta($sql);
             break;
+        case 24: // tipos de precio visible
+            $sql = "select * from tipo_precio where idsede=$g_idsede and estado = 0";
+            $bd->xConsulta($sql);
+            break;
+        case 2401: // actualizar titulo de tipo de precio
+            $id = $_POST["id"];
+            $titulo = $_POST["titulo"];
+            $visible = $_POST["visible"];
+            $sql = "update tipo_precio set titulo = '$titulo', visible = '$visible' where idtipo_precio = $id";
+            $bd->xConsulta($sql);
+            break;
     }

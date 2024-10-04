@@ -86,5 +86,32 @@
 
             
             break;
+        
+        case 'set-tipo-precio-producto':
+            $postBody = json_decode(file_get_contents('php://input'));
+            $idproducto_precio = $postBody->idproducto_precio;
+            if ($idproducto_precio == 0) {
+                // insertar nuevo tipo de precio
+                $sql = "insert into producto_precio (idproducto_stock, idproducto, idtipo_precio, precio) values ($postBody->idproducto_stock, $postBody->idproducto, $postBody->idtipo_precio, $postBody->precio)";
+                $bd->xConsulta_NoReturn($sql);
+                $idproducto_precio = $bd->lastInsertId();
+            } else {
+                // actualizar tipo de precio
+                $sql = "update producto_precio set idtipo_precio = $postBody->idtipo_precio, precio = $postBody->precio where idproducto_precio = $idproducto_precio";
+                $bd->xConsulta_NoReturn($sql);
+            }
+
+            // update producto precio venta
+            if ($postBody->titulo === 'GENERAL') {
+                $sql = "update producto set precio_venta = $postBody->precio where idproducto = $postBody->idproducto";
+                $bd->xConsulta_NoReturn($sql);
+            }
+                        
+            echo json_encode(array('success' => true, 'idproducto_precio' => $idproducto_precio));
+            break;
+        case 'get-tipo-precio-producto':            
+            $sql = "select * from tipo_precio where idsede = $g_idsede and estado=0 and visible=1";
+            $bd->xConsulta($sql);
+            break;        
     }
 ?>

@@ -1074,12 +1074,24 @@
 			$sql = "
 			SELECT c.idcarta, cl.idcarta_lista,s.idseccion, i.iditem,s.descripcion AS des_seccion, i.descripcion AS des_item, cl.precio, cl.cantidad,s.sec_orden,i.detalle,i.img,cl.cant_preparado,c.fecha,s.imprimir,s.ver_stock_cero
 				,cl.is_visible_cliente,s.is_visible_cliente as is_visible_cliente_seccion, i.is_recomendacion, s.img img_seccion
+				,JSON_ARRAYAGG(
+					        JSON_OBJECT(
+					            'idtipo_precio', ip.idtipo_precio,
+					            'titulo', tp.titulo,
+					            'precio', ip.precio,
+								'iditem_precio', ip.iditem_precio
+					        )
+					    ) AS tipo_precios
 			FROM carta_lista AS cl
 				INNER JOIN carta AS c using(idcarta)
 				INNER JOIN seccion AS s using(idseccion)
 				INNER JOIN item AS i using(iditem)
-                LEFT JOIN ( SELECT idorg, idsede, idcarta FROM carta where idcategoria=".$_POST['i']." ) AS uc ON uc.idorg=c.idorg AND uc.idsede=c.idsede
-			WHERE (c.idorg=".$g_ido." AND c.idsede=".$g_idsede.") and cl.estado=0 and (c.idcarta=uc.idcarta) and s.estado=0 order by s.sec_orden,s.descripcion,i.descripcion
+                LEFT JOIN ( SELECT idorg, idsede, idcarta FROM carta where idcategoria=".$_POST['i']. " ) AS uc ON uc.idorg=c.idorg AND uc.idsede=c.idsede
+				LEFT JOIN item_precio ip on ip.iditem = cl.iditem 
+            	LEFT JOIN tipo_precio tp on tp.idtipo_precio = ip.iditem_precio
+			WHERE (c.idorg=".$g_ido." AND c.idsede=".$g_idsede. ") and cl.estado=0 and (c.idcarta=uc.idcarta) and s.estado=0 
+			GROUP by cl.idcarta_lista
+			order by s.sec_orden,s.descripcion,i.descripcion
 			";
 			$bd->xConsulta($sql);
 			break;
@@ -3045,10 +3057,20 @@
 			$sql= "
 				SELECT ps.idproducto_stock,p.idproducto, ps.idalmacen,pf.descripcion AS familia, a.descripcion AS almacen, p.descripcion AS producto, ps.stock, IF(p.precio_venta='','0.00',format(p.precio_venta,2)) AS precio_venta, IF(p.stock_minimo='',0,p.stock_minimo) AS stock_minimo
 						,p.img, p.codigo_barra, p.precio, p.idproducto_familia, ps.idproducto_stock, p.venta_x_peso, p.para_receta, p.idunidad_kardex, p.idunidad_conversion, p.cantidad_presentacion
+						,cast(JSON_ARRAYAGG(
+					        JSON_OBJECT(
+					            'idtipo_precio', pp.idtipo_precio,
+								'idproducto_precio', pp.idproducto_precio,
+					            'titulo', tp.titulo,
+					            'precio', pp.precio
+					        )
+					    ) as JSON) AS tipo_precios
 				FROM producto AS p
 					INNER JOIN producto_stock AS ps using(idproducto)
 					INNER JOIN almacen AS a using(idalmacen)
 					INNER JOIN producto_familia AS pf using(idproducto_familia)
+					LEFT JOIN producto_precio pp ON pp.idproducto_stock = ps.idproducto_stock
+				   	LEFT JOIN tipo_precio tp ON tp.idtipo_precio = pp.idtipo_precio
 				WHERE (p.idsede=".$g_idsede.") AND p.estado=0 AND ps.estado=0
 				GROUP BY ps.idalmacen, ps.idproducto
 				ORDER BY a.descripcion, p.descripcion
@@ -3773,7 +3795,7 @@ function xDtUS($op_us){
 				,se.email_cierre, se.metodo_pago_aceptados, se.habilita_verificacion_cpe, tcs.serie, se.id_api_comprobante				
 				from org as s 
 				inner JOIN sede as se on s.idorg = se.idorg 
-				left join (select idsede, serie from tipo_comprobante_serie tcs where idsede=$g_idsede and serie != 0 and estado = 0 limit 1) as tcs on tcs.idsede = se.idsede 
+				left join (select idsede, serie from tipo_comprobante_serie tcs where idsede=$g_idsede and serie != 0 and idtipo_comprobante_serie > 1 and estado = 0 limit 1) as tcs on tcs.idsede = se.idsede 
 					where se.idorg = ".$g_ido." and se.idsede = ".$g_idsede;
 			break;
 		case 3013: // load datos del org sede 

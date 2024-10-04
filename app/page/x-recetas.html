@@ -232,7 +232,7 @@
                     })
             }
             xThis.productoSeleted = _productoSelected;
-            console.log('productoSeleted', _productoSelected);
+            // console.log('productoSeleted', _productoSelected);
         });
     }
     function xNuevoPlato() {
@@ -407,7 +407,13 @@
         const vieneDe = xThis.isFromRecetaProducto ? '2' : '1';
         const idProductoReceta = xThis.isFromRecetaProducto ? _productoSelected.value : 0;
         const _descripcionProducto = xThis.isFromRecetaProducto ? _productoSelected.label : xdes_ingrediente;
-        const _cantidad = xThis.isFromRecetaProducto && _productoSelected.idunidad_conversion ? xcan_item / _productoSelected.factor_conversion : xcan_item;
+        let _cantidad = xThis.isFromRecetaProducto && _productoSelected.idunidad_conversion ? xcan_item / _productoSelected.factor_conversion : xcan_item;
+
+        // si cantidad es infinity
+        if (!isFinite(_cantidad)) {
+            _cantidad = xcan_item;
+        }
+
         xidproducto_porcionado = xThis.isFromRecetaProducto ? 0 : xidproducto_porcionado;
 
         if (_descripcionProducto == "" || xcosto_ingrediente == "") { return; }
@@ -593,7 +599,7 @@
 
             const cantidad_producto = parseFloat(obj.target.value);
             const costo_producto = this.productoSeleted.costo_conversion * cantidad_producto;
-            console.log('cantidad_producto', costo_producto);
+            // console.log('cantidad_producto', costo_producto);
 
             costo_item.value = costo_producto;
         }
