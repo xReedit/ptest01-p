@@ -379,9 +379,9 @@
 						$g_idsede = $_SESSION['idsede'];
 
 						//session_start();
-						print 1;
+						echo 1;
 					}else{
-						print 0;
+						echo 0;
 					}
 			//};
 			break;

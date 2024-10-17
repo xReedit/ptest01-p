@@ -1022,11 +1022,14 @@
 
 			switch ($rango) {
 				case 'fecha':
-						$fecha_hora_inicio = date('Y-m-d H:i:s', strtotime(date('Y-m-d') . ' ' . $hora_cierre));
-						$fecha_hora_cierre = date('Y-m-d H:i:s', strtotime('1 day ' . date('Y-m-d') . ' ' . $hora_cierre));
-						$lastIdRegistroPago = $bd->xDevolverUnDato("select COALESCE (min(idpedido), 0) d1 from pedido where idsede = $idsede and fecha_hora >= date_sub(curdate(), INTERVAL 3 day) limit 2");
+						// $fecha_hora_inicio = date('Y-m-d H:i:s', strtotime(date('Y-m-d') . ' ' . $hora_cierre));
+						$fecha_hora_inicio = date('Y-m-d H:i:s', strtotime('-1 day', strtotime(date('Y-m-d') . ' ' . $hora_cierre)));
+						$fecha_hora_cierre = date('Y-m-d Haaaaaaaaaa:i:s', strtotime('1 day ' . date('Y-m-d') . ' ' . $hora_cierre));
 
-						$_sql = "select COALESCE (min(idpedido), 0) d1 from pedido where idsede = $idsede and fecha_hora >= date_sub(curdate(), INTERVAL 1 day) limit 2";
+						// $lastIdRegistroPago = $bd->xDevolverUnDato("select min(idpedido) d1 from pedido where idsede = $idsede and fecha_hora >= date_sub(curdate(), INTERVAL 3 day) limit 2");
+
+						// $_sql = "select idpedido d1 from pedido where idsede = $idsede and fecha_hora >= date_sub(curdate(), INTERVAL 1 day) limit 2";
+						$_sql = "select min(idpedido) d1 from pedido where idsede = $idsede and fecha_hora >= '$fecha_hora_inicio' limit 2";
 						$firstIdPedidoToDay = $bd->xDevolverUnDato($_sql);
 						// if ( $fecha == 0 ) { 				
 							$hoy = "if (p.cierre = '', 1, 0 )";

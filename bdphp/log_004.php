@@ -78,7 +78,9 @@
 				INSERT INTO tipo_consumo (idorg, idsede, descripcion, titulo, estado)
 						VALUES(".$idorg.", ".$idsede.", 'CONSUMIR EN EL LOCAL', 'LOCAL', 0), (".$idorg.", ".$idsede. ", 'PARA LLEVAR', '', 0);
 
-				INSERT INTO sede_estado (idsede,is_bloqueado, is_baja) values (".$idsede.", '0', '0');
+				INSERT INTO sede_estado (idsede,is_bloqueado, is_baja) values (".$idsede. ", '0', '0');
+
+				INSERT INTO tipo_precio (idsede, titulo, estado) values (".$idsede.", 'GENERAL', '0'), (".$idsede. ", 'POR MAYOR', '0'), (".$idsede.", 'ESPECIAL', '0');
 
 			";
 
@@ -262,6 +264,10 @@
 		case 1101: // metodos de pago aceptados
 			$ids = $_POST["ids"];
 			$sql = "update sede set metodo_pago_aceptados='$ids' where idsede=$g_idsede";
+			$bd->xConsulta($sql);
+			break;
+		case 1102: // load metodos de pago aceptados
+			$sql = "select metodo_pago_aceptados from sede where idsede=$g_idsede";
 			$bd->xConsulta($sql);
 			break;
 
