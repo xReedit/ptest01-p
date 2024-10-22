@@ -281,12 +281,16 @@
 			break;
 		
 		case 12001: // revisa si hay pendiente cierre para ofrecer el consolidado
-			$sql = "select u.nombres from registro_pago rp 
-					inner join usuario u on rp.idusuario = u.idusuario 
-				where  DATE_SUB(CURDATE(), INTERVAL 2 DAY)  < STR_TO_DATE(rp.fecha, '%d/%m/%Y %H:%i:%s') 
-					and rp.idsede=$g_idsede and rp.cierre =0 
-				GROUP by rp.idusuario";
+			// $sql = "select u.nombres from registro_pago rp 
+			// 		inner join usuario u on rp.idusuario = u.idusuario 
+			// 	where  DATE_SUB(CURDATE(), INTERVAL 2 DAY)  < STR_TO_DATE(rp.fecha, '%d/%m/%Y %H:%i:%s') 
+			// 		and rp.idsede=$g_idsede and rp.cierre =0 
+			// 	GROUP by rp.idusuario";
+			// $bd->xConsulta($sql);
+
+			$sql = "call procedure_view_consolidado($g_idsede)";
 			$bd->xConsulta($sql);
+			
 			break;
 
 		case 12002: // devuele las fecha de incio y fin del consolidado

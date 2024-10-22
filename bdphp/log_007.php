@@ -22,6 +22,7 @@
 				LEFT JOIN sede se on se.id_api_comprobante = s.userid
 				LEFT JOIN sede_estado sd ON sd.idsede = s.idsede AND sd.is_bloqueo_contador = '0'
 				WHERE u.idusuario=$u and s.estado=0 
+					and (sd.is_baja = '0' and sd.is_bloqueado = '0' and sd.is_bloqueo_contador = '0')
 				GROUP by s.idus_cpc_sedes
 				ORDER BY razonsocial, nomsede, ciudad
 			";
