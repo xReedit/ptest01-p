@@ -286,7 +286,7 @@
 			// 	where  DATE_SUB(CURDATE(), INTERVAL 2 DAY)  < STR_TO_DATE(rp.fecha, '%d/%m/%Y %H:%i:%s') 
 			// 		and rp.idsede=$g_idsede and rp.cierre =0 
 			// 	GROUP by rp.idusuario";
-			// $bd->xConsulta($sql);
+			// $bd->xConsulta($sql); 
 
 			$sql = "call procedure_view_consolidado($g_idsede)";
 			$bd->xConsulta($sql);
@@ -296,7 +296,7 @@
 		case 12002: // devuele las fecha de incio y fin del consolidado
 			$sql = "call procedure_get_fechas_consolidado($g_idsede)";
 			$bd->xConsulta($sql);
-			break;
+			break;		
 		case 13: // compras
 			$pagination = $_POST['pagination'];
             $fecha = $pagination['pageFecha'];

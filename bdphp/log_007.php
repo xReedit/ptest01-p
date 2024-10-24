@@ -13,7 +13,7 @@
 
 	$op = $_GET['op'];	
     switch ($op) {
-		case '1': //lista sede
+		case '1': //lista sede 
 			$u=$_SESSION['idusuario'];
 			$sql="
 			SELECT DISTINCT s.*, se.habilita_verificacion_cpe 

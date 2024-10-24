@@ -142,7 +142,8 @@
 					print 0;
 				}else{//si existe en tabla verifica permiso
 
-					$sql="select codigo as d1 from us_home_opciones where url_pas LIKE '%".$u_per."%'";
+					// $sql="select codigo as d1 from us_home_opciones where url_pas LIKE '%".$u_per."%'";
+					$sql = "select codigo as d1 from us_home_opciones where url_pas = '" . $u_per . "'";
 					$cod_p=$bd->xDevolverUnDato($sql);
 
 					
@@ -2240,7 +2241,7 @@
 				where c.ruc='".$_POST['doc']."' and c.nombres != '' and c.estado=0 order by c.idcliente desc";
 			$bd->xConsulta($sql);
 			break;
-		case 603://Load tipo comprobante		
+		case 603://Load tipo comprobante
 			// $sql="SELECT * FROM tipo_comprobante where estado=0";
 			$sql = "SELECT tps.idtipo_comprobante_serie, tps.idtipo_comprobante, tp.descripcion, tp.codsunat, tps.serie, tp.requiere_cliente, tp.inicial FROM tipo_comprobante_serie tps 
 				inner join tipo_comprobante as tp using(idtipo_comprobante) 
