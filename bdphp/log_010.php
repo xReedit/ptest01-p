@@ -112,6 +112,42 @@
         case 'get-tipo-precio-producto':            
             $sql = "select * from tipo_precio where idsede = $g_idsede and estado=0 and visible=1";
             $bd->xConsulta($sql);
-            break;        
+            break;
+        case 'get-list-pinpad':
+            $sql = "select * from sede_pinpad where idsede = $g_idsede and estado=0";
+            $bd->xConsulta($sql);
+            break;
+        case 'add-pinpad':
+            $postBody = json_decode(file_get_contents('php://input'));            
+            $sql = "insert into sede_pinpad (idsede, descripcion, pinpad_sn, area, fecha_registro, idusuario) values ($g_idsede, '$postBody->descripcion', '$postBody->pinpad_sn', '$postBody->area', NOW(), $g_us)";
+            $bd->xConsulta_NoReturn($sql);
+            echo json_encode(array('success' => true, '$postBody', $sql));
+            break;
+        case 'remove-pinpad':
+            $postBody = json_decode(file_get_contents('php://input'));            
+            $sql = "update sede_pinpad set estado = 1 where idsede_pinpad = $postBody->idsede_pinpad";
+            $bd->xConsulta_NoReturn($sql);
+            echo json_encode(array('success' => true));
+            break;
+        case 'save-transaccion-pinpad':
+            $postBody = json_decode(file_get_contents('php://input'));            
+            $data = json_encode($postBody->response_pinpad);
+            $data = addslashes($data);        
+            // $data = $bd->real_escape_string($data);         
+            $sql = "insert into registro_pago_pinpad (idregistro_pago, idsede, data_response) values ($postBody->idregistro_pago, $g_idsede, '$data');";
+            // $sql = "call procedure_save_transaccion_pinpad($g_idsede, $postBody->idregistro_pago, '$data')";
+            $bd->xConsulta($sql);
+            echo json_encode(array('success' => $sql));
+            break;
+        case 'get-data-pago-pinpad':
+            $postBody = json_decode(file_get_contents('php://input'));            
+            $sql = "select * from registro_pago_pinpad where idregistro_pago = $postBody->idregistro_pago";
+            $bd->xConsulta($sql);
+            break;
+        case 'save-remove-pinpad':
+            $postBody = json_decode(file_get_contents('php://input'));            
+            $sql = "update registro_pago_pinpad set estado = 1, anulado=1, motivo_anulacion='$postBody->motivo' where idregistro_pago = $postBody->idregistro_pago";
+            $bd->xConsulta_NoReturn($sql);            
+            break;
     }
 ?>

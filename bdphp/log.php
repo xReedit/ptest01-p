@@ -2197,8 +2197,8 @@
 
 			$fecha_now = date('Y-m-d H:i:s');
 			//registrar en pedidos_borrados.// en este caso los sub item se borran de los pedidos seleccionados
-			$sqlpedido_borrado="insert into pedido_borrados (idpedido,idpedido_detalle,iditem,idcarta_lista,idusuario,idusuario_permiso,importe,fecha,hora,procede_tabla, cantidad, flag_recupera_stock, fecha_hora) 
-													SELECT idpedido,idpedido_detalle,iditem,idcarta_lista,".$_SESSION["idusuario"].",".$_POST['u'].",IF(ptotal*1=0,ptotal_r,ptotal),'".$fecha_now."','".$hora_now."', procede_tabla, cantidad, '".$isRecuperarStock. "', '".$fecha_now."' 
+			$sqlpedido_borrado="insert into pedido_borrados (idpedido,idpedido_detalle,iditem,idcarta_lista,idusuario,idusuario_permiso,importe,fecha,hora,procede_tabla, cantidad, flag_recupera_stock, fecha_hora, fecha_cierre) 
+													SELECT idpedido,idpedido_detalle,iditem,idcarta_lista,".$_SESSION["idusuario"].",".$_POST['u'].",IF(ptotal*1=0,ptotal_r,ptotal),'".$fecha_now."','".$hora_now. "', procede_tabla, if(cantidad = 0, cantidad_r, cantidad) cantidad, '".$isRecuperarStock. "', '".$fecha_now."', '' 
 													FROM pedido_detalle WHERE ".$condicion_pdb."; ";
 
 			$bd->xConsulta_NoReturn($sqlpedido_borrado);
@@ -2208,10 +2208,13 @@
 				$sql_recuperar = "update pedido_borrados set estado=2 where idpedido in ($id_pedidos_anular)";
 				$bd->xConsulta_NoReturn($sql_recuperar);
 			}
+			
+			$bd->xMultiConsulta($sql_todos.$sql_change_de.$sql_historial_rp);
+			// echo json_encode(array('isRecuperarStock' => $isRecuperarStock, 'sql_recuperar' => $sql_recuperar, 'sqlpedido_borrado' => $sqlpedido_borrado));
+
 
 			//print $sql_todos.$sql_change_de.$sql_pdt.$sqlpedido_borrado.$sql_historial_rp;
 			// $bd->xMultiConsulta($sql_todos.$sql_change_de.$sql_pdt.$sql_historial_rp);
-			$bd->xMultiConsulta($sql_todos.$sql_change_de.$sql_historial_rp);
 			/////////
 			break;
 		///////////////
@@ -3199,11 +3202,11 @@
 			$bd->xMultiConsulta($sql_ejecuta);
 			break;
 		case 1807://guardar producto_stock desde
-			$sql="INSERT INTO producto_stock( idproducto, idalmacen, stock ) VALUES (".$_POST[p].", ".$_POST['a'].", ".$_POST['c'].")";
+			$sql="INSERT INTO producto_stock( idproducto, idalmacen, stock ) VALUES (".$_POST['p'].", ".$_POST['a'].", ".$_POST['c'].")";
 			$bd->xConsulta($sql);
 			break;
 		case 1808://guardar producto_stock desde y retorna el id
-			$sql="INSERT INTO producto_stock( idproducto, idalmacen, stock ) VALUES (".$_POST[p].", ".$_POST['a'].", 0)";
+			$sql="INSERT INTO producto_stock( idproducto, idalmacen, stock ) VALUES (".$_POST['p'].", ".$_POST['a'].", 0)";
 			echo $bd->xConsulta_UltimoId($sql);
 			break;
 		case 19:// monitor de pedidos
@@ -3440,18 +3443,30 @@
 					WHERE pd.idregistro_pago=".$_POST['i']." and (p.idorg=".$g_ido." and p.idsede=".$g_idsede.") AND pd.procede_tabla=0 AND pd.estado=0
 					ORDER BY pd.idtipo_consumo,pd.idseccion, pd.descripcion) b
 			";*/
-			$sql="
+			$sql= "
 			SELECT * FROM(
 				SELECT rpp.idpedido, rpp.idpedido_detalle, tp.idtipo_consumo, tp.descripcion AS des_tp,concat('1',s.sec_orden,'.',s.idseccion) AS idseccion_index,s.descripcion AS des_seccion, pd.idseccion, rpp.cantidad, pd.descripcion,rpp.total AS ptotal, rpp.total, pd.punitario as precio, pd.iditem
+				,s.idimpresora idimpresora_seccion	
+				,if(cl.cantidad='ND',1,0) is_cantidad_nd
+				,IF(cl.cantidad='SP',ii.idporcion,pd.idcarta_lista)AS iddescontar
+				,IF(cl.cantidad='SP',ii.cant_porcion,pd.cantidad) AS cant_descontar
+				,IF(cl.cantidad='SP',2,1) AS descontar_en
 				FROM registro_pago_pedido AS rpp
 					INNER JOIN pedido AS p ON rpp.idpedido=p.idpedido
 					INNER JOIN pedido_detalle AS pd ON rpp.idpedido_detalle=pd.idpedido_detalle
 					INNER JOIN seccion AS s ON pd.idseccion=s.idseccion
 					INNER JOIN tipo_consumo AS tp ON tp.idtipo_consumo=pd.idtipo_consumo
-				WHERE rpp.idregistro_pago=".$_POST['i']." AND pd.procede_tabla!=0) a
+					left JOIN carta_lista AS cl on pd.idcarta_lista = cl.idcarta_lista
+					LEFT JOIN (SELECT iditem, GROUP_CONCAT(idporcion) AS idporcion,GROUP_CONCAT(cantidad) AS cant_porcion FROM item_ingrediente WHERE idporcion!=0 GROUP BY iditem) AS ii ON pd.iditem=ii.iditem
+				WHERE rpp.idregistro_pago=".$_POST['i']. " AND pd.procede_tabla!=0) a
 				UNION ALL
 				SELECT * FROM(
 				SELECT rpp.idpedido, rpp.idpedido_detalle, tp.idtipo_consumo, tp.descripcion AS des_tp,concat('2',pd.idseccion,'.0') AS idseccion_index,pf.descripcion AS des_seccion, pd.idseccion, rpp.cantidad, pd.descripcion,rpp.total AS ptotal, rpp.total, pd.punitario as precio, pd.iditem
+				,pf.idimpresora idimpresora_seccion
+				,0 is_cantidad_nd
+				,pd.iditem AS iddescontar
+				,pd.cantidad AS cant_descontar
+				,0 AS descontar_en
 				FROM registro_pago_pedido AS rpp
 					INNER JOIN pedido AS p ON rpp.idpedido=p.idpedido
 					INNER JOIN pedido_detalle AS pd ON rpp.idpedido_detalle=pd.idpedido_detalle
@@ -3801,7 +3816,7 @@ function xDtUS($op_us){
 			break;
 		case 3013: // load datos del org sede 
 			// $sql_us = "SELECT * from sede where idsede=".$g_idsede." and estado=0";
-			$sql_us = "SELECT idsede, idorg, nombre, ciudad, direccion, telefono, eslogan, mesas, maximo_pedidos_x_hora, authorization_api_comprobante, id_api_comprobante, facturacion_e_activo, ubigeo, codigo_del_domicilio_fiscal, sys_local, ip_server_local, finicio, tipo, sufijo, pwa, pwa_time_limit, url_api_fac, estado, latitude, longitude, pwa_msj_ini, pwa_time_min_despacho, pwa_time_max_despacho, pwa_requiere_gps, pwa_delivery_img, provincia, departamento, codigo_postal, tiempo_aprox_entrega, dias_atienden, pwa_habilitar_delivery_app, pwa_comercio_afiliado, pwa_delivery_importe_min, pwa_delivery_servicio_propio, pwa_delivery_comercio_online, pwa_delivery_habilitar_recojo_local, pwa_delivery_acepta_yape, pwa_delivery_hablitar_calc_costo_servicio, pwa_delivery_comercio_solidaridad, pwa_delivery_acepta_tarjeta, pwa_delivery_comision_fija_no_afiliado, pwa_min_despacho, pwa_delivery_comercio_paga_entrega, pwa_delivery_habilitar_llamar_repartidor_papaya, pwa_delivery_telefono_notifica_pedido, pwa_delivery_monto_acumla, pwa_delivery_habilitar_pedido_programado, pwa_delivery_reparto_solo_app, last_date_pago, comsion_entrega, costo_restobar_fijo_mensual, pwa_habilitar_busqueda_mapa, calificacion, isprinter_socket, pwa_delivery_habilitar_calc_costo_servicio_solo_app, pwa_pedido_programado_solo_del_dia, pwa_orden_pagado, email_cierre, pwa_acepta_reservas, pwa_show_item_view_mercado, pwa_acepta_reserva_desde, c_dias, uf_pago, mostar_alert_pago, idsede_plan_contratado, umf_pago, num_dias_facturacion, tipo_contribuyente, img_mini, metodo_pago_aceptados, speech_disabled, simbolo_moneda, link_carta,is_bloqueado_facturacion, msj_cpe_alert FROM sede where idsede=".$g_idsede." and estado=0";
+			$sql_us = "SELECT idsede, idorg, nombre, ciudad, direccion, telefono, eslogan, mesas, maximo_pedidos_x_hora, authorization_api_comprobante, id_api_comprobante, facturacion_e_activo, ubigeo, codigo_del_domicilio_fiscal, sys_local, ip_server_local, finicio, tipo, sufijo, pwa, pwa_time_limit, url_api_fac, estado, latitude, longitude, pwa_msj_ini, pwa_time_min_despacho, pwa_time_max_despacho, pwa_requiere_gps, pwa_delivery_img, provincia, departamento, codigo_postal, tiempo_aprox_entrega, dias_atienden, pwa_habilitar_delivery_app, pwa_comercio_afiliado, pwa_delivery_importe_min, pwa_delivery_servicio_propio, pwa_delivery_comercio_online, pwa_delivery_habilitar_recojo_local, pwa_delivery_acepta_yape, pwa_delivery_hablitar_calc_costo_servicio, pwa_delivery_comercio_solidaridad, pwa_delivery_acepta_tarjeta, pwa_delivery_comision_fija_no_afiliado, pwa_min_despacho, pwa_delivery_comercio_paga_entrega, pwa_delivery_habilitar_llamar_repartidor_papaya, pwa_delivery_telefono_notifica_pedido, pwa_delivery_monto_acumla, pwa_delivery_habilitar_pedido_programado, pwa_delivery_reparto_solo_app, last_date_pago, comsion_entrega, costo_restobar_fijo_mensual, pwa_habilitar_busqueda_mapa, calificacion, isprinter_socket, pwa_delivery_habilitar_calc_costo_servicio_solo_app, pwa_pedido_programado_solo_del_dia, pwa_orden_pagado, email_cierre, pwa_acepta_reservas, pwa_show_item_view_mercado, pwa_acepta_reserva_desde, c_dias, uf_pago, mostar_alert_pago, idsede_plan_contratado, umf_pago, num_dias_facturacion, tipo_contribuyente, img_mini, metodo_pago_aceptados, speech_disabled, simbolo_moneda, link_carta,is_bloqueado_facturacion, msj_cpe_alert, is_active_pinpad FROM sede where idsede=".$g_idsede." and estado=0";
 			break;
 		case 3014: // load sys const
 			$sql_us = "SELECT * FROM sys_const where estado=0 and llave in ('URL_COMPROBANTE', 'URL_COMPROBANTE_DOWNLOAD_FILE', 'NUM_DAYS_ANULACION_CPE') order by orden";

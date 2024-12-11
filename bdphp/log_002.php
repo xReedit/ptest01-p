@@ -251,6 +251,7 @@
         case '6': // cpe-emitidos
             $pagination = $_POST['pagination'];
             $fecha = $pagination['pageFecha'];
+            $fecha = $fecha === '' ? date('d/m/Y') : $fecha;
             $filtroAplicarFecha = $fecha === '' ? '' : "(MONTH(STR_TO_DATE(c.fecha ,'%d/%m/%Y')) = MONTH(STR_TO_DATE('$fecha' ,'%d/%m/%Y')) and YEAR(STR_TO_DATE(c.fecha ,'%d/%m/%Y')) = YEAR(STR_TO_DATE('$fecha' ,'%d/%m/%Y')))";
             $filtroFecha = $fecha === '' ? '' : " HAVING $filtroAplicarFecha";
             // $filtroFechaCount = $fecha === '' ? '' : " and (c.fecha = '".$fecha."')";
@@ -287,9 +288,10 @@
             break;
         case '601': // reporte export excel
             $pagination = $_POST['pagination'];
-            $fecha = $pagination['pageFecha'];
+            $fecha = $pagination['pageFecha'];            
             $filtroAplicarFecha = $fecha === '' ? '' : "(MONTH(STR_TO_DATE(c.fecha ,'%d/%m/%Y')) = MONTH(STR_TO_DATE('$fecha' ,'%d/%m/%Y')) and YEAR(STR_TO_DATE(c.fecha ,'%d/%m/%Y')) = YEAR(STR_TO_DATE('$fecha' ,'%d/%m/%Y')))";
-            $filtroFecha = $fecha === '' ? '' : " HAVING $filtroAplicarFecha";            
+            $filtroFecha = $fecha === '' ? '' : " HAVING $filtroAplicarFecha";
+            // $filtroAplicarFecha = $fecha === '' ? '' : " and (MONTH(STR_TO_DATE(c.fecha ,'%d/%m/%Y')) = MONTH(STR_TO_DATE('$fecha' ,'%d/%m/%Y')) and YEAR(STR_TO_DATE(c.fecha ,'%d/%m/%Y')) = YEAR(STR_TO_DATE('$fecha' ,'%d/%m/%Y')))";           
             $filtro = $pagination['pageFilter'] === '' ? '' : " and CONCAT(c.hora,tp.descripcion,c.numero,c.nomcliente,c.fecha,(
                 if (c.anulado=1,'Anulado',
 						CASE

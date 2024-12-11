@@ -693,6 +693,11 @@
 			$sql = "select idprint_server_detalle, detalle_json from print_server_detalle where idprint_server_detalle = $c";
 			$bd->xConsulta($sql);
 			break;
+		case 1703: // cierre pdf despues de cerrar caja
+			$c = $_POST['idprint'];
+			$sql = "select idprint_server_detalle, detalle_json from print_server_detalle where idprint_server_detalle = $c";
+			$bd->xConsulta($sql);
+			break;
 		case 18: // contenido dinamico
 			echo '<hr>';
 			break;
