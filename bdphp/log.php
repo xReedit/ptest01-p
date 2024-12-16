@@ -2157,6 +2157,7 @@
 			if($xarray_pe_anular==='' || $xarray_pe_anular == []){//anular todos los pedidos
 				$id_pedidos_anular=$_POST['xPedidos'];
 				$sql_todos="update pedido set estado=3, motivo_anular='".$motivo_anular."' where idpedido in (".$id_pedidos_anular."); ";
+				$bd->xConsulta_NoReturn($sql_todos);
 			}else{//si solo estan algunos pedidos seleccionados
 				$id_pedidos_anular=$xarray_pe_anular[0]['idpedidos'];
 				$motivo_anular=$xarray_pe_anular[0]['m_a'];
@@ -2193,6 +2194,7 @@
 				//si viene de historial_registro_pago quiere decir que se eliminara una cobranza por lo tanto los datos lo guardara tambien en registro_pago
 				$condicion_pdb="idregistro_pago=".$idregistro_pago_desde_h;//todos los item que correspondan a este iregistropago
 				$sql_historial_rp="update registro_pago set estado=1, motivo_anular='".$motivo_anular."', idusuario_permiso=".$_POST['u']." where idregistro_pago=".$idregistro_pago_desde_h."; ";
+				$bd->xConsulta_NoReturn($sql_historial_rp);
 			}
 
 			$fecha_now = date('Y-m-d H:i:s');
@@ -2209,8 +2211,9 @@
 				$bd->xConsulta_NoReturn($sql_recuperar);
 			}
 			
-			$bd->xMultiConsulta($sql_todos.$sql_change_de.$sql_historial_rp);
-			// echo json_encode(array('isRecuperarStock' => $isRecuperarStock, 'sql_recuperar' => $sql_recuperar, 'sqlpedido_borrado' => $sqlpedido_borrado));
+			// $bd->xMultiConsulta($sql_todos.$sql_change_de.$sql_historial_rp);
+			// echo json_encode(array('ok' => $isRecuperarStock, 'sql_recuperar' => $sql_recuperar, 'sqlpedido_borrado' => $sqlpedido_borrado));
+			echo json_encode(array('ok' => true));
 
 
 			//print $sql_todos.$sql_change_de.$sql_pdt.$sqlpedido_borrado.$sql_historial_rp;
