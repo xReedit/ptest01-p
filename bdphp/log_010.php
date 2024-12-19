@@ -145,9 +145,20 @@
             $bd->xConsulta($sql);
             break;
         case 'save-remove-pinpad':
-            $postBody = json_decode(file_get_contents('php://input'));            
+            $postBody = json_decode(file_get_contents('php://input'));    
             $sql = "update registro_pago_pinpad set estado = 1, anulado=1, motivo_anulacion='$postBody->motivo' where idregistro_pago = $postBody->idregistro_pago";
             $bd->xConsulta_NoReturn($sql);            
+            break;
+        case 'get-list-pedidos-despachados':
+            $postBody = json_decode(file_get_contents('php://input'));
+            $sql = "call procedure_zona_despacho_pedidos_despachados($g_idsede, '$postBody->idzona')";
+            $bd->xConsulta($sql);
+            // echo json_encode(array('success' => $sql));
+            break;
+        case 'get-pedido-despachado':
+            $postBody = json_decode(file_get_contents('php://input'));
+            $sql = "select cantidad_r cantidad, descripcion, ptotal_r total, borrado, estado from pedido_detalle pd where idpedido = $postBody->idpedido";
+            $bd->xConsulta($sql);
             break;
     }
 ?>

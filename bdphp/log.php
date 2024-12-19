@@ -1546,12 +1546,36 @@
 			$campo_precio='';
 			if($precio_total_item>0){//si es cero solo descuenta en pedido detalle
 				$campo_precio=', ptotal=format(ptotal-punitario,2)';
-				//descuneta importe en pedido
-				$sql_pedido="update pedido set total=format(total-".$precio_unitario_item.",2),estado=if(total<=0,3,0) where idpedido=".$idpedido."; update pedido_subtotales set importe=format(importe-".$precio_unitario_item.",2) where idpedido=".$idpedido." and descripcion='TOTAL'; ";
-				//descuenta en subtotal
+			//descuneta importe en pedido
+			// $sql_pedido="update pedido set total=format(total-".$precio_unitario_item.",2),estado=if(total<=0,3,0) where idpedido=".$idpedido."; update pedido_subtotales set importe=format(importe-".$precio_unitario_item.",2) where idpedido=".$idpedido." and descripcion='TOTAL'; ";
+			// $sql_pedido = "update pedido set total=format(REPLACE(total, ',', '')-" . $precio_unitario_item . ",2),estado=if(total<=0,3,0) where idpedido=" . $idpedido . "; update pedido_subtotales set importe=format(REPLACE(importe, ',', '')-" . $precio_unitario_item . ",2) where idpedido=" . $idpedido . " and descripcion='TOTAL'; ";
+			//descuenta en subtotal
+
+				// Descuenta importe en pedido y actualiza estado
+				$sql_pedido = "
+					UPDATE pedido 
+					SET total = ROUND(CAST(REPLACE(total, ',', '') AS DECIMAL(10, 2)) - $precio_unitario_item, 2), 
+						estado = IF(total<=0,3,0)
+					WHERE idpedido = $idpedido;
+
+					UPDATE pedido_subtotales 
+					SET importe = ROUND(CAST(REPLACE(importe, ',', '') AS DECIMAL(10, 2)) - $precio_unitario_item, 2) 
+					WHERE idpedido = $idpedido AND descripcion = 'TOTAL';
+				";
 			}
-			
-			$sql_pedido_detalle="update pedido_detalle set cantidad=cantidad-1, ptotal=format(ptotal-".$precio_unitario_item.",2), estado=if(cantidad<=0,1,0), modificado=1, motivo_borrado='".$motivo_anular."' where idpedido_detalle=".$idpedido_detalle."; ";
+
+		// $sql_pedido_detalle= "update pedido_detalle set cantidad=cantidad-1, ptotal=format(REPLACE(ptotal, ',', '')-".$precio_unitario_item.",2), estado=if(cantidad<=0,1,0), modificado=1, motivo_borrado='".$motivo_anular."' where idpedido_detalle=".$idpedido_detalle."; ";
+
+			// Descuenta en pedido_detalle
+			$sql_pedido_detalle = "
+				UPDATE pedido_detalle 
+				SET cantidad = cantidad - 1, 
+					ptotal = ROUND(CAST(REPLACE(ptotal, ',', '') AS DECIMAL(10, 2)) - $precio_unitario_item, 2), 
+					estado = IF(cantidad <= 0, 1, 0), 
+					modificado = 1, 
+					motivo_borrado = '$motivo_anular' 
+				WHERE idpedido_detalle = $idpedido_detalle;
+			";
 
 			//descuenta
 			//ejecutar
@@ -1559,6 +1583,8 @@
 			$sql_ejecuta=$sql_pedido.$sql_pedido_detalle; //.$sqlpedido_borrado; //.$sql_porcion.$sq_carta_lista.$sql_almacen;
 			// print $sql_ejecuta;
 			$bd->xMultiConsulta($sql_ejecuta);
+
+
 
 			// echo $sql_recuperar;
 
@@ -3572,7 +3598,7 @@
 			// 	$sql="update pedido set despachado=2 where idpedido=".$_POST['idp'];
 			// }
 
-			$sql="CALL procedure_marcar_despachado_zona_2102(".$_POST['idp'].",".$_POST['id_pd'].",".$_POST['op'].",'".$_POST['td']."','".$_POST['valEstado']."')";
+			$sql="CALL procedure_marcar_despachado_zona_2102(".$_POST['idp'].",".$_POST['id_pd'].",".$_POST['op'].",'".$_POST['td']."','".$_POST['valEstado']."',$g_idsede, $g_us)";
 			$bd->xConsulta($sql);
 			break;
 		case 2103://ver pedidos despachados
