@@ -3749,7 +3749,8 @@ function encode_dataUS(){
 					'generales'=> xDtUS(307),
 					'datos_org_sede'=> xDtUS(3012), // datos org y sede // facturacion
 					'datos_org_all_sede'=> xDtUS(3013), // datos org y sede // facturacion
-					'datos_sede_variables'=> xDtUS(3016)
+					'datos_sede_variables'=> xDtUS(3016),
+					'datos_sede_holding' => xDtUS(3017)
 				]];  /*,
 		,
 	];/*
@@ -3837,7 +3838,8 @@ function xDtUS($op_us){
 			// , s.nombre, s.ruc // 250523 remplazamos por ruc_cpe, razonsocial_cpe | para comprobantes
 			$sql_us = "SELECT s.idorg, se.idsede, se.razonsocial_cpe as nombre, se.ruc_cpe as ruc , s.direccion, s.telefono , se.nombre as sedenombre , se.direccion as sededireccion, se.ciudad as sedeciudad, se.telefono as sedetelefono, se.eslogan, se.authorization_api_comprobante, se.id_api_comprobante, se.facturacion_e_activo, '' as logo64, se.ubigeo, se.codigo_del_domicilio_fiscal
 				,se.sys_local, se.ip_server_local, se.pwa, se.url_api_fac
-				,se.email_cierre, se.metodo_pago_aceptados, se.habilita_verificacion_cpe, tcs.serie, se.id_api_comprobante				
+				,se.email_cierre, se.metodo_pago_aceptados, se.habilita_verificacion_cpe, tcs.serie, se.id_api_comprobante
+				,se.is_holding
 				from org as s 
 				inner JOIN sede as se on s.idorg = se.idorg 
 				left join (select idsede, serie from tipo_comprobante_serie tcs where idsede=$g_idsede and serie != 0 and idtipo_comprobante_serie > 1 and estado = 0 limit 1) as tcs on tcs.idsede = se.idsede 
@@ -3855,6 +3857,9 @@ function xDtUS($op_us){
 			break;
 		case 3016: // datos variables de la sede
 			$sql_us = "select * from sede_opciones where idsede = $g_idsede limit 1";
+			break;
+		case 3017: // datos variables de la sede
+			$sql_us = "select idorg_marca, idsede_marca from sede_holding_marcas where idsede_marca = $g_idsede";
 			break;
 	}
 	$rows = [];

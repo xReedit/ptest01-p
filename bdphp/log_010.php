@@ -2,6 +2,8 @@
 
     // produccion
 
+use function PHPSTORM_META\sql_injection_subst;
+
     session_start();
 	header('Content-Type: application/json;charset=utf-8');
 	header('content-type: text/html; charset: utf-8');
@@ -147,7 +149,11 @@
         case 'save-remove-pinpad':
             $postBody = json_decode(file_get_contents('php://input'));    
             $sql = "update registro_pago_pinpad set estado = 1, anulado=1, motivo_anulacion='$postBody->motivo' where idregistro_pago = $postBody->idregistro_pago";
-            $bd->xConsulta_NoReturn($sql);            
+            $bd->xConsulta($sql);  
+            
+            // update registro_pago
+            // $sql = "update registro_pago set estado = 1, motivo_anular='$postBody->motivo' where idregistro_pago = $postBody->idregistro_pago";
+            // $bd->xConsulta($sql);
             break;
         case 'get-list-pedidos-despachados':
             $postBody = json_decode(file_get_contents('php://input'));
@@ -160,5 +166,307 @@
             $sql = "select cantidad_r cantidad, descripcion, ptotal_r total, borrado, estado from pedido_detalle pd where idpedido = $postBody->idpedido";
             $bd->xConsulta($sql);
             break;
+        case 'get-holding':
+            $sql = "select * from sede_holding where idsede=$g_idsede";
+            $bd->xConsulta($sql);
+            break;
+        case 'get-load-holding-marcas':
+            $data = json_decode(file_get_contents('php://input'));
+            $sql = "select sdm.*, s.nombre nom_sede from sede_holding_marcas sdm
+	            inner join sede s on s.idsede = sdm.idsede_marca 
+                where sdm.idsede_holding = $data->idsede_holding and sdm.estado=0";
+            $bd->xConsulta($sql);
+            break;
+        case 'set-holding':
+            $data = json_decode(file_get_contents('php://input'));
+            $postBody = $data->holding;
+            
+            if (isset($postBody->idsede_holding)) {
+                $sql="Update sede_holding set idsede = $postBody->idsede, nombre = '$postBody->nombre', ciudad = '$postBody->ciudad' where idsede_holding = $postBody->idsede_holding";
+                $bd->xConsulta_NoReturn($sql);
+            } else {
+                $sql="Insert into sede_holding (idsede, idorg, nombre, ciudad) values ($postBody->idsede, $g_ido, '$postBody->nombre', '$postBody->ciudad')";
+                $bd->xConsulta_NoReturn($sql);
+                $postBody->idsede_holding = $bd->lastInsertId();
+            }      
+            
+            // update sede como holding
+            $sql_sede = "update sede set is_holding = 1 where idsede = $postBody->idsede";
+            $bd->xConsulta_NoReturn($sql_sede);
+            
+            echo json_encode(array('success' => true, 'idsede_holding' => $postBody->idsede_holding));
+            break;
+        case 'set-holdin-marcas':
+            $data = json_decode(file_get_contents('php://input'));
+            $postBody = $data;
+            $ids_marcas_remove = '';
+
+            foreach ($postBody->marcas as $marca) {
+                if ($marca->is_remove) {
+                    $sql = "update sede_holding_marcas set estado = 1 where idsede_marca = $marca->idsede_marca";
+                    $bd->xConsulta_NoReturn($sql);
+                } else {
+                    if ($marca->is_new) {                        
+                        $sql = "insert into sede_holding_marcas (idsede_holding, idsede_marca, fecha_ingreso, imagen_url_comercial, nombre_comercial, oferta_comercial) values ($marca->idsede_holding, $marca->idsede_marca, NOW(), '$marca->imagen_url_comercial', '$marca->nombre_comercial', '$marca->oferta_comercial')";
+                        $bd->xConsulta_NoReturn($sql);
+                    }
+                }
+            }
+            echo json_encode(array('success' => true, 'sql' => $sql)); 
+            break;
+        case 'set-change-image-marca-holding':
+            $data = json_decode(file_get_contents('php://input'));
+            $sql = "update sede_holding_marcas set imagen_url_comercial = '$data->url_image' where idsede_holding_marcas = $data->idsede_holding_marcas";
+            $bd->xConsulta_NoReturn($sql);
+            echo json_encode(array('success' => true, 'sql' => $sql));
+            break;
+        
+        // holding
+        case 'get-pedido-holding-by-id':
+            $data = json_decode(file_get_contents('php://input'));
+            $sql = "select pj.fecha, pj.idpedido, p.idregistro_pago, u.nombres, u.usuario as nom_us, s.nombre as marca, p.nummesa, p.referencia, p.total_r, pj.pedido_json 
+                    ,pj.debitado, pj.idsede, pj.idregistro_pago_marca
+                from pedido_json pj 
+                inner join pedido p on pj.idpedido = p.idpedido
+                inner join sede s on pj.idsede = s.idsede 
+                inner join usuario u on p.idusuario = u.idusuario 
+                where pj.idpedido = $data->idpedido";
+
+            $bd->xConsulta($sql);         
+            break;
+        case 'get-pedidos-holding-by-day':
+            $data = json_decode(file_get_contents('php://input'));
+
+            $sql_hora_cierre = "select hora_cierre_dia d1 from sede_opciones where idsede = $idsede";
+            $hora_cierre = $bd->xDevolverUnDato($sql_hora_cierre);
+
+            // si no se obtuvo un registro, establecer la hora de cierre a '00:00:00'
+            if (!isset($hora_cierre)) {
+                $hora_cierre = '00:00:00';
+            }
+            
+            $fecha = $data->fecha;
+            $fecha_hora_inicio = date('Y-m-d H:i:s', strtotime($fecha . ' ' . $hora_cierre));
+            $fecha_hora_cierre = date('Y-m-d H:i:s', strtotime($fecha_hora_inicio . ' +1 day'));
+
+            $sql = "select pj.fecha, pj.idpedido, p.idregistro_pago, u.nombres, u.usuario as nom_us, s.nombre as marca, p.nummesa, p.referencia, p.total_r, pj.pedido_json
+                    ,pj.debitado, pj.idsede, pj.idregistro_pago_marca
+                from pedido_json pj 
+                inner join pedido p on pj.idpedido = p.idpedido
+                inner join sede s on pj.idsede = s.idsede 
+                inner join usuario u on p.idusuario = u.idusuario 
+                where pj.fecha between '$fecha_hora_inicio' and '$fecha_hora_cierre'
+                and pj.idsede_holding = $data->idsede_holding";
+
+            $bd->xConsulta($sql);         
+            break;
+        case 'set-debitar-pedido-holding':
+            $data = json_decode(file_get_contents('php://input'));
+            $sql = "update pedido_json set debitado = 1 where idpedido in ($data->idpedidos)";
+            $bd->xConsulta_NoReturn($sql);    
+            
+            // insertar en registro_pago_marca
+            $sql = "insert into registro_pago_marca(fecha, resumen, idusuario, idsede, num_operacion) 
+                values (NOW(), '$data->resumen', $g_us, $data->idsede, $data->numoperacion)";
+
+            $bd->xConsulta($sql);
+            
+            break;
+
+        case 'get-comision-metodo-pago-holding':
+            $data = json_decode(file_get_contents('php://input'));
+            // $sql = "select idtipo_pago, comision from sede_holding_metodo_pago where idsede = $g_idsede";
+            $sql = "select s.idtipo_pago, s.comision from sede_holding_marcas shm
+                    inner join sede_holding_metodo_pago s on s.idsede_holding = shm.idsede_holding 
+                where idsede_marca = $g_idsede";
+            $bd->xConsulta($sql);         
+            break;
+
+        case 'get-registro-pago-marca':
+            $data = json_decode(file_get_contents('php://input'));
+            $sql = "select fecha, num_operacion from registro_pago_marca where idregistro_pago_marca = $data->idregistro_pago_marca";
+            $bd->xConsulta($sql);         
+            break;
+        case 'get-cuenta-debitar-marca':
+            $data = json_decode(file_get_contents('php://input'));
+            $sql = "select cuenta_debitar from sede_holding_marcas where idsede_marca = $data->idsede_marca";
+            $bd->xConsulta($sql);         
+            break;
+        
+        case 'get-pedidos-holding-meseros-by-day':        
+            $data = json_decode(file_get_contents('php://input'));
+
+            $sql_hora_cierre = "select hora_cierre_dia d1 from sede_opciones where idsede = $idsede";
+            $hora_cierre = $bd->xDevolverUnDato($sql_hora_cierre);
+
+            // si no se obtuvo un registro, establecer la hora de cierre a '00:00:00'
+            if (!isset($hora_cierre)) {
+                $hora_cierre = '00:00:00';
+            }
+
+            $fecha = $data->fecha;
+            $fecha_hora_inicio = date('Y-m-d H:i:s', strtotime($fecha . ' ' . $hora_cierre));
+            $fecha_hora_cierre = date('Y-m-d H:i:s', strtotime($fecha_hora_inicio . ' +1 day'));
+            
+            $sql = "select rp.fecha_hora fecha, rp.idregistro_pago, pj.idpedido, tp.idtipo_pago, tp.descripcion des_tp, tp.img as icon, rpd.importe, u.nombres as nom_mozo, u.usuario nom_us, u.idusuario, p.nummesa, p.referencia, s.nombre marca, s.idsede, pj.cerrado_mesero
+	            from pedido_json pj 
+                inner join pedido p on pj.idpedido = p.idpedido 
+                inner join registro_pago rp on rp.idregistro_pago = p.idregistro_pago
+                inner join registro_pago_detalle rpd on rp.idregistro_pago = rpd.idregistro_pago 
+                inner join tipo_pago tp on rpd.idtipo_pago = tp.idtipo_pago 
+                inner join usuario u on p.idusuario = u.idusuario 
+                inner join sede s on pj.idsede = s.idsede
+                where 
+                rp.fecha_hora between '$fecha_hora_inicio' and '$fecha_hora_cierre' and 
+                pj.idsede_holding = $data->idsede_holding
+                GROUP by rp.idregistro_pago, tp.idtipo_pago";
+
+            $bd->xConsulta($sql);         
+            break;
+
+        case 'get-pedidos-holding-meseros-by-id':
+            $data = json_decode(file_get_contents('php://input'));
+            $sql = "select rp.fecha_hora fecha, rp.idregistro_pago, pj.idpedido, tp.idtipo_pago, tp.descripcion des_tp, tp.img as icon, rpd.importe, u.nombres as nom_mozo, u.usuario nom_us, u.idusuario, p.nummesa, p.referencia, s.nombre marca, s.idsede, pj.cerrado_mesero
+                from pedido_json pj 
+                inner join pedido p on pj.idpedido = p.idpedido 
+                inner join registro_pago rp on rp.idregistro_pago = p.idregistro_pago
+                inner join registro_pago_detalle rpd on rp.idregistro_pago = rpd.idregistro_pago 
+                inner join tipo_pago tp on rpd.idtipo_pago = tp.idtipo_pago 
+                inner join usuario u on p.idusuario = u.idusuario 
+                inner join sede s on pj.idsede = s.idsede
+                where 
+                pj.idpedido = $data->idpedido                                 
+                GROUP by rp.idregistro_pago, tp.idtipo_pago";                
+
+            $bd->xConsulta($sql);         
+            break;
+
+        case 'set-cerrar-pedidos-meseros':
+            $data = json_decode(file_get_contents('php://input'));
+            $sql = "update pedido_json set cerrado_mesero = 1 where idpedido in ($data->idpedidos)";
+            $bd->xConsulta_NoReturn($sql);    
+            break;
+
+    case 'get-pedidos-marca-by-day':
+        $data = json_decode(file_get_contents('php://input'));
+
+        $sql_hora_cierre = "select hora_cierre_dia d1 from sede_opciones where idsede = $idsede";
+        $hora_cierre = $bd->xDevolverUnDato($sql_hora_cierre);
+
+        // si no se obtuvo un registro, establecer la hora de cierre a '00:00:00'
+        if (!isset($hora_cierre)) {
+            $hora_cierre = '00:00:00';
+        }
+
+        $fecha = $data->fecha;
+        $fecha_hora_inicio = date('Y-m-d H:i:s', strtotime($fecha . ' ' . $hora_cierre));
+        $fecha_hora_cierre = date('Y-m-d H:i:s', strtotime($fecha_hora_inicio . ' +1 day'));
+
+        $sql = "select p.idpedido, p.fecha_hora fecha, rp.idregistro_pago, u.nombres, u.usuario nom_us , COALESCE(pcl.table_number , p.nummesa) nummesa, p.referencia
+                , p.total_r as total, sede_usuario.is_holding			
+                , p.idusuario, sede_usuario.idsede idsede_usuario, sede_usuario.idorg idorg_usuario
+                , pcl.table_number 
+                , COALESCE(pcl.estado, 0) estado
+				, JSON_ARRAYAGG(JSON_OBJECT(
+					'id', rpd.idtipo_pago,
+					'descripcion', tp.descripcion,
+					'icon', tp.img,
+					'amount_real', rpd.importe
+					)) tipo_pago
+	            from pedido p  
+                inner join registro_pago rp on rp.idregistro_pago = p.idregistro_pago
+                inner join registro_pago_detalle rpd on rp.idregistro_pago = rpd.idregistro_pago 
+                inner join tipo_pago tp on rpd.idtipo_pago = tp.idtipo_pago 
+                inner join usuario u on p.idusuario = u.idusuario
+                inner join sede sede_usuario on u.idsede = sede_usuario.idsede                
+                left join pedido_codigo_localizador pcl on pcl.idpedido = p.idpedido                
+                where p.fecha_hora between '$fecha_hora_inicio' and '$fecha_hora_cierre'
+                and p.idsede = $g_idsede GROUP by rp.idregistro_pago";
+
+        $bd->xConsulta($sql);
+        break;
+
+    case 'get-pedido-marca-by-id':
+        $data = json_decode(file_get_contents('php://input'));
+        $sql = "select p.idpedido, p.fecha_hora fecha, rp.idregistro_pago, u.nombres, u.usuario nom_us, p.nummesa, p.referencia
+                ,p.total_r as total, sede_usuario.is_holding			
+                , p.idusuario, sede_usuario.idsede idsede_usuario, sede_usuario.idorg idorg_usuario
+                , pcl.table_number 
+                , COALESCE(pcl.estado, 0) estado
+				, JSON_ARRAYAGG(JSON_OBJECT(
+					'id', rpd.idtipo_pago,
+					'descripcion', tp.descripcion,
+					'icon', tp.img,
+					'amount_real', rpd.importe
+					)) tipo_pago
+	            from pedido p  
+                inner join registro_pago rp on rp.idregistro_pago = p.idregistro_pago
+                inner join registro_pago_detalle rpd on rp.idregistro_pago = rpd.idregistro_pago 
+                inner join tipo_pago tp on rpd.idtipo_pago = tp.idtipo_pago 
+                inner join usuario u on p.idusuario = u.idusuario
+                inner join sede sede_usuario on u.idsede = sede_usuario.idsede                
+                left join pedido_codigo_localizador pcl on pcl.idpedido = p.idpedido                
+                where p.idpedido = $data->idpedido GROUP by rp.idregistro_pago";
+
+        $bd->xConsulta($sql);
+        break;
+
+    case 'get-is-marca-belongs-holding':
+        $data = json_decode(file_get_contents('php://input'));
+        $sql = "select idsede_marca isBelongsHolding from sede_holding_marcas shm where idsede_marca = $g_idsede";
+        $bd->xConsulta($sql);
+        break;
+
+    case 'set-codigo-localizador':
+        $data = json_decode(file_get_contents('php://input'));
+        $sql = "insert into pedido_codigo_localizador (idsede, idorg, codigo_localizador, idpedido) values ($g_idsede, $g_ido, '$data->codigo_localizador', $data->idpedido)";
+        $bd->xConsulta_NoReturn($sql);
+        break;
+
+    case 'set-pedido-listo':
+        $data = json_decode(file_get_contents('php://input'));
+        $sql_check = "select count(*) as count from pedido_codigo_localizador where idpedido = $data->idpedido";
+        $count = $bd->xDevolverUnDato($sql_check);
+
+        if ($count > 0) {
+            $sql = "update pedido_codigo_localizador set estado = '2', fecha_hora_listo=NOW() where idpedido = $data->idpedido";
+        } else {
+            $sql = "insert into pedido_codigo_localizador (idsede, idorg, idpedido, estado, fecha_hora_listo) values ($g_idsede, $g_ido, $data->idpedido, '2', NOW())";
+        }
+
+        $bd->xConsulta_NoReturn($sql);
+        echo json_encode(array('success' => $sql));
+        break;
+
+    case 'set-pedido-entregado':
+        $data = json_decode(file_get_contents('php://input'));
+        $sql = "update pedido_codigo_localizador set estado = '3' where idpedido = $data->idpedido";
+        $bd->xConsulta_NoReturn($sql);
+        echo json_encode(array('success' => true));
+        break;
+    case 'get-holding-opciones-marca':
+        $sql = "select * from us_home_opciones where codigo = 'A22'";
+        $bd->xConsulta($sql);
+        break;
+    case 'get-holding-opciones-center':
+        $sql = "select * from us_home_opciones where codigo in ('A23', 'A24')";
+        $bd->xConsulta($sql);
+        break;
+    case 'get-holding-metodo-pago':
+        $sql = "select sh.*, tp.descripcion as nom_tipo_pago from sede_holding_metodo_pago sh inner join tipo_pago tp on sh.idtipo_pago = tp.idtipo_pago where sh.idsede = $g_idsede and sh.estado = 0";
+        $bd->xConsulta($sql);
+        break;
+    case 'set-holding-metodo-pago':
+        $data = json_decode(file_get_contents('php://input'));
+        // actualizar si existe id
+        if (isset($data->id)) {
+            $sql = "update sede_holding_metodo_pago set idtipo_pago = $data->idtipo_pago, comision = $data->comision, estado = $data->estado where idsede_holding_metodo_pago = $data->id";
+        } else {
+            $sql = "insert into sede_holding_metodo_pago (idsede, idtipo_pago, comision, idsede_holding) values ($g_idsede, $data->idtipo_pago, $data->comision, $data->idsede_holding)";
+        }
+        $bd->xConsulta_NoReturn($sql);
+        echo json_encode(array('success' => true));
+        break;
+
     }
 ?>

@@ -1014,7 +1014,6 @@
 		$sql_subtotales = 'insert into registro_pago_subtotal (idregistro_pago,idorg,idsede,descripcion,importe,tachado) values '.$sql_subtotales.'; '; 
 	
 		
-
 		// comprobante de pago | datos
 		// $sql_devolver_correlativo = "update tipo_comprobante_serie set correlativo=correlativo+1 where (idrog=".$_SESSION['ido']." and idsede=".$_SESSION['ido'].") and idtipo_comprobante=".$x_array_comprobante['idtipo_comprobante']." and estado=0;";
 

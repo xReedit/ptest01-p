@@ -22,6 +22,10 @@
             $sql = "select idorg, idsede, nombre, ciudad from sede where idorg = $g_ido and estado=0 ";
             $bd->xConsulta($sql);
             break;
+        case 1001:// load all sedes
+            $sql = "select idorg, idsede, nombre, ciudad from sede where estado=0 order by nombre";
+            $bd->xConsulta($sql);
+            break;
         case 2:// load comprobantes generales
             // $sql = "SELECT * FROM tipo_comprobante where estado=0";
             $sql = "
