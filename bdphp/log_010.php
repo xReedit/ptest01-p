@@ -467,6 +467,9 @@ use function PHPSTORM_META\sql_injection_subst;
         $bd->xConsulta_NoReturn($sql);
         echo json_encode(array('success' => true));
         break;
+    case 'get-url-servicio-carta':
+        echo json_encode(array('url' => 'https://piter-py-gpt-production.up.railway.app/test-carta'));
+        break;
 
     }
 ?>

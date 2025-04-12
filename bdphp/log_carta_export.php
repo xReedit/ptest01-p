@@ -23,19 +23,19 @@
     switch ($op) {
         case 'exportar-carta':
             // Obtener el ID de la carta a exportar
-            $idcarta = $_POST['idcarta'];
-            
+            $idcategoria= $_POST['idcategoria'];
+
             // Verificar que la carta pertenezca a la sede actual
-            $sql_check = "SELECT idcarta FROM carta WHERE idcarta = $idcarta AND idorg = $g_ido AND idsede = $g_idsede";
+            $sql_check = "SELECT idcarta FROM carta WHERE idcategoria = $idcategoria AND idsede = $g_idsede and estado=0";
             $carta_existe = $bd->xDevolverUnDato($sql_check);
             
             if (!$carta_existe) {
-                echo json_encode(array('success' => false, 'mensaje' => 'La carta no existe o no pertenece a esta sede'));
+                echo json_encode(array('success' => false, 'mensaje' => 'La carta no existe o no pertenece a esta sede', 'categorias' => $categorias));
                 exit;
             }
             
             // Obtener información de la carta
-            $sql_carta = "SELECT idcarta, idorg, idsede, idcategoria, fecha, estado FROM carta WHERE idcarta = $idcarta";
+            $sql_carta = "SELECT idcarta, idorg, idsede, idcategoria, fecha, estado FROM carta WHERE idcarta = $carta_existe";
             $result_carta = $bd->xConsulta3($sql_carta);
             $carta = json_decode($result_carta, true);
             
@@ -49,7 +49,7 @@
                 SELECT DISTINCT s.idseccion, s.descripcion, s.idimpresora, s.sec_orden, s.img, s.imprimir
                 FROM seccion AS s
                 INNER JOIN carta_lista AS cl ON s.idseccion = cl.idseccion
-                WHERE cl.idcarta = $idcarta AND s.estado = 0
+                WHERE cl.idcarta = $carta_existe AND s.estado = 0
                 ORDER BY s.sec_orden
             ";
             $result_secciones = $bd->xConsulta3($sql_secciones);
@@ -67,20 +67,20 @@
                 $sql_items = "
                     SELECT cl.idcarta_lista, cl.iditem, i.descripcion, cl.precio, cl.cantidad, 
                            cl.cant_preparado, cl.sec_orden, i.detalle, i.img, 
-                           i.is_recomendacion, i.visible_cliente
+                           i.is_recomendacion, i.is_visible_cliente
                     FROM carta_lista AS cl
                     INNER JOIN item AS i ON cl.iditem = i.iditem
-                    WHERE cl.idcarta = $idcarta AND cl.idseccion = $idseccion
+                    WHERE cl.idcarta = $carta_existe AND cl.idseccion = $idseccion
                     ORDER BY cl.sec_orden
                 ";
-                $result_items = $bd->xConsulta3($sql_items);
+                $result_items = $bd->xConsulta3($sql_items);                
                 $seccion['items'] = json_decode($result_items, true);
             }
             
             // Preparar datos para exportar
             $datos_exportar = array(
                 'carta' => $carta[0],
-                'secciones' => $secciones
+                'secciones' => $secciones                
             );
             
             echo json_encode(array('success' => true, 'datos' => $datos_exportar));
@@ -88,9 +88,11 @@
             
         case 'importar-carta':
             // Obtener los datos a importar
-            $datos = json_decode($_POST['datos'], true);
+            $data = json_decode($_POST['datos'], true);
+            $idcategoria = $data['idcategoria'];
+            $datos = $data['data_import'];
             
-            if (!$datos || !isset($datos['carta']) || !isset($datos['secciones'])) {
+            if (!$datos || !isset($datos['secciones'])) {
                 echo json_encode(array('success' => false, 'mensaje' => 'Formato de datos inválido'));
                 exit;
             }
@@ -100,28 +102,33 @@
             
             try {
                 // Crear nueva carta
-                $fecha_actual = date("d/m/Y");
-                $sql_nueva_carta = "
-                    INSERT INTO carta (idorg, idsede, idcategoria, fecha, estado)
-                    VALUES ($g_ido, $g_idsede, {$datos['carta']['idcategoria']}, '$fecha_actual', 0)
-                ";
-                $bd->xConsulta_NoReturn($sql_nueva_carta);
+                $fecha_actual = date("d/m/Y");                
+
                 
-                // Obtener el ID de la nueva carta
-                $sql_id_carta = "SELECT LAST_INSERT_ID() as id";
-                $result_id_carta = $bd->xConsulta3($sql_id_carta);
-                $id_carta_nueva = json_decode($result_id_carta, true)[0]['id'];
-                
-                if (!$id_carta_nueva) {
-                    throw new Exception("No se pudo crear la nueva carta");
+                // get idcarta from carta
+                $sql_idcarta = "select idcarta from carta where idcategoria = $idcategoria and idsede = $g_idsede";
+                $idcarta = $bd->xDevolverUnDato($sql_idcarta);
+
+                if (!$idcarta) {
+                    // si la carta no existe la creamos                    
+                    // throw new Exception("No se pudo obtener el idcarta");                    
+                    $sql_nueva_carta = "
+                        INSERT INTO carta (idorg, idsede, idcategoria, fecha, estado)
+                        VALUES ($g_ido, $g_idsede, $idcategoria, '$fecha_actual', 0)
+                    ";
+                    $bd->xConsulta_NoReturn($sql_nueva_carta);                    
+                    $idcarta = $bd->xDevolverUnDato("SELECT idcarta FROM carta WHERE idcategoria = $idcategoria AND idsede = $g_idsede AND fecha = '$fecha_actual'");
+                } else {
+                    $sql_carta = "update carta set fecha = '$fecha_actual' where idcarta = $idcarta";
+                    $bd->xConsulta_NoReturn($sql_carta);
                 }
-                
+
                 // Procesar cada sección y sus items
                 foreach ($datos['secciones'] as $seccion) {
                     // Verificar si la sección ya existe
                     $sql_check_seccion = "
                         SELECT idseccion FROM seccion 
-                        WHERE idorg = $g_ido AND idsede = $g_idsede AND descripcion = '{$seccion['descripcion']}'
+                        WHERE idsede = $g_idsede AND descripcion = '{$seccion['descripcion']}'
                         AND estado = 0
                     ";
                     $id_seccion = $bd->xDevolverUnDato($sql_check_seccion);
@@ -160,11 +167,11 @@
                             $detalle = isset($item['detalle']) ? "'{$item['detalle']}'" : "''";
                             $img = isset($item['img']) ? "'{$item['img']}'" : "''";
                             $is_recomendacion = isset($item['is_recomendacion']) ? $item['is_recomendacion'] : "0";
-                            $visible_cliente = isset($item['visible_cliente']) ? $item['visible_cliente'] : "1";
+                            $is_visible_cliente = isset($item['is_visible_cliente']) ? $item['is_visible_cliente'] : "1";
                             
                             $sql_nuevo_item = "
-                                INSERT INTO item (idorg, idsede, descripcion, detalle, img, is_recomendacion, visible_cliente, estado)
-                                VALUES ($g_ido, $g_idsede, '{$item['descripcion']}', $detalle, $img, $is_recomendacion, $visible_cliente, 0)
+                                INSERT INTO item (idorg, idsede, descripcion, precio, detalle, img, is_recomendacion, is_visible_cliente, estado)
+                                VALUES ($g_ido, $g_idsede, '{$item['descripcion']}', {$item['precio']}, $detalle, $img, $is_recomendacion, $is_visible_cliente, 0)
                             ";
                             $bd->xConsulta_NoReturn($sql_nuevo_item);
                             
@@ -174,25 +181,36 @@
                             $id_item = json_decode($result_id_item, true)[0]['id'];
                             
                             if (!$id_item) {
-                                throw new Exception("No se pudo crear el item {$item['descripcion']}");
+                                throw new Exception("No se pudo crear el item {$item['descripcion']}, sql: $sql_nuevo_item");
                             }
                         }
                         
-                        // Crear entrada en carta_lista
-                        $id_carta_lista = $g_ido . $g_idsede . $id_carta_nueva . $id_seccion . $id_item;
-                        $sql_carta_lista = "
-                            INSERT INTO carta_lista (idcarta_lista, idcarta, idseccion, iditem, precio, cantidad, cant_preparado, sec_orden)
-                            VALUES ('$id_carta_lista', $id_carta_nueva, $id_seccion, $id_item, '{$item['precio']}', 
-                                    '{$item['cantidad']}', '{$item['cant_preparado']}', {$item['sec_orden']})
+                        // Verificar si ya existe el registro por iditem, idseccion y idcarta
+                        $id_carta_lista = $g_ido . $g_idsede . $idcarta . $id_seccion . $id_item;
+
+                        $sql_check_carta_lista = "
+                            SELECT idcarta_lista FROM carta_lista 
+                            WHERE idcarta_lista = '$id_carta_lista'
                         ";
-                        $bd->xConsulta_NoReturn($sql_carta_lista);
+                        $carta_lista_existe = $bd->xDevolverUnDato($sql_check_carta_lista);
+                        
+                        // Solo crear si no existe
+                        if (!$carta_lista_existe) {
+                            // Crear entrada en carta_lista                            
+                            $sql_carta_lista = "
+                                INSERT INTO carta_lista (idcarta_lista, idcarta, idseccion, iditem, precio, cantidad, cant_preparado, sec_orden)
+                                VALUES ('$id_carta_lista', $idcarta, $id_seccion, $id_item, '{$item['precio']}', 
+                                        '{$item['cantidad']}', '{$item['cant_preparado']}', {$item['sec_orden']})
+                            ";
+                            $bd->xConsulta_NoReturn($sql_carta_lista);
+                        }
                     }
                 }
                 
                 // Confirmar transacción
                 $bd->xConsulta_NoReturn("COMMIT");
                 
-                echo json_encode(array('success' => true, 'idcarta' => $id_carta_nueva));
+                echo json_encode(array('success' => true, 'idcarta' => $idcarta));
             } catch (Exception $e) {
                 // Revertir transacción en caso de error
                 $bd->xConsulta_NoReturn("ROLLBACK");
