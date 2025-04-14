@@ -123,6 +123,8 @@
                     $bd->xConsulta_NoReturn($sql_carta);
                 }
 
+                $idimpresora_guardar = '0';
+
                 // Procesar cada sección y sus items
                 foreach ($datos['secciones'] as $seccion) {
                     // Verificar si la sección ya existe
@@ -132,6 +134,34 @@
                         AND estado = 0
                     ";
                     $id_seccion = $bd->xDevolverUnDato($sql_check_seccion);
+
+                    $idimpresora_seccion = $seccion['idimpresora'];                    
+
+                    if ( $idimpresora_guardar == '0' ) {
+                        if ( $idimpresora_seccion == '0' ) {
+                            // buscar impresora y crearla sino existe
+                            $sql_check_impresora = "
+                                SELECT idimpresora FROM impresora 
+                                WHERE idsede = $g_idsede
+                                AND estado = 0 limit 1
+                            ";
+    
+                            $id_impresora = $bd->xDevolverUnDato($sql_check_impresora);
+                            if (!$id_impresora) {
+                                $sql_nueva_impresora = "
+                                    INSERT INTO impresora (idorg, idsede, descripcion, ip, estado)
+                                    VALUES ($g_ido, $g_idsede, 'CAJA', '0', 0)
+                                ";
+                                $bd->xConsulta_NoReturn($sql_nueva_impresora);
+                                $id_impresora = $bd->xDevolverUnDato("SELECT idimpresora FROM impresora WHERE idorg = $g_ido AND idsede = $g_idsede AND descripcion = '{$seccion['descripcion']}' AND estado = 0");
+                            }
+                            $idimpresora_seccion = $id_impresora;
+                        }
+
+                        $idimpresora_guardar = $idimpresora_seccion;
+                    }
+
+                    $seccion['idimpresora'] = $idimpresora_guardar;
                     
                     // Si no existe, crear la sección
                     if (!$id_seccion) {
