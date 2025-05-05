@@ -295,4 +295,8 @@
             $sql = "update tipo_precio set titulo = '$titulo', visible = '$visible' where idtipo_precio = $id";
             $bd->xConsulta($sql);
             break;
+        case 25: // comisiones opcionales
+            $sql = "select * from conf_print_detalle where idsede=$g_idsede and estado = 0 and is_opcional = 1";
+            $bd->xConsulta($sql);
+            break;
     }

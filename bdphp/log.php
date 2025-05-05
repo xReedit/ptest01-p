@@ -3825,13 +3825,13 @@ function xDtUS($op_us){
 				SELECT 'p' as tipo, cpd.idconf_print_detalle as id, cpd.es_impuesto, cpd.descripcion, cpd.porcentaje as monto, 0 as idtipo_consumo, 0 as idseccion, 0 as nivel, cpd.activo
 				FROM conf_print_detalle cpd 
 					INNER JOIN conf_print as c on cpd.idconf_print=c.idconf_print
-				where c.idorg=".$g_ido." and c.idsede=".$g_idsede." and cpd.estado=0) a 
+				where c.idsede=".$g_idsede." and cpd.estado=0 and cpd.is_opcional = 0) a 
 				UNION ALL
 				SELECT * FROM(
 				SELECT 'a' as tipo, cpa.idconf_print_adicionales as id, 0 as es_impuesto, cpa.descripcion, cpa.importe as monto, cpa.idtipo_consumo, cpa.idseccion, cpa.nivel, 0 as activo
 				FROM conf_print_adicionales as cpa
 					INNER JOIN conf_print as c on cpa.idconf_print=c.idconf_print
-				where  c.idorg=".$g_ido." and c.idsede=".$g_idsede." and cpa.estado=0 ) b
+				where c.idsede=".$g_idsede." and cpa.estado=0 ) b
 			";
 			break;
 		case 3012: // load datos del org sede 

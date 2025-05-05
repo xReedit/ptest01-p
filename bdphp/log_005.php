@@ -474,6 +474,10 @@
 			$sql = "SELECT frase, autor from frases ORDER BY RAND() LIMIT 1";
 			$bd->xConsulta($sql);
 			break;
+		case 10001: //verificar si en la fecha actual hay un dia festivo
+			$sql = "SELECT mensaje, url_img from mensaje_login where fecha = curdate() and estado=0";
+			$bd->xConsulta($sql);
+			break;
 		case 110: // registro pago app
 			$f_de = $_POST['f_de'];
 			$f_a = $_POST['f_a'];
@@ -911,6 +915,65 @@
 			// echo $sql;
 			$bd->xConsulta($sql);
 			break;
+
+		case 400: // descuentos aplicados
+			$idsede = $_POST['idsede'];
+			$fecha = $_POST['fecha'];
+			$rango = $_POST['rango'];
+			
+			$idsede = $idsede == 0 ? $g_idsede : $idsede;
+
+			// obtenemos la hora de cierre
+			$sql_hora_cierre = "select hora_cierre_dia d1 from sede_opciones where idsede = $idsede";
+			$hora_cierre = $bd->xDevolverUnDato($sql_hora_cierre);
+
+			// si no se obtuvo un registro, establecer la hora de cierre a '00:00:00'
+			if (!isset($hora_cierre)) {
+				$hora_cierre = '00:00:00';
+			}
+
+			switch ($rango) {
+				case 'fecha':
+					$fecha_hora_inicio = date('Y-m-d H:i:s', strtotime(date('Y-m-d') . ' ' . $hora_cierre));
+					$fecha_hora_cierre = date('Y-m-d H:i:s', strtotime('1 day ' . date('Y-m-d') . ' ' . $hora_cierre));
+						$fecha = "rp.fecha_hora BETWEEN '$fecha_hora_inicio' and '$fecha_hora_cierre'";
+					break;
+				case 'semana':
+					$fecha_hora_inicio = date('Y-m-d H:i:s', strtotime('last week monday ' . $hora_cierre));
+					$fecha_hora_cierre = date('Y-m-d H:i:s', strtotime(date('Y-m-d') . ' ' . $hora_cierre . ' +1 day'));
+					$fecha = "rp.fecha_hora BETWEEN '$fecha_hora_inicio' and '$fecha_hora_cierre'";
+					break;
+				case 'mes':
+					$fecha_hora_inicio = date('Y-m-d H:i:s', strtotime('first day of this month ' . $hora_cierre));
+					$fecha_hora_cierre = date('Y-m-d H:i:s', strtotime('first day of next month ' . $hora_cierre));
+					$fecha = "rp.fecha_hora BETWEEN '$fecha_hora_inicio' and '$fecha_hora_cierre'";
+					break;
+				case 'rango':
+					$option = $_POST['option'];
+					$date1 = $option['value1'];
+					$date2 = $option['value2'];
+
+					// Calcular la fecha y hora de inicio y cierre
+					$fecha_hora_cierre_calc = date('Y-m-d H:i:s', strtotime($date2 . ' ' . $hora_cierre));
+					$fecha_hora_inicio = date('Y-m-d H:i:s', strtotime($date1 . ' ' . $hora_cierre));
+					$fecha_hora_cierre = date('Y-m-d H:i:s', strtotime($fecha_hora_cierre_calc . ' +1 day'));
+					$fecha = "rp.fecha_hora BETWEEN '$fecha_hora_inicio' and '$fecha_hora_cierre'";
+					break;
+			}
+
+
+
+			$sql= "select date(rp.fecha_hora) fecha, u.nombres, td.descripcion des_descuento, count(rpd.idregistro_pago_descuento) cantidad, format(sum(rpd.importe), 2) importe from registro_pago_descuento rpd 
+					inner join registro_pago rp on rpd.idregistro_pago = rp.idregistro_pago
+					inner join tipo_descuento td on rpd.idtipo_descuento = td.idtipo_descuento
+					inner join usuario u on rp.idusuario = u.idusuario
+					where $fecha and rp.idsede = $idsede and rp.estado = 0
+					group by date(rp.fecha_hora), rp.idusuario, rpd.idtipo_descuento
+					order by rpd.idregistro_pago_descuento desc";
+
+			$bd->xConsulta($sql);
+
+		break;
 		
 		// estadisticas // otros ingresos
 		case 4000:
@@ -1229,20 +1292,38 @@
 			$fecha = $_POST['fecha'];
 			$rango = $_POST['rango'];
 
-			$idsede = $idsede == 0 ? $g_idsede : $idsede;			
+			$idsede = $idsede == 0 ? $g_idsede : $idsede;
+			
+			// obtenemos la hora de cierre
+			$sql_hora_cierre = "select hora_cierre_dia d1 from sede_opciones where idsede = $idsede";
+			$hora_cierre = $bd->xDevolverUnDato($sql_hora_cierre);
+
+			// si no se obtuvo un registro, establecer la hora de cierre a '00:00:00'
+			if (!isset($hora_cierre)) {
+				$hora_cierre = '00:00:00';
+			}
+			
 
 			switch ($rango) {
 				case 'fecha':
+					$fecha_hora_inicio = date('Y-m-d H:i:s', strtotime(date('Y-m-d') . ' ' . $hora_cierre));
+					$fecha_hora_cierre = date('Y-m-d H:i:s', strtotime('1 day ' . date('Y-m-d') . ' ' . $hora_cierre));
+
 					// se agrega que solo muestre los pedidos que no fueron cerrados en los 2 ultimos dias
 					// $fecha = $fecha == 0 ? " p.cierre = 0 and STR_TO_DATE(p.fecha, '%d/%m/%Y') BETWEEN DATE_SUB(NOW(), INTERVAL 2 DAY) AND NOW() " : " STR_TO_DATE(p.fecha, '%d/%m/%Y') = STR_TO_DATE('$fecha', '%d/%m/%Y')";
-					$_sql = "select COALESCE (min(idpedido), 0) d1 from pedido where idsede = $idsede and STR_TO_DATE(fecha, '%d/%m/%Y') >= date_sub(curdate(), INTERVAL 2 day) limit 2";
+					// $_sql = "select COALESCE (min(idpedido), 0) d1 from pedido where idsede = $idsede and STR_TO_DATE(fecha, '%d/%m/%Y') >= date_sub(curdate(), INTERVAL 3 day) limit 2";
+					$_sql = "select COALESCE (min(idpedido), 0) d1 from pedido where idsede = $idsede and fecha_hora BETWEEN '$fecha_hora_inicio' AND '$fecha_hora_cierre'";
 					$firstIdPedidoToDay = $bd->xDevolverUnDato($_sql);
-					$fecha = " p.cierre = 0 and p.idpedido >= $firstIdPedidoToDay";
+					$fecha = " p.cierre = 0 and p.idpedido >= $firstIdPedidoToDay";					
 					break;
 				
 				case 'semana':
+					$fecha_hora_inicio = date('Y-m-d H:i:s', strtotime('last week monday ' . $hora_cierre));
+					$fecha_hora_cierre = date('Y-m-d H:i:s', strtotime(date('Y-m-d') . ' ' . $hora_cierre . ' +1 day'));
+
 					// $fecha = "STR_TO_DATE(p.fecha, '%d/%m/%Y') between date_sub(now(),INTERVAL 1 WEEK) and now()";
-					$fecha = "DATE(p.fecha_hora) between date_sub(now(),INTERVAL 1 WEEK) and now()";
+					// $fecha = "DATE(p.fecha_hora) between date_sub(now(),INTERVAL 1 WEEK) and now()";
+					$fecha = "DATE(p.fecha_hora) between '$fecha_hora_inicio' AND '$fecha_hora_cierre'";
 					break;
 				case 'mes':
 					// $fecha = $fecha == 0 ? 'now()' : "STR_TO_DATE('$fecha', '%d/%m/%Y')";
@@ -1256,11 +1337,23 @@
 					// Obtener el último día del mes dado
 					$last_day_month = date("Y-m-t", strtotime($first_day_month));
 
+					// // Calcular la fecha y hora de inicio y cierre									
+					$first_day_last_month = date('Y-m-d', strtotime("$yy-$mm-01 -1 month"));
+					$first_day_next_month = date('Y-m-d', strtotime("$yy-$mm-01 first day of next month"));
+
+					$fecha_hora_inicio = date('Y-m-d H:i:s', strtotime($first_day_last_month . ' ' . $hora_cierre));
+					$fecha_hora_cierre = date('Y-m-d H:i:s', strtotime($first_day_next_month . ' ' . $hora_cierre));
+
 					// $_sql = "select concat(min(rp.idpedido),',',max(rp.idpedido)) from pedido rp where idsede=$idsede and STR_TO_DATE(rp.fecha, '%d/%m/%Y') BETWEEN date_sub('$first_day_month',INTERVAL 1 MONTH) and LAST_DAY('$first_day_month')";
+					// $_sql = "SELECT CONCAT(MIN(rp.idpedido), ',', MAX(rp.idpedido)) 
+					// 	FROM pedido rp 
+					// 	WHERE idsede = $idsede 
+					// 	AND DATE(rp.fecha_hora) BETWEEN '$first_day_month' AND '$last_day_month'";
+
 					$_sql = "SELECT CONCAT(MIN(rp.idpedido), ',', MAX(rp.idpedido)) 
 						FROM pedido rp 
 						WHERE idsede = $idsede 
-						AND DATE(rp.fecha_hora) BETWEEN '$first_day_month' AND '$last_day_month'";
+						AND rp.fecha_hora BETWEEN '$fecha_hora_inicio' AND '$fecha_hora_cierre'";
 						
 					$minMaxID = $bd->xDevolverUnDato($_sql);					
 					$minMaxID = explode(",", $minMaxID);
@@ -1272,9 +1365,15 @@
 				case 'rango':
 						$option = $_POST['option'];					
 						$date1 = $option['value1'];
-						$date2 = $option['value2'];					
+						$date2 = $option['value2'];	
+						
+						// Calcular la fecha y hora de inicio y cierre
+						$fecha_hora_cierre_calc = date('Y-m-d H:i:s', strtotime($date2 . ' ' . $hora_cierre));
+						$fecha_hora_inicio = date('Y-m-d H:i:s', strtotime($date1 . ' ' . $hora_cierre));
+						$fecha_hora_cierre = date('Y-m-d H:i:s', strtotime($fecha_hora_cierre_calc . ' +1 day'));
 
-						$_sql = "select concat(min(rp.idpedido),',',max(rp.idpedido)) from pedido rp where idsede=$idsede and DATE(rp.fecha_hora) BETWEEN cast('$date1' as date) and cast('$date2' as date)";
+						// $_sql = "select concat(min(rp.idpedido),',',max(rp.idpedido)) from pedido rp where idsede=$idsede and DATE(rp.fecha_hora) BETWEEN cast('$date1' as date) and cast('$date2' as date)";
+						$_sql = "select concat(min(rp.idpedido),',',max(rp.idpedido)) from pedido rp where idsede=$idsede and rp.fecha_hora BETWEEN '$fecha_hora_inicio' and '$fecha_hora_cierre'";
 						$minMaxID = $bd->xDevolverUnDato($_sql);					
 						$minMaxID = explode(",", $minMaxID);
 						$lastIdRegistroPago = $minMaxID[1];
@@ -1317,18 +1416,35 @@
 			$rango = $_POST['rango'];
 
 			$idsede = $idsede == 0 ? $g_idsede : $idsede;			
+			
+			// obtenemos la hora de cierre
+			$sql_hora_cierre = "select hora_cierre_dia d1 from sede_opciones where idsede = $idsede";
+			$hora_cierre = $bd->xDevolverUnDato($sql_hora_cierre);
+
+			// si no se obtuvo un registro, establecer la hora de cierre a '00:00:00'
+			if (!isset($hora_cierre)) {
+				$hora_cierre = '00:00:00';
+			}
 
 			switch ($rango) {
 				case 'fecha':
 					// $fecha = $fecha == 0 ? " p.cierre = 0 and STR_TO_DATE(p.fecha, '%d/%m/%Y') BETWEEN DATE_SUB(NOW(), INTERVAL 2 DAY) AND NOW()" : " STR_TO_DATE(p.fecha, '%d/%m/%Y') = STR_TO_DATE('$fecha', '%d/%m/%Y')";
+
+					$fecha_hora_inicio = date('Y-m-d H:i:s', strtotime(date('Y-m-d') . ' ' . $hora_cierre));
+					$fecha_hora_cierre = date('Y-m-d H:i:s', strtotime('1 day ' . date('Y-m-d') . ' ' . $hora_cierre));
 					
-					$_sql = "select COALESCE (min(idpedido), 0) d1 from pedido where idsede = $idsede and DATE(fecha_hora) >= date_sub(curdate(), INTERVAL 2 day) limit 2";
+					// $_sql = "select COALESCE (min(idpedido), 0) d1 from pedido where idsede = $idsede and DATE(fecha_hora) >= date_sub(curdate(), INTERVAL 2 day) limit 2";
+					$_sql = "select COALESCE (min(idpedido), 0) d1 from pedido where idsede = $idsede and fecha_hora BETWEEN '$fecha_hora_inicio' AND '$fecha_hora_cierre' limit 2";
 					$firstIdPedidoToDay = $bd->xDevolverUnDato($_sql);
 					$fecha = " p.cierre = 0 and p.idpedido >= $firstIdPedidoToDay";
 					break;
 				
 				case 'semana':
-					$fecha = "DATE(p.fecha_hora) between date_sub(now(),INTERVAL 1 WEEK) and now()";
+					$fecha_hora_inicio = date('Y-m-d H:i:s', strtotime('last week monday ' . $hora_cierre));
+					$fecha_hora_cierre = date('Y-m-d H:i:s', strtotime(date('Y-m-d') . ' ' . $hora_cierre . ' +1 day'));
+
+					// $fecha = "DATE(p.fecha_hora) between date_sub(now(),INTERVAL 1 WEEK) and now()";
+					$fecha = "p.fecha_hora BETWEEN '$fecha_hora_inicio' AND '$fecha_hora_cierre'";
 					break;
 				case 'mes':
 					// $fecha = $fecha == 0 ? 'now()' : "STR_TO_DATE('$fecha', '%d/%m/%Y')";
@@ -1342,11 +1458,25 @@
 					// Obtener el último día del mes dado
 					$last_day_month = date("Y-m-t", strtotime($first_day_month));
 
+					// // Calcular la fecha y hora de inicio y cierre									
+					$first_day_last_month = date('Y-m-d', strtotime("$yy-$mm-01 -1 month"));
+					$first_day_next_month = date('Y-m-d', strtotime("$yy-$mm-01 first day of next month"));
+
+					$fecha_hora_inicio = date('Y-m-d H:i:s', strtotime($first_day_last_month . ' ' . $hora_cierre));
+					$fecha_hora_cierre = date('Y-m-d H:i:s', strtotime($first_day_next_month . ' ' . $hora_cierre));
+					
+
 					// $_sql = "select concat(min(rp.idpedido),',',max(rp.idpedido)) from pedido rp where idsede=$idsede and STR_TO_DATE(rp.fecha, '%d/%m/%Y') BETWEEN date_sub('$first_day_month',INTERVAL 1 MONTH) and LAST_DAY('$first_day_month')";
+					// $_sql = "SELECT CONCAT(MIN(rp.idpedido), ',', MAX(rp.idpedido)) 
+					// 		FROM pedido rp 
+					// 		WHERE idsede = $idsede 
+					// 		AND DATE(rp.fecha_hora) BETWEEN '$first_day_month' AND '$last_day_month'";
+
 					$_sql = "SELECT CONCAT(MIN(rp.idpedido), ',', MAX(rp.idpedido)) 
-							FROM pedido rp 
-							WHERE idsede = $idsede 
-							AND DATE(rp.fecha_hora) BETWEEN '$first_day_month' AND '$last_day_month'";
+						FROM pedido rp 
+						WHERE idsede = $idsede 
+						AND rp.fecha_hora BETWEEN '$fecha_hora_inicio' AND '$fecha_hora_cierre'";
+
 					$minMaxID = $bd->xDevolverUnDato($_sql);					
 					$minMaxID = explode(",", $minMaxID);
 					$lastIdRegistroPago = $minMaxID[1];
@@ -1357,9 +1487,19 @@
 				case 'rango':
 						$option = $_POST['option'];					
 						$date1 = $option['value1'];
-						$date2 = $option['value2'];					
+						$date2 = $option['value2'];		
+						
+						// Calcular la fecha y hora de inicio y cierre
+						$fecha_hora_cierre_calc = date('Y-m-d H:i:s', strtotime($date2 . ' ' . $hora_cierre));
+						$fecha_hora_inicio = date('Y-m-d H:i:s', strtotime($date1 . ' ' . $hora_cierre));
+						$fecha_hora_cierre = date('Y-m-d H:i:s', strtotime($fecha_hora_cierre_calc . ' +1 day'));
 
-						$_sql = "select concat(min(rp.idpedido),',',max(rp.idpedido)) from pedido rp where idsede=$idsede and DATE(rp.fecha_hora) BETWEEN cast('$date1' as date) and cast('$date2' as date)";
+						// $_sql = "select concat(min(rp.idpedido),',',max(rp.idpedido)) from pedido rp where idsede=$idsede and DATE(rp.fecha_hora) BETWEEN cast('$date1' as date) and cast('$date2' as date)";
+						$_sql = "SELECT CONCAT(MIN(rp.idpedido), ',', MAX(rp.idpedido)) 
+							FROM pedido rp 
+							WHERE idsede = $idsede 
+							AND rp.fecha_hora BETWEEN '$fecha_hora_inicio' AND '$fecha_hora_cierre'";
+
 						$minMaxID = $bd->xDevolverUnDato($_sql);					
 						$minMaxID = explode(",", $minMaxID);
 						$lastIdRegistroPago = $minMaxID[1];
@@ -1390,17 +1530,35 @@
 			$fecha = $_POST['fecha'];
 			$rango = $_POST['rango'];
 
-			$idsede = $idsede == 0 ? $g_idsede : $idsede;			
+			$idsede = $idsede == 0 ? $g_idsede : $idsede;		
+			
+			// obtenemos la hora de cierre
+			$sql_hora_cierre = "select hora_cierre_dia d1 from sede_opciones where idsede = $idsede";
+			$hora_cierre = $bd->xDevolverUnDato($sql_hora_cierre);
+
+			// si no se obtuvo un registro, establecer la hora de cierre a '00:00:00'
+			if (!isset($hora_cierre)) {
+				$hora_cierre = '00:00:00';
+			}
 
 			switch ($rango) {
 				case 'fecha':
+
+					$fecha_hora_inicio = date('Y-m-d H:i:s', strtotime(date('Y-m-d') . ' ' . $hora_cierre));
+					$fecha_hora_cierre = date('Y-m-d H:i:s', strtotime('1 day ' . date('Y-m-d') . ' ' . $hora_cierre));
+
 					// $fecha = $fecha == 0 ? " rp.cierre = 0 and STR_TO_DATE(p.fecha, '%d/%m/%Y') BETWEEN DATE_SUB(NOW(), INTERVAL 2 DAY) AND NOW()" : " STR_TO_DATE(rp.fecha, '%d/%m/%Y') = STR_TO_DATE('$fecha', '%d/%m/%Y')";
-					$lastIdRegistroPago = $bd->xDevolverUnDato("select COALESCE (min(idregistro_pago), 0) d1 from registro_pago where idsede = $idsede and date(fecha_hora) >= date_sub(curdate(), INTERVAL 2 day) limit 2");	
+					// $lastIdRegistroPago = $bd->xDevolverUnDato("select COALESCE (min(idregistro_pago), 0) d1 from registro_pago where idsede = $idsede and date(fecha_hora) >= date_sub(curdate(), INTERVAL 2 day) limit 2");	
+					$lastIdRegistroPago = $bd->xDevolverUnDato("select COALESCE (min(idregistro_pago), 0) d1 from registro_pago where idsede = $idsede and fecha_hora BETWEEN '$fecha_hora_inicio' AND '$fecha_hora_cierre'");
 					$fecha = " rp.idregistro_pago >= $lastIdRegistroPago and rp.cierre = 0";
 					break;
 				
 				case 'semana':
-					$fecha = "date(rp.fecha_hora) between date_sub(now(),INTERVAL 1 WEEK) and now()";
+					$fecha_hora_inicio = date('Y-m-d H:i:s', strtotime('last week monday ' . $hora_cierre));
+					$fecha_hora_cierre = date('Y-m-d H:i:s', strtotime(date('Y-m-d') . ' ' . $hora_cierre . ' +1 day'));
+					
+					// $fecha = "date(rp.fecha_hora) between date_sub(now(),INTERVAL 1 WEEK) and now()";
+					$fecha = "rp.fecha_hora between '$fecha_hora_inicio' AND '$fecha_hora_cierre'";
 					break;
 				case 'mes':
 					// $fecha = $fecha == 0 ? 'now()' : "STR_TO_DATE('$fecha', '%d/%m/%Y')";
@@ -1410,9 +1568,19 @@
 					$mm = $option['num_mm'];
 					$yy = $option['num_yy'];
 					$first_day_month = $option['value'].'-01'; // el primer dia mes
-					$last_day_month = date("Y-m-t", strtotime($first_day_month));					
+					$last_day_month = date("Y-m-t", strtotime($first_day_month));	
+					
+					// // Calcular la fecha y hora de inicio y cierre									
+					$first_day_last_month = date('Y-m-d', strtotime("$yy-$mm-01 -1 month"));
+					$first_day_next_month = date('Y-m-d', strtotime("$yy-$mm-01 first day of next month"));
 
-					$_sql = "select concat(min(rp.idregistro_pago),',',max(rp.idregistro_pago)) from registro_pago rp where idsede=$idsede and DATE(rp.fecha_hora) BETWEEN '$first_day_month' and '$last_day_month'";
+					$fecha_hora_inicio = date('Y-m-d H:i:s', strtotime($first_day_last_month . ' ' . $hora_cierre));
+					$fecha_hora_cierre = date('Y-m-d H:i:s', strtotime($first_day_next_month . ' ' . $hora_cierre));
+
+
+					// $_sql = "select concat(min(rp.idregistro_pago),',',max(rp.idregistro_pago)) from registro_pago rp where idsede=$idsede and DATE(rp.fecha_hora) BETWEEN '$first_day_month' and '$last_day_month'";
+					$_sql = "select concat(min(rp.idregistro_pago),',',max(rp.idregistro_pago)) from registro_pago rp where idsede=$idsede and rp.fecha_hora BETWEEN '$fecha_hora_inicio' AND '$fecha_hora_cierre'";
+
 					$minMaxID = $bd->xDevolverUnDato($_sql);					
 					$minMaxID = explode(",", $minMaxID);
 					$lastIdRegistroPago = $minMaxID[1];
@@ -1424,9 +1592,15 @@
 				case 'rango':
 					$option = $_POST['option'];					
 					$date1 = $option['value1'];
-					$date2 = $option['value2'];					
+					$date2 = $option['value2'];		
+					
+					// Calcular la fecha y hora de inicio y cierre
+						$fecha_hora_cierre_calc = date('Y-m-d H:i:s', strtotime($date2 . ' ' . $hora_cierre));
+						$fecha_hora_inicio = date('Y-m-d H:i:s', strtotime($date1 . ' ' . $hora_cierre));
+						$fecha_hora_cierre = date('Y-m-d H:i:s', strtotime($fecha_hora_cierre_calc . ' +1 day'));
 
-					$_sql = "select concat(min(rp.idregistro_pago),',',max(rp.idregistro_pago)) from registro_pago rp where idsede=$idsede and date(rp.fecha_hora) BETWEEN cast('$date1' as date) and cast('$date2' as date)";
+					// $_sql = "select concat(min(rp.idregistro_pago),',',max(rp.idregistro_pago)) from registro_pago rp where idsede=$idsede and date(rp.fecha_hora) BETWEEN cast('$date1' as date) and cast('$date2' as date)";
+					$_sql = "select concat(min(rp.idregistro_pago),',',max(rp.idregistro_pago)) from registro_pago rp where idsede=$idsede and rp.fecha_hora BETWEEN '$fecha_hora_inicio' AND '$fecha_hora_cierre'";
 					$minMaxID = $bd->xDevolverUnDato($_sql);					
 					$minMaxID = explode(",", $minMaxID);
 					$lastIdRegistroPago = $minMaxID[1];

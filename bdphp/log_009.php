@@ -170,9 +170,13 @@
             $sql = "update porcion set stock='$data->stock_actual' where idporcion=$data->idporcion";
             $bd->xConsulta_NoReturn($sql);
 
-            $sql = "insert into porcion_historial(tipo_movimiento,fecha,hora,cantidad,idusuario, idsede,idporcion)
-                    values ('$data->movimiento', curdate(), '$hora','$data->cantidad', $g_us,$g_idsede,$data->idporcion)";
+            //idtipo_movimiento_stock = 1 => entrada
+            $idtipo_movimiento_stock = $data->movimiento == 'Aumenta' ? 1 : 2;
+
+            $sql = "insert into porcion_historial(tipo_movimiento,idtipo_movimiento_stock,fecha_date,fecha,hora,cantidad,idusuario, idsede,idporcion,stock_total)
+                    values ('$data->movimiento',$idtipo_movimiento_stock, curdate(), curdate(), '$hora','$data->cantidad', $g_us,$g_idsede,$data->idporcion, $data->stock_total)";
             $bd->xConsulta($sql);
+
             // echo json_encode(array('respuesta' => 'ok'));
             break;
         case 101; //load porciones
@@ -223,7 +227,14 @@
             break;
         case 116: // load cantidad de recetas enlazadas
             $postBody = json_decode(file_get_contents('php://input'));
-            $sql="select count(idporcion) cantidad from item_ingrediente ii where idporcion = $postBody->idporcion and estado = 0";
+            $sql="select count(idporcion) from item_ingrediente ii where idporcion = $postBody->idporcion and estado = 0";
+            $bd->xConsulta($sql);
+            break;
+        case 11601: // load cantidad de recetas enlazadas
+            $postBody = json_decode(file_get_contents('php://input'));
+            $sql="select i.descripcion, ii.cantidad from item_ingrediente ii 
+                inner join item i using(iditem)
+                where ii.idporcion = $postBody->idporcion and ii.estado = 0";
             $bd->xConsulta($sql);
             break;
         case 117: // borrar porcion 
@@ -365,12 +376,13 @@
             break;
         case 2301: // lista de consumos x cliente
             $postBody = json_decode(file_get_contents('php://input'));
-            $sql = "select rp.idregistro_pago, rpd.idregistro_pago_detalle,STR_TO_DATE(rp.fecha, '%d/%m/%Y') fecha , rp.total, rpd.importe, format(rpd.pagado,2) pagado
+            $sql = "select rp.idregistro_pago, COALESCE(c.external_id, 0) external_id, rpd.idregistro_pago_detalle,STR_TO_DATE(rp.fecha, '%d/%m/%Y') fecha , rp.total, rpd.importe, format(rpd.pagado,2) pagado
                 ,CONCAT('Pasaron: ',DATEDIFF(now(),STR_TO_DATE(rp.fecha, '%d/%m/%Y')), ' dia(s)') as pasaron
                 ,format((rpd.importe - rpd.pagado),2) debe
                 ,rpd.flag_pagado
             from registro_pago rp 
                 inner join registro_pago_detalle rpd using(idregistro_pago)
+                left join ce c on c.idce = rp.idce
             where rp.idcliente=$postBody->idcliente and rpd.idtipo_pago = 3 and rp.idsede = $g_idsede and rpd.flag_pagado = 0
             order by rp.idregistro_pago desc";
 
