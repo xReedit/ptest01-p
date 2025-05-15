@@ -98,7 +98,7 @@
             }
             
             // Iniciar transacción
-            $bd->xConsulta_NoReturn("START TRANSACTION");
+            // $bd->xConsulta_NoReturn("START TRANSACTION");
             
             try {
                 // Crear nueva carta

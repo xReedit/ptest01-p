@@ -301,7 +301,8 @@ use function PHPSTORM_META\sql_injection_subst;
                     $bd->xConsulta_NoReturn($sql);
                 } else {
                     if ($marca->is_new) {                        
-                        $sql = "insert into sede_holding_marcas (idsede_holding, idsede_marca, fecha_ingreso, imagen_url_comercial, nombre_comercial, oferta_comercial) values ($marca->idsede_holding, $marca->idsede_marca, NOW(), '$marca->imagen_url_comercial', '$marca->nombre_comercial', '$marca->oferta_comercial')";
+                        $sql = "insert into sede_holding_marcas (idsede_holding, idsede_marca, fecha_ingreso, imagen_url_comercial, nombre_comercial, oferta_comercial) 
+                        values ($marca->idsede_holding, $marca->idsede_marca, NOW(), '$marca->imagen_url_comercial', '$marca->nombre_comercial', '$marca->oferta_comercial')";
                         $bd->xConsulta_NoReturn($sql);
                     }
                 }
