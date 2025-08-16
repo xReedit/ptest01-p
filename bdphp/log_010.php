@@ -399,7 +399,12 @@ use function PHPSTORM_META\sql_injection_subst;
                 $hora_cierre = '00:00:00';
             }
 
-            $fecha = $data->fecha;
+            // verificar si es holding
+            $where_holding = $data->idsede_holding == 0 ? 
+                "pj.idsede = $g_idsede" : 
+                "pj.idsede_holding = $data->idsede_holding";
+
+            $fecha = $data->fecha == '' ? date('Y-m-d') : $data->fecha;
             $fecha_hora_inicio = date('Y-m-d H:i:s', strtotime($fecha . ' ' . $hora_cierre));
             $fecha_hora_cierre = date('Y-m-d H:i:s', strtotime($fecha_hora_inicio . ' +1 day'));
             
@@ -413,7 +418,7 @@ use function PHPSTORM_META\sql_injection_subst;
                 inner join sede s on pj.idsede = s.idsede
                 where 
                 rp.fecha_hora between '$fecha_hora_inicio' and '$fecha_hora_cierre' and 
-                pj.idsede_holding = $data->idsede_holding
+                $where_holding
                 GROUP by rp.idregistro_pago, tp.idtipo_pago";
 
             $bd->xConsulta($sql);         

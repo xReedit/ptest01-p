@@ -2177,20 +2177,50 @@
 			$id_pedidos_anular='';
 			$motivo_anular=$_POST['xMotivo'];
 			$isRecuperarStock = isset($_POST['xisRecuperarStock']) ? $_POST['xisRecuperarStock'] : '0';
+			$numPedidosRegistro = isset($_POST['numpedidos']) ? $_POST['numpedidos'] : '0';
+			$idregistro_pago = isset($_POST['idregistro_pago']) ? $_POST['idregistro_pago'] : '0';
+			$idpedidosDetalles = isset($_POST['idpedidosDetalles']) ? $_POST['idpedidosDetalles'] : '0';
 
 
 			//$count_filas_item=count($xarray_pe_anular);
-			if($xarray_pe_anular==='' || $xarray_pe_anular == []){//anular todos los pedidos
+			if($xarray_pe_anular === '' || $xarray_pe_anular == []){//anular todos los pedidos
+
+				// si viene de registro de pagos - esto para evitar que se anule el todo el pedido sino corresponde
+				// if ( $numPedidosRegistro != 0 && isset($_POST['viene_historial']) ) {
+				// 	// Validar cantidad de productos en pedido_detalle
+				// 	$sql_count = "SELECT COUNT(*) as total_productos FROM pedido_detalle WHERE idpedido IN (".$id_pedidos_anular.")";
+				// 	$result_count = $bd->xConsulta($sql_count);
+				// 	$total_productos = $result_count[0]['total_productos'];
+
+				// 	// Solo cambiar estado si la cantidad coincide
+				// 	if ($total_productos == $numPedidosRegistro) {
+				// 		$sql_todos="update pedido set estado=3, motivo_anular='".$motivo_anular."' where idpedido in (".$id_pedidos_anular."); ";
+				// 		$bd->xConsulta_NoReturn($sql_todos);					
+				// 	}
+				// } else {
+				// 	$id_pedidos_anular=$_POST['xPedidos'];
+				// 	$sql_todos="update pedido set estado=3, motivo_anular='".$motivo_anular."' where idpedido in (".$id_pedidos_anular."); ";
+				// 	$bd->xConsulta_NoReturn($sql_todos);
+				// }
+
 				$id_pedidos_anular=$_POST['xPedidos'];
 				$sql_todos="update pedido set estado=3, motivo_anular='".$motivo_anular."' where idpedido in (".$id_pedidos_anular."); ";
 				$bd->xConsulta_NoReturn($sql_todos);
+
 			}else{//si solo estan algunos pedidos seleccionados
 				$id_pedidos_anular=$xarray_pe_anular[0]['idpedidos'];
 				$motivo_anular=$xarray_pe_anular[0]['m_a'];
 
-				// and pagado=0 si ya pago no elimina
-				$sql_pdt="update pedido_detalle set estado=1, borrado=1 where idpedido in (".$id_pedidos_anular.") and pagado=0;";
-				$bd->xConsulta_NoReturn($sql_pdt);
+				if ( isset($_POST['viene_historial']) ) {
+					$sql_pdt="update pedido_detalle set estado=1, borrado=1 where idpedido_detalle in (".$idpedidosDetalles.")";
+					$bd->xConsulta_NoReturn($sql_pdt);
+
+				} else {
+					// and pagado=0 si ya pago no elimina
+					$sql_pdt="update pedido_detalle set estado=1, borrado=1 where idpedido in (".$id_pedidos_anular.") and pagado=0;";
+					$bd->xConsulta_NoReturn($sql_pdt);
+				}
+
 
 				// $id_pedidos_anular = rtrim($id_pedidos_anular, ",");
 				// $id_pedidos_anular = $id_pedidos_anular.',';
@@ -2198,13 +2228,31 @@
 				$list_id_pedidos_anular = explode(",", $id_pedidos_anular);
 				foreach ($list_id_pedidos_anular as $arrIdP) {
 					if ( $arrIdP !== '' ) {
-						$sql_pdt="update pedido as p	
-								inner join (select idpedido, sum(pagado) pagado from pedido_detalle
-											where idpedido=$arrIdP GROUP by idpedido) as pd on pd.idpedido = p.idpedido
-								set p.estado = if(pd.pagado=0,3,4), p.motivo_anular='".$motivo_anular."'		
-								where pd.idpedido = $arrIdP";
-						
-						$bd->xConsulta_NoReturn($sql_pdt);
+
+
+						// si viene de registro de pagos - esto para evitar que se anule el todo el pedido sino corresponde
+						if ( isset($_POST['viene_historial']) ) {
+							// Validar cantidad de productos en pedido_detalle
+							$sql_count = "SELECT COUNT(*) as total_productos FROM pedido_detalle WHERE idpedido = ".$arrIdP;
+							$result_count = $bd->xConsulta($sql_count);
+							$total_productos = $result_count[0]['total_productos'];
+
+							// Solo cambiar estado si la cantidad coincide
+							if ($total_productos == $numPedidosRegistro) {
+								$sql_todos="update pedido set estado=if(pd.pagado=0,3,4), motivo_anular='".$motivo_anular."' where idpedido = ".$arrIdP;
+								$bd->xConsulta_NoReturn($sql_todos);					
+							}
+						} else {
+
+							$sql_pdt="update pedido as p	
+									inner join (select idpedido, sum(pagado) pagado from pedido_detalle
+												where idpedido=$arrIdP GROUP by idpedido) as pd on pd.idpedido = p.idpedido
+									set p.estado = if(pd.pagado=0,3,4), p.motivo_anular='".$motivo_anular."'		
+									where pd.idpedido = $arrIdP";
+							
+							$bd->xConsulta_NoReturn($sql_pdt);
+						}
+
 					}
 				}
 
@@ -3859,7 +3907,7 @@ function xDtUS($op_us){
 			$sql_us = "select * from sede_opciones where idsede = $g_idsede limit 1";
 			break;
 		case 3017: // datos variables de la sede
-			$sql_us = "select idorg_marca, idsede_marca from sede_holding_marcas where idsede_marca = $g_idsede";
+			$sql_us = "select idsede_holding, idorg_marca, idsede_marca from sede_holding_marcas where idsede_marca = $g_idsede";
 			break;
 	}
 	$rows = [];

@@ -13,7 +13,7 @@
                 <div class="xLinea2"></div><br>
                 <div class="x_div_linea">
                     <div class="xitem1 xBordeDe">
-                        <h3 id="xdes_item_titulo">Sopa de pollo</h3>d
+                        <h3 id="xdes_item_titulo">Sopa de pollo</h3>
                         <table class="xtable4" id="tb_item">
                             <tr class="xInvisible" id="tr_des">
                                 <td>Descripcion</td>
@@ -409,7 +409,7 @@
         const _descripcionProducto = xThis.isFromRecetaProducto ? _productoSelected.label : xdes_ingrediente;
         let _cantidad = xcan_item;
 
-        if (xThis.isFromRecetaProducto) {
+        if (xThis.isFromRecetaProducto && xThis.undConvercion) {
             const _rptCalculo = calcularCantidadDescuento(xcan_item, xThis.undConvercion, _productoSelected);
             _cantidad = _rptCalculo.cantidadDescontar;
         }
@@ -487,8 +487,16 @@
             };
         }
 
+        if (!undConvercion) {
+            return {
+                error: true,
+                mensaje: 'La unidad de conversión no es válida',
+                cantidadDescontar: cantidadReceta
+            };
+        }
+
         // Extraer información relevante de los objetos
-        const unidadReceta = undConvercion.abreviatura || '';
+        const unidadReceta = undConvercion ? undConvercion.abreviatura : '';
         const factorConversion = parseFloat(productoSeleccionado.factor_conversion) || 0;
 
         // Obtener la unidad de kardex (podría necesitar una consulta adicional)
