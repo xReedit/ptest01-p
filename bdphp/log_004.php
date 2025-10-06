@@ -24,12 +24,14 @@
 					,sd.is_bloqueado, sd.is_baja, s.costo_restobar_fijo_mensual
 					, spc.importe importe_plan, spc.descripcion plan, ss.frecuencia
 					, ss.idsede_suscripcion, ss.idsede_plan_contratado
+					, DATE(s.finicio) fecha_creacion
+					, DATEDIFF(NOW(), DATE(s.finicio)) num_dias_creado
 				FROM org as o 
 					LEFT JOIN sede as s on s.idorg=o.idorg
 					LEFT join sede_estado sd on s.idsede=sd.idsede
 					left join sede_suscripcion ss on s.idsede=ss.idsede
 					left join sede_plan_contratado spc on ss.idsede_plan_contratado = spc.idsede_plan_contratado
-				WHERE o.estado=0 order by o.idorg, s.idsede, s.estado
+				WHERE o.estado=0 order by s.idsede
 			";
 			$bd->xConsulta($sql);
 			break;		

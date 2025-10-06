@@ -821,7 +821,14 @@
 
 					// $fecha_hora_cierre = "DATE_ADD(CURDATE(), INTERVAL '$hora_cierre' HOUR_MINUTE_SECOND)";
 					
-					$lastIdRegistroPago = $bd->xDevolverUnDato("select COALESCE (min(idregistro_pago), 0) d1 from registro_pago where idsede = $idsede and fecha_hora >= date_sub(curdate(), INTERVAL 3 day) limit 2");
+					// $lastIdRegistroPago = $bd->xDevolverUnDato("select COALESCE (min(idregistro_pago), 0) d1 from registro_pago where idsede = $idsede and fecha_hora >= date_sub(curdate(), INTERVAL 3 day) limit 2");
+					$fecha_limite = date('Y-m-d H:i:s', strtotime('-3 days'));
+					// $lastIdRegistroPago = $bd->xDevolverUnDato("SELECT COALESCE(MIN(idregistro_pago), 0) d1 FROM registro_pago WHERE idsede = $idsede AND fecha_hora >= '$fecha_limite'");	
+					$lastIdRegistroPago = $bd->xDevolverUnDato("SELECT COALESCE(idregistro_pago, 0) idregistro_pago FROM registro_pago 
+																WHERE idsede = $idsede AND fecha_hora >= '$fecha_limite' 
+																ORDER BY idregistro_pago ASC 
+																LIMIT 1");	
+
 					$fecha = " rp.idregistro_pago >= $lastIdRegistroPago"; //(rp.cierre = 0 and STR_TO_DATE(rp.fecha, '%d/%m/%Y') BETWEEN DATE_SUB(CURDATE(), INTERVAL 2 DAY) AND CURDATE())";
 					$hoy = "if (rp.fecha_hora BETWEEN '$fecha_hora_inicio' and '$fecha_hora_cierre', 1, 0 )";					
 					$columm_add = '';
@@ -900,8 +907,16 @@
 
 			
 
-			$sql = "SELECT rpd.*, STR_TO_DATE(rp.fecha, '%d/%m/%Y') fecha, rp.fecha_hora, DATE_FORMAT(STR_TO_DATE(rp.fecha, '%d/%m/%Y %H:%i:%s %p'), '%H %p') hora, rp.estado, rp.fecha_cierre, tp.descripcion des_tp, tc.idtipo_comprobante, tc.descripcion comprobante, rp.correlativo 
-				, $hoy hoy, tp.img, tpc.descripcion destpc
+			$sql = "SELECT rpd.*, 
+				DATE_FORMAT(rp.fecha_hora, '%d/%m/%Y') as fecha,
+				DATE_FORMAT(rp.fecha_hora, '%H %p') as hora, 
+				rp.estado,
+				rp.fecha_cierre,
+				tp.descripcion des_tp,
+				tc.idtipo_comprobante,
+				tc.descripcion comprobante,
+				rp.correlativo,
+				$hoy hoy, tp.img, tpc.descripcion destpc
 				$columm_add
 			from registro_pago_detalle rpd 
 				 inner join registro_pago rp on rp.idregistro_pago = rpd.idregistro_pago 
@@ -910,7 +925,8 @@
 				 left join tipo_comprobante_serie tcs on rp.idtipo_comprobante_serie = tcs.idtipo_comprobante_serie
 				 LEFT join tipo_comprobante tc on tcs.idtipo_comprobante = tc.idtipo_comprobante 
 				 where $fecha and rp.idsede = $idsede and rp.estado = 0
-			 order by rpd.idregistro_pago desc";
+			 order by rpd.idregistro_pago desc
+			 LIMIT 12000";
 			 
 			// echo $sql;
 			$bd->xConsulta($sql);
