@@ -1101,7 +1101,8 @@
 				SELECT pds.descripcion, sum(importe)AS importe
 				FROM pedido_subtotales AS pds
 					INNER JOIN pedido AS p using(idpedido)
-				WHERE (p.nummesa=".$_POST['m']." AND p.estado=0) AND pds.estado=0 AND pds.descripcion!='sub total' AND (p.idorg=".$g_ido." AND p.idsede=".$g_idsede.")
+				WHERE p.idorg=".$g_ido." AND p.idsede=".$g_idsede." and
+				p.nummesa=".$_POST['m']." and p.estado=0 and pds.estado=0 and pds.descripcion!='sub total'
 				GROUP BY pds.descripcion
 				ORDER BY sum(importe) desc
 			";
