@@ -13,9 +13,22 @@ class SecurityGuard {
      * Verifica que el acceso sea legítimo (desde la aplicación y autenticado)
      * 
      * @param bool $verificarSesion Si debe verificar que el usuario esté logueado (default: true)
+     * @param array $casosExcluidos Array de casos (op) que no requieren verificación
      * @return void Si falla, termina la ejecución con error JSON
      */
-    public static function verificarAcceso($verificarSesion = true) {
+    public static function verificarAcceso($verificarSesion = true, $casosExcluidos = []) {
+        // Si hay casos excluidos, verificar si el op actual está en la lista
+        if (!empty($casosExcluidos)) {
+            $op = isset($_GET['op']) ? intval($_GET['op']) : 0;
+            if (in_array($op, $casosExcluidos)) {
+                // Caso público - solo iniciar sesión pero no verificar
+                if (session_status() === PHP_SESSION_NONE) {
+                    session_start();
+                }
+                return; // Permitir sin verificar
+            }
+        }
+        
         // 1. Verificar que venga desde tu aplicación (no acceso directo)
         self::verificarReferer();
         
