@@ -1,6 +1,7 @@
 <?php
 
-session_start();
+require_once __DIR__ . '/SecurityGuard.php';
+SecurityGuard::verificarAcceso(true, ['get-version-changelog']);
 //header("Cache-Control: no-cache,no-store");
 // header("Access-Control-Allow-Origin: *");}
 header("Access-Control-Allow-Origin: http://127.0.0.1");

@@ -2,7 +2,9 @@
     //log comprobantes electronicos
     // session_set_cookie_params('4000'); // 1 hour
     // session_regenerate_id(true); 
-    session_start();	
+    
+    require_once __DIR__ . '/SecurityGuard.php';
+    SecurityGuard::verificarAcceso();	
     //header("Cache-Control: no-cache,no-store");
 
     // header('Access-Control-Allow-Origin: *');

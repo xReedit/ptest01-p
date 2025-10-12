@@ -2,7 +2,8 @@
 
     // produccion
 
-    session_start();
+	require_once __DIR__ . '/SecurityGuard.php';
+	SecurityGuard::verificarAcceso();
 	//header("Cache-Control: no-cache,no-store");
 	header("Access-Control-Allow-Origin: *");
 	header('Content-Type: application/json;charset=utf-8');

@@ -1,5 +1,6 @@
 <?php
-session_start();	
+require_once __DIR__ . '/SecurityGuard.php';
+SecurityGuard::verificarAcceso();	
 header('Content-Type: text/event-stream');
 header('Content-Type: application/json;charset=utf-8');
 header('Cache-Control: no-cache');

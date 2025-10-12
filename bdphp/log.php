@@ -2,6 +2,8 @@
 	// session_set_cookie_params('14400'); // 4 hour
 	// session_cache_expire(180); // minutes
 	// session_regenerate_id(true); 
+	require_once __DIR__ . '/SecurityGuard.php';
+	SecurityGuard::verificarAcceso(true, [102,-1112,-104,-102,-1]);
 	session_start();	
 	//header("Cache-Control: no-cache,no-store");
 	header('content-type: text/html; charset: utf-8');
@@ -39,15 +41,27 @@
 
 			if ( $tabla == "carta_lista" ) {
 				$id = "'$id'"; // char
+				$sql="delete from carta_lista where idcarta_lista= $id";
+				$bd->xConsulta($sql);
+			} else {
+				print 1;
+				return false;
 			}
 
 
-			$sql="delete from $tabla where id$tabla= $id";
-			$bd->xConsulta($sql);
+			
 			break;		
 		case 10101://borrar tabla 2 criterio tabla y id ej: en carta borrar de carta_lista la seccion
-			$sql="delete from ".$_POST['t']." where ".$_POST['campo']."=".$_POST['id'];
-			$bd->xConsulta($sql);
+			if ( $_POST['campo'] == "idseccion" ) {
+				$sql = "delete from carta_lista where idseccion =".$_POST['id'];
+				$bd->xConsulta($sql);
+			} else {
+				print 1;
+				return false;
+			}
+
+			// $sql="delete from ".$_POST['t']." where ".$_POST['campo']."=".$_POST['id'];
+			// $bd->xConsulta($sql);
 			break;
 		case 103://borrado logico
 			$sql="update ".$_POST['t']." set estado=1 where id".$_POST['t']."=".$_POST['id'];
@@ -69,7 +83,9 @@
 		//	$bd->xConsulta_UltimoId($_POST['sql']);
 		//	break;
 		case 100://multiconsulta
-			$bd->xMultiConsulta($_POST['xsql']);
+			// seguridad 12102025
+			// $bd->xMultiConsulta($_POST['xsql']);
+			print 1;
 			break;
 		case -304: // cambiar clave usuario			
 			$sql = "SELECT pass as d1 from usuario where idusuario=".$_SESSION['idusuario'];
@@ -113,8 +129,12 @@
 			if(strlen($xu)>0){print 1;}else{print 0;}
 			break;
 		case -2://ejecutar consula ej: insert detalle
-			if($_POST['NomCampoPadre']!=""){$bd->xConsulta2('delete from '.$_POST['NomTablaHijo'].' where '.$_POST['NomCampoPadre'].'='.$_POST['idPadre']);}
-			$bd->xConsulta($_POST['xsql']);
+			
+			//seguridad 12102025
+			// if($_POST['NomCampoPadre']!=""){$bd->xConsulta2('delete from '.$_POST['NomTablaHijo'].' where '.$_POST['NomCampoPadre'].'='.$_POST['idPadre']);}
+			// $bd->xConsulta($_POST['xsql']);
+			print 1;
+			return false;
 			break;
 		case -108://verificar si tiene acceso a esta pagina //si no encuentra regresa a la pagina anterior
 			//verifica si el usuario tiene permiso para acceder a esta pagina

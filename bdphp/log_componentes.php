@@ -2,7 +2,9 @@
     //log registrar peidod y pago
     // session_set_cookie_params('4000'); // 1 hour
     // session_regenerate_id(true); 
-    session_start();
+    
+    require_once __DIR__ . '/SecurityGuard.php';
+    SecurityGuard::verificarAcceso();
 	//header("Cache-Control: no-cache,no-store");
 	header('content-type: text/html; charset: utf-8');
 	header('Content-Type: text/event-stream');

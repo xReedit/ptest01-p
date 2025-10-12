@@ -1,6 +1,8 @@
 <?php
 	//log - adm
-	session_start();		
+	
+	require_once __DIR__ . '/SecurityGuard.php';
+	SecurityGuard::verificarAcceso();		
 	// header('content-type application/json');
 	header('content-type: text/html; charset: utf-8');
 	header('Content-Type: text/event-stream');

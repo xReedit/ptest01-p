@@ -23,6 +23,33 @@
 	$fecha_now = date("d/m/Y");
 	$hora_now = date("H:i:s");
 	
+	/**
+	 * Valida y ajusta el rango de fechas para no exceder 3 meses (90 días)
+	 * Si el rango excede el máximo, ajusta la fecha inicial automáticamente
+	 * @param string $date1 Fecha inicial (formato Y-m-d)
+	 * @param string $date2 Fecha final (formato Y-m-d)
+	 * @return array [date1_ajustada, date2_original]
+	 */
+	function validarRangoMaximo3Meses($date1, $date2) {
+		$maxDias = 90; // 3 meses = ~90 días
+		
+		$fecha1 = new DateTime($date1);
+		$fecha2 = new DateTime($date2);
+		$diferencia = $fecha1->diff($fecha2);
+		$diasDiferencia = $diferencia->days;
+		
+		// Si excede el máximo, ajustar la fecha inicial
+		if ($diasDiferencia > $maxDias) {
+			// Ajustar fecha1 para que sea exactamente 90 días antes de fecha2
+			$fecha1Ajustada = clone $fecha2;
+			$fecha1Ajustada->modify("-{$maxDias} days");
+			return [$fecha1Ajustada->format('Y-m-d'), $date2];
+		}
+		
+		// Rango válido, retornar fechas originales
+		return [$date1, $date2];
+	}
+	
 	switch($_GET['op'])
 	{
 		case 1:// list gastos fijos
@@ -886,9 +913,12 @@
 					break;
 				
 				case 'rango':
-					$option = $_POST['option'];					
-					$date1 = $option['value1'];
-					$date2 = $option['value2'];
+					$option = $_POST['option'];
+					
+					// Validar y ajustar rango si excede 3 meses (90 días)
+					$dates = validarRangoMaximo3Meses($option['value1'], $option['value2']);
+					$date1 = $dates[0];
+					$date2 = $dates[1];
 
 					// Calcular la fecha y hora de inicio y cierre
 					$fecha_hora_cierre_calc = date('Y-m-d H:i:s', strtotime($date2 . ' ' . $hora_cierre));
@@ -969,8 +999,11 @@
 					break;
 				case 'rango':
 					$option = $_POST['option'];
-					$date1 = $option['value1'];
-					$date2 = $option['value2'];
+					
+					// Validar y ajustar rango si excede 3 meses (90 días)
+					$dates = validarRangoMaximo3Meses($option['value1'], $option['value2']);
+					$date1 = $dates[0];
+					$date2 = $dates[1];
 
 					// Calcular la fecha y hora de inicio y cierre
 					$fecha_hora_cierre_calc = date('Y-m-d H:i:s', strtotime($date2 . ' ' . $hora_cierre));
@@ -1057,9 +1090,12 @@
 					break;
 
 				case 'rango':
-						$option = $_POST['option'];					
-						$date1 = $option['value1'];
-						$date2 = $option['value2'];					
+						$option = $_POST['option'];
+						
+						// Validar y ajustar rango si excede 3 meses (90 días)
+						$dates = validarRangoMaximo3Meses($option['value1'], $option['value2']);
+						$date1 = $dates[0];
+						$date2 = $dates[1];
 
 						$_sql = "select concat(min(rp.idingreso_varios),',',max(rp.idingreso_varios)) from ingreso_varios rp where idsede=$idsede and rp.fecha BETWEEN cast('$date1' as date) and cast('$date2' as date)";
 						$minMaxID = $bd->xDevolverUnDato($_sql);					
@@ -1160,9 +1196,12 @@
 					break;
 
 				case 'rango':
-						$option = $_POST['option'];					
-						$date1 = $option['value1'];
-						$date2 = $option['value2'];
+						$option = $_POST['option'];
+						
+						// Validar y ajustar rango si excede 3 meses (90 días)
+						$dates = validarRangoMaximo3Meses($option['value1'], $option['value2']);
+						$date1 = $dates[0];
+						$date2 = $dates[1];
 
 						// Calcular la fecha y hora de inicio y cierre
 						$fecha_hora_cierre_calc = date('Y-m-d H:i:s', strtotime($date2 . ' ' . $hora_cierre));
@@ -1235,8 +1274,11 @@
 					break;
 				case 'rango':
 					$option = $_POST['option'];
-					$date1 = $option['value1'];
-					$date2 = $option['value2'];
+					
+					// Validar y ajustar rango si excede 3 meses (90 días)
+					$dates = validarRangoMaximo3Meses($option['value1'], $option['value2']);
+					$date1 = $dates[0];
+					$date2 = $dates[1];
 
 					$_sql = "select concat(min(pb.idpedido_borrados),',',max(pb.idpedido_borrados)) from pedido_borrados pb INNER JOIN pedido p on p.idpedido = pb.idpedido where p.idsede=$idsede and STR_TO_DATE(pb.fecha, '%d/%m/%Y') BETWEEN cast('$date1' as date) and cast('$date2' as date)";
 					$minMaxID = $bd->xDevolverUnDato($_sql);					
@@ -1288,8 +1330,11 @@
 					break;
 				case 'rango':
 					$option = $_POST['option'];
-					$date1 = $option['value1'];
-					$date2 = $option['value2'];
+					
+					// Validar y ajustar rango si excede 3 meses (90 días)
+					$dates = validarRangoMaximo3Meses($option['value1'], $option['value2']);
+					$date1 = $dates[0];
+					$date2 = $dates[1];
 
 					$fecha = "STR_TO_DATE(ic.fecha, '%d/%m/%Y') between cast('$date1' as date) and cast('$date2' as date)";
 					break;
@@ -1707,9 +1752,12 @@
 					break;
 
 				case 'rango':
-						$option = $_POST['option'];					
-						$date1 = $option['value1'];
-						$date2 = $option['value2'];					
+						$option = $_POST['option'];
+						
+						// Validar y ajustar rango si excede 3 meses (90 días)
+						$dates = validarRangoMaximo3Meses($option['value1'], $option['value2']);
+						$date1 = $dates[0];
+						$date2 = $dates[1];
 
 						$_sql = "select concat(min(rp.idce),',',max(rp.idce)) from ce rp where idsede=$idsede and STR_TO_DATE(rp.fecha, '%d/%m/%Y') BETWEEN cast('$date1' as date) and cast('$date2' as date)";
 						$minMaxID = $bd->xDevolverUnDato($_sql);					

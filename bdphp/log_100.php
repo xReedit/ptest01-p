@@ -4,7 +4,8 @@
     // corrige la opcion log.php op=100 // debe borrarse
     //     
 
-    session_start();	
+	require_once __DIR__ . '/SecurityGuard.php';
+	SecurityGuard::verificarAcceso();	
 	header('content-type: text/html; charset: utf-8');
 	header('Content-Type: text/event-stream');
 	header('Cache-Control: no-cache');

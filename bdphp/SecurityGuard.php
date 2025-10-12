@@ -21,11 +21,12 @@ class SecurityGuard {
         if (!empty($casosExcluidos)) {
             $op = isset($_GET['op']) ? intval($_GET['op']) : 0;
             if (in_array($op, $casosExcluidos)) {
-                // Caso público - solo iniciar sesión pero no verificar
+                // Caso público - solo iniciar sesión pero NO verificar referer ni sesión
+                // Esto permite login (-1) y verificación de sesión (102)
                 if (session_status() === PHP_SESSION_NONE) {
                     session_start();
                 }
-                return; // Permitir sin verificar
+                return; // Permitir sin verificar nada
             }
         }
         
@@ -47,7 +48,7 @@ class SecurityGuard {
         
         // Si no hay referer o no viene de tu dominio, bloquear
         if (empty($referer) || strpos($referer, $host) === false) {
-            self::bloquear(403, 'Acceso no autorizado - Debe acceder desde la aplicación');
+            self::bloquear(403, 'ERR_FORBIDDEN: Invalid request origin');
         }
     }
     
@@ -60,7 +61,7 @@ class SecurityGuard {
         }
         
         if (!isset($_SESSION['idusuario']) || !isset($_SESSION['idsede'])) {
-            self::bloquear(401, 'No autenticado - Debe iniciar sesión');
+            self::bloquear(401, 'ERR_UNAUTHORIZED: Authentication required');
         }
     }
     
