@@ -59,7 +59,7 @@ class SecurityGuard {
             session_start();
         }
         
-        if (!isset($_SESSION['user_id']) || !isset($_SESSION['idsede'])) {
+        if (!isset($_SESSION['idusuario']) || !isset($_SESSION['idsede'])) {
             self::bloquear(401, 'No autenticado - Debe iniciar sesión');
         }
     }
