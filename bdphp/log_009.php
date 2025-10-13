@@ -305,6 +305,11 @@
             break;
         case 22: //compras listado
             $postBody = json_decode(file_get_contents('php://input'));
+            // Optimizado: Calcula rango de fechas una vez en PHP para evitar funciones en WHERE
+            $mm_str = str_pad($postBody->mm, 2, '0', STR_PAD_LEFT);
+            $fecha_inicio = "01/$mm_str/$postBody->yy";
+            $fecha_fin = date('t', strtotime("$postBody->yy-$postBody->mm-01")) . "/$mm_str/$postBody->yy";
+            
             $sql="select c.idcompra, c.f_compra,c.f_registro,c.total,c.f_pago,c.nota_de_compra
                     ,tp.descripcion nom_tipo_pago, p.descripcion nom_proveedor,a.descripcion nom_almacen
                     ,u.nombres nom_usuario
@@ -314,8 +319,8 @@
                     inner join almacen a using(idalmacen)
                     inner join usuario u on c.idusuario = u.idusuario 
                 where c.idsede = $g_idsede 
-                    and (MONTH(STR_TO_DATE(c.f_compra, '%d/%m/%Y')) = $postBody->mm 
-                        and YEAR(STR_TO_DATE(c.f_compra, '%d/%m/%Y')) = $postBody->yy)
+                    and STR_TO_DATE(c.f_compra, '%d/%m/%Y') BETWEEN STR_TO_DATE('$fecha_inicio', '%d/%m/%Y') 
+                    and STR_TO_DATE('$fecha_fin', '%d/%m/%Y')
                 order by c.idcompra desc";
 
             $bd->xConsulta($sql);
@@ -456,6 +461,11 @@
         // recibe distribuicion
         case 24: 
             $postBody = json_decode(file_get_contents('php://input'));
+            // Optimizado: Calcula rango de fechas una vez en PHP para evitar funciones en WHERE
+            $mm_str = str_pad($postBody->mm, 2, '0', STR_PAD_LEFT);
+            $fecha_inicio = "01/$mm_str/$postBody->yy";
+            $fecha_fin = date('t', strtotime("$postBody->yy-$postBody->mm-01")) . "/$mm_str/$postBody->yy";
+            
             $sql="select d.iddistribuicion, sd.nombre sede_de, ad.descripcion almacen_de, ud.usuario usuario_de
                 ,d.fecha, d.detalle	
                 ,sa.nombre sede_a
@@ -469,8 +479,8 @@
                 inner join sede sa on sa.idsede= d.idsede_a
                 left join usuario ua on ua.idusuario = d.idusuario_recibe
             where d.idsede_a = $g_idsede and d.is_to_sede=1 
-                and (MONTH(STR_TO_DATE(d.fecha, '%d/%m/%Y')) = $postBody->mm 
-                and YEAR(STR_TO_DATE(d.fecha, '%d/%m/%Y')) = $postBody->yy)
+                and STR_TO_DATE(d.fecha, '%d/%m/%Y') BETWEEN STR_TO_DATE('$fecha_inicio', '%d/%m/%Y') 
+                and STR_TO_DATE('$fecha_fin', '%d/%m/%Y')
                 and d.estado = 0
             order by d.iddistribuicion desc";
 
@@ -727,8 +737,11 @@
             $yy = $postBody->yy;
             $idsCliente = $postBody->ids;
 
+            // Optimizado: Evita usar YEAR() en WHERE para permitir uso de índices
             $sql = "select concat(min(idregistro_pago),',',max(idregistro_pago)) from registro_pago rp 
-                where idsede=$g_idsede and YEAR(fecha_hora) = '$yy' limit 1";
+                where idsede=$g_idsede 
+                and fecha_hora >= '$yy-01-01 00:00:00' 
+                and fecha_hora < CONCAT($yy + 1, '-01-01 00:00:00')";
             $idregistro_pago_yy = $bd->xDevolverUnDato($sql);
             $minId = explode(',', $idregistro_pago_yy)[0];
             $maxId = explode(',', $idregistro_pago_yy)[1];
