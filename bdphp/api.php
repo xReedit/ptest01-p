@@ -48,7 +48,6 @@ $routes = [
             $bd->prepare("SELECT * FROM ce WHERE idce = ?");
             $bd->execute([$id]);
             $response = $bd->fetchAll();
-            $bd->commit();
             echo json_encode(array('success' => true, 'data' => $response));
 
         },
@@ -59,7 +58,6 @@ $routes = [
             $bd->prepare("SELECT hora_cierre_dia FROM sede_opciones WHERE idsede = ?");
             $bd->execute([$g_idsede]);
             $response = $bd->fetchAll();
-            $bd->commit();
             echo json_encode(array('success' => true, 'data' => $response, 'g_idsede' => $g_idsede));
 
         },
