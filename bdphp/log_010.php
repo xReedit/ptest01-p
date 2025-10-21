@@ -16,13 +16,14 @@ use function PHPSTORM_META\sql_injection_subst;
 	// header("Access-Control-Allow-Origin: *");
 
 
-    $op = $_POST['op']; // a = registro pedido | d=registro cliente | b=registro pago total | c=registro pago parcial
+    // a = registro pedido | d=registro cliente | b=registro pago total | c=registro pago parcial
+    $op = isset($_POST['op']) ? $_POST['op'] : null;
     if (!isset($op)) { 
-        $op = $_GET['op'];
+        $op = isset($_GET['op']) ? $_GET['op'] : null;
     }
 	if (!isset($op)) {
 		$postBody = json_decode(file_get_contents('php://input'));
-		$op = $postBody->op;
+		$op = isset($postBody->op) ? $postBody->op : null;
 	}
 
     $g_ido = $_SESSION['ido'];

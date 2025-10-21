@@ -4,7 +4,7 @@
 	// session_regenerate_id(true); 
 	require_once __DIR__ . '/SecurityGuard.php';
 	SecurityGuard::verificarAcceso(true, [102,-1112,-104,-102,-1]);
-	session_start();	
+	// session_start ya se ejecuta en SecurityGuard::verificarAcceso()	
 	//header("Cache-Control: no-cache,no-store");
 	header('content-type: text/html; charset: utf-8');
 	header('Content-Type: text/event-stream');
@@ -154,7 +154,7 @@
 				$u_per=explode('?', $u_per);
 				$u_per= isset($u_per[0]) ? $u_per[0] : null;
 
-				$pos = !empty($_SESSION['u_pas_rl']) ? strpos($_SESSION['u_pas_rl'], $u_per) : false;
+				$pos = (!empty($_SESSION['u_pas_rl']) && !empty($u_per)) ? strpos($_SESSION['u_pas_rl'], $u_per) : false;
 				// $pos = isset($_SESSION['u_pas_rl']) ? strpos($_SESSION['u_pas_rl'], $u_per) : false;
 				// $pos = isset($_SESSION['u_pas_rl']) ? strpos($_u_pas_rl, $u_per) : false;
 				// echo '$_u_pas_rl = '.$_u_pas_rl."  session_u_pas_rl=".$_SESSION['u_pas_rl']."  u_per = ".$u_per. "   pos = ".$pos."   u_pas_rl=".$_SESSION['u_pas_rl'];

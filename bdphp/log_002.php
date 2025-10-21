@@ -118,20 +118,28 @@
         case '2': // actualiza el estado de comprabantes reenviados (desde cierre caja): si fue aceptada = 1 o fue anulada = 1
             $obj = $_POST['data'];
             $ce_anulado = array_key_exists('anulado', $obj) ? $obj['anulado'] : 0; 
+            $estado_api = array_key_exists('estado_api', $obj) ? $obj['estado_api'] : 0;
+            $estado_sunat = array_key_exists('estado_sunat', $obj) ? $obj['estado_sunat'] : 0;
+            $msj = array_key_exists('msj', $obj) ? $obj['msj'] : '';
+            $external_id = array_key_exists('external_id', $obj) ? $obj['external_id'] : '';
+            $pdf = array_key_exists('pdf', $obj) ? $obj['pdf'] : 'NULL';
+            $xml = array_key_exists('xml', $obj) ? $obj['xml'] : 'NULL';
+            $cdr = array_key_exists('cdr', $obj) ? $obj['cdr'] : 'NULL';
+            $idce = array_key_exists('idce', $obj) ? $obj['idce'] : 0;
 
             $numComprobante = array_key_exists('numero', $obj) ? "numero='".$obj['numero']."'," : "";
             $sql = "
             update ce 
-                set estado_api=".$obj['estado_api'].", 
-                estado_sunat=".$obj['estado_sunat'].", 
-                msj='".$obj['msj']."', 
-                external_id='".$obj['external_id']."',
+                set estado_api=".$estado_api.", 
+                estado_sunat=".$estado_sunat.", 
+                msj='".$msj."', 
+                external_id='".$external_id."',
                 ".$numComprobante."
                 anulado=".$ce_anulado.",
-                pdf=".$obj['pdf'].",
-                xml=".$obj['xml'].",
-                cdr=".$obj['cdr']."
-            where idce=".$obj['idce'];
+                pdf=".$pdf.",
+                xml=".$xml.",
+                cdr=".$cdr."
+            where idce=".$idce;
                         
             $bd->xConsulta($sql);
 
@@ -150,24 +158,35 @@
             break;
         case '202': //registra resumen diario de boletas
             $obj = $_POST['data'];
+            $fecha_resumen = isset($obj['fecha_resumen']) ? $obj['fecha_resumen'] : date('Y-m-d');
+            $ticket = isset($obj['ticket']) ? $obj['ticket'] : '';
+            $external_id = isset($obj['external_id']) ? $obj['external_id'] : '';
+            $estado_sunat = isset($obj['estado_sunat']) ? $obj['estado_sunat'] : 0;
+            $msj = isset($obj['msj']) ? $obj['msj'] : '';
             
             $sql = "INSERT INTO ce_resumen
                     (idorg, idsede, idusuario, fecha_resumen, fecha_envio, ticket, external_id, estado_sunat, msj, estado)
-                    VALUES(".$_SESSION['ido'].", ".$_SESSION['idsede'].", ".$_SESSION['idusuario'].", '".$obj['fecha_resumen']."', DATE_FORMAT(now(),'%d/%m/%Y')
-                    , '".$obj['ticket']."', '".$obj['external_id']."', ".$obj['estado_sunat'].", '".$obj['msj']."', 0);";
+                    VALUES(".$_SESSION['ido'].", ".$_SESSION['idsede'].", ".$_SESSION['idusuario'].", '".$fecha_resumen."', DATE_FORMAT(now(),'%d/%m/%Y')
+                    , '".$ticket."', '".$external_id."', ".$estado_sunat.", '".$msj."', 0);";
             
                         
             $bd->xConsulta($sql);
             break;
         case '203': // update resumen boleta luego de ser consultado con el ticket
             $obj = $_POST['data'];
-            $estado_sunat = $obj['estado_sunat'];
+            $estado_sunat = isset($obj['estado_sunat']) ? $obj['estado_sunat'] : 0;
+            $msj = isset($obj['msj']) ? $obj['msj'] : '';
+            $xml = isset($obj['xml']) ? $obj['xml'] : 'NULL';
+            $cdr = isset($obj['cdr']) ? $obj['cdr'] : 'NULL';
+            $ticket = isset($obj['ticket']) ? $obj['ticket'] : '';
+            $fecha_resumen = isset($obj['fecha_resumen']) ? $obj['fecha_resumen'] : date('Y-m-d');
+            
             $sql="update ce_resumen 
                     set estado_sunat=".$estado_sunat.",
-                    msj='".$obj['msj']."',
-                    xml=".$obj['xml'].",
-                    cdr=".$obj['cdr']." 
-                    where ticket='".$obj['ticket']."'";
+                    msj='".$msj."',
+                    xml=".$xml.",
+                    cdr=".$cdr." 
+                    where ticket='".$ticket."'";
             // echo $sql;
             $bd->xConsulta($sql);
 
@@ -178,7 +197,7 @@
                         inner join tipo_comprobante_serie as tps on tps.idtipo_comprobante_serie = c.idtipo_comprobante_serie
                         inner join tipo_comprobante as tp on tp.idtipo_comprobante = tps.idtipo_comprobante
                     set c.estado_sunat=0, c.msj = 'Aceptado'
-                    where (c.idsede=".$_SESSION['idsede'].") and c.fecha = '".$obj['fecha_resumen']."' and tp.codsunat='03' and c.anulado=0";
+                    where (c.idsede=".$_SESSION['idsede'].") and c.fecha = '".$fecha_resumen."' and tp.codsunat='03' and c.anulado=0";
 
                 // echo $sql_bl;
                 $bd->xConsulta_NoReturn($sql_bl);
@@ -370,7 +389,12 @@
             break;
         case '8': // anulaciones
             $obj = $_POST['data'];
-            $sql="update ce set anulado=1, external_id_anulacion='".$obj['external_id_anulacion']."', ticket_anulacion='".$obj['ticket']."', motivo_anulacion='".$obj['motivo']."' where external_id='".$obj['external_id']."'";
+            $external_id_anulacion = array_key_exists('external_id_anulacion', $obj) ? $obj['external_id_anulacion'] : '';
+            $ticket = array_key_exists('ticket', $obj) ? $obj['ticket'] : '';
+            $motivo = array_key_exists('motivo', $obj) ? $obj['motivo'] : '';
+            $external_id = array_key_exists('external_id', $obj) ? $obj['external_id'] : '';
+            
+            $sql="update ce set anulado=1, external_id_anulacion='".$external_id_anulacion."', ticket_anulacion='".$ticket."', motivo_anulacion='".$motivo."' where external_id='".$external_id."'";
             $bd->xConsulta($sql);
             break;
         

@@ -882,59 +882,63 @@
 						, CASE WHEN DAYOFWEEK(rp.fecha_hora) = 1 THEN 7 ELSE DAYOFWEEK(rp.fecha_hora) - 1 END num_dia";
 					break;
 				case 'mes':
-					$option = $_POST['option'];
-					$mm = $option['num_mm'];
-					$yy = $option['num_yy'];
-					$first_day_month = $option['value'].'-01'; // el primer dia mes
+					// ->>>> 20102025  -- cuelga
+					echo 1;
 
-					// // Calcular la fecha y hora de inicio y cierre									
-					$first_day_last_month = date('Y-m-d', strtotime("$yy-$mm-01 -1 month"));
-					$first_day_next_month = date('Y-m-d', strtotime("$yy-$mm-01 first day of next month"));
+					// $option = $_POST['option'];
+					// $mm = $option['num_mm'];
+					// $yy = $option['num_yy'];
+					// $first_day_month = $option['value'].'-01'; // el primer dia mes
 
-					$fecha_hora_inicio = date('Y-m-d H:i:s', strtotime($first_day_last_month . ' ' . $hora_cierre));
-					$fecha_hora_cierre = date('Y-m-d H:i:s', strtotime($first_day_next_month . ' ' . $hora_cierre));
+					// // // Calcular la fecha y hora de inicio y cierre									
+					// $first_day_last_month = date('Y-m-d', strtotime("$yy-$mm-01 -1 month"));
+					// $first_day_next_month = date('Y-m-d', strtotime("$yy-$mm-01 first day of next month"));
+
+					// $fecha_hora_inicio = date('Y-m-d H:i:s', strtotime($first_day_last_month . ' ' . $hora_cierre));
+					// $fecha_hora_cierre = date('Y-m-d H:i:s', strtotime($first_day_next_month . ' ' . $hora_cierre));
 					
-					// $_sql = "select concat(min(rp.idregistro_pago),',',max(rp.idregistro_pago)) from registro_pago rp where idsede=$idsede and STR_TO_DATE(rp.fecha, '%d/%m/%Y') BETWEEN date_sub('$first_day_month',INTERVAL 1 MONTH) and LAST_DAY('$first_day_month')";
-					// $_sql = "select concat(min(rp.idregistro_pago),',',max(rp.idregistro_pago)) from registro_pago rp where idsede=$idsede and STR_TO_DATE(rp.fecha, '%d/%m/%Y %H:%i:%s') BETWEEN $fecha_hora_inicio and $fecha_hora_cierre";
-					$_sql = "select concat(min(rp.idregistro_pago),',',max(rp.idregistro_pago)) from registro_pago rp where idsede=$idsede and rp.fecha_hora BETWEEN '$fecha_hora_inicio' and '$fecha_hora_cierre'";
+					// // $_sql = "select concat(min(rp.idregistro_pago),',',max(rp.idregistro_pago)) from registro_pago rp where idsede=$idsede and STR_TO_DATE(rp.fecha, '%d/%m/%Y') BETWEEN date_sub('$first_day_month',INTERVAL 1 MONTH) and LAST_DAY('$first_day_month')";
+					// // $_sql = "select concat(min(rp.idregistro_pago),',',max(rp.idregistro_pago)) from registro_pago rp where idsede=$idsede and STR_TO_DATE(rp.fecha, '%d/%m/%Y %H:%i:%s') BETWEEN $fecha_hora_inicio and $fecha_hora_cierre";
+					// $_sql = "select concat(min(rp.idregistro_pago),',',max(rp.idregistro_pago)) from registro_pago rp where idsede=$idsede and rp.fecha_hora BETWEEN '$fecha_hora_inicio' and '$fecha_hora_cierre'";
 				
-					$minMaxID = $bd->xDevolverUnDato($_sql);					
-					$minMaxID = explode(",", $minMaxID);
-					$lastIdRegistroPago = $minMaxID[1];
-					$firstIdRegistroPago = $minMaxID[0];
+					// $minMaxID = $bd->xDevolverUnDato($_sql);					
+					// $minMaxID = explode(",", $minMaxID);
+					// $lastIdRegistroPago = $minMaxID[1];
+					// $firstIdRegistroPago = $minMaxID[0];
 
-					$columm_add = ", MONTHNAME(rp.fecha_hora) nom_mes
-					, MONTH(rp.fecha_hora) num_mes";
+					// $columm_add = ", MONTHNAME(rp.fecha_hora) nom_mes
+					// , MONTH(rp.fecha_hora) num_mes";
 					
-					// $fecha = $fecha == 0 ? 'now()' : "STR_TO_DATE('$fecha', '%d/%m/%Y')";
-					// $hoy = "if(MONTH(STR_TO_DATE(rp.fecha, '%d/%m/%Y')) = MONTH($fecha), 1 ,if(MONTH(STR_TO_DATE(rp.fecha, '%d/%m/%Y')) < MONTH($fecha) - 1, 2, 0 ))";
-					$hoy = " if(MONTH(rp.fecha_hora) = $mm, 1 ,if(MONTH(rp.fecha_hora) < $mm - 1, 2, 0 ))";					
-					$fecha = " (rp.idregistro_pago between $firstIdRegistroPago and $lastIdRegistroPago)"; // and  STR_TO_DATE(rp.fecha, '%d/%m/%Y') between date_sub($fecha,INTERVAL 2 MONTH) and $fecha";					
+					// $hoy = " if(MONTH(rp.fecha_hora) = $mm, 1 ,if(MONTH(rp.fecha_hora) < $mm - 1, 2, 0 ))";					
+					// $fecha = " (rp.idregistro_pago between $firstIdRegistroPago and $lastIdRegistroPago)"; // and  STR_TO_DATE(rp.fecha, '%d/%m/%Y') between date_sub($fecha,INTERVAL 2 MONTH) and $fecha";					
 					break;
 				
 				case 'rango':
+
+					// ->>>> 20102025  -- cuelga
+					echo 1;
 					$option = $_POST['option'];
 					
-					// Validar y ajustar rango si excede 3 meses (90 días)
-					$dates = validarRangoMaximo3Meses($option['value1'], $option['value2']);
-					$date1 = $dates[0];
-					$date2 = $dates[1];
+					// // Validar y ajustar rango si excede 3 meses (90 días)
+					// $dates = validarRangoMaximo3Meses($option['value1'], $option['value2']);
+					// $date1 = $dates[0];
+					// $date2 = $dates[1];
 
-					// Calcular la fecha y hora de inicio y cierre
-					$fecha_hora_cierre_calc = date('Y-m-d H:i:s', strtotime($date2 . ' ' . $hora_cierre));
-					$fecha_hora_inicio = date('Y-m-d H:i:s', strtotime($date1 . ' ' . $hora_cierre));
-					$fecha_hora_cierre = date('Y-m-d H:i:s', strtotime($fecha_hora_cierre_calc . ' +1 day'));
+					// // Calcular la fecha y hora de inicio y cierre
+					// $fecha_hora_cierre_calc = date('Y-m-d H:i:s', strtotime($date2 . ' ' . $hora_cierre));
+					// $fecha_hora_inicio = date('Y-m-d H:i:s', strtotime($date1 . ' ' . $hora_cierre));
+					// $fecha_hora_cierre = date('Y-m-d H:i:s', strtotime($fecha_hora_cierre_calc . ' +1 day'));
 					
-					// $_sql = "select concat(min(rp.idregistro_pago),',',max(rp.idregistro_pago)) from registro_pago rp where idsede=$idsede and STR_TO_DATE(rp.fecha, '%d/%m/%Y') BETWEEN cast('$date1' as date) and cast('$date2' as date)";
-					$_sql = "select concat(min(rp.idregistro_pago),',',max(rp.idregistro_pago)) from registro_pago rp where idsede=$idsede and rp.fecha_hora BETWEEN '$fecha_hora_inicio' and '$fecha_hora_cierre'";
-					$minMaxID = $bd->xDevolverUnDato($_sql);					
-					$minMaxID = explode(",", $minMaxID);
-					$lastIdRegistroPago = $minMaxID[1];
-					$firstIdRegistroPago = $minMaxID[0];
+					// // $_sql = "select concat(min(rp.idregistro_pago),',',max(rp.idregistro_pago)) from registro_pago rp where idsede=$idsede and STR_TO_DATE(rp.fecha, '%d/%m/%Y') BETWEEN cast('$date1' as date) and cast('$date2' as date)";
+					// $_sql = "select concat(min(rp.idregistro_pago),',',max(rp.idregistro_pago)) from registro_pago rp where idsede=$idsede and rp.fecha_hora BETWEEN '$fecha_hora_inicio' and '$fecha_hora_cierre'";
+					// $minMaxID = $bd->xDevolverUnDato($_sql);					
+					// $minMaxID = explode(",", $minMaxID);
+					// $lastIdRegistroPago = $minMaxID[1];
+					// $firstIdRegistroPago = $minMaxID[0];
 
-					$columm_add = '';
-					$hoy = "1";
-					$fecha = " (rp.idregistro_pago between $firstIdRegistroPago and $lastIdRegistroPago)";
+					// $columm_add = '';
+					// $hoy = "1";
+					// $fecha = " (rp.idregistro_pago between $firstIdRegistroPago and $lastIdRegistroPago)";
 					break;
 			}
 

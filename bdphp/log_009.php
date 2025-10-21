@@ -733,44 +733,46 @@
             $bd->xConsulta($sql);
             break;
         case 70: // historial consumo cliente
-            $postBody = json_decode(file_get_contents('php://input'));
-            $yy = $postBody->yy;
-            $idsCliente = $postBody->ids;
+            // ->>>> 20102025  -- cuelga
 
-            // Optimizado: Evita usar YEAR() en WHERE para permitir uso de índices
-            $sql = "select concat(min(idregistro_pago),',',max(idregistro_pago)) from registro_pago rp 
-                where idsede=$g_idsede 
-                and fecha_hora >= '$yy-01-01 00:00:00' 
-                and fecha_hora < CONCAT($yy + 1, '-01-01 00:00:00')";
-            $idregistro_pago_yy = $bd->xDevolverUnDato($sql);
-            $minId = explode(',', $idregistro_pago_yy)[0];
-            $maxId = explode(',', $idregistro_pago_yy)[1];
+            // $postBody = json_decode(file_get_contents('php://input'));
+            // $yy = $postBody->yy;
+            // $idsCliente = $postBody->ids;
 
-            $sql = "
-                SELECT  cs.idcliente, SUBSTRING_INDEX(rp.fecha, ' ', 1) fecha_consumo, sum(rp.total) total 
-                from cliente_sede cs 
-                inner join cliente c on c.idcliente = cs.idcliente 
-                inner join registro_pago rp on rp.idcliente = cs.idcliente
-                where cs.idsede = $g_idsede and rp.idregistro_pago between $minId and $maxId
-                and c.idcliente in ($idsCliente) and c.nombres != ''
-                GROUP by fecha_consumo
-                order by rp.idregistro_pago desc
-            ";
+            // // Optimizado: Evita usar YEAR() en WHERE para permitir uso de índices
+            // $sql = "select concat(min(idregistro_pago),',',max(idregistro_pago)) from registro_pago rp 
+            //     where idsede=$g_idsede 
+            //     and fecha_hora >= '$yy-01-01 00:00:00' 
+            //     and fecha_hora < CONCAT($yy + 1, '-01-01 00:00:00')";
+            // $idregistro_pago_yy = $bd->xDevolverUnDato($sql);
+            // $minId = explode(',', $idregistro_pago_yy)[0];
+            // $maxId = explode(',', $idregistro_pago_yy)[1];
+
+            // $sql = "
+            //     SELECT  cs.idcliente, SUBSTRING_INDEX(rp.fecha, ' ', 1) fecha_consumo, sum(rp.total) total 
+            //     from cliente_sede cs 
+            //     inner join cliente c on c.idcliente = cs.idcliente 
+            //     inner join registro_pago rp on rp.idcliente = cs.idcliente
+            //     where cs.idsede = $g_idsede and rp.idregistro_pago between $minId and $maxId
+            //     and c.idcliente in ($idsCliente) and c.nombres != ''
+            //     GROUP by fecha_consumo
+            //     order by rp.idregistro_pago desc
+            // ";
             
-            $listConsumo = json_decode($bd->xConsulta3($sql));
+            // $listConsumo = json_decode($bd->xConsulta3($sql));
 
-            $sql= "SELECT  sum(pd.cantidad_r) cantidad_item, pd.descripcion, sum(pd.ptotal_r)  total_item
-                from registro_pago rp 
-                inner join registro_pago_pedido rpp on rpp.idregistro_pago = rp.idregistro_pago 
-                inner join pedido_detalle pd on pd.idpedido_detalle = rpp.idpedido_detalle 
-                where rp.idsede = $g_idsede and rp.idregistro_pago between $minId and $maxId
-                    and rp.idcliente in ($idsCliente)
-                GROUP by pd.iditem
-                order by total_item desc, cantidad_item desc limit 10";
+            // $sql= "SELECT  sum(pd.cantidad_r) cantidad_item, pd.descripcion, sum(pd.ptotal_r)  total_item
+            //     from registro_pago rp 
+            //     inner join registro_pago_pedido rpp on rpp.idregistro_pago = rp.idregistro_pago 
+            //     inner join pedido_detalle pd on pd.idpedido_detalle = rpp.idpedido_detalle 
+            //     where rp.idsede = $g_idsede and rp.idregistro_pago between $minId and $maxId
+            //         and rp.idcliente in ($idsCliente)
+            //     GROUP by pd.iditem
+            //     order by total_item desc, cantidad_item desc limit 10";
 
-            $listProductos = json_decode($bd->xConsulta3($sql));
+            // $listProductos = json_decode($bd->xConsulta3($sql));
 
-            echo json_encode(array('consumo' => $listConsumo, 'productos' => $listProductos));
+            // echo json_encode(array('consumo' => $listConsumo, 'productos' => $listProductos));
                     
             break;        
     }
