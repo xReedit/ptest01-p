@@ -885,10 +885,10 @@
 					// ->>>> 20102025  -- cuelga
 					// echo 1;
 
-					// $option = $_POST['option'];
-					// $mm = $option['num_mm'];
-					// $yy = $option['num_yy'];
-					// $first_day_month = $option['value'].'-01'; // el primer dia mes
+					$option = $_POST['option'];
+					$mm = $option['num_mm'];
+					$yy = $option['num_yy'];
+					$first_day_month = $option['value'].'-01'; // el primer dia mes
 
 					// // Calcular la fecha y hora de inicio y cierre									
 					$first_day_last_month = date('Y-m-d', strtotime("$yy-$mm-01 -1 month"));
