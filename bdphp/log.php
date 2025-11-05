@@ -3905,7 +3905,7 @@ function xDtUS($op_us){
 			break;
 		case 3012: // load datos del org sede 
 			// , s.nombre, s.ruc // 250523 remplazamos por ruc_cpe, razonsocial_cpe | para comprobantes
-			$sql_us = "SELECT s.idorg, se.idsede, se.razonsocial_cpe as nombre, se.ruc_cpe as ruc , s.direccion, s.telefono , se.nombre as sedenombre , se.direccion as sededireccion, se.ciudad as sedeciudad, se.telefono as sedetelefono, se.eslogan, se.authorization_api_comprobante, se.id_api_comprobante, se.facturacion_e_activo, '' as logo64, se.ubigeo, se.codigo_del_domicilio_fiscal
+			$sql_us = "SELECT s.idorg, se.idsede, se.razonsocial_cpe as nombre, se.ruc_cpe as ruc , s.direccion, se.telefono , se.nombre as sedenombre , se.direccion as sededireccion, se.ciudad as sedeciudad, se.telefono as sedetelefono, se.eslogan, se.authorization_api_comprobante, se.id_api_comprobante, se.facturacion_e_activo, '' as logo64, se.ubigeo, se.codigo_del_domicilio_fiscal
 				,se.sys_local, se.ip_server_local, se.pwa, se.url_api_fac
 				,se.email_cierre, se.metodo_pago_aceptados, se.habilita_verificacion_cpe, tcs.serie, se.id_api_comprobante
 				,se.is_holding
