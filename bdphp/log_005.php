@@ -441,7 +441,8 @@
 			break;
 		case 804: // subitems // save modificado
 			$arrItem=$_POST['item'];
-			$sql = "update item_subitem set descripcion = '".$arrItem['descripcion']."', cantidad = '".$arrItem['cantidad']."', descuenta = '".$arrItem['descuenta']."', precio = '".$arrItem['precio']."' where iditem_subitem = ".$arrItem['iditem_subitem'];
+			$cantidad_descuenta = isset($arrItem['descuenta']) ? $arrItem['descuenta'] : 1;
+			$sql = "update item_subitem set descripcion = '".$arrItem['descripcion']."', cantidad = '".$arrItem['cantidad']."', descuenta = '".$cantidad_descuenta."', precio = '".$arrItem['precio']."' where iditem_subitem = ".$arrItem['iditem_subitem'];
 			$bd->xConsulta($sql);
 			break;
 		case 805:// subitems content
