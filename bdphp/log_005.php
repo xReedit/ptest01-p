@@ -423,7 +423,14 @@
 			echo $sql;
 			break;
 		case 801: // subitems // load						
-			$sql = "select i.*, if(i.idporcion > 0 ,'Porcion', if(i.idproducto or idproducto_stock IS NOT NULL > 0, 'Producto', 'Libre')) as tipo from item_subitem i where i.iditem_subitem_content = ".$_POST['i']." and i.estado=0";
+			$sql = "select i.*, 
+				CASE 
+					WHEN i.idporcion > 0 THEN 'Porcion'
+					WHEN i.idproducto > 0 OR i.idproducto_stock > 0 THEN 'Producto'
+					WHEN i.idsubreceta > 0 THEN 'Subreceta'
+					ELSE 'Libre'
+				END as tipo 
+				from item_subitem i where i.iditem_subitem_content = ".$_POST['i']." and i.estado=0";
 			$bd->xConsulta($sql);
 			break;
 		case 802: // subitems // item

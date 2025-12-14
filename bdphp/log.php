@@ -3136,7 +3136,7 @@
 			break;
 		case 1702://load detalles de ingredientes
 			// $sql= "SELECT iditem_ingrediente,iditem,descripcion,cantidad,costo, idporcion, necesario, idproducto_stock, viene_de, und_medida FROM item_ingrediente WHERE iditem=".$_POST['i']." AND estado=0 order by iditem_ingrediente";
-			$sql= "SELECT ii.iditem_ingrediente,ii.iditem,ii.descripcion,ii.cantidad,ii.cantidad_show, ii.idporcion, ii.necesario, ii.idproducto_stock, ii.viene_de, ii.und_medida,
+			$sql= "SELECT ii.iditem_ingrediente,ii.iditem,ii.descripcion,ii.cantidad,ii.cantidad_show, ii.idporcion, ii.necesario, ii.idproducto_stock, IFNULL(ii.idsubreceta, 0) as idsubreceta, ii.viene_de, ii.und_medida,
 						if (viene_de=2, p.costo_conversion * ii.cantidad_show, ii.costo) costo
 					FROM item_ingrediente ii 
 					left join producto_stock ps on ii.idproducto_stock = ps.idproducto_stock 
