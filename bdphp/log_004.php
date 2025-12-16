@@ -288,7 +288,7 @@
 			$sql = "select ubc.*, u.nombres usuario 
 			from usuario_bitacora_cierre ubc 
 				inner join usuario u on ubc.idusuario = u.idusuario
-			where ubc.idusuario = $g_idusuario and ubc.estado = 0 order by ubc.idusuario_bitacora_cierre desc limit 5";
+			where ubc.idusuario = $g_idusuario and ubc.estado = 0 and ubc.cierre=1 order by ubc.idusuario_bitacora_cierre desc limit 5";
 			$bd->xConsulta($sql);
 			break;
 		
