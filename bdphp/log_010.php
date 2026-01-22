@@ -342,7 +342,7 @@ use function PHPSTORM_META\sql_injection_subst;
                 $hora_cierre = '00:00:00';
             }
             
-            $fecha = $data->fecha;
+            $fecha = $data->fecha; 
             $fecha_hora_inicio = date('Y-m-d H:i:s', strtotime($fecha . ' ' . $hora_cierre));
             $fecha_hora_cierre = date('Y-m-d H:i:s', strtotime($fecha_hora_inicio . ' +1 day'));
 
@@ -375,7 +375,7 @@ use function PHPSTORM_META\sql_injection_subst;
             // $sql = "select idtipo_pago, comision from sede_holding_metodo_pago where idsede = $g_idsede";
             $sql = "select s.idtipo_pago, s.comision from sede_holding_marcas shm
                     inner join sede_holding_metodo_pago s on s.idsede_holding = shm.idsede_holding 
-                where idsede_marca = $g_idsede";
+                where idsede_marca = $g_idsede and s.comision > 0";
             $bd->xConsulta($sql);         
             break;
 

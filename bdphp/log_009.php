@@ -774,6 +774,235 @@
 
             // echo json_encode(array('consumo' => $listConsumo, 'productos' => $listProductos));
                     
-            break;        
+            break;
+        
+        // CONVERSIONES DE UNIDADES PARA PORCIONES
+        case 120: // listar todas las conversiones activas
+            $sql = "SELECT puc.*, p.descripcion as nombre_porcion, p.stock
+                FROM porcion_unidad_conversion puc
+                INNER JOIN porcion p ON p.idporcion = puc.idporcion
+                WHERE puc.activo = 1 AND p.idsede = $g_idsede AND p.estado = 0
+                ORDER BY p.descripcion, puc.nombre_unidad_alternativa";
+            $bd->xConsulta($sql);
+            break;
+        
+        case 121: // obtener conversión por idporcion
+            $postBody = json_decode(file_get_contents('php://input'));
+            $idporcion = $postBody->idporcion;
+            $sql = "SELECT * FROM porcion_unidad_conversion 
+                WHERE idporcion = $idporcion AND activo = 1 
+                LIMIT 1";
+            $bd->xConsulta($sql);
+            break;
+        
+        case 122: // crear o actualizar conversión
+            $postBody = json_decode(file_get_contents('php://input'));
+            $idporcion = $postBody->idporcion;
+            $nombre_unidad = $postBody->nombre_unidad_alternativa;
+            $factor = $postBody->factor_conversion;
+            
+            // Verificar si ya existe una conversión activa para esta porción
+            $sql = "SELECT idporcion_unidad_conversion FROM porcion_unidad_conversion 
+                WHERE idporcion = $idporcion AND activo = 1 LIMIT 1";
+            $existe = $bd->xDevolverUnDato($sql);
+            
+            if ($existe && $existe != 'null') {
+                // Actualizar existente
+                $sql = "UPDATE porcion_unidad_conversion 
+                    SET nombre_unidad_alternativa = '$nombre_unidad', 
+                        factor_conversion = $factor
+                    WHERE idporcion_unidad_conversion = $existe";
+                $bd->xConsulta_NoReturn($sql);
+                echo json_encode(array('success' => true, 'message' => 'Conversión actualizada', 'id' => $existe));
+            } else {
+                // Crear nueva
+                $sql = "INSERT INTO porcion_unidad_conversion 
+                    (idporcion, nombre_unidad_alternativa, factor_conversion, activo) 
+                    VALUES ($idporcion, '$nombre_unidad', $factor, 1)";
+                $bd->xConsulta_NoReturn($sql);
+                $newId = $bd->xDevolverUnDato("SELECT LAST_INSERT_ID()");
+                echo json_encode(array('success' => true, 'message' => 'Conversión creada', 'id' => $newId));
+            }
+            break;
+        
+        case 123: // desactivar conversión
+            $postBody = json_decode(file_get_contents('php://input'));
+            $id = $postBody->idporcion_unidad_conversion;
+            $sql = "UPDATE porcion_unidad_conversion SET activo = 0 
+                WHERE idporcion_unidad_conversion = $id";
+            $bd->xConsulta_NoReturn($sql);
+            echo json_encode(array('success' => true, 'message' => 'Conversión eliminada'));
+            break;
+        
+        case 124: // obtener conversión activa con stock calculado
+            $postBody = json_decode(file_get_contents('php://input'));
+            $idporcion = $postBody->idporcion;
+            $sql = "SELECT puc.*, p.stock, p.descripcion as nombre_porcion,
+                    ROUND(p.stock / puc.factor_conversion, 2) as stock_convertido
+                FROM porcion_unidad_conversion puc
+                INNER JOIN porcion p ON p.idporcion = puc.idporcion
+                WHERE puc.idporcion = $idporcion AND puc.activo = 1
+                LIMIT 1";
+            $bd->xConsulta($sql);
+            break;
+        
+        // CÓDIGOS ÚNICOS PARA PORCIONES
+        case 125: // generar y asignar código único a una porción
+            $postBody = json_decode(file_get_contents('php://input'));
+            $idporcion = $postBody->idporcion;
+            
+            // Verificar si ya tiene código
+            $sql = "SELECT codigo FROM porcion_codigo_unico 
+                WHERE idporcion = $idporcion AND idorg = $g_ido AND estado = 0 
+                LIMIT 1";
+            $codigoExistente = $bd->xDevolverUnDato($sql);
+            
+            if ($codigoExistente && $codigoExistente != 'null') {
+                echo json_encode(array('success' => true, 'codigo' => $codigoExistente, 'message' => 'Esta porción ya tiene un código asignado'));
+            } else {
+                // Generar código único: ORG{idorg}_P{timestamp}{random}
+                $timestamp = time();
+                $random = rand(1000, 9999);
+                $codigo = "ORG{$g_ido}_P{$timestamp}{$random}";
+                
+                // Insertar código 
+                $sql = "INSERT INTO porcion_codigo_unico (idporcion, codigo, idorg, estado) 
+                    VALUES ($idporcion, '$codigo', $g_ido, 0)";
+                $bd->xConsulta_NoReturn($sql);
+                
+                echo json_encode(array('success' => true, 'codigo' => $codigo, 'message' => 'Código único generado correctamente'));
+            }
+            break;
+        
+        case 126: // obtener código único de una porción
+            $postBody = json_decode(file_get_contents('php://input'));
+            $idporcion = $postBody->idporcion;
+            $sql = "SELECT * FROM porcion_codigo_unico 
+                WHERE idporcion = $idporcion AND idorg = $g_ido AND estado = 0 
+                LIMIT 1";
+            $bd->xConsulta($sql);
+            break;
+        
+        case 127: // vincular porción con código único existente
+            $postBody = json_decode(file_get_contents('php://input'));
+            $idporcion = $postBody->idporcion;
+            $codigo = $postBody->codigo;
+            
+            // Verificar que el código existe en la organización
+            $sql = "SELECT idporcion_codigo_unico FROM porcion_codigo_unico 
+                WHERE codigo = '$codigo' AND idorg = $g_ido AND estado = 0 
+                LIMIT 1";
+            $existe = $bd->xDevolverUnDato($sql);
+            
+            if ($existe) {
+                echo json_encode(array('success' => false, 'message' => 'El código ya existe y esta vinculado a otra porción'));
+            } else {
+                // Verificar si la porción ya tiene un código
+                $sql = "SELECT idporcion_codigo_unico FROM porcion_codigo_unico 
+                    WHERE idporcion = $idporcion AND idorg = $g_ido AND estado = 0";
+                $tieneCodigoActual = $bd->xDevolverUnDato($sql);
+                
+                if ($tieneCodigoActual && $tieneCodigoActual != 'null') {
+                    // Desactivar código actual
+                    $sql = "UPDATE porcion_codigo_unico SET estado = 1 
+                        WHERE idporcion_codigo_unico = $tieneCodigoActual";
+                    $bd->xConsulta_NoReturn($sql);
+                }
+                
+                // Insertar nueva vinculación
+                $sql = "INSERT INTO porcion_codigo_unico (idporcion, codigo, idorg, estado) 
+                    VALUES ($idporcion, '$codigo', $g_ido, 0)";
+                $bd->xConsulta_NoReturn($sql);
+                
+                echo json_encode(array('success' => true, 'message' => 'Porción vinculada correctamente con el código'));
+            }
+            break;
+        
+        case 128: // listar porciones de la sede actual con sus códigos
+            $sql = "SELECT p.idporcion, p.descripcion, p.stock, pf.descripcion as familia,
+                    pcu.codigo, pcu.idporcion_codigo_unico
+                FROM porcion p
+                INNER JOIN producto_familia pf ON p.idproducto_familia = pf.idproducto_familia
+                LEFT JOIN porcion_codigo_unico pcu ON pcu.idporcion = p.idporcion 
+                    AND pcu.idorg = $g_ido AND pcu.estado = 0
+                WHERE p.idsede = $g_idsede AND p.estado = 0
+                ORDER BY pf.descripcion, p.descripcion";
+            $bd->xConsulta($sql);
+            break;
+        
+        case 129: // buscar porciones por código en toda la organización
+            $postBody = json_decode(file_get_contents('php://input'));
+            $codigo = $postBody->codigo;
+            $sql = "SELECT p.idporcion, p.descripcion, p.idsede, s.nombre as nombre_sede,
+                    pf.descripcion as familia, pcu.codigo
+                FROM porcion_codigo_unico pcu
+                INNER JOIN porcion p ON p.idporcion = pcu.idporcion
+                INNER JOIN sede s ON s.idsede = p.idsede
+                INNER JOIN producto_familia pf ON p.idproducto_familia = pf.idproducto_familia
+                WHERE pcu.codigo = '$codigo' AND pcu.idorg = $g_ido AND pcu.estado = 0 AND p.estado = 0
+                ORDER BY s.nombre, p.descripcion";
+            $bd->xConsulta($sql);
+            break;
+        
+        case 130: // modificar código único (actualiza todas las porciones vinculadas)
+            $postBody = json_decode(file_get_contents('php://input'));
+            $idporcion = $postBody->idporcion;
+            $codigo_anterior = $postBody->codigo_anterior;
+            $codigo_nuevo = $postBody->codigo_nuevo;
+            
+            // Verificar que el nuevo código no exista ya en otra porción
+            $sql = "SELECT idporcion FROM porcion_codigo_unico 
+                WHERE codigo = '$codigo_nuevo' AND idorg = $g_ido AND estado = 0 
+                LIMIT 1";
+            $existe = $bd->xDevolverUnDato($sql);
+            
+            if ($existe && $existe != 'null') {
+                echo json_encode(array('success' => false, 'message' => 'El código ya existe y está vinculado a otra porción'));
+            } else {
+                // Actualizar el código en todas las porciones que tengan el código anterior
+                $sql = "UPDATE porcion_codigo_unico 
+                    SET codigo = '$codigo_nuevo'
+                    WHERE codigo = '$codigo_anterior' AND idorg = $g_ido AND estado = 0";
+                $bd->xConsulta_NoReturn($sql);
+                
+                echo json_encode(array('success' => true, 'message' => 'Código modificado correctamente en todas las porciones vinculadas'));
+            }
+            break;
+        
+        case 131: // buscar códigos únicos para autocomplete (por código o nombre de porción)
+            $postBody = json_decode(file_get_contents('php://input'));
+            $termino = $postBody->termino;
+            
+            // Buscar códigos únicos que coincidan con el término en el código o en el nombre de la porción
+            // Agrupa por código y toma la primera porción de cada grupo
+            $sql = "SELECT pcu.codigo, 
+                    MIN(p.descripcion) as porcion_nombre,
+                    COUNT(DISTINCT p.idporcion) as total_vinculadas
+                FROM porcion_codigo_unico pcu
+                INNER JOIN porcion p ON p.idporcion = pcu.idporcion
+                WHERE pcu.idorg = $g_ido 
+                    AND pcu.estado = 0 
+                    AND p.estado = 0
+                    AND (pcu.codigo LIKE '%$termino%' OR p.descripcion LIKE '%$termino%')
+                GROUP BY pcu.codigo
+                ORDER BY pcu.codigo
+                LIMIT 10";
+            $bd->xConsulta($sql);
+            break;
+        
+        case 132: // obtener el siguiente número secuencial para código único
+            // Obtener el último número secuencial usado en la organización
+            $sql = "SELECT MAX(CAST(SUBSTRING_INDEX(codigo, '-', -1) AS UNSIGNED)) as ultimo_numero
+                FROM porcion_codigo_unico
+                WHERE idorg = $g_ido AND estado = 0";
+            $ultimo = $bd->xDevolverUnDato($sql);
+            
+            $siguiente_numero = ($ultimo && $ultimo != 'null') ? intval($ultimo) + 1 : 1;
+            
+            echo json_encode(array(
+                'success' => true,
+                'siguiente_numero' => str_pad($siguiente_numero, 3, '0', STR_PAD_LEFT)
+            ));
+            break;
     }
 ?>    

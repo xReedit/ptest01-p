@@ -539,8 +539,6 @@
 			break;
 		case 204:// id ultima carta // guardar cambios de carta
 			$idCategoria=$_POST['idc'];
-			$id_carta_anterior=$_POST['id_carta_anterior']; // es idcarta
-			$id_carta=$_POST['id_carta_anterior']; // es idcarta
 			$sql_array=$_POST['sql_array'];
 			$fecha=$_POST['f'];
 			$sql_carta_historial="";
@@ -548,28 +546,16 @@
 			$sql_update_carta = '';
 			$sql_update_carta_delete = '';
 
-			//obtiene ultima carta segun fecha
-			// $sql="SELECT idcarta as d1 FROM carta WHERE (idorg=".$g_ido." and idsede=".$g_idsede." and idcategoria=".$idCategoria.") AND STR_TO_DATE(fecha, '%d/%m/%Y')=curdate()";
-			// $id_carta=$bd->xDevolverUnDato($sql);
-			if($id_carta==''){ //nueva carta
+			// Siempre busca el idcarta existente de la categoría
+			$sql="SELECT idcarta as d1 FROM carta WHERE (idorg=".$g_ido." and idsede=".$g_idsede." and idcategoria=".$idCategoria.") AND estado=0 LIMIT 1";
+			$id_carta=$bd->xDevolverUnDato($sql);
+			
+			if($id_carta==''){ //nueva carta - solo si no existe para esta categoría
 				$sql_carta="insert into carta (idorg, idsede, idcategoria,fecha) value (".$g_ido.",".$g_idsede.",".$idCategoria.", '".$fecha_now."')";
 				$id_carta=$bd->xConsulta_UltimoId($sql_carta);
-
-				// if($id_carta_anterior!=""){
-				// 	$sql_carta_lista_anterior="delete from carta_lista where idcarta=".$id_carta_anterior.";";
-				// }
 			}else{
-				//si ya existe carta guarda y pasa carta actual al historial
-				// $fecha_carta = date("d/m/Y");
-				// $sql_carta_historial = "CALL procedure_historial_carta(".$id_carta.")";
-				// $sql_update_carta_delete="delete from carta_lista_historial where idcarta=".$id_carta." and fecha='".$fecha_carta."';";
-				// $sql_carta_historial="INSERT INTO carta_lista_historial (fecha, idcarta_lista,idcarta,idseccion,iditem,precio,cantidad,cant_preparado,sec_orden,estado) SELECT '".$fecha_carta."', idcarta_lista,idcarta,idseccion,iditem,precio,cantidad,cant_preparado,sec_orden,estado from carta_lista WHERE idcarta=".$id_carta.";";
-
-				// 121118 | si ya existe actualiza la fecha de modificacion
+				// Si ya existe, solo actualiza la fecha de modificacion
 				$sql_update_carta = "update carta set fecha = '".$fecha_now."' where idcarta=".$id_carta."; ";
-
-				// elimina el contenido antererior para guardar todo nueva mente con las filas modificadas o agregadas
-				// $sql_carta_lista_anterior="delete from carta_lista where idcarta=".$id_carta.";";
 			}
 
 			$sql_carta_lista="";
@@ -597,7 +583,7 @@
 					$sql_update_seccion = "update seccion set descripcion='".$seccion['des_seccion']."' where idseccion=".$id_seccion;
 					$bd->xConsulta_NoReturn($sql_update_seccion);
 				}
-				// echo $id_seccion.",".$seccion['des_seccion']." * ".$contador_row." | ";
+				// echo $id_seccion.",".$seccion['des_seccion']." * ".$contador_row." | "; 
 				
 
 				//item
@@ -3206,11 +3192,20 @@
 			break;
 		case 1803://porciones
 			$sql="
-				SELECT por.idporcion, ifnull(pf.descripcion,'no definido') as familia, por.descripcion as porcion, por.stock FROM porcion AS por
-					left JOIN producto AS p ON p.idproducto=por.idproducto_de
-					left JOIN producto_familia AS pf using(idproducto_familia)
+				SELECT por.idporcion, 
+					ifnull(pf.descripcion,'no definido') as familia, 
+					por.descripcion as porcion, 
+					por.stock,
+					pcu.codigo as codigo_unico,
+					puc.nombre_unidad_alternativa,
+					puc.factor_conversion
+				FROM porcion AS por
+					LEFT JOIN producto AS p ON p.idproducto=por.idproducto_de
+					LEFT JOIN producto_familia AS pf USING(idproducto_familia)
+					LEFT JOIN porcion_codigo_unico pcu ON pcu.idporcion = por.idporcion AND pcu.estado = 0
+					LEFT JOIN porcion_unidad_conversion puc ON puc.idporcion = por.idporcion AND puc.activo = 1
 				WHERE (por.idorg=".$g_ido." AND por.idsede=".$g_idsede.") AND por.estado=0
-				ORDER BY pf.descripcion, por.descripcion
+				ORDER BY por.descripcion
 			";
 			$bd->xConsulta($sql);
 			break;
