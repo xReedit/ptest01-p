@@ -3202,7 +3202,7 @@
 				FROM porcion AS por
 					LEFT JOIN producto AS p ON p.idproducto=por.idproducto_de
 					LEFT JOIN producto_familia AS pf USING(idproducto_familia)
-					LEFT JOIN porcion_codigo_unico pcu ON pcu.idporcion = por.idporcion AND pcu.estado = 0
+					LEFT JOIN porcion_codigo_unico pcu ON pcu.idporcion_codigo_unico = por.idporcion_codigo_unico AND pcu.estado = 0
 					LEFT JOIN porcion_unidad_conversion puc ON puc.idporcion = por.idporcion AND puc.activo = 1
 				WHERE (por.idorg=".$g_ido." AND por.idsede=".$g_idsede.") AND por.estado=0
 				ORDER BY por.descripcion

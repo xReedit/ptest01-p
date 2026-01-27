@@ -538,6 +538,82 @@
             $sql="update tipo_comprobante_serie set is_deshabilitado_cpe = 1, estado = 1 where idsede = $g_idsede and estado = 0 and idtipo_comprobante in (2,3)";  
             $bd->xConsulta_NoReturn($sql);
             break;
+        case 32: // guardar error CPE en tabla cpe_error
+            $postBody = json_decode(file_get_contents('php://input'));
+            
+            // Obtener datos del error
+            $external_id = $postBody->external_id;
+            $idsunat_errores = $postBody->idsunat_errores;
+            
+            // Buscar el idce correspondiente al external_id
+            $sql = "SELECT idce FROM ce WHERE external_id = '$external_id' AND idsede = $g_idsede LIMIT 1";
+            $idce = $bd->xDevolverUnDato($sql);
+            
+            if ($idce) {
+                // Verificar si ya existe el registro para evitar duplicados
+                $sql = "SELECT COUNT(*) as total FROM cpe_error 
+                        WHERE idce = $idce AND idsunat_errores = $idsunat_errores";
+                $existe = $bd->xDevolverUnDato($sql);
+                
+                if ($existe == 0) {
+                    // Insertar en cpe_error solo si no existe
+                    $sql = "INSERT INTO cpe_error (idce, idsede, idsunat_errores) 
+                            VALUES ($idce, $g_idsede, $idsunat_errores)";
+                    $bd->xConsulta_NoReturn($sql);
+                    echo json_encode(array('success' => true, 'idce' => $idce, 'action' => 'inserted'));
+                } else {
+                    echo json_encode(array('success' => true, 'idce' => $idce, 'action' => 'already_exists'));
+                }
+            } else {
+                // Si no existe el idce aún, puede ser que el error ocurra antes del registro
+                // Registrar en log para debugging
+                echo json_encode(array('success' => false, 'message' => 'CPE no encontrado aún', 'external_id' => $external_id));
+            }
+            break;
+        case 33: // consultar error en tabla sunat_errores por código
+            $postBody = json_decode(file_get_contents('php://input'));
+            $codigo = $postBody->codigo;
+            
+            // Consultar en la tabla sunat_errores
+            $sql = "SELECT idsunat_errores, codigo, descripcion, excepcion, rechazo, observaciones 
+                    FROM sunat_errores 
+                    WHERE codigo = '$codigo' 
+                    LIMIT 1";
+            
+            $resultado = $bd->xConsulta_NoReturn($sql);
+            
+            if ($resultado) {
+                // Si encontró el error en sunat_errores
+                echo json_encode(array(
+                    'success' => true, 
+                    'data' => $resultado
+                ));
+            } else {
+                // Si no existe en sunat_errores, intentar en ce_alerta
+                $sql = "SELECT id, code as codigo, descripcion, excepcion, rechazo, observaciones 
+                        FROM ce_alerta 
+                        WHERE code = '$codigo' AND estado = 0 
+                        LIMIT 1";
+                
+                $bd->prepare($sql);
+                $bd->execute();
+                $resultado = $bd->fetch();
+                
+                if ($resultado) {
+                    echo json_encode(array(
+                        'success' => true, 
+                        'data' => $resultado
+                    ));
+                } else {
+                    // No se encontró el código de error
+                    echo json_encode(array(
+                        'success' => false, 
+                        'message' => 'Código de error no encontrado',
+                        'codigo' => $codigo
+                    ));
+                }
+            }
+            break;
         case 40: // permiso remoto
             $data = file_get_contents('php://input');
             $postBody = json_decode($data);
@@ -852,33 +928,52 @@
             $idporcion = $postBody->idporcion;
             
             // Verificar si ya tiene código
-            $sql = "SELECT codigo FROM porcion_codigo_unico 
-                WHERE idporcion = $idporcion AND idorg = $g_ido AND estado = 0 
+            $sql = "SELECT pcu.codigo, pcu.idporcion_codigo_unico
+                FROM porcion p
+                LEFT JOIN porcion_codigo_unico pcu ON pcu.idporcion_codigo_unico = p.idporcion_codigo_unico AND pcu.idorg = $g_ido AND pcu.estado = 0
+                WHERE p.idporcion = $idporcion
                 LIMIT 1";
-            $codigoExistente = $bd->xDevolverUnDato($sql);
+            $bd->xConsulta($sql);
+            $resultado = $bd->xDevolverArray();
             
-            if ($codigoExistente && $codigoExistente != 'null') {
-                echo json_encode(array('success' => true, 'codigo' => $codigoExistente, 'message' => 'Esta porción ya tiene un código asignado'));
+            if (!empty($resultado)) {
+                echo json_encode(array('success' => true, 'codigo' => $resultado[0]['codigo'], 'message' => 'Esta porción ya tiene un código asignado'));
             } else {
-                // Generar código único: ORG{idorg}_P{timestamp}{random}
-                $timestamp = time();
-                $random = rand(1000, 9999);
-                $codigo = "ORG{$g_ido}_P{$timestamp}{$random}";
+                // Usar el código proporcionado por el frontend
+                $codigo = $postBody->codigo;
                 
-                // Insertar código 
-                $sql = "INSERT INTO porcion_codigo_unico (idporcion, codigo, idorg, estado) 
-                    VALUES ($idporcion, '$codigo', $g_ido, 0)";
+                // Verificar si el código ya existe
+                $sql = "SELECT idporcion_codigo_unico FROM porcion_codigo_unico 
+                    WHERE codigo = '$codigo' AND idorg = $g_ido AND estado = 0 
+                    LIMIT 1";
+                $idcodigo_existente = $bd->xDevolverUnDato($sql);
+                
+                if ($idcodigo_existente && $idcodigo_existente != 'null') {
+                    // El código ya existe, vincular la porción a ese código
+                    $idcodigo_unico = $idcodigo_existente;
+                } else {
+                    // Crear nuevo código único
+                    $sql = "INSERT INTO porcion_codigo_unico (codigo, idorg, estado, fecha_creacion) 
+                        VALUES ('$codigo', $g_ido, 0, NOW())";
+                    $idcodigo_unico = $bd->xConsulta_UltimoId($sql);
+                }
+                
+                // Actualizar la porción para que apunte a este código
+                $sql = "UPDATE porcion SET idporcion_codigo_unico = $idcodigo_unico 
+                    WHERE idporcion = $idporcion AND idorg = $g_ido";
                 $bd->xConsulta_NoReturn($sql);
                 
-                echo json_encode(array('success' => true, 'codigo' => $codigo, 'message' => 'Código único generado correctamente'));
+                echo json_encode(array('success' => true, 'codigo' => $codigo, 'idcodigo_unico' => $idcodigo_unico, 'message' => 'Código único generado correctamente'));
             }
             break;
         
         case 126: // obtener código único de una porción
             $postBody = json_decode(file_get_contents('php://input'));
             $idporcion = $postBody->idporcion;
-            $sql = "SELECT * FROM porcion_codigo_unico 
-                WHERE idporcion = $idporcion AND idorg = $g_ido AND estado = 0 
+            $sql = "SELECT pcu.* 
+                FROM porcion p
+                LEFT JOIN porcion_codigo_unico pcu ON pcu.idporcion_codigo_unico = p.idporcion_codigo_unico AND pcu.idorg = $g_ido AND pcu.estado = 0
+                WHERE p.idporcion = $idporcion
                 LIMIT 1";
             $bd->xConsulta($sql);
             break;
@@ -892,42 +987,28 @@
             $sql = "SELECT idporcion_codigo_unico FROM porcion_codigo_unico 
                 WHERE codigo = '$codigo' AND idorg = $g_ido AND estado = 0 
                 LIMIT 1";
-            $existe = $bd->xDevolverUnDato($sql);
+            $idcodigo_unico = $bd->xDevolverUnDato($sql);
             
-            if ($existe) {
-                echo json_encode(array('success' => false, 'message' => 'El código ya existe y esta vinculado a otra porción'));
-            } else {
-                // Verificar si la porción ya tiene un código
-                $sql = "SELECT idporcion_codigo_unico FROM porcion_codigo_unico 
-                    WHERE idporcion = $idporcion AND idorg = $g_ido AND estado = 0";
-                $tieneCodigoActual = $bd->xDevolverUnDato($sql);
+            if (!$idcodigo_unico || $idcodigo_unico == 'null') {
+                // Crear nuevo código único
+                $sql = "INSERT INTO porcion_codigo_unico (codigo, idorg, estado, fecha_creacion) 
+                    VALUES ('$codigo', $g_ido, 0, NOW())";
+                $idcodigo_unico = $bd->xConsulta_UltimoId($sql);
                 
-                if ($tieneCodigoActual && $tieneCodigoActual != 'null') {
-                    // Desactivar código actual
-                    $sql = "UPDATE porcion_codigo_unico SET estado = 1 
-                        WHERE idporcion_codigo_unico = $tieneCodigoActual";
-                    $bd->xConsulta_NoReturn($sql);
-                }
-                
-                // Insertar nueva vinculación
-                $sql = "INSERT INTO porcion_codigo_unico (idporcion, codigo, idorg, estado) 
-                    VALUES ($idporcion, '$codigo', $g_ido, 0)";
+                // Actualizar la porción para que apunte a este código
+                $sql = "UPDATE porcion SET idporcion_codigo_unico = $idcodigo_unico 
+                    WHERE idporcion = $idporcion AND idorg = $g_ido";
                 $bd->xConsulta_NoReturn($sql);
                 
-                echo json_encode(array('success' => true, 'message' => 'Porción vinculada correctamente con el código'));
+                echo json_encode(array('success' => true, 'codigo' => $codigo, 'message' => 'Código creado y vinculado correctamente'));
+            } else {
+                // Actualizar la porción para que apunte a este código único
+                $sql = "UPDATE porcion SET idporcion_codigo_unico = $idcodigo_unico 
+                    WHERE idporcion = $idporcion AND idorg = $g_ido";
+                $bd->xConsulta_NoReturn($sql);
+                
+                echo json_encode(array('success' => true, 'codigo' => $codigo, 'message' => 'Código vinculado correctamente'));
             }
-            break;
-        
-        case 128: // listar porciones de la sede actual con sus códigos
-            $sql = "SELECT p.idporcion, p.descripcion, p.stock, pf.descripcion as familia,
-                    pcu.codigo, pcu.idporcion_codigo_unico
-                FROM porcion p
-                INNER JOIN producto_familia pf ON p.idproducto_familia = pf.idproducto_familia
-                LEFT JOIN porcion_codigo_unico pcu ON pcu.idporcion = p.idporcion 
-                    AND pcu.idorg = $g_ido AND pcu.estado = 0
-                WHERE p.idsede = $g_idsede AND p.estado = 0
-                ORDER BY pf.descripcion, p.descripcion";
-            $bd->xConsulta($sql);
             break;
         
         case 129: // buscar porciones por código en toda la organización
@@ -935,11 +1016,11 @@
             $codigo = $postBody->codigo;
             $sql = "SELECT p.idporcion, p.descripcion, p.idsede, s.nombre as nombre_sede,
                     pf.descripcion as familia, pcu.codigo
-                FROM porcion_codigo_unico pcu
-                INNER JOIN porcion p ON p.idporcion = pcu.idporcion
+                FROM porcion p
+                LEFT JOIN porcion_codigo_unico pcu ON p.idporcion_codigo_unico = pcu.idporcion_codigo_unico AND pcu.idorg = $g_ido AND pcu.estado = 0
                 INNER JOIN sede s ON s.idsede = p.idsede
                 INNER JOIN producto_familia pf ON p.idproducto_familia = pf.idproducto_familia
-                WHERE pcu.codigo = '$codigo' AND pcu.idorg = $g_ido AND pcu.estado = 0 AND p.estado = 0
+                WHERE pcu.codigo = '$codigo' AND p.estado = 0
                 ORDER BY s.nombre, p.descripcion";
             $bd->xConsulta($sql);
             break;
@@ -979,10 +1060,9 @@
                     MIN(p.descripcion) as porcion_nombre,
                     COUNT(DISTINCT p.idporcion) as total_vinculadas
                 FROM porcion_codigo_unico pcu
-                INNER JOIN porcion p ON p.idporcion = pcu.idporcion
-                WHERE pcu.idorg = $g_ido 
+                LEFT JOIN porcion p ON p.idporcion_codigo_unico = pcu.idporcion_codigo_unico AND p.estado = 0
+                WHERE pcu.idorg = $g_ido and p.idsede != $g_idsede
                     AND pcu.estado = 0 
-                    AND p.estado = 0
                     AND (pcu.codigo LIKE '%$termino%' OR p.descripcion LIKE '%$termino%')
                 GROUP BY pcu.codigo
                 ORDER BY pcu.codigo
@@ -1003,6 +1083,57 @@
                 'success' => true,
                 'siguiente_numero' => str_pad($siguiente_numero, 3, '0', STR_PAD_LEFT)
             ));
+            break;
+        
+        case 133: // verificar si la organización tiene múltiples sedes activas
+            $sql = "SELECT idsede, nombre as descripcion
+                FROM sede 
+                WHERE idorg = $g_ido AND estado = 0
+                ORDER BY idsede";
+            $bd->xConsulta($sql);
+            break;
+        
+        case 134: // registrar nueva porción con código único
+            try {
+                $postBody = json_decode(file_get_contents('php://input'));
+                
+                if (!$postBody) {
+                    echo json_encode(array(
+                        'success' => false,
+                        'error' => 'No se recibieron datos'
+                    ));
+                    break;
+                }
+                
+                $descripcion = isset($postBody->descripcion) ? $postBody->descripcion : '';
+                $peso = isset($postBody->peso) ? $postBody->peso : '';
+                $stock = isset($postBody->stock) ? floatval($postBody->stock) : 0;
+                $idorg = $g_ido;
+                $idsede = isset($postBody->idsede) ? intval($postBody->idsede) : $g_idsede;
+                $codigo_unico = isset($postBody->codigo_unico) ? $postBody->codigo_unico : '';
+                
+                if (empty($descripcion)) {
+                    echo json_encode(array(
+                        'success' => false,
+                        'error' => 'La descripción es requerida'
+                    ));
+                    break;
+                }
+                
+                // Llamar al procedimiento almacenado
+                $sql = "CALL sp_insertar_porcion_con_codigo('$descripcion', '$peso', $stock, $idorg, $idsede, '$codigo_unico')";
+                $bd->xConsulta_NoReturn($sql);
+                
+                echo json_encode(array(
+                    'success' => true,
+                    'message' => 'Porción registrada correctamente'
+                ));
+            } catch (Exception $e) {
+                echo json_encode(array(
+                    'success' => false,
+                    'error' => 'Error al registrar porción: ' . $e->getMessage()
+                ));
+            }
             break;
     }
 ?>    

@@ -577,5 +577,152 @@ use function PHPSTORM_META\sql_injection_subst;
         $bd->xConsulta($sql);
         break;
 
+    // REGISTRO DE PEDIDOS
+    case 'get-registro-pedidos':
+        $pagination = $_POST['pagination'];
+        $fecha = $pagination['pageFecha'];
+        
+        // Obtener la hora de cierre del día
+        $sql_hora_cierre = "SELECT hora_cierre_dia FROM sede_opciones WHERE idsede = $g_idsede";
+        $hora_cierre = $bd->xDevolverUnDato($sql_hora_cierre);
+        
+        // Si no se obtuvo un registro, establecer la hora de cierre a '00:00:00'
+        if (!isset($hora_cierre)) {
+            $hora_cierre = '00:00:00';
+        }
+        
+        // Calcular la fecha y hora de inicio y cierre
+        $fecha_hora_inicio = date('Y-m-d H:i:s', strtotime($fecha . ' ' . $hora_cierre));
+        $fecha_hora_cierre = date('Y-m-d H:i:s', strtotime($fecha_hora_inicio . ' +1 day'));
+        
+        $sql = "
+            SELECT 
+                p.idpedido,
+                p.fecha_hora,
+                p.nummesa,
+                p.correlativo_dia,
+                p.referencia AS referencia_pedido,
+                p.total_r as total,
+                p.estado,
+                p.idregistro_pago,
+                COALESCE(p.idregistra_scan_qr, 0) AS scan_qr,
+                tc.idtipo_consumo,
+                tc.descripcion AS des_consumo,
+                u.idusuario,
+                GROUP_CONCAT(DISTINCT u.nombres) AS nom_usuario,
+                COALESCE(c.nombres, 'PUBLICO EN GENERAL') AS nom_cliente,
+                COUNT(DISTINCT pd.idpedido_detalle) AS cant_productos,                
+                COALESCE(psd.impreso, 0) impreso
+            FROM pedido p
+                INNER JOIN tipo_consumo tc ON tc.idtipo_consumo = p.idtipo_consumo
+                INNER JOIN usuario u ON u.idusuario = p.idusuario
+                LEFT JOIN cliente c ON c.idcliente = p.idcliente
+                LEFT JOIN pedido_detalle pd ON pd.idpedido = p.idpedido AND pd.estado = 0
+                LEFT JOIN print_server_detalle psd on psd.idpedido = p.idpedido
+            WHERE p.idsede = $g_idsede
+                AND p.fecha_hora BETWEEN '$fecha_hora_inicio' AND '$fecha_hora_cierre'
+            GROUP BY p.idpedido
+            ORDER BY p.idpedido DESC
+        ";
+        
+        $bd->xConsulta($sql);
+        break;
+    
+    case 'get-detalle-pedido':
+        $idpedido = $_POST['idpedido'];
+        
+        $sql = "
+        SELECT * FROM(
+            SELECT p.idpedido, pd.idpedido_detalle, tp.idtipo_consumo, tp.descripcion AS des_tp,
+                concat('1',s.sec_orden,'.',s.idseccion) AS idseccion_index,
+                s.descripcion AS des_seccion, pd.idseccion, pd.cantidad, pd.descripcion,
+                pd.ptotal_r AS ptotal, pd.ptotal_r AS total, pd.punitario as precio, pd.iditem,
+                s.idimpresora idimpresora_seccion,
+                COALESCE(imp1.descripcion, 'Sin impresora') AS nom_impresora,
+                COALESCE(imp2.descripcion, '') AS nom_impresora_otro,
+                if(cl.cantidad='ND',1,0) is_cantidad_nd,
+                IF(cl.cantidad='SP',ii.idporcion,pd.idcarta_lista) AS iddescontar,
+                IF(cl.cantidad='SP',ii.cant_porcion,pd.cantidad) AS cant_descontar,
+                IF(cl.cantidad='SP',2,1) AS descontar_en
+            FROM pedido AS p
+                INNER JOIN pedido_detalle AS pd ON p.idpedido = pd.idpedido
+                INNER JOIN seccion AS s ON pd.idseccion = s.idseccion
+                INNER JOIN tipo_consumo AS tp ON tp.idtipo_consumo = pd.idtipo_consumo
+                LEFT JOIN impresora AS imp1 ON s.idimpresora = imp1.idimpresora
+                LEFT JOIN impresora AS imp2 ON s.idimpresora_otro = imp2.idimpresora
+                LEFT JOIN carta_lista AS cl ON pd.idcarta_lista = cl.idcarta_lista
+                LEFT JOIN (SELECT iditem, GROUP_CONCAT(idporcion) AS idporcion,GROUP_CONCAT(cantidad) AS cant_porcion 
+                           FROM item_ingrediente WHERE idporcion!=0 GROUP BY iditem) AS ii ON pd.iditem=ii.iditem
+            WHERE p.idpedido = $idpedido AND pd.procede_tabla != 0 AND pd.estado = 0
+        ) a
+        UNION ALL
+        SELECT * FROM(
+            SELECT p.idpedido, pd.idpedido_detalle, tp.idtipo_consumo, tp.descripcion AS des_tp,
+                concat('2',pd.idseccion,'.0') AS idseccion_index,
+                pf.descripcion AS des_seccion, pd.idseccion, pd.cantidad, pd.descripcion,
+                pd.ptotal_r AS ptotal, pd.ptotal_r AS total, pd.punitario as precio, pd.iditem,
+                pf.idimpresora idimpresora_seccion,
+                COALESCE(imp1.descripcion, 'Sin impresora') AS nom_impresora,
+                COALESCE(imp2.descripcion, '') AS nom_impresora_otro,
+                0 is_cantidad_nd,
+                pd.iditem AS iddescontar,
+                pd.cantidad AS cant_descontar,
+                0 AS descontar_en
+            FROM pedido AS p
+                INNER JOIN pedido_detalle AS pd ON p.idpedido = pd.idpedido
+                INNER JOIN tipo_consumo AS tp ON tp.idtipo_consumo = pd.idtipo_consumo
+                INNER JOIN producto AS pro ON pd.iditem = pro.idproducto
+                INNER JOIN producto_familia AS pf ON pd.idseccion = pf.idproducto_familia
+                LEFT JOIN impresora AS imp1 ON pf.idimpresora = imp1.idimpresora
+                LEFT JOIN impresora AS imp2 ON pf.idimpresora_otro = imp2.idimpresora
+            WHERE p.idpedido = $idpedido AND pd.procede_tabla = 0 AND pd.estado = 0
+        ) b
+        ORDER BY idtipo_consumo, idseccion_index
+        ";
+        
+        $bd->xConsulta($sql);
+        break;
+    
+    case 'get-subtotales-pedido':
+        $idpedido = $_POST['idpedido'];
+        
+        $sql = "
+            SELECT 
+                'SUBTOTAL' AS descripcion,
+                FORMAT(SUM(pd.ptotal_r), 2) AS importe,
+                0 AS tachado
+            FROM pedido_detalle pd
+            WHERE pd.idpedido = $idpedido AND pd.estado = 0
+            UNION ALL
+            SELECT 
+                'TOTAL' AS descripcion,
+                FORMAT(p.total_r, 2) AS importe,
+                0 AS tachado
+            FROM pedido p
+            WHERE p.idpedido = $idpedido
+        ";
+        
+        $bd->xConsulta($sql);
+        break;
+
+    case 'get-datos-reimpresion-pedido':
+        $idpedido = $_POST['idpedido'];
+        
+        $sql = "
+            SELECT 
+                psd.idprint_server_detalle,
+                psd.idprint_server_estructura,
+                psd.descripcion_doc AS tipo,
+                psd.detalle_json,
+                psd.impreso
+            FROM print_server_detalle psd
+            WHERE psd.idpedido = $idpedido
+            ORDER BY psd.idprint_server_detalle DESC
+            LIMIT 1
+        ";
+        
+        $bd->xConsulta($sql);
+        break;
+
     }
 ?>
