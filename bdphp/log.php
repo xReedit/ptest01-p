@@ -1903,6 +1903,11 @@
 			$arrItemPedido = isset($_POST['objPedido']) ? $_POST['objPedido'] : 0;	
 			$arrItemPedido = isset($arrItemPedido) ? $arrItemPedido == 0 ? 'null' : "'".json_encode($arrItemPedido)."'" : 'null';
 
+			if (isset($_POST['objPedido']['nummesa']) && ctype_digit($_POST['objPedido']['nummesa'])) {
+				$_POST['objPedido']['nummesa'] = (int)$_POST['objPedido']['nummesa'];
+				$arrItemPedido = "'".json_encode($_POST['objPedido'])."'";
+			}
+
 			$sql="CALL procedure_refresh_mesas_501(".$g_ido.",".$g_idsede.", ".$arrItemPedido.");";
 			$bd->xConsulta($sql);
 			break;
