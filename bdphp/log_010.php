@@ -464,7 +464,10 @@ use function PHPSTORM_META\sql_injection_subst;
         $fecha_hora_inicio = date('Y-m-d H:i:s', strtotime($fecha . ' ' . $hora_cierre));
         $fecha_hora_cierre = date('Y-m-d H:i:s', strtotime($fecha_hora_inicio . ' +1 day'));
 
-        $sql = "select p.idpedido, p.fecha_hora fecha, rp.idregistro_pago, u.nombres, u.usuario nom_us , COALESCE(pcl.table_number , p.nummesa) nummesa, p.referencia
+        $sql = "select p.idpedido, p.fecha_hora fecha, rp.idregistro_pago
+					 , if(p.idcliente = 0, u.nombres, 'APLICACION') nombres, if(p.idcliente = 0, u.usuario, 'APP') nom_us
+					 , p.idcliente 
+					 , COALESCE(pcl.table_number , p.nummesa) nummesa, p.referencia
                 , p.total_r as total, sede_usuario.is_holding			
                 , p.idusuario, sede_usuario.idsede idsede_usuario, sede_usuario.idorg idorg_usuario
                 , pcl.table_number 
@@ -479,9 +482,9 @@ use function PHPSTORM_META\sql_injection_subst;
                 inner join registro_pago rp on rp.idregistro_pago = p.idregistro_pago
                 inner join registro_pago_detalle rpd on rp.idregistro_pago = rpd.idregistro_pago 
                 inner join tipo_pago tp on rpd.idtipo_pago = tp.idtipo_pago 
-                inner join usuario u on p.idusuario = u.idusuario
-                inner join sede sede_usuario on u.idsede = sede_usuario.idsede                
-                left join pedido_codigo_localizador pcl on pcl.idpedido = p.idpedido                
+                left join usuario u on p.idusuario = u.idusuario
+                left join sede sede_usuario on u.idsede = sede_usuario.idsede                
+                left join pedido_codigo_localizador pcl on pcl.idpedido = p.idpedido 
                 where p.fecha_hora between '$fecha_hora_inicio' and '$fecha_hora_cierre'
                 and p.idsede = $g_idsede GROUP by rp.idregistro_pago";
 

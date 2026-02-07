@@ -1388,8 +1388,11 @@
 			$correlativo_dia=$bd->xDevolverUnDato($sql);
 			$correlativo_dia++;
 
+			$nummesa=$_POST['mesa'] ?? '0';
+			$nummesa = $nummesa == '' ? '0' : $nummesa;
+
 			if(!isset($_POST['estado_p'])){$estado_p=0;}else{$estado_p=$_POST['estado_p'];}//para el caso de venta rapida si ya pago no figura en control de pedidos
-			$sql="insert into pedido (idorg, idsede,fecha,hora,fecha_hora,nummesa,numpedido,correlativo_dia,referencia,total,total_r,solo_llevar,idtipo_consumo,idcategoria,reserva,idusuario,estado)values(".$g_ido.",".$g_idsede.",'".$fecha_now."','".$hora_now."',now(),'".$_POST['mesa']."','".$numpedido."','".$correlativo_dia."','".$_POST['ref']."','".$_POST['t']."','".$_POST['t']."',".$_POST['sl'].",".$_POST['idtpc'].",".$_POST['idcat'].",".$_POST['r'].",".$_SESSION['idusuario'].",".$estado_p.")";
+			$sql="insert into pedido (idorg, idsede,fecha,hora,fecha_hora,nummesa,numpedido,correlativo_dia,referencia,total,total_r,solo_llevar,idtipo_consumo,idcategoria,reserva,idusuario,estado)values(".$g_ido.",".$g_idsede.",'".$fecha_now."','".$hora_now."',now(),'".$nummesa."','".$numpedido."','".$correlativo_dia."','".$_POST['ref']."','".$_POST['t']."','".$_POST['t']."',".$_POST['sl'].",".$_POST['idtpc'].",".$_POST['idcat'].",".$_POST['r'].",".$_SESSION['idusuario'].",".$estado_p.")";
 			$id_pedido=$bd->xConsulta_UltimoId($sql);
 
 			$xsql_p=$_POST['sql_p'];
@@ -1482,7 +1485,10 @@
 				$correlativo_dia=$bd->xDevolverUnDato($sql);
 				$correlativo_dia++;
 
-				$sql="insert into pedido (idorg, idsede,fecha,hora,fecha_hora,nummesa,numpedido,correlativo_dia,referencia,total,total_r,solo_llevar,idtipo_consumo,idcategoria,reserva,idusuario,estado)values(".$g_ido.",".$g_idsede.",'".$fecha_now."','".$hora_now."',now(),'".$xarr['mesa']."','".$numpedido."','".$correlativo_dia."','".$xarr['referencia']."','".$xarr['ImporteTotal']."','".$xarr['ImporteTotal']."',".$solo_llevar.",".$tipo_consumo.",".$xarr['idcategoria'].",".$xarr['reservar'].",".$_SESSION['idusuario'].",".$estado_p.")";
+				$nummesa = $xarr['mesa'] ?? '0';
+				$nummesa = $nummesa == '' ? '0' : $nummesa;
+
+				$sql="insert into pedido (idorg, idsede,fecha,hora,fecha_hora,nummesa,numpedido,correlativo_dia,referencia,total,total_r,solo_llevar,idtipo_consumo,idcategoria,reserva,idusuario,estado)values(".$g_ido.",".$g_idsede.",'".$fecha_now."','".$hora_now."',now(),'".$nummesa."','".$numpedido."','".$correlativo_dia."','".$xarr['referencia']."','".$xarr['ImporteTotal']."','".$xarr['ImporteTotal']."',".$solo_llevar.",".$tipo_consumo.",".$xarr['idcategoria'].",".$xarr['reservar'].",".$_SESSION['idusuario'].",".$estado_p.")";
 				$id_pedido=$bd->xConsulta_UltimoId($sql);
 				//print $sql;
 			}else{
@@ -1623,7 +1629,7 @@
 			}
 
 			// 0 idpedido
-			$sql="CALL procedure_bus_pedido_bd_3051(".$nummesa.",'".$numpedido."', $idpedido,".$g_ido.",".$g_idsede.",".$isConfirmarPago.",".$lastIdPedido.");";
+			$sql="CALL procedure_bus_pedido_bd_3051('".$nummesa."','".$numpedido."', $idpedido,".$g_ido.",".$g_idsede.",".$isConfirmarPago.",".$lastIdPedido.");";			
 			
 			// $condicion='p.nummesa='.$nummesa;
 			// if($nummesa==0){
@@ -3878,7 +3884,7 @@ function xDtUS($op_us){
 			";
 			break;
 		case 308://308://otros datos de la sede // maximo_pedidos_x_hora  tiempo maximo en servir pedido por minutos ::app3_sys_dta_other
-			$sql_us="select maximo_pedidos_x_hora from sede where idorg=".$g_ido." and idsede=".$g_idsede;
+			$sql_us="select maximo_pedidos_x_hora, mesas_alfanumerica from sede where idorg=".$g_ido." and idsede=".$g_idsede;
 			break;
 		case 309:
 			$sql_us="select * from us_home_opciones where estado=0 order by idgrupo";
@@ -3903,7 +3909,7 @@ function xDtUS($op_us){
 			$sql_us = "SELECT s.idorg, se.idsede, se.razonsocial_cpe as nombre, se.ruc_cpe as ruc , s.direccion, se.telefono , se.nombre as sedenombre , se.direccion as sededireccion, se.ciudad as sedeciudad, se.telefono as sedetelefono, se.eslogan, se.authorization_api_comprobante, se.id_api_comprobante, se.facturacion_e_activo, '' as logo64, se.ubigeo, se.codigo_del_domicilio_fiscal
 				,se.sys_local, se.ip_server_local, se.pwa, se.url_api_fac
 				,se.email_cierre, se.metodo_pago_aceptados, se.habilita_verificacion_cpe, tcs.serie, se.id_api_comprobante
-				,se.is_holding
+				,se.is_holding, se.mesas_alfanumerica
 				from org as s 
 				inner JOIN sede as se on s.idorg = se.idorg 
 				left join (select idsede, serie from tipo_comprobante_serie tcs where idsede=$g_idsede and serie != 0 and idtipo_comprobante_serie > 1 and estado = 0 limit 1) as tcs on tcs.idsede = se.idsede 

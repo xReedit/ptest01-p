@@ -645,6 +645,9 @@
                 $sql = "UPDATE area_mesa set estado='1' WHERE idsede = $g_idsede";
                 $bd->xConsulta_NoReturn($sql);
                 
+                // Actualizar sede para indicar que usa mesas numéricas
+                $sql = "UPDATE sede SET mesas_alfanumerica = '0' WHERE idsede = $g_idsede";
+                $bd->xConsulta_NoReturn($sql);
     
                 $bd->prepare("INSERT INTO area_mesa(idsede, idorg, descripcion, idimpresora_precuenta, titulo, num_mesa_ini, num_mesa_fin) VALUES ($g_idsede, $g_ido, '', 0, ?, ?, ?)");
                 foreach ($listAreas as $item) {                    
@@ -666,7 +669,56 @@
             
             break;    
         case 5001: // load areas
-            $sql="select idarea_mesa, titulo, REPLACE(titulo, ' ', '') AS title, descripcion, num_mesa_ini as desde, num_mesa_fin as hasta, idimpresora_precuenta  from area_mesa where idsede = $g_idsede and estado = 0";
+            // Obtener el tipo de mesa configurado en la sede
+            $sql_tipo = "SELECT mesas_alfanumerica FROM sede WHERE idsede = $g_idsede";
+            $result_tipo = $bd->xDevolverUnDato($sql_tipo);
+            $es_alfanumerica = $result_tipo === '1';
+            
+            if ($es_alfanumerica) {
+                // Cargar áreas alfanuméricas
+                $sql="select idarea_mesa, titulo, REPLACE(titulo, ' ', '') AS title, descripcion, num_mesa_ini as desde, num_mesa_fin as hasta, prefijo_mesa as prefijo, idimpresora_precuenta from area_mesa where idsede = $g_idsede and estado = 0 and tipo_mesa = 'alfanumerica'";
+            } else {
+                // Cargar áreas numéricas
+                $sql="select idarea_mesa, titulo, REPLACE(titulo, ' ', '') AS title, descripcion, num_mesa_ini as desde, num_mesa_fin as hasta, idimpresora_precuenta from area_mesa where idsede = $g_idsede and estado = 0 and (tipo_mesa IS NULL OR tipo_mesa = '' OR tipo_mesa = 'numerica')";
+            }
+            $bd->xConsulta($sql);
+            break;
+        case 51: // guardar areas y mesas alfanumericas
+            $postBody = json_decode(file_get_contents('php://input'));            
+            $listAreas = $postBody->listAreas;
+            
+            try {
+                // Marcar como eliminadas las áreas alfanuméricas existentes
+                $sql = "UPDATE area_mesa set estado='1' WHERE idsede = $g_idsede AND tipo_mesa = 'alfanumerica'";
+                $bd->xConsulta_NoReturn($sql);
+                
+                // Actualizar sede para indicar que usa mesas alfanuméricas
+                $sql = "UPDATE sede SET mesas_alfanumerica = '1' WHERE idsede = $g_idsede";
+                $bd->xConsulta_NoReturn($sql);
+                
+                // Insertar nuevas áreas alfanuméricas
+                $bd->prepare("INSERT INTO area_mesa(idsede, idorg, descripcion, idimpresora_precuenta, titulo, num_mesa_ini, num_mesa_fin, tipo_mesa, prefijo_mesa) VALUES ($g_idsede, $g_ido, '', 0, ?, ?, ?, 'alfanumerica', ?)");
+                foreach ($listAreas as $item) {                    
+                    $bd->execute([
+                        $item->titulo,
+                        $item->desde,
+                        $item->hasta,
+                        $item->prefijo
+                    ]);                
+                }
+
+                $bd->xCommit();
+                                    
+                echo json_encode(array('success' => true));
+            }
+            catch (Exception $e) {
+                $bd->rollBack();
+                echo json_encode(array('success' => false, 'error' => $e->getMessage()));
+            }
+            
+            break;
+        case 5101: // load areas alfanumericas
+            $sql="select idarea_mesa, titulo, REPLACE(titulo, ' ', '') AS title, descripcion, num_mesa_ini as desde, num_mesa_fin as hasta, prefijo_mesa as prefijo, idimpresora_precuenta from area_mesa where idsede = $g_idsede and estado = 0 and tipo_mesa = 'alfanumerica'";
             $bd->xConsulta($sql);
             break;        
         case 60: // cupones
