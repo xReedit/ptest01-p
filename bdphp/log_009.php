@@ -573,6 +573,14 @@
         case 33: // consultar error en tabla sunat_errores por código
             $postBody = json_decode(file_get_contents('php://input'));
             $codigo = $postBody->codigo;
+
+            if ($codigo=="0") {
+                echo json_encode(array(
+                    'success' => false,
+                    'message' => 'Código de error no encontrado'                    
+                ));
+                return;
+            }
             
             // Consultar en la tabla sunat_errores
             $sql = "SELECT idsunat_errores, codigo, descripcion, excepcion, rechazo, observaciones 
@@ -589,29 +597,10 @@
                     'data' => $resultado
                 ));
             } else {
-                // Si no existe en sunat_errores, intentar en ce_alerta
-                $sql = "SELECT id, code as codigo, descripcion, excepcion, rechazo, observaciones 
-                        FROM ce_alerta 
-                        WHERE code = '$codigo' AND estado = 0 
-                        LIMIT 1";
-                
-                $bd->prepare($sql);
-                $bd->execute();
-                $resultado = $bd->fetch();
-                
-                if ($resultado) {
-                    echo json_encode(array(
-                        'success' => true, 
-                        'data' => $resultado
-                    ));
-                } else {
-                    // No se encontró el código de error
-                    echo json_encode(array(
-                        'success' => false, 
-                        'message' => 'Código de error no encontrado',
-                        'codigo' => $codigo
-                    ));
-                }
+                echo json_encode(array(
+                    'success' => false, 
+                    'message' => 'Código de error no encontrado'
+                ));
             }
             break;
         case 40: // permiso remoto
