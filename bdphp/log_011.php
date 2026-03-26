@@ -2,7 +2,6 @@
 
 require_once __DIR__ . '/SecurityGuard.php';
 SecurityGuard::verificarAcceso();
-header("Access-Control-Allow-Origin: *");
 header('Content-Type: application/json;charset=utf-8');
 header('content-type: text/html; charset: utf-8');
 header('Content-Type: text/event-stream');
@@ -67,7 +66,8 @@ switch ($op) {
             AND CAST(ps.stock AS DECIMAL(10,2)) < 50            
             ORDER BY stock ASC
         ";
-        $bd->xConsulta($sql);
+        $result = json_decode($bd->xConsulta3($sql), true);
+        echo json_encode(array('success' => true, 'datos' => $result ? $result : array()));
         break;
         
     case '2': // Obtener lista de sedes disponibles para solicitar
@@ -83,39 +83,38 @@ switch ($op) {
             AND s.estado = 0
             ORDER BY s.nombre
         ";
-        $bd->xConsulta($sql);
+        $result = json_decode($bd->xConsulta3($sql), true);
+        echo json_encode(array('success' => true, 'datos' => $result ? $result : array()));
         break;
         
-    case '3': // Crear nueva solicitud
-        $postData = json_decode(file_get_contents('php://input'), true);
+    case '3': // Crear nueva solicitud        
+        $postData = json_decode(file_get_contents('php://input'));
         
-        $idsede_destino = $postData['idsede_destino'];
-        $nota = isset($postData['nota']) ? $bd->antiInyeccion($postData['nota']) : '';
-        $detalle = json_encode($postData['detalle']);
+        $idsede_destino = $postData->idsede_destino;
+        $nota = isset($postData->nota) ? $postData->nota : '';
+        $detalle = json_encode($postData->detalle);
         $detalle = str_replace("'", "''", $detalle);
         
-        $sql = "CALL sp_crear_solicitud_producto(
-            $g_ido,
-            $g_idsede,
-            $idsede_destino,
-            '$nota',
-            $g_us,
-            '$detalle',
-            @idsolicitud
-        )";
+        $sql = "CALL sp_crear_solicitud_producto($g_ido,$g_idsede,$idsede_destino,'$nota',$g_us,'$detalle')";
+
+        // echo json_encode(array(
+        //     'success' => false,
+        //     'message' => 'Solicitud creada exitosamente',
+        //     'query' => $sql
+        // ));
         
         try {
-            $bd->xConsultaSinDatos($sql);
-            $result = $bd->xDevolverUnDato("SELECT @idsolicitud AS D1");
+            $bd->xConsulta_NoReturn($sql);           
             echo json_encode(array(
                 'success' => true,
-                'idsolicitud_producto' => $result,
-                'message' => 'Solicitud creada correctamente'
+                'message' => 'Solicitud creada exitosamente',
+                'query' => $sql
             ));
         } catch (Exception $e) {
             echo json_encode(array(
                 'success' => false,
-                'message' => 'Error al crear solicitud: ' . $e->getMessage()
+                'message' => 'Error al crear solicitud: ' . $e->getMessage(),
+                'query' => $sql
             ));
         }
         break;
@@ -143,7 +142,8 @@ switch ($op) {
             GROUP BY sp.idsolicitud_producto
             ORDER BY sp.fecha_solicitud DESC
         ";
-        $bd->xConsulta($sql);
+        $result = json_decode($bd->xConsulta3($sql), true);
+        echo json_encode(array('success' => true, 'datos' => $result ? $result : array()));
         break;
         
     case '5': // Listar solicitudes recibidas (para esta sede)
@@ -152,6 +152,7 @@ switch ($op) {
                 sp.idsolicitud_producto,
                 sp.idsede_solicita,
                 s.nombre AS sede_solicita,
+                s.nombre AS sede_origen,
                 sp.fecha_solicitud,
                 sp.fecha_visto,
                 sp.fecha_atendido,
@@ -171,11 +172,13 @@ switch ($op) {
             GROUP BY sp.idsolicitud_producto
             ORDER BY sp.fecha_solicitud DESC
         ";
-        $bd->xConsulta($sql);
+        $result = json_decode($bd->xConsulta3($sql), true);
+        echo json_encode(array('success' => true, 'datos' => $result ? $result : array()));
         break;
         
     case '6': // Obtener detalle de una solicitud
-        $idsolicitud = $_POST['idsolicitud_producto'];
+        $postData = json_decode(file_get_contents('php://input'), true);
+        $idsolicitud = $postData['idsolicitud_producto'];
         
         $sql = "
             SELECT 
@@ -189,7 +192,8 @@ switch ($op) {
             WHERE spd.idsolicitud_producto = $idsolicitud
             ORDER BY spd.idsolicitud_producto_detalle
         ";
-        $bd->xConsulta($sql);
+        $result = json_decode($bd->xConsulta3($sql), true);
+        echo json_encode(array('success' => true, 'datos' => $result ? $result : array()));
         break;
         
     case '7': // Cambiar estado de solicitud
@@ -221,7 +225,8 @@ switch ($op) {
         break;
         
     case '8': // Obtener historial de cambios de una solicitud
-        $idsolicitud = $_POST['idsolicitud_producto'];
+        $postData = json_decode(file_get_contents('php://input'), true);
+        $idsolicitud = $postData['idsolicitud_producto'];
         
         $sql = "
             SELECT 
@@ -311,12 +316,14 @@ switch ($op) {
             ORDER BY stock ASC
             LIMIT 50
         ";
-        $bd->xConsulta($sql);
+        $result = json_decode($bd->xConsulta3($sql), true);
+        echo json_encode(array('success' => true, 'datos' => $result ? $result : array()));
         break;
         
     case '11': // Cancelar solicitud
-        $idsolicitud = $_POST['idsolicitud_producto'];
-        $observacion = isset($_POST['observacion']) ? $bd->antiInyeccion($_POST['observacion']) : 'Solicitud cancelada';
+        $postData = json_decode(file_get_contents('php://input'), true);
+        $idsolicitud = $postData['idsolicitud_producto'];
+        $observacion = isset($postData['observacion']) ? $bd->antiInyeccion($postData['observacion']) : 'Solicitud cancelada';
         
         $sql = "CALL sp_cambiar_estado_solicitud(
             $idsolicitud,
@@ -353,6 +360,259 @@ switch ($op) {
             AND idorg = $g_ido
         ";
         $bd->xConsulta($sql);
+        break;
+        
+    case '13': // Obtener stock disponible en sede actual para despachar una solicitud
+        $postData = json_decode(file_get_contents('php://input'), true);
+        $idsolicitud = $postData['idsolicitud_producto'];
+        
+        // Obtener detalle de la solicitud
+        $sql = "
+            SELECT 
+                spd.idsolicitud_producto_detalle,
+                spd.tipo_producto,
+                spd.idporcion_codigo_unico,
+                spd.idporcion,
+                spd.idproducto,
+                spd.descripcion,
+                spd.cantidad_solicitada,
+                spd.cantidad_despachada
+            FROM solicitud_producto_detalle spd
+            WHERE spd.idsolicitud_producto = $idsolicitud
+            ORDER BY spd.idsolicitud_producto_detalle
+        ";
+        $result_detalle = json_decode($bd->xConsulta3($sql), true);
+        if (!$result_detalle) $result_detalle = array();
+        
+        $items_despacho = array();
+        
+        foreach ($result_detalle as $item) {
+            $item_data = array(
+                'idsolicitud_producto_detalle' => $item['idsolicitud_producto_detalle'],
+                'tipo_producto' => $item['tipo_producto'],
+                'descripcion_solicitada' => $item['descripcion'],
+                'cantidad_solicitada' => $item['cantidad_solicitada'],
+                'cantidad_despachada' => $item['cantidad_despachada'],
+                'match' => null,
+                'opciones_almacen' => array()
+            );
+            
+            if ($item['tipo_producto'] == 'porcion') {
+                // Buscar porción en sede actual por código único
+                $match_result = array();
+                $match_sql = "";
+                if (!empty($item['idporcion_codigo_unico']) && $item['idporcion_codigo_unico'] != '0') {
+                    $match_sql = "
+                        SELECT p.idporcion, p.descripcion, p.stock, p.idporcion_codigo_unico, 'codigo_unico' AS match_tipo
+                        FROM porcion p
+                        WHERE p.idsede = $g_idsede AND p.estado = 0
+                        AND p.idporcion_codigo_unico = " . intval($item['idporcion_codigo_unico']) . "
+                        LIMIT 1
+                    ";
+                    $match_result = json_decode($bd->xConsulta3($match_sql), true);
+                    if (!$match_result) $match_result = array();
+                }
+                
+                // Si no encontró por código único, buscar por nombre
+                if (empty($match_result)) {
+                    $desc = $bd->antiInyeccion($item['descripcion']);
+                    $match_sql = "
+                        SELECT p.idporcion, p.descripcion, p.stock, p.idporcion_codigo_unico, 'nombre' AS match_tipo
+                        FROM porcion p
+                        WHERE p.idsede = $g_idsede AND p.estado = 0
+                        AND p.descripcion LIKE '%$desc%'
+                        LIMIT 5
+                    ";
+                    $match_result = json_decode($bd->xConsulta3($match_sql), true);
+                    if (!$match_result) $match_result = array();
+                }
+                
+                if (!empty($match_result)) {
+                    $item_data['match'] = $match_result;
+                }
+                
+            } else {
+                // Producto de almacén: buscar en almacenes de la sede actual por nombre
+                $desc = $bd->antiInyeccion($item['descripcion']);
+                // Extraer solo el nombre del producto (sin el prefijo del almacén)
+                $desc_parts = explode(' | ', $item['descripcion']);
+                $desc_producto = count($desc_parts) > 1 ? $bd->antiInyeccion($desc_parts[1]) : $desc;
+                
+                $match_sql = "
+                    SELECT 
+                        ps.idproducto_stock, ps.idproducto, ps.idalmacen, ps.stock,
+                        a.descripcion AS almacen_nombre,
+                        p.descripcion AS producto_nombre,
+                        'nombre' AS match_tipo
+                    FROM producto_stock ps
+                    INNER JOIN producto p ON ps.idproducto = p.idproducto
+                    INNER JOIN almacen a ON ps.idalmacen = a.idalmacen
+                    WHERE a.idsede = $g_idsede 
+                    AND ps.estado = 0
+                    AND p.descripcion LIKE '%$desc_producto%'
+                    ORDER BY ps.stock DESC
+                ";
+                $match_result = json_decode($bd->xConsulta3($match_sql), true);
+                if (!$match_result) $match_result = array();
+                
+                if (!empty($match_result)) {
+                    $item_data['opciones_almacen'] = $match_result;
+                }
+            }
+            
+            $items_despacho[] = $item_data;
+        }
+        
+        echo json_encode(array(
+            'success' => true,
+            'datos' => $items_despacho
+        ));
+        break;
+        
+    case '14': // Ejecutar despacho de solicitud
+        $postData = json_decode(file_get_contents('php://input'), true);
+        
+        $idsolicitud = $postData['idsolicitud_producto'];
+        $detalles = json_encode($postData['detalles']);
+        $detalles = str_replace("'", "''", $detalles);
+        
+        $sql = "CALL sp_despachar_solicitud($idsolicitud, $g_us, $g_idsede, '$detalles')";
+        
+        try {
+            $bd->xConsulta_NoReturn($sql);
+            echo json_encode(array(
+                'success' => true,
+                'message' => 'Solicitud despachada correctamente'
+            ));
+        } catch (Exception $e) {
+            echo json_encode(array(
+                'success' => false,
+                'message' => 'Error al despachar: ' . $e->getMessage()
+            ));
+        }
+        break;
+        
+    case '15': // Obtener info para recepción (stock local de sede solicitante)
+        $postData = json_decode(file_get_contents('php://input'), true);
+        $idsolicitud = $postData['idsolicitud_producto'];
+        
+        $sql = "
+            SELECT 
+                spd.idsolicitud_producto_detalle,
+                spd.tipo_producto,
+                spd.idporcion_codigo_unico,
+                spd.idporcion,
+                spd.idproducto,
+                spd.descripcion,
+                spd.cantidad_solicitada,
+                spd.cantidad_despachada
+            FROM solicitud_producto_detalle spd
+            WHERE spd.idsolicitud_producto = $idsolicitud
+            AND spd.cantidad_despachada > 0
+            ORDER BY spd.idsolicitud_producto_detalle
+        ";
+        $result_detalle = json_decode($bd->xConsulta3($sql), true);
+        if (!$result_detalle) $result_detalle = array();
+        
+        $items_recepcion = array();
+        
+        foreach ($result_detalle as $item) {
+            $item_data = array(
+                'idsolicitud_producto_detalle' => $item['idsolicitud_producto_detalle'],
+                'tipo_producto' => $item['tipo_producto'],
+                'descripcion' => $item['descripcion'],
+                'cantidad_solicitada' => $item['cantidad_solicitada'],
+                'cantidad_despachada' => $item['cantidad_despachada'],
+                'match' => null,
+                'opciones_almacen' => array()
+            );
+            
+            if ($item['tipo_producto'] == 'porcion') {
+                $match_result = array();
+                if (!empty($item['idporcion_codigo_unico']) && $item['idporcion_codigo_unico'] != '0') {
+                    $match_sql = "
+                        SELECT p.idporcion, p.descripcion, p.stock, p.idporcion_codigo_unico, 'codigo_unico' AS match_tipo
+                        FROM porcion p
+                        WHERE p.idsede = $g_idsede AND p.estado = 0
+                        AND p.idporcion_codigo_unico = " . intval($item['idporcion_codigo_unico']) . "
+                        LIMIT 1
+                    ";
+                    $match_result = json_decode($bd->xConsulta3($match_sql), true);
+                    if (!$match_result) $match_result = array();
+                }
+                
+                if (empty($match_result)) {
+                    $desc = $bd->antiInyeccion($item['descripcion']);
+                    $match_sql = "
+                        SELECT p.idporcion, p.descripcion, p.stock, p.idporcion_codigo_unico, 'nombre' AS match_tipo
+                        FROM porcion p
+                        WHERE p.idsede = $g_idsede AND p.estado = 0
+                        AND p.descripcion LIKE '%$desc%'
+                        LIMIT 5
+                    ";
+                    $match_result = json_decode($bd->xConsulta3($match_sql), true);
+                    if (!$match_result) $match_result = array();
+                }
+                
+                if (!empty($match_result)) {
+                    $item_data['match'] = $match_result;
+                }
+            } else {
+                $desc_parts = explode(' | ', $item['descripcion']);
+                $desc_producto = count($desc_parts) > 1 ? $bd->antiInyeccion($desc_parts[1]) : $bd->antiInyeccion($item['descripcion']);
+                
+                $match_sql = "
+                    SELECT 
+                        ps.idproducto_stock, ps.idproducto, ps.idalmacen, ps.stock,
+                        a.descripcion AS almacen_nombre,
+                        p.descripcion AS producto_nombre,
+                        'nombre' AS match_tipo
+                    FROM producto_stock ps
+                    INNER JOIN producto p ON ps.idproducto = p.idproducto
+                    INNER JOIN almacen a ON ps.idalmacen = a.idalmacen
+                    WHERE a.idsede = $g_idsede 
+                    AND ps.estado = 0
+                    AND p.descripcion LIKE '%$desc_producto%'
+                    ORDER BY ps.stock DESC
+                ";
+                $match_result = json_decode($bd->xConsulta3($match_sql), true);
+                if (!$match_result) $match_result = array();
+                
+                if (!empty($match_result)) {
+                    $item_data['opciones_almacen'] = $match_result;
+                }
+            }
+            
+            $items_recepcion[] = $item_data;
+        }
+        
+        echo json_encode(array(
+            'success' => true,
+            'datos' => $items_recepcion
+        ));
+        break;
+        
+    case '16': // Ejecutar recepción de solicitud
+        $postData = json_decode(file_get_contents('php://input'), true);
+        
+        $idsolicitud = $postData['idsolicitud_producto'];
+        $detalles = json_encode($postData['detalles']);
+        $detalles = str_replace("'", "''", $detalles);
+        
+        $sql = "CALL sp_recibir_solicitud($idsolicitud, $g_us, $g_idsede, '$detalles')";
+        
+        try {
+            $bd->xConsulta_NoReturn($sql);
+            echo json_encode(array(
+                'success' => true,
+                'message' => 'Solicitud recibida correctamente'
+            ));
+        } catch (Exception $e) {
+            echo json_encode(array(
+                'success' => false,
+                'message' => 'Error al recibir: ' . $e->getMessage()
+            ));
+        }
         break;
         
     default:

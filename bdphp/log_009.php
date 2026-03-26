@@ -588,13 +588,13 @@
                     WHERE codigo = '$codigo' 
                     LIMIT 1";
             
-            $resultado = $bd->xConsulta_NoReturn($sql);
+            $resultado = json_decode($bd->xConsulta3($sql), true);
             
-            if ($resultado) {
+            if ($resultado && count($resultado) > 0) {
                 // Si encontró el error en sunat_errores
                 echo json_encode(array(
                     'success' => true, 
-                    'data' => $resultado
+                    'data' => $resultado[0]
                 ));
             } else {
                 echo json_encode(array(

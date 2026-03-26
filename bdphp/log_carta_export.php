@@ -93,8 +93,22 @@
             $idcategoria = $data['idcategoria'];
             $datos = $data['data_import'];
             
-            if (!$datos || !isset($datos['secciones'])) {
-                echo json_encode(array('success' => false, 'mensaje' => 'Formato de datos inválido'));
+            // Buscar secciones en el JSON - formatos soportados:
+            // Formato 1: { "carta": {...}, "secciones": [...] }        (hermanos al mismo nivel)
+            // Formato 2: { "carta": { "secciones": [...] } }           (secciones dentro de carta)
+            // Formato 3: { "carta": { "carta": {...}, "secciones": [...] } } (anidado con sub-carta)
+            $secciones_import = null;
+
+            if (isset($datos['secciones']) && is_array($datos['secciones'])) {
+                // Formato 1: secciones está en la raíz del JSON
+                $secciones_import = $datos['secciones'];
+            } elseif (isset($datos['carta']) && is_array($datos['carta']) && isset($datos['carta']['secciones']) && is_array($datos['carta']['secciones'])) {
+                // Formato 2 y 3: secciones está dentro de carta
+                $secciones_import = $datos['carta']['secciones'];
+            }
+            
+            if (!$secciones_import || count($secciones_import) === 0) {
+                echo json_encode(array('success' => false, 'mensaje' => 'Formato de datos inválido: no se encontraron secciones'));
                 exit;
             }
             
@@ -124,10 +138,22 @@
                     $bd->xConsulta_NoReturn($sql_carta);
                 }
 
-                $idimpresora_guardar = '0';
+                $stats = array('secciones' => 0, 'items' => 0);
+
+                // Obtener la primera impresora de la sede, o crear una si no existe
+                $sql_check_impresora = "SELECT idimpresora FROM impresora WHERE idsede = $g_idsede AND estado = 0 LIMIT 1";
+                $idimpresora_guardar = $bd->xDevolverUnDato($sql_check_impresora);
+                if (!$idimpresora_guardar) {
+                    $bd->xConsulta_NoReturn("INSERT INTO impresora (idorg, idsede, descripcion, ip, estado) VALUES ($g_ido, $g_idsede, 'CAJA', '0', 0)");
+                    $idimpresora_guardar = $bd->xDevolverUnDato($sql_check_impresora);
+                }
 
                 // Procesar cada sección y sus items
-                foreach ($datos['secciones'] as $seccion) {
+                foreach ($secciones_import as $seccion) {
+                    // Verificar que la sección tenga items
+                    if (!isset($seccion['items']) || !is_array($seccion['items']) || count($seccion['items']) === 0) {
+                        continue;
+                    }
                     // Convertir descripción a mayúsculas para la búsqueda
                     $descripcion_seccion = mb_strtoupper($seccion['descripcion'], 'UTF-8');
                     
@@ -139,32 +165,7 @@
                     ";
                     $id_seccion = $bd->xDevolverUnDato($sql_check_seccion);
 
-                    $idimpresora_seccion = $seccion['idimpresora'];                    
-
-                    if ( $idimpresora_guardar == '0' ) {
-                        if ( $idimpresora_seccion == '0' ) {
-                            // buscar impresora y crearla sino existe
-                            $sql_check_impresora = "
-                                SELECT idimpresora FROM impresora 
-                                WHERE idsede = $g_idsede|
-                                AND estado = 0 limit 1
-                            ";
-    
-                            $id_impresora = $bd->xDevolverUnDato($sql_check_impresora);
-                            if (!$id_impresora) {
-                                $sql_nueva_impresora = "
-                                    INSERT INTO impresora (idorg, idsede, descripcion, ip, estado)
-                                    VALUES ($g_ido, $g_idsede, 'CAJA', '0', 0)
-                                ";
-                                $bd->xConsulta_NoReturn($sql_nueva_impresora);
-                                $id_impresora = $bd->xDevolverUnDato("SELECT idimpresora FROM impresora WHERE idorg = $g_ido AND idsede = $g_idsede AND descripcion = '{$seccion['descripcion']}' AND estado = 0");
-                            }
-                            $idimpresora_seccion = $id_impresora;
-                        }
-
-                        $idimpresora_guardar = $idimpresora_seccion;
-                    }
-
+                    // Usar la impresora obtenida para todas las secciones
                     $seccion['idimpresora'] = $idimpresora_guardar;
                     
                     // Si no existe, crear la sección
@@ -189,6 +190,8 @@
                         }
                     }
                     
+                    $stats['secciones']++;
+
                     // Procesar cada item de la sección
                     foreach ($seccion['items'] as $item) {
                         // Convertir descripción a mayúsculas para la búsqueda
@@ -252,13 +255,14 @@
                             ";
                             $bd->xConsulta_NoReturn($sql_carta_lista);
                         }
+                        $stats['items']++;
                     }
                 }
                 
                 // Confirmar transacción
                 $bd->xConsulta_NoReturn("COMMIT");
                 
-                echo json_encode(array('success' => true, 'idcarta' => $idcarta));
+                echo json_encode(array('success' => true, 'idcarta' => $idcarta, 'stats' => $stats));
             } catch (Exception $e) {
                 // Revertir transacción en caso de error
                 $bd->xConsulta_NoReturn("ROLLBACK");

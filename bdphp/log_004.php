@@ -96,6 +96,42 @@
 				VALUES(".$idConfigPrint.",'I.G.V', '18', 1, 1, 0, ".$idorg.", ".$idsede.");";
 			
 			$bd->xMultiConsulta($sql.$sql_pd);
+
+			// --- AUTO SETUP: area de mesas ---
+			$sql_area = "INSERT INTO area_mesa (idsede, idorg, titulo, descripcion, num_mesa_ini, num_mesa_fin, estado, tipo_mesa)
+				VALUES(".$idsede.", ".$idorg.", 'SALON', 'SALON PRINCIPAL', 1, 10, 0, 'numerica');";
+			$bd->xMultiConsulta($sql_area);
+
+			// --- AUTO SETUP: tipo consumo DELIVERY ---
+			$sql_delivery = "INSERT INTO tipo_consumo (idorg, idsede, descripcion, titulo, estado)
+				VALUES(".$idorg.", ".$idsede.", 'DELIVERY', '', 0);";
+			$bd->xMultiConsulta($sql_delivery);
+
+			// --- AUTO SETUP: impresora CAJA ---
+			$sql_impresora = "INSERT INTO impresora (idorg, idsede, ip, descripcion, var_margen_iz, var_size_font, local, minutos_pedido, img64, copia_local, num_copias, papel_size, estado)
+				VALUES(".$idorg.", ".$idsede.", 'Impresora', 'CAJA', 0, 0, 0, '0', 0, 0, 0, 0, 0);";
+			$idImpresora = $bd->xConsulta_UltimoId($sql_impresora);
+
+			// --- AUTO SETUP: asignar impresora CAJA a otros comprobantes ---
+			$sql_otros = "
+				INSERT INTO conf_print_otros (idorg, idsede, idtipo_otro, idimpresora, esalmacen, estado)
+					VALUES(".$idorg.", ".$idsede.", -1, ".$idImpresora.", 0, 0);
+				INSERT INTO conf_print_otros (idorg, idsede, idtipo_otro, idimpresora, esalmacen, estado)
+					VALUES(".$idorg.", ".$idsede.", -2, ".$idImpresora.", 0, 0);
+				INSERT INTO conf_print_otros (idorg, idsede, idtipo_otro, idimpresora, esalmacen, estado)
+					VALUES(".$idorg.", ".$idsede.", -3, ".$idImpresora.", 0, 0);
+			";
+			$bd->xMultiConsulta($sql_otros);
+
+			// --- AUTO SETUP: categoria CARTA y registro en carta ---
+			$sql_categoria = "INSERT INTO categoria (idorg, idsede, descripcion, hora_ini, hora_fin, visible_x_hora, detalle, estado, dia_disponible, visible_cliente, accesible_mozo)
+				VALUES(".$idorg.", ".$idsede.", 'CARTA', '00:00', '23:59', 0, '', 0, '1,2,3,4,5,6,7,', '1', '0');";
+			$idCategoria = $bd->xConsulta_UltimoId($sql_categoria);
+
+			$sql_carta = "INSERT INTO carta (idorg, idsede, idcategoria, fecha, estado)
+				VALUES(".$idorg.", ".$idsede.", ".$idCategoria.", DATE_FORMAT(now(),'%d/%m/%Y'), 0);";
+			$bd->xMultiConsulta($sql_carta);
+
 			break;
 		case 4: // usuario contadores adm
 			$sql = "
@@ -524,6 +560,68 @@
 			$sql = "update sede_estado set is_bloqueado = 0, is_baja = 0, motivo_baja = '', fecha_baja = '' where idsede = $idsede";
 			$bd->xConsulta_NoReturn($sql);
 
+			echo 'ok';
+			break;
+
+		case '1001': // Dashboard - lista sedes con información completa
+			$sql= "
+				SELECT o.idorg, s.idsede, o.ruc, o.telefono as telefono_org, o.nombre as razonsocial, 
+					s.nombre as nomsede, s.ciudad, s.tipo, s.finicio, s.telefono as telefono_sede,
+					sd.is_bloqueado, sd.is_baja, s.costo_restobar_fijo_mensual,
+					spc.idsede_plan_contratado, spc.importe as importe_plan, spc.descripcion as plan, 
+					spc.precio_semestral, spc.precio_anual,
+					ss.frecuencia, ss.idsede_suscripcion, ss.nombre_contacto, ss.telefono_contacto,
+					ss.ultimo_pago, ss.fecha_inicio as fecha_suscripcion,
+					DATE(s.finicio) fecha_creacion,
+					DATEDIFF(NOW(), DATE(s.finicio)) num_dias_creado
+				FROM org as o 
+					LEFT JOIN sede as s on s.idorg=o.idorg
+					LEFT JOIN sede_estado sd on s.idsede=sd.idsede
+					LEFT JOIN sede_suscripcion ss on s.idsede=ss.idsede
+					LEFT JOIN sede_plan_contratado spc on ss.idsede_plan_contratado = spc.idsede_plan_contratado
+				WHERE o.estado=0 AND s.idsede IS NOT NULL
+				ORDER BY s.idsede
+			";
+			$bd->xConsulta($sql);
+			break;
+
+		case '1002': // Dashboard - lista de planes
+			$sql = "SELECT * FROM sede_plan_contratado WHERE estado = 0 ORDER BY importe";
+			$bd->xConsulta($sql);
+			break;
+
+		case '1003': // listar comprobantes serie por idorg e idsede
+			$idorg = $_POST['idorg'];
+			$idsede = $_POST['idsede'];
+			$sql = "
+				SELECT tpcs.*, tp.descripcion as dsc_comprobante
+				FROM tipo_comprobante_serie tpcs
+					INNER JOIN tipo_comprobante tp USING(idtipo_comprobante)
+				WHERE tpcs.idorg = $idorg AND tpcs.idsede = $idsede AND tpcs.estado = 0
+			";
+			$bd->xConsulta($sql);
+			break;
+
+		case '1004': // listar tipos de comprobante disponibles
+			$sql = "SELECT * FROM tipo_comprobante WHERE estado = 0";
+			$bd->xConsulta($sql);
+			break;
+
+		case '1005': // agregar comprobante serie desde admin new org
+			$idorg = $_POST['idorg'];
+			$idsede = $_POST['idsede'];
+			$idtipo_comprobante = $_POST['idtipo_comprobante'];
+			$serie = $_POST['serie'];
+			$correlativo = $_POST['correlativo'];
+			$sql = "INSERT INTO tipo_comprobante_serie (idtipo_comprobante, idorg, idsede, serie, correlativo) 
+					VALUES ($idtipo_comprobante, $idorg, $idsede, '$serie', $correlativo)";
+			$bd->xConsulta($sql);
+			break;
+
+		case '1006': // eliminar comprobante serie
+			$idtipo_comprobante_serie = $_POST['id'];
+			$sql = "UPDATE tipo_comprobante_serie SET estado = 1 WHERE idtipo_comprobante_serie = $idtipo_comprobante_serie";
+			$bd->xConsulta_NoReturn($sql);
 			echo 'ok';
 			break;
 		
