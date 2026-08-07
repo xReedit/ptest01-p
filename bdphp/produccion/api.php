@@ -57,8 +57,8 @@ function prod_movimiento_stock($bd, $idsede, $idusuario, $idproducto, $idalmacen
     $res = $bd->bd->query($sql);
     if (!$res || $res->num_rows === 0) {
         if ($cantidad > 0) {
-            $sqlIns = "INSERT INTO producto_stock (idproducto, idalmacen, stock, estado, costo_promedio)
-                       VALUES ($idproducto, $idalmacen, 0, 0, 0)";
+            $sqlIns = "INSERT INTO producto_stock (idproducto, idalmacen, stock, estado)
+                       VALUES ($idproducto, $idalmacen, 0, 0)";
             if (!$bd->bd->query($sqlIns)) {
                 return array('ok' => false, 'error' => $bd->bd->error);
             }
@@ -142,8 +142,8 @@ function prod_ensure_producto_en_almacen($bd, $idproducto, $idalmacen) {
     if ($idps && is_numeric($idps)) {
         return intval($idps);
     }
-    $sql = "INSERT INTO producto_stock (idproducto, idalmacen, stock, estado, costo_promedio)
-            VALUES ($idproducto, $idalmacen, 0, 0, 0)";
+    $sql = "INSERT INTO producto_stock (idproducto, idalmacen, stock, estado)
+            VALUES ($idproducto, $idalmacen, 0, 0)";
     if (!$bd->bd->query($sql)) {
         throw new Exception('No se pudo vincular producto al almacén: ' . $bd->bd->error);
     }
