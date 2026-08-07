@@ -31,100 +31,10 @@ use function PHPSTORM_META\sql_injection_subst;
 	$g_us = $_SESSION['idusuario'];
 
     switch ($op) {
-        case 'get-promociones-activas':
-            // Obtener promociones activas
-            $fecha_actual = date('Y-m-d');
-            $hora_actual = date('H:i');
-            $dia_semana = date('N'); // 1 (lunes) a 7 (domingo)
-            
-            // Consulta para obtener promociones activas según fecha, hora y día de la semana
-            $sql = "SELECT p.*, ps.idseccion, ps.iditem, ps.porc_descuento, ps.cantidad, ps.iditem_subitem, 
-                    ps.idproducto_stock, ps.is_nxn, ps.cantidad_x
-                    FROM promociones p 
-                    LEFT JOIN promociones_seccion ps ON p.idpromocion = ps.idpromocion
-                    WHERE p.estado = 1 
-                    AND p.idsede = $g_idsede
-                    AND p.fecha_inicio <= '$fecha_actual' 
-                    AND p.fecha_fin >= '$fecha_actual'
-                    AND p.hora_inicio <= '$hora_actual' 
-                    AND p.hora_fin >= '$hora_actual'
-                    AND FIND_IN_SET($dia_semana, p.dias_semana) > 0
-                    ORDER BY p.idpromocion";
-            
-            $promociones = $bd->xConsulta($sql);
-            
-            // Procesar los resultados para agrupar por promoción
-            $lista_promociones = [];
-            $promocion_actual = null;
-            
-            foreach ($promociones as $promo) {
-                if ($promocion_actual === null || $promocion_actual['idpromocion'] != $promo['idpromocion']) {
-                    // Nueva promoción
-                    if ($promocion_actual !== null) {
-                        $lista_promociones[] = $promocion_actual;
-                    }
-                    
-                    // Extraer secciones
-                    $secciones = '';
-                    if ($promo['idseccion']) {
-                        $secciones = $promo['idseccion'];
-                    }
-                    
-                    $promocion_actual = [
-                        'idpromocion' => $promo['idpromocion'],
-                        'parametros' => [
-                            'header' => [
-                                'titulo' => $promo['titulo'],
-                                'descripcion' => $promo['descripcion'],
-                                'icon' => $promo['icon'],
-                                'establecio_img' => $promo['establecio_img']
-                            ],
-                            'body' => [
-                                'f_inicio' => $promo['fecha_inicio'],
-                                'f_fin' => $promo['fecha_fin'],
-                                'h_inicio' => $promo['hora_inicio'],
-                                'h_fin' => $promo['hora_fin'],
-                                'dias_semana' => $promo['dias_semana'],
-                                'solo_app' => $promo['solo_app'],
-                                'importe_consumo_min' => $promo['importe_consumo_min'],
-                                'num_primeros_pedidos' => $promo['num_primeros_pedidos']
-                            ]
-                        ],
-                        'img' => $promo['img'],
-                        'secciones' => $secciones,
-                        'productos' => null,
-                        'items' => null,
-                        'lista' => []
-                    ];
-                }
-                
-                // Agregar item a la promoción actual
-                if ($promo['idseccion'] || $promo['iditem']) {
-                    $promocion_actual['lista'][] = [
-                        'idseccion' => $promo['idseccion'],
-                        'iditem' => $promo['iditem'],
-                        'porc_descuento' => $promo['porc_descuento'],
-                        'cantidad' => $promo['cantidad'],
-                        'iditem_subitem' => $promo['iditem_subitem'],
-                        'idproducto_stock' => $promo['idproducto_stock'],
-                        'is_nxn' => $promo['is_nxn'],
-                        'cantidad_x' => $promo['cantidad_x']
-                    ];
-                }
-            }
-            
-            // Agregar la última promoción si existe
-            if ($promocion_actual !== null) {
-                $lista_promociones[] = $promocion_actual;
-            }
-            
-            // Devolver resultado
-            if (count($lista_promociones) > 0) {
-                echo json_encode(['success' => true, 'lista_promociones' => $lista_promociones]);
-            } else {
-                echo json_encode(['success' => false, 'mensaje' => 'No hay promociones activas']);
-            }
-            break;
+        // NOTA: case 'get-promociones-activas' eliminado (2026-04-29).
+        // Apuntaba a tablas inexistentes `promociones` / `promociones_seccion`.
+        // El endpoint vivo es 'get-promociones' (más abajo) que llama a
+        // procedure_get_promciones, ya con filtros de fecha/hora/día.
         case 'change-tipo-pago-registro-pago':
             $postBody = json_decode(file_get_contents('php://input'));
             $sql = "insert into cambios_tipo_pago (idusuario_admin, idusuario_solicita, fecha, hora, idsede, idtipo_pago_before, idtipo_pago_after, importe, idregistro_pago, idregistro_pago_detalle)
@@ -622,8 +532,8 @@ use function PHPSTORM_META\sql_injection_subst;
                 LEFT JOIN cliente c ON c.idcliente = p.idcliente
                 LEFT JOIN pedido_detalle pd ON pd.idpedido = p.idpedido AND pd.estado = 0
                 LEFT JOIN print_server_detalle psd on psd.idpedido = p.idpedido
-            WHERE p.idsede = $g_idsede
-                AND p.fecha_hora BETWEEN '$fecha_hora_inicio' AND '$fecha_hora_cierre'
+            WHERE (p.fecha_hora BETWEEN '$fecha_hora_inicio' AND '$fecha_hora_cierre')
+            and p.idsede = $g_idsede
             GROUP BY p.idpedido
             ORDER BY p.idpedido DESC
         ";

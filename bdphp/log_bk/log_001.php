@@ -14,47 +14,10 @@
 	$bd=new xManejoBD("restobar");
 
 	date_default_timezone_set('America/Lima');
-
-	/** Red de seguridad stock: item con seleccionables configurados que llega SIN subitems_view.
-	 *  El pedido se guarda igual, pero pedido_detalle.subitems queda 'null' (no descuenta stock,
-	 *  no lo normaliza el trigger y no sale en reportes). Solo registra, nunca interrumpe la venta.
-	 *  Ver backend-pedidos/test/INVESTIGACION-STOCK-ALMACEN-RESERVAS-20260703.md */
-	function log001_alerta_item_sin_subitems_view($subitem) {
-		try {
-			if (empty($subitem['subitems']) || $subitem['subitems'] === '0') { return; }
-
-			$dir = __DIR__ . '/logs';
-			if (!is_dir($dir)) { @mkdir($dir, 0775, true); }
-
-			$linea = json_encode(array(
-				'fecha'        => date('Y-m-d H:i:s'),
-				'idsede'       => isset($_SESSION['idsede']) ? $_SESSION['idsede'] : null,
-				'idusuario'    => isset($_SESSION['idusuario']) ? $_SESSION['idusuario'] : null,
-				'iditem'       => isset($subitem['iditem']) ? $subitem['iditem'] : null,
-				'des'          => isset($subitem['des']) ? $subitem['des'] : null,
-				'indicaciones' => isset($subitem['indicaciones']) ? $subitem['indicaciones'] : null
-			));
-			@file_put_contents($dir . '/subitems_sin_view.log', $linea . PHP_EOL, FILE_APPEND | LOCK_EX);
-		} catch (Exception $e) { /* nunca romper la venta por logging */ }
-	}
-
-	/** Body JSON reenviado por log_pos_op.php (php://input ya consumido). */
-	function log001_input_body() {
-		if (!empty($GLOBALS['__op_sede_raw_body'])) {
-			$j = json_decode($GLOBALS['__op_sede_raw_body']);
-			if ($j) {
-				if (isset($j->_op_dest)) {
-					unset($j->_op_dest, $j->_op_org, $j->_op_sede);
-				}
-				return $j;
-			}
-		}
-		return json_decode(file_get_contents('php://input'));
-	}
 	
 	$x_from = $_POST['p_from']; // a = registro pedido | d=registro cliente | b=registro pago total | c=registro pago parcial
 	if (!isset($x_from)) {
-		$postBody = log001_input_body();
+		$postBody = json_decode(file_get_contents('php://input'));
 		$x_from = $postBody->p_from;
 	}
 	$x_idpedido;
@@ -105,7 +68,7 @@
 		global $x_idcliente;
 		
 
-		$postBody = log001_input_body();
+		$postBody = json_decode(file_get_contents('php://input'));
 
 		$x_array_pedido_header = json_encode($postBody->p_header);
 		$x_array_pedido_body = json_encode($postBody->p_body);
@@ -209,7 +172,6 @@
 				// if ( $lisSubItemsSelect == null ) {
 				// if ( !isset($lisSubItemsSelect[0]) ) {
 				if ( $isExistSubitemsSelect == false ) {
-					log001_alerta_item_sin_subitems_view($subitem);
 					$desItemInsert = addslashes($subitem['des'].$indicaciones_p);
 					$idItemSubItemControlable = isset($subitem['iditem_subitem']) ? $subitem['iditem_subitem'] : 0;
 
@@ -559,7 +521,6 @@
 				// if ( $lisSubItemsSelect == null ) {
 				// if ( !isset($lisSubItemsSelect[0]) ) {
 				if ( $isExistSubitemsSelect == false ) {
-					log001_alerta_item_sin_subitems_view($subitem);
 					$desItemInsert = addslashes($subitem['des'].$indicaciones_p);
 
 					// print $subItemSelect;					
@@ -827,7 +788,7 @@
 		$_idorg = $_SESSION['ido'];
 		$_idusuario = $_SESSION['idusuario'];
 
-		$postBody = log001_input_body();
+		$postBody = json_decode(file_get_contents('php://input'));
 
 		$x_array_pedido_header = getJsonData($postBody->p_header);
 		$x_array_tipo_pago = getJsonData($postBody->p_tipo_pago);
@@ -949,7 +910,7 @@
 		// $x_array_subtotales=$_POST['p_subtotales'];
 		// $x_array_comprobante=$_POST['p_comprobante'];
 
-		$postBody = log001_input_body();
+		$postBody = json_decode(file_get_contents('php://input'));
 
 		$x_array_pedido_header = json_encode($postBody->p_header);
 		$x_array_tipo_pago = json_encode($postBody->p_tipo_pago);
@@ -1054,8 +1015,7 @@
 		// echo $cadena_tp;
 		
         // registro pago pedido - detalle
-		// [fix multi-tenant] filtrar por sede para evitar cross-tenant contamination
-		$sql_idpd="select pd.idpedido, pd.idpedido_detalle, pd.cantidad, pd.ptotal from pedido_detalle pd inner join pedido p on p.idpedido = pd.idpedido where pd.idpedido in (".$id_pedido.") and (pd.estado=0 and pd.pagado=0) and p.idsede = ".$_SESSION['idsede'];
+		$sql_idpd="select idpedido,idpedido_detalle, cantidad,ptotal from pedido_detalle where idpedido in (".$id_pedido.") and (estado=0 and pagado=0)";
 		$rows_pedido_detalle=$bd->xConsulta2($sql_idpd);
 		$sql_pago_pedido='';
 		//echo $sql_idpd;
@@ -1146,7 +1106,7 @@
 		global $x_idpedido;
 		global $x_idcliente;
 
-		$postBody = log001_input_body();
+		$postBody = json_decode(file_get_contents('php://input'));
 
 		$x_array_pedido_header = json_encode($postBody->p_header);
 		$x_array_tipo_pago = json_encode($postBody->p_tipo_pago);
@@ -1399,8 +1359,7 @@
 		// echo $cadena_tp;
 		
         // registro pago pedido - detalle
-		// [fix multi-tenant] filtrar por sede para evitar cross-tenant contamination
-		$sql_idpd="select pd.idpedido, pd.idpedido_detalle, pd.cantidad, pd.ptotal from pedido_detalle pd inner join pedido p on p.idpedido = pd.idpedido where pd.idpedido in (".$id_pedido.") and (pd.estado=0 and pd.pagado=0) and p.idsede = ".$_SESSION['idsede'];
+		$sql_idpd="select idpedido,idpedido_detalle, cantidad,ptotal from pedido_detalle where idpedido in (".$id_pedido.") and (estado=0 and pagado=0)";
 		$rows_pedido_detalle=$bd->xConsulta2($sql_idpd);
 		$sql_pago_pedido='';
 		//echo $sql_idpd;
@@ -1553,7 +1512,7 @@
 		global $x_idpedido;
 		global $x_idcliente;
 
-		$postBody = log001_input_body();
+		$postBody = json_decode(file_get_contents('php://input'));
 
 		$x_array_pedido_header = json_encode($postBody->p_header);
 		$x_array_tipo_pago = json_encode($postBody->p_tipo_pago);
@@ -1871,39 +1830,25 @@
 
 		// $idpedidos=$x_arr_cliente['i'] == '' ? $x_idpedido : $x_arr_cliente['i'];
 
-		$es_insert_nuevo = false;
 		if($idclie=='' || $idclie=='0' || $idclie==0){
 			if($nomclie==''){//publico general
 				$idclie=0;
 			}else{
-				// Reutilizar cliente existente (mismo doc o mismo nombre) para evitar duplicados
-				$idclie_existente = 0;
-				if($num_doc != ''){
-					$sqlFindDoc = "SELECT idcliente FROM cliente WHERE idorg=".$_SESSION['ido']." AND ruc='".$num_doc."' AND estado=0 AND nombres != '' ORDER BY idcliente DESC LIMIT 1";
-					$idclie_existente = $bd->xDevolverUnDato($sqlFindDoc);
-				}
-				if(($idclie_existente == '' || $idclie_existente == 0 || strpos($idclie_existente, 'error') !== false) && $nomclie != ''){
-					$sqlFindNom = "SELECT idcliente FROM cliente WHERE idorg=".$_SESSION['ido']." AND nombres='".$nomclie."' AND estado=0 ORDER BY idcliente DESC LIMIT 1";
-					$idclie_existente = $bd->xDevolverUnDato($sqlFindNom);
-				}
-				if($idclie_existente != '' && $idclie_existente != 0 && strpos($idclie_existente, 'error') === false){
-					$idclie = $idclie_existente;
-				}else{
-					$es_insert_nuevo = true;
-					$sqlClienteNew="insert into cliente (idorg,nombres,direccion,referencia,ruc,f_nac, f_registro $row_direccion_delivery_no_map)values(".$_SESSION['ido'].",'".$nomclie."','".$direccion."','".$referencia."','".$num_doc."','".$f_nac."',DATE_FORMAT(now(),'%d/%m/%Y') $val_direccion_delivery_no_map)";
-					$idclie=$bd->xConsulta_UltimoId($sqlClienteNew);
+				// $sqlClienteNew="insert into cliente (idorg,nombres,direccion,ruc,f_nac, f_registro, direccion_delivery_no_map)values(".$_SESSION['ido'].",'".$nomclie."','".$direccion."','".$num_doc."','".$f_nac."',DATE_FORMAT(now(),'%d/%m/%Y'),'".$telefono."', '".$direccion_delivery_no_map_save."')";
+				$sqlClienteNew="insert into cliente (idorg,nombres,direccion,referencia,ruc,f_nac, f_registro $row_direccion_delivery_no_map)values(".$_SESSION['ido'].",'".$nomclie."','".$direccion."','".$referencia."','".$num_doc."','".$f_nac."',DATE_FORMAT(now(),'%d/%m/%Y') $val_direccion_delivery_no_map)";
+				$idclie=$bd->xConsulta_UltimoId($sqlClienteNew);
 
-					if (strpos($idclie, 'error') !== false) {
-						$idclie = 0;
-					} else {
-						$sql = "call procedure_registrar_cliente_sede(".$_SESSION['idsede'].",".$idclie.", '".$telefono."')";
-						$bd->xConsulta_NoReturn($sql);
-					}
+				if (strpos($idclie, 'error') !== false) {
+					$idclie = 0;
+				} else {
+					// insertar en cliente_sede
+					$sql = "call procedure_registrar_cliente_sede(".$_SESSION['idsede'].",".$idclie.", '".$telefono."')";
+					$bd->xConsulta_NoReturn($sql);
 				}
+
+
 			}
-		}
-
-		if($idclie != '' && $idclie != '0' && $idclie != 0 && !$es_insert_nuevo){
+		} else {
 			// insertar en cliente_sede
 			$sqlPredudereUpdate = "call procedure_registrar_cliente_sede(".$_SESSION['idsede'].",".$idclie.", '".$telefono."');";			
 			// $bd->xConsulta_NoReturn($sqlPredudereUpdate);

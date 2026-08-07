@@ -21,11 +21,11 @@
     switch($_GET['op'])
 	{
         case 1:// load sedes
-            $sql = "select idorg, idsede, nombre, ciudad from sede where idorg = $g_ido and estado=0 ";
+            $sql = "select idorg, idsede, nombre, ciudad, direccion from sede where idorg = $g_ido and estado=0 order by nombre";
             $bd->xConsulta($sql);
             break;
         case 1001:// load all sedes
-            $sql = "select idorg, idsede, nombre, ciudad from sede where estado=0 order by nombre";
+            $sql = "select idorg, idsede, nombre, ciudad, direccion from sede where estado=0 order by nombre";
             $bd->xConsulta($sql);
             break;
         case 2:// load comprobantes generales
@@ -190,7 +190,7 @@
 
 			$sql= "
                 SELECT ps.idproducto_stock as value, concat(a.descripcion, ' | ', pf.descripcion , ' | ', p.descripcion) as label 
-                    ,ps.stock, ps.idproducto, p.precio, p.precio_unitario, p.para_receta, p.idunidad_conversion, p.idunidad_kardex, p.costo_conversion, p.factor_conversion
+                    ,ps.stock, ps.idproducto, a.idalmacen as idalmacen, p.precio, p.precio_unitario, p.para_receta, p.idunidad_conversion, p.idunidad_kardex, p.costo_conversion, p.factor_conversion
                 FROM producto AS p
                     inner join producto_stock ps on ps.idproducto = p.idproducto 
                     inner join almacen a on a.idalmacen = ps.idalmacen
@@ -299,6 +299,21 @@
             break;
         case 25: // comisiones opcionales
             $sql = "select * from conf_print_detalle where idsede=$g_idsede and estado = 0 and is_opcional = 1";
+            $bd->xConsulta($sql);
+            break;
+        case 2101: // siguiente número guía interna (venta al crédito, no Sunat)
+            $sql_up = "
+                UPDATE sede
+                SET guia_interna_correlativo = guia_interna_correlativo + 1
+                WHERE idsede = $g_idsede AND idorg = $g_ido AND venta_credito_guia = '1' AND estado = 0
+            ";
+            $bd->xConsulta_NoReturn($sql_up);
+            $sql = "
+                SELECT guia_interna_serie AS serie, guia_interna_correlativo AS correlativo
+                FROM sede
+                WHERE idsede = $g_idsede AND idorg = $g_ido AND estado = 0
+                LIMIT 1
+            ";
             $bd->xConsulta($sql);
             break;
     }

@@ -98,14 +98,13 @@
 			$bd->xMultiConsulta($sql.$sql_pd);
 
 			// --- AUTO SETUP: area de mesas ---
-			$sql_area = "INSERT INTO area_mesa (idsede, idorg, titulo, descripcion, num_mesa_ini, num_mesa_fin, estado, tipo_mesa)
-				VALUES(".$idsede.", ".$idorg.", 'SALON', 'SALON PRINCIPAL', 1, 10, 0, 'numerica');";
-			$bd->xMultiConsulta($sql_area);
+			$sql_area = "update sede set mesas='20' where idsede=$idsede";
+			$bd->xConsulta_NoReturn($sql_area);
 
 			// --- AUTO SETUP: tipo consumo DELIVERY ---
 			$sql_delivery = "INSERT INTO tipo_consumo (idorg, idsede, descripcion, titulo, estado)
 				VALUES(".$idorg.", ".$idsede.", 'DELIVERY', '', 0);";
-			$bd->xMultiConsulta($sql_delivery);
+			$bd->xConsulta_NoReturn($sql_delivery);
 
 			// --- AUTO SETUP: impresora CAJA ---
 			$sql_impresora = "INSERT INTO impresora (idorg, idsede, ip, descripcion, var_margen_iz, var_size_font, local, minutos_pedido, img64, copia_local, num_copias, papel_size, estado)

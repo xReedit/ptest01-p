@@ -407,7 +407,15 @@
 			//};
 			break;
 		case -1001://cambiar sede
-			if (!empty($_u = $_POST['o'])) {$_SESSION['idorg'] = $_POST['o'];}		
+			// Endurecimiento: solo rol admin puede mutar la sede de la sesion persistida.
+			// El POS multi-sede usa log_pos_op.php con override en memoria (no persiste).
+			if ((int)(isset($_SESSION['rol']) ? $_SESSION['rol'] : 0) !== 1) {
+				http_response_code(403);
+				header('Content-Type: application/json');
+				echo json_encode(array('success' => false, 'error' => 'ERR_FORBIDDEN: solo rol admin'));
+				exit;
+			}
+			if (!empty($_u = $_POST['o'])) {$_SESSION['idorg'] = $_POST['o'];}
 			$_SESSION['idsede'] = $_POST['i'];
 			break;
 		case -1002: // obtener sede y rol antes de cargar componentes
@@ -1787,6 +1795,14 @@
 				FROM seccion AS s
 				left JOIN impresora AS i using(idimpresora)
 				WHERE (s.idorg=".$g_ido." AND s.idsede=".$g_idsede.") and s.estado=0
+				AND EXISTS (
+					SELECT 1 FROM carta_lista AS cl
+						INNER JOIN carta AS c ON c.idcarta=cl.idcarta
+						INNER JOIN categoria AS cat ON cat.idcategoria=c.idcategoria
+					WHERE cl.idseccion=s.idseccion AND cl.estado=0
+						AND c.estado=0 AND cat.estado=0
+						AND c.idorg=s.idorg AND c.idsede=s.idsede
+				)
 				ORDER BY s.idseccion
 				";
 			$bd->xConsulta($sql);
@@ -1912,7 +1928,9 @@
 			$bd->xConsulta($sql);
 			break;
 		case 50101://count cantidad de pedidos para actualizar
-			$sql="SELECT count(idpedido) as d1 FROM pedido WHERE (idorg=".$g_ido." AND idsede=".$g_idsede.") AND estado IN (0,1)";
+			// acotado con la bandera last_id_pedido_cierre: sin ella recorria
+			// toda la historia de la sede en cada poll (sedes que nunca cierran caja)
+			$sql="SELECT count(idpedido) as d1 FROM pedido WHERE (idorg=".$g_ido." AND idsede=".$g_idsede.") AND estado IN (0,1) AND idpedido >= COALESCE((SELECT last_id_pedido_cierre FROM pedido_correlativos WHERE idsede=".$g_idsede."), 0)";
 			print $bd->xDevolverUnDato($sql);
 			break;
 		case 502://detalle pedido
@@ -2154,7 +2172,8 @@
 			else{ // viene de venta rapida
 				//en venta rapida no tengo el idpedido_detalle.
 				//obtner el idpedido_detalle
-				$sql_idpd="select idpedido,idpedido_detalle, cantidad,ptotal from pedido_detalle where idpedido=".$idpedidos;
+				// [fix multi-tenant] filtrar por sede para evitar cross-tenant contamination
+				$sql_idpd="select pd.idpedido, pd.idpedido_detalle, pd.cantidad, pd.ptotal from pedido_detalle pd inner join pedido p on p.idpedido = pd.idpedido where pd.idpedido=".$idpedidos." and p.idsede=".$g_idsede;
 				$rows_pedido_detalle=$bd->xConsulta2($sql_idpd);
 				$sql_pago_pedido='';
 				foreach($rows_pedido_detalle as $fila){
@@ -2354,6 +2373,37 @@
 		case 7000:
 			$idus = $_SESSION['idusuario'];
 			$idBitacora = $_POST['id'];
+
+			// Conciliacion de stock ANTES del SP de cierre: corrige diferencias
+			// (descuentos perdidos) para que el reporte de cierre salga con el
+			// stock cuadrado, que es donde el encargado compara sistema vs fisico.
+			// Sincrona con timeout corto; si el backend no responde, el cierre
+			// continua igual (el cron del backend la ejecuta despues como respaldo).
+
+			// $urlConciliacion = 'http://192.168.1.52:5819/v3/stock/conciliar-cierre'; // backend-pedidos (mismo host, ver socket_service.php)
+			$urlConciliacion = 'https://app.restobar.papaya.com.pe/api.pwa/v3/stock/conciliar-cierre'; // backend-pedidos (mismo host, ver socket_service.php)
+
+			// DESARROLLO: este PHP corre en 192.168.1.65 pero el backend corre en la
+			// maquina del desarrollador ("localhost" aqui apunta al .65 y no hay nada).
+			// Mantener esta IP igual que URL_SERVER de app/view/config.const.js
+			if (isset($_SERVER['HTTP_HOST']) && strpos($_SERVER['HTTP_HOST'], '192.168.') === 0) {
+				$urlConciliacion = 'http://192.168.1.52:5819/v3/stock/conciliar-cierre';
+			}
+
+			$chConc = curl_init($urlConciliacion);
+			curl_setopt($chConc, CURLOPT_POST, true);
+			curl_setopt($chConc, CURLOPT_POSTFIELDS, json_encode(array('idsede' => intval($g_idsede))));
+			curl_setopt($chConc, CURLOPT_HTTPHEADER, array('Content-Type: application/json'));
+			curl_setopt($chConc, CURLOPT_RETURNTRANSFER, true);
+			curl_setopt($chConc, CURLOPT_CONNECTTIMEOUT, 2);
+			curl_setopt($chConc, CURLOPT_TIMEOUT, 12);
+			$rptConc = curl_exec($chConc); // resultado auditado en stock_conciliacion; errores no bloquean el cierre
+			if ($rptConc === false) {
+				// visible en el error log de PHP: sin esto un backend caido falla en silencio
+				error_log('[conciliacion-stock] cierre op7000 sede ' . $g_idsede . ': ' . curl_error($chConc) . ' -> ' . $urlConciliacion);
+			}
+			curl_close($chConc);
+
 			$sql = "call procedure_cierre_caja($idus,$idBitacora)";
 			$bd->xConsulta($sql);
 			break;
@@ -3109,11 +3159,14 @@
 			// 	ORDER BY s.descripcion,i.descripcion
 			// ";
 
-			$sql = "SELECT i.iditem, concat(IFNULL(s.descripcion,'----'),' | ',i.descripcion) AS descripcion, i.precio, COALESCE (if(viene_de=2, p.costo_conversion * ii.cantidad, ii.costo),0) costo, format(i.precio - COALESCE (if(viene_de=2, p.costo_conversion * ii.cantidad, ii.costo),0),2) as rentabilidad
+			$sql = "SELECT i.iditem, concat(IFNULL(s.descripcion,'----'),' | ',i.descripcion) AS descripcion, i.precio, COALESCE (if(viene_de=2, p.costo_conversion * ii.cantidad, ii.costo),0) costo, format(i.precio - COALESCE (if(viene_de=2, p.costo_conversion * ii.cantidad, ii.costo),0),2) as rentabilidad,
+					IFNULL(ri.total_ingredientes,0) as total_ingredientes,
+					IF(IFNULL(ri.total_ingredientes,0) > 0, 1, 0) as tiene_receta
 				FROM item as i
 					left JOIN carta_lista AS cl using(iditem)
 					inner JOIN seccion AS s using(idseccion)
 					left join item_ingrediente ii on i.iditem = ii.iditem 
+					left join (SELECT iditem, count(*) as total_ingredientes FROM item_ingrediente WHERE estado=0 GROUP BY iditem) ri on i.iditem = ri.iditem
 					left join producto_stock ps on ii.idproducto_stock = ps.idproducto_stock 
 					left join producto  p on p.idproducto = ps.idproducto 
 				WHERE (i.idsede=".$g_idsede.") and i.estado=0
@@ -3784,6 +3837,119 @@
 			$sql = "update pedido set pwa_delivery_status=1 where idpedido = ".$_POST['i'];
 			$bd->xConsulta($sql);
 			break;
+		case -4000: // SSO token -> modulo v2/almacen (base64url(payload).base64url(hmac))
+			@require_once __DIR__ . '/../private/alm2_secrets.php';
+			if (!defined('ALM2_SHARED_SECRET') || !defined('ALM2_URL')) {
+				http_response_code(500);
+				print 'alm2_secrets_missing';
+				break;
+			}
+			if (empty($_SESSION['idusuario']) || empty($_SESSION['idsede'])) {
+				http_response_code(401);
+				print 'no_session';
+				break;
+			}
+			$now = time();
+			$alm2_payload = [
+				'idorg'     => (int)($_SESSION['ido'] ?? 0),
+				'idsede'    => (int)$_SESSION['idsede'],
+				'idusuario' => (int)$_SESSION['idusuario'],
+				'rol'       => (string)($_SESSION['rol'] ?? ''),
+				'nombre'    => (string)($_SESSION['nomU'] ?? ($_SESSION['unom'] ?? '')),
+				'iat'       => $now,
+				'exp'       => $now + 60,
+				'nonce'     => bin2hex(random_bytes(16))
+			];
+			$alm2_json = json_encode($alm2_payload, JSON_UNESCAPED_UNICODE);
+			$alm2_b64  = rtrim(strtr(base64_encode($alm2_json), '+/', '-_'), '=');
+			$alm2_sig  = hash_hmac('sha256', $alm2_b64, ALM2_SHARED_SECRET, true);
+			$alm2_sigb = rtrim(strtr(base64_encode($alm2_sig), '+/', '-_'), '=');
+			// respuesta: "<ALM2_URL>|<token>" — el JS viejo hace split('|') para armar el redirect.
+			print ALM2_URL . '|' . $alm2_b64 . '.' . $alm2_sigb;
+			break;
+		case -4001: // SSO token v3 -> restobar-v3/apps/panel (Svelte + Bun)
+			@require_once __DIR__ . '/../private/v3_secrets.php';
+			if (!defined('V3_SHARED_SECRET') || !defined('V3_URL')) {
+				http_response_code(500);
+				print 'v3_secrets_missing';
+				break;
+			}
+			if (empty($_SESSION['idusuario']) || empty($_SESSION['idsede'])) {
+				http_response_code(401);
+				print 'no_session';
+				break;
+			}
+			$now = time();
+			$v3_payload = [
+				'idorg'     => (int)($_SESSION['ido'] ?? 0),
+				'idsede'    => (int)$_SESSION['idsede'],
+				'idusuario' => (int)$_SESSION['idusuario'],
+				'rol'       => (string)($_SESSION['rol'] ?? ''),
+				'nombre'    => (string)($_SESSION['nomU'] ?? ($_SESSION['unom'] ?? '')),
+				'iat'       => $now,
+				'exp'       => $now + 300, // 5 min — más holgado que -4000 (60s)
+				'nonce'     => bin2hex(random_bytes(16))
+			];
+			$v3_json = json_encode($v3_payload, JSON_UNESCAPED_UNICODE);
+			$v3_b64  = rtrim(strtr(base64_encode($v3_json), '+/', '-_'), '=');
+			$v3_sig  = hash_hmac('sha256', $v3_b64, V3_SHARED_SECRET, true);
+			$v3_sigb = rtrim(strtr(base64_encode($v3_sig), '+/', '-_'), '=');
+			// respuesta: "<V3_URL>|<token>" — el panel hace split('|') para armar el redirect.
+			print V3_URL . '|' . $v3_b64 . '.' . $v3_sigb;
+			break;
+		case -4002: // SSO token -> restobar-erp (API Node + SPA React). Mismo formato que -4000/-4001.
+			@require_once __DIR__ . '/../private/erp_secrets.php';
+			if (!defined('ERP_SHARED_SECRET') || !defined('ERP_URL')) {
+				http_response_code(500);
+				print 'erp_secrets_missing';
+				break;
+			}
+			if (empty($_SESSION['idusuario']) || empty($_SESSION['idsede'])) {
+				http_response_code(401);
+				print 'no_session';
+				break;
+			}
+			$now = time();
+			$erp_payload = [
+				'idorg'     => (int)($_SESSION['ido'] ?? 0),
+				'idsede'    => (int)$_SESSION['idsede'],
+				'idusuario' => (int)$_SESSION['idusuario'],
+				'rol'       => (string)($_SESSION['rol'] ?? ''),
+				'nombre'    => (string)($_SESSION['nomU'] ?? ($_SESSION['unom'] ?? '')),
+				'iat'       => $now,
+				'exp'       => $now + 120, // 2 min — token de handoff de un solo uso
+				'nonce'     => bin2hex(random_bytes(16))
+			];
+			$erp_json = json_encode($erp_payload, JSON_UNESCAPED_UNICODE);
+			$erp_b64  = rtrim(strtr(base64_encode($erp_json), '+/', '-_'), '=');
+			$erp_sig  = hash_hmac('sha256', $erp_b64, ERP_SHARED_SECRET, true);
+			$erp_sigb = rtrim(strtr(base64_encode($erp_sig), '+/', '-_'), '=');
+			// respuesta: "<ERP_URL>|<token>" — el JS del menú hace split('|') para el redirect.
+			print ERP_URL . '|' . $erp_b64 . '.' . $erp_sigb;
+			break;
+		case -4100: // feature flag por sede para la UI v3
+			if (empty($_SESSION['idsede'])) {
+				http_response_code(401);
+				print 'no_session';
+				break;
+			}
+			$idsede_flag = (int)$_SESSION['idsede'];
+			$ui_version = 'v1';
+			$res_flag = $bd->xConsulta2("SELECT ui_version FROM sede WHERE idsede = $idsede_flag LIMIT 1");
+			if ($res_flag && !is_string($res_flag)) {
+				$row_flag = $res_flag->fetch_assoc();
+				if ($row_flag && isset($row_flag['ui_version']) && $row_flag['ui_version']) {
+					$ui_version = (string)$row_flag['ui_version'];
+				}
+			}
+			// Lista de modulos ya migrados a v3 — actualizar a mano cuando se libere cada uno.
+			$modulos_v3 = ['compras'];
+			header('Content-Type: application/json; charset=utf-8');
+			print json_encode([
+				'ui_version' => $ui_version,
+				'modulos_v3' => $modulos_v3,
+			], JSON_UNESCAPED_UNICODE);
+			break;
 	}
 
 
@@ -3914,7 +4080,7 @@ function xDtUS($op_us){
 			$sql_us = "SELECT s.idorg, se.idsede, se.razonsocial_cpe as nombre, se.ruc_cpe as ruc , s.direccion, se.telefono , se.nombre as sedenombre , se.direccion as sededireccion, se.ciudad as sedeciudad, se.telefono as sedetelefono, se.eslogan, se.authorization_api_comprobante, se.id_api_comprobante, se.facturacion_e_activo, '' as logo64, se.ubigeo, se.codigo_del_domicilio_fiscal
 				,se.sys_local, se.ip_server_local, se.pwa, se.url_api_fac
 				,se.email_cierre, se.metodo_pago_aceptados, se.habilita_verificacion_cpe, tcs.serie, se.id_api_comprobante
-				,se.is_holding, se.mesas_alfanumerica
+				,se.is_holding, se.mesas_alfanumerica, se.venta_credito_guia, se.guia_interna_serie, se.guia_interna_correlativo
 				from org as s 
 				inner JOIN sede as se on s.idorg = se.idorg 
 				left join (select idsede, serie from tipo_comprobante_serie tcs where idsede=$g_idsede and serie != 0 and idtipo_comprobante_serie > 1 and estado = 0 limit 1) as tcs on tcs.idsede = se.idsede 
@@ -3922,7 +4088,7 @@ function xDtUS($op_us){
 			break;
 		case 3013: // load datos del org sede 
 			// $sql_us = "SELECT * from sede where idsede=".$g_idsede." and estado=0";
-			$sql_us = "SELECT idsede, idorg, nombre, ciudad, direccion, telefono, eslogan, mesas, maximo_pedidos_x_hora, authorization_api_comprobante, id_api_comprobante, facturacion_e_activo, ubigeo, codigo_del_domicilio_fiscal, sys_local, ip_server_local, finicio, tipo, sufijo, pwa, pwa_time_limit, url_api_fac, estado, latitude, longitude, pwa_msj_ini, pwa_time_min_despacho, pwa_time_max_despacho, pwa_requiere_gps, pwa_delivery_img, provincia, departamento, codigo_postal, tiempo_aprox_entrega, dias_atienden, pwa_habilitar_delivery_app, pwa_comercio_afiliado, pwa_delivery_importe_min, pwa_delivery_servicio_propio, pwa_delivery_comercio_online, pwa_delivery_habilitar_recojo_local, pwa_delivery_acepta_yape, pwa_delivery_hablitar_calc_costo_servicio, pwa_delivery_comercio_solidaridad, pwa_delivery_acepta_tarjeta, pwa_delivery_comision_fija_no_afiliado, pwa_min_despacho, pwa_delivery_comercio_paga_entrega, pwa_delivery_habilitar_llamar_repartidor_papaya, pwa_delivery_telefono_notifica_pedido, pwa_delivery_monto_acumla, pwa_delivery_habilitar_pedido_programado, pwa_delivery_reparto_solo_app, last_date_pago, comsion_entrega, costo_restobar_fijo_mensual, pwa_habilitar_busqueda_mapa, calificacion, isprinter_socket, pwa_delivery_habilitar_calc_costo_servicio_solo_app, pwa_pedido_programado_solo_del_dia, pwa_orden_pagado, email_cierre, pwa_acepta_reservas, pwa_show_item_view_mercado, pwa_acepta_reserva_desde, c_dias, uf_pago, mostar_alert_pago, idsede_plan_contratado, umf_pago, num_dias_facturacion, tipo_contribuyente, img_mini, metodo_pago_aceptados, speech_disabled, simbolo_moneda, link_carta,is_bloqueado_facturacion, msj_cpe_alert, is_active_pinpad FROM sede where idsede=".$g_idsede." and estado=0";
+			$sql_us = "SELECT idsede, idorg, nombre, ciudad, direccion, telefono, eslogan, mesas, maximo_pedidos_x_hora, authorization_api_comprobante, id_api_comprobante, facturacion_e_activo, ubigeo, codigo_del_domicilio_fiscal, sys_local, ip_server_local, finicio, tipo, sufijo, pwa, pwa_time_limit, url_api_fac, estado, latitude, longitude, pwa_msj_ini, pwa_time_min_despacho, pwa_time_max_despacho, pwa_requiere_gps, pwa_delivery_img, provincia, departamento, codigo_postal, tiempo_aprox_entrega, dias_atienden, pwa_habilitar_delivery_app, pwa_comercio_afiliado, pwa_delivery_importe_min, pwa_delivery_servicio_propio, pwa_delivery_comercio_online, pwa_delivery_habilitar_recojo_local, pwa_delivery_acepta_yape, pwa_delivery_hablitar_calc_costo_servicio, pwa_delivery_comercio_solidaridad, pwa_delivery_acepta_tarjeta, pwa_delivery_comision_fija_no_afiliado, pwa_min_despacho, pwa_delivery_comercio_paga_entrega, pwa_delivery_habilitar_llamar_repartidor_papaya, pwa_delivery_telefono_notifica_pedido, pwa_delivery_monto_acumla, pwa_delivery_habilitar_pedido_programado, pwa_delivery_reparto_solo_app, last_date_pago, comsion_entrega, costo_restobar_fijo_mensual, pwa_habilitar_busqueda_mapa, calificacion, isprinter_socket, pwa_delivery_habilitar_calc_costo_servicio_solo_app, pwa_pedido_programado_solo_del_dia, pwa_orden_pagado, email_cierre, pwa_acepta_reservas, pwa_show_item_view_mercado, pwa_acepta_reserva_desde, c_dias, uf_pago, mostar_alert_pago, idsede_plan_contratado, umf_pago, num_dias_facturacion, tipo_contribuyente, img_mini, metodo_pago_aceptados, speech_disabled, simbolo_moneda, link_carta,is_bloqueado_facturacion, msj_cpe_alert, is_active_pinpad, venta_credito_guia, guia_interna_serie, guia_interna_correlativo FROM sede where idsede=".$g_idsede." and estado=0";
 			break;
 		case 3014: // load sys const
 			$sql_us = "SELECT * FROM sys_const where estado=0 and llave in ('URL_COMPROBANTE', 'URL_COMPROBANTE_DOWNLOAD_FILE', 'NUM_DAYS_ANULACION_CPE') order by orden";

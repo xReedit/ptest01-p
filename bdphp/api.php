@@ -19,6 +19,13 @@ $g_ido = isset($_SESSION['ido']) ? $_SESSION['ido'] : 0;
 $g_idsede = isset($_SESSION['idsede']) ? $_SESSION['idsede'] : 0;
 $g_us = isset($_SESSION['idusuario']) ? $_SESSION['idusuario'] : 0;
 
+// ponytail: estos endpoints solo LEEN la sesion. Liberamos el lock de $_SESSION
+// aqui para que una llamada externa lenta (curl a papaya.com.pe) no bloquee al
+// resto de requests de la misma sesion (sintoma: -1112/-104 quedaban pending y
+// el POS no cargaba). Si el servidor no alcanza el host externo, ahora solo se
+// retrasa este endpoint, no toda la pagina.
+if (session_status() === PHP_SESSION_ACTIVE) { session_write_close(); }
+
 
 $path = trim(parse_url($_SERVER['REQUEST_URI'], PHP_URL_PATH), '/');
 $pathParts = explode('/', $path);
@@ -74,22 +81,28 @@ $routes = [
             global $bd;
             global $g_us;
 
-            $url = $URL_API_BLOG . '/changelog/last-version';
-            $response = curl($url, 'GET', null, false);
-            $last_version = json_decode($response, true);
+            // $url = $URL_API_BLOG . '/changelog/last-version';
+            // $response = curl($url, 'GET', null, false);
+            // $last_version = json_decode($response, true);
 
             $sql_usuario = "SELECT last_version_changelog as d1 FROM usuario WHERE idusuario = $g_us";
             $version_usuario = $bd->xDevolverUnDato($sql_usuario);
+
+            $last_version = $version_usuario;
+
+
             
 
-            if ($last_version['id'] != $version_usuario) {                
-                $bd->prepare("UPDATE usuario SET last_version_changelog = ? WHERE idusuario = ?");
-                $bd->execute([$last_version['id'], $g_us]);
-                $bd->commit();
-                echo json_encode(['success' => true, 'data' => $last_version]);  
-            } else {
-                echo json_encode(['success' =>false, 'data' => $last_version]);
-            }
+            // if ($last_version['id'] != $version_usuario) {                
+            //     $bd->prepare("UPDATE usuario SET last_version_changelog = ? WHERE idusuario = ?");
+            //     $bd->execute([$last_version['id'], $g_us]);
+            //     $bd->commit();
+            //     echo json_encode(['success' => true, 'data' => $last_version]);  
+            // } else {
+            //     echo json_encode(['success' =>false, 'data' => $last_version]);
+            // }
+
+            echo json_encode(['success' => false, 'data' => $last_version]);
 
         },
     ],
@@ -123,6 +136,8 @@ function curl($url, $method, $data = null, $return_echo = true) {
     curl_setopt($curl, CURLOPT_RETURNTRANSFER, true);
     curl_setopt($curl, CURLOPT_CUSTOMREQUEST, $method);
     curl_setopt($curl, CURLOPT_TIMEOUT, 7); // Cancelar si tarda más de 7 segundos
+    curl_setopt($curl, CURLOPT_CONNECTTIMEOUT, 3); // tope al connect/DNS
+    curl_setopt($curl, CURLOPT_NOSIGNAL, 1); // timeouts fiables bajo Apache+mod_php (sin SIGALRM)
     if ($data) {
         curl_setopt($curl, CURLOPT_POSTFIELDS, $data);
     }

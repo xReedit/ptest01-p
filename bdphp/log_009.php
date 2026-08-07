@@ -91,12 +91,42 @@
             break;
 
         case 501: //guardar promocion
-            $data = file_get_contents('php://input');     
-            $data = str_replace("\\n", "", $data);       
-            $sql = "call procedure_guardar_promocion($g_idsede, $g_ido, $g_us,'$data')";
-            $rpt = $bd->xDevolverUnDatoSP($sql);
-            echo json_encode(array('respuesta' => $rpt, 'sql', $sql));
+            $data = file_get_contents('php://input');
+            $data = str_replace("\\n", "", $data);
+            // Escapar comillas simples y backslashes para no romper el SQL inline
+            $dataEsc = $bd->bd->real_escape_string($data);
+            $sql = "call procedure_guardar_promocion($g_idsede, $g_ido, $g_us,'$dataEsc')";
 
+            $resQ = $bd->bd->query($sql);
+            if ($resQ === false) {
+                http_response_code(200);
+                echo json_encode(array(
+                    'respuesta' => null,
+                    'error' => true,
+                    'mensaje' => 'Error al ejecutar SP: ' . $bd->bd->error,
+                    'errno' => $bd->bd->errno
+                ));
+                break;
+            }
+            $fila = $resQ->fetch_row();
+            $idPromo = ($fila && isset($fila[0])) ? $fila[0] : null;
+            $resQ->free_result();
+            // Drenar resultados pendientes del SP (importante para libsmart de mysqli)
+            while ($bd->bd->more_results() && $bd->bd->next_result()) {
+                $r = $bd->bd->use_result();
+                if ($r instanceof mysqli_result) { $r->free(); }
+            }
+
+            if ($idPromo === null) {
+                echo json_encode(array(
+                    'respuesta' => null,
+                    'error' => true,
+                    'mensaje' => 'El SP no devolvió un id de promoción. Revise procedure_guardar_promocion (¿lista vacía o NULLs?).'
+                ));
+                break;
+            }
+
+            echo json_encode(array('respuesta' => $idPromo));
             break;
 
         case 502: // lista de promociones
