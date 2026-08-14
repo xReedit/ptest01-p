@@ -701,7 +701,11 @@
 			// $sql_carta_lista="delete from carta_lista where idcarta=".$id_carta."; insert into carta_lista (idcarta_lista,idcarta,idseccion,iditem,precio,cantidad,cant_preparado,sec_orden) values ".$sql_carta_lista.";";
 
 			// $sql_ejecuta=$sql_update_carta.$sql_carta_lista;
-			$sql_ejecuta=$sql_update_carta.$sql_carta_lista_insert_update;
+			// contexto para el trigger carta_stock_historial_au (migracion 021):
+			// cambios de cantidad desde elaborar carta son AJUSTE, no venta/devolucion
+			// El SET va en el mismo batch (misma conexion) y se limpia al final para que
+			// no etiquete como AJUSTE escrituras posteriores del mismo request.
+			$sql_ejecuta="SET @stk_ctx_tipo='AJUSTE', @stk_ctx_idusuario=".$g_us."; ".$sql_update_carta.$sql_carta_lista_insert_update."; SET @stk_ctx_tipo=NULL, @stk_ctx_idusuario=NULL";
 			// $bd->xConsulta($sql_carta_lista_insert_update.';');
 			// $bd->xConsulta($sql_update_carta.';');
 
@@ -763,8 +767,12 @@
 												sec_orden=values(sec_orden)";
 
 
+				// contexto para el trigger carta_stock_historial_au (migracion 021):
+				// cambio de cantidad desde elaborar carta = AJUSTE
+				$bd->xConsulta_NoReturn("SET @stk_ctx_tipo='AJUSTE', @stk_ctx_idusuario=".$g_us);
 				// $bd->xConsulta($sql_carta_lista_insert_update);
 				$bd->xConsulta_NoReturn($sql_carta_lista_insert_update);
+				$bd->xConsulta_NoReturn("SET @stk_ctx_tipo=NULL, @stk_ctx_idusuario=NULL");
 				print $id_carta_lista.'|'.$id_item;
 			break;
 		//MI PEDIDO APP ANFITRION CLIENTE
@@ -3389,21 +3397,31 @@
 			break;
 		case 1901://modificacion manual de cantidades , solo monitor de pedido, carta_lista y porcion
 			$procede=$_POST['p'];
-			$idcarta_lista=$_POST['idcl'];
-			$iditem=$_POST['idi'];
-			$cant=$_POST['c'];
+			// Saneado obligatorio: estos valores iban crudos al SQL. Con `idcl` sin filtrar
+			// un POST con "1 OR 1=1" ponia en cero el stock de carta de TODOS los
+			// restaurantes del schema compartido (no hay filtro por sede en el WHERE).
+			$idcarta_lista=preg_replace('/[^0-9]/','',$_POST['idcl']);
+			$iditem=intval($_POST['idi']);
+			$cant=floatval($_POST['c']);
 			if($procede==="1"){
-				$sql="update carta_lista set cantidad=".$cant." where idcarta_lista=".$idcarta_lista;
+				if($idcarta_lista===''){ echo json_encode(array('success'=>false,'error'=>'idcarta_lista invalido')); break; }
+				// contexto para el trigger carta_stock_historial_au (migracion 021)
+				$bd->xConsulta_NoReturn("SET @stk_ctx_tipo='MONITOR', @stk_ctx_idusuario=".$g_us);
+				// acotado a la sede en sesion via JOIN a carta
+				$sql="update carta_lista cl inner join carta c on c.idcarta = cl.idcarta
+						set cl.cantidad=".$cant."
+						where cl.idcarta_lista='".$idcarta_lista."' and c.idsede=".$g_idsede;
 			}else{
 				$sql="
 					UPDATE porcion AS p
-						LEFT JOIN item_ingrediente AS ii using (idporcion)
+						INNER JOIN item_ingrediente AS ii using (idporcion)
 					SET p.stock=((".$cant.")*(ii.cantidad))
-					WHERE ii.iditem=".$iditem.";
+					WHERE ii.iditem=".$iditem." AND p.idsede=".$g_idsede.";
 				";
 			}
 			
 			$bd->xConsulta($sql);
+			$bd->xConsulta_NoReturn("SET @stk_ctx_tipo=NULL, @stk_ctx_idusuario=NULL");
 			break;
 		case 1902://pedidos por hora // en el intervalo de 60min
 			$sql="
@@ -3909,9 +3927,21 @@
 				print 'no_session';
 				break;
 			}
+			// Gate opt-in: el ERP se activa por organizacion desde el panel Adm Sedes
+			// (tabla org_modulo, modulo 'erp'). Sin fila activa no se emite token y el
+			// menu cae al modulo legacy. Falla en cerrado si la tabla aun no existe.
+			$erp_idorg = (int)($_SESSION['ido'] ?? 0);
+			$erp_activo = $bd->xDevolverUnDato(
+				"SELECT 1 FROM org_modulo WHERE idorg = $erp_idorg AND modulo = 'erp' AND activo = 1 LIMIT 1"
+			);
+			if (!$erp_activo) {
+				http_response_code(403);
+				print 'modulo_no_activo';
+				break;
+			}
 			$now = time();
 			$erp_payload = [
-				'idorg'     => (int)($_SESSION['ido'] ?? 0),
+				'idorg'     => $erp_idorg,
 				'idsede'    => (int)$_SESSION['idsede'],
 				'idusuario' => (int)$_SESSION['idusuario'],
 				'rol'       => (string)($_SESSION['rol'] ?? ''),

@@ -18,7 +18,24 @@
 	$g_idsede = $_SESSION['idsede'];	
 	$g_idorg = $_SESSION['ido'];	
 	$g_idusuario  = $_SESSION['idusuario'];	
-	
+
+	// Modulos ERP que el panel puede prender/apagar. Lista cerrada: nadie inserta
+	// nombres arbitrarios en org_modulo.
+	$ERP_MODULOS = array('erp', 'catalogo_maestro');
+
+	// Solo el panel "Adm Sedes" (permiso C3) toca modulos de OTRA organizacion.
+	// El X-Requested-With lo pone jQuery solo en peticiones del propio sitio; al
+	// exigirlo, un form cross-site no llega (dispara preflight CORS que no pasa).
+	// PENDIENTE: este guard vale lo que valga $_SESSION['acc'], y hoy log.php
+	// op=-1112 restaura la sesion desde un blob del cliente SIN FIRMAR. Mientras
+	// eso siga asi, no es una frontera dura. Ver nota en el README del ERP.
+	function xErpPuedeAdmModulos() {
+		$xrw = isset($_SERVER['HTTP_X_REQUESTED_WITH']) ? $_SERVER['HTTP_X_REQUESTED_WITH'] : '';
+		if ($xrw !== 'XMLHttpRequest') { return false; }
+		$acc = isset($_SESSION['acc']) ? $_SESSION['acc'] : '';
+		return strpos(',' . $acc . ',', ',C3,') !== false;
+	}
+
     switch ($op) {
 		case '1': //lista sede
 			$sql= "
@@ -43,6 +60,34 @@
 			$bd->xConsulta($sql);
 			// echo $sql;
 			// $bd->xConsulta($sql);
+			break;
+		case '110': //ERP: modulos opt-in de la org -> [{modulo, activo}]
+			if (!xErpPuedeAdmModulos()) { http_response_code(403); print '[]'; break; }
+			$idorg = isset($_POST['idorg']) ? (int)$_POST['idorg'] : 0;
+			// xConsulta3 devolveria "[]" tambien si la consulta falla: el panel
+			// mostraria "sin modulos" en vez del error. Aqui se distingue.
+			$rs_mod = $bd->xConsulta2("select modulo, activo from org_modulo where idorg=" . $idorg);
+			if (!is_object($rs_mod)) { http_response_code(500); print '[]'; break; }
+			$rows_mod = array();
+			while ($r_mod = $rs_mod->fetch_object()) { $rows_mod[] = $r_mod; }
+			print json_encode($rows_mod);
+			break;
+		case '111': //ERP: prender/apagar un modulo de la org
+			if (!xErpPuedeAdmModulos()) { http_response_code(403); print 'forbidden'; break; }
+			$idorg  = isset($_POST['idorg']) ? (int)$_POST['idorg'] : 0;
+			$modulo = isset($_POST['modulo']) ? $_POST['modulo'] : '';
+			$activo = (isset($_POST['activo']) && (int)$_POST['activo'] === 1) ? 1 : 0;
+			if ($idorg <= 0 || !in_array($modulo, $ERP_MODULOS, true)) {
+				http_response_code(400); print 'datos_invalidos'; break;
+			}
+			$sql = "INSERT INTO org_modulo (idorg, modulo, activo) VALUES (" . $idorg . ", '" . $modulo . "', " . $activo . ")
+					ON DUPLICATE KEY UPDATE activo=" . $activo;
+			// xConsulta_NoReturn se traga el error: el panel diria "Activado" en
+			// verde sin haber guardado nada. xConsultaSucess si devuelve el fallo.
+			if ($bd->xConsultaSucess($sql) !== true) {
+				http_response_code(500); print 'error_bd'; break;
+			}
+			print 1;
 			break;
 		case '102': //load usuario implementador
 			$idorg = $_POST['idorg'];

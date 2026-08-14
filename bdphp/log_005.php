@@ -416,8 +416,22 @@
 			// cantidad cambia si es fija si no es nd
 			$cantidad = $arrItem['cantidad'];
 			if ( $cantidad != null ) {
-				$sqlCartaLista = "update carta_lista set cantidad = '".$cantidad."' where iditem = ".$arrItem['iditem'];
-				$bd->xConsulta_NoReturn($sqlCartaLista);	
+				// contexto para el trigger carta_stock_historial_au (migracion 021):
+				// cambio de cantidad desde configuracion = AJUSTE
+				$bd->xConsulta_NoReturn("SET @stk_ctx_tipo='AJUSTE', @stk_ctx_idusuario=".$g_idusuario);
+				// iditem y cantidad iban crudos al SQL; acotado ademas a la sede en sesion
+				// via JOIN a carta (el UPDATE por iditem alcanzaba a otros restaurantes).
+				// cantidad solo puede ser numero, 'ND' o 'SP': lista blanca en vez de escape.
+				$_iditem = intval($arrItem['iditem']);
+				$_cantidad = strtoupper(trim($cantidad));
+				if ($_cantidad !== 'ND' && $_cantidad !== 'SP' && !preg_match('/^[0-9]+(\.[0-9]+)?$/', $_cantidad)) {
+					$_cantidad = 'ND';
+				}
+				$sqlCartaLista = "update carta_lista cl inner join carta c on c.idcarta = cl.idcarta
+									set cl.cantidad = '".$_cantidad."'
+									where cl.iditem = ".$_iditem." and c.idsede = ".$g_idsede;
+				$bd->xConsulta_NoReturn($sqlCartaLista);
+				$bd->xConsulta_NoReturn("SET @stk_ctx_tipo=NULL, @stk_ctx_idusuario=NULL");
 			}
 
 			echo $sql;
