@@ -236,6 +236,7 @@
 
 						$pUnitario = $sub['precio'];
 						$desItem = addslashes($DesItemUp.' ('.$sub['des'].')');	
+						$subItemSelect = addslashes(json_encode(array($sub))); // solo el grupo de ESTA fila: con el JSON completo el trigger tr_pedido_detalle_subitem_insert contaba grupos x unidades en el cierre
 						$idItemSubItemControlable = $sub['id'];					
 
 						$cantSeleccionadaSubItem = $sub['cantidad_seleccionada'];
@@ -269,7 +270,7 @@
 					if ($cantItemSeleccionda > 0) {
 						$PrecioTotalItemSeleccionda = number_format($PrecioTotalItemSeleccionda, 2);						
 						$desItemInsert = addslashes($DesItemUp.$indicaciones_p);
-						$sql_pedido_detalle=$sql_pedido_detalle."(?,".$tipo_consumo.",".$categoria.",".$subitem['iditem'].",".$idItem2.",'".$subitem['idseccion']."','".$cantItemSeleccionda."','".$cantItemSeleccionda."','".$subitem['precio']."','".$PrecioTotalItemSeleccionda."','".$PrecioTotalItemSeleccionda."','".$desItemInsert."',".$viene_de_bodega.",".$tabla_procede.",".$pwa.",'".$subItemSelect."',".$idItemSubItemControlable."),";
+						$sql_pedido_detalle=$sql_pedido_detalle."(?,".$tipo_consumo.",".$categoria.",".$subitem['iditem'].",".$idItem2.",'".$subitem['idseccion']."','".$cantItemSeleccionda."','".$cantItemSeleccionda."','".$subitem['precio']."','".$PrecioTotalItemSeleccionda."','".$PrecioTotalItemSeleccionda."','".$desItemInsert."',".$viene_de_bodega.",".$tabla_procede.",".$pwa.",'null',".$idItemSubItemControlable."),";
 					}
 				}
 
@@ -584,6 +585,7 @@
 
 						$pUnitario = $sub['precio'];
 						$desItem = addslashes($DesItemUp.' ('.$sub['des'].')');						
+						$subItemSelect = addslashes(json_encode(array($sub))); // solo el grupo de ESTA fila: con el JSON completo el trigger tr_pedido_detalle_subitem_insert contaba grupos x unidades en el cierre
 
 						$cantSeleccionadaSubItem = $sub['cantidad_seleccionada'];
 
@@ -616,7 +618,7 @@
 					if ($cantItemSeleccionda > 0) {
 						$PrecioTotalItemSeleccionda = number_format($PrecioTotalItemSeleccionda, 2);						
 						$desItemInsert = addslashes($DesItemUp.$indicaciones_p);
-						$sql_pedido_detalle=$sql_pedido_detalle."(?,".$tipo_consumo.",".$categoria.",".$subitem['iditem'].",".$idItem2.",'".$subitem['idseccion']."','".$cantItemSeleccionda."','".$cantItemSeleccionda."','".$subitem['precio']."','".$PrecioTotalItemSeleccionda."','".$PrecioTotalItemSeleccionda."','".$desItemInsert."',".$viene_de_bodega.",".$tabla_procede.",".$pwa.",'".$subItemSelect."'),";
+						$sql_pedido_detalle=$sql_pedido_detalle."(?,".$tipo_consumo.",".$categoria.",".$subitem['iditem'].",".$idItem2.",'".$subitem['idseccion']."','".$cantItemSeleccionda."','".$cantItemSeleccionda."','".$subitem['precio']."','".$PrecioTotalItemSeleccionda."','".$PrecioTotalItemSeleccionda."','".$desItemInsert."',".$viene_de_bodega.",".$tabla_procede.",".$pwa.",'null'),";
 					}
 				}
 

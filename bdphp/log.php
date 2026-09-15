@@ -3167,16 +3167,24 @@
 			// 	ORDER BY s.descripcion,i.descripcion
 			// ";
 
-			$sql = "SELECT i.iditem, concat(IFNULL(s.descripcion,'----'),' | ',i.descripcion) AS descripcion, i.precio, COALESCE (if(viene_de=2, p.costo_conversion * ii.cantidad, ii.costo),0) costo, format(i.precio - COALESCE (if(viene_de=2, p.costo_conversion * ii.cantidad, ii.costo),0),2) as rentabilidad,
+			// costo = suma de TODOS los ingredientes (misma formula que el detalle op=1702)
+			$sql = "SELECT i.iditem, concat(IFNULL(s.descripcion,'----'),' | ',i.descripcion) AS descripcion, i.precio,
+					format(IFNULL(ri.costo_receta,0),2) AS costo,
+					format(i.precio - IFNULL(ri.costo_receta,0),2) as rentabilidad,
 					IFNULL(ri.total_ingredientes,0) as total_ingredientes,
 					IF(IFNULL(ri.total_ingredientes,0) > 0, 1, 0) as tiene_receta
 				FROM item as i
 					left JOIN carta_lista AS cl using(iditem)
 					inner JOIN seccion AS s using(idseccion)
-					left join item_ingrediente ii on i.iditem = ii.iditem 
-					left join (SELECT iditem, count(*) as total_ingredientes FROM item_ingrediente WHERE estado=0 GROUP BY iditem) ri on i.iditem = ri.iditem
-					left join producto_stock ps on ii.idproducto_stock = ps.idproducto_stock 
-					left join producto  p on p.idproducto = ps.idproducto 
+					left join (
+						SELECT ii.iditem, count(*) as total_ingredientes,
+							SUM(COALESCE(IF(ii.viene_de=2, p.costo_conversion * ii.cantidad_show, ii.costo),0)) as costo_receta
+						FROM item_ingrediente ii
+							left join producto_stock ps on ii.idproducto_stock = ps.idproducto_stock
+							left join producto p on p.idproducto = ps.idproducto
+						WHERE ii.estado=0
+						GROUP BY ii.iditem
+					) ri on i.iditem = ri.iditem
 				WHERE (i.idsede=".$g_idsede.") and i.estado=0
 				group by i.iditem
 				ORDER BY s.descripcion,i.descripcion";

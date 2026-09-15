@@ -196,7 +196,7 @@
         case 10: // modificacion de stock porciones
             $postBody = json_decode(file_get_contents('php://input'));
             $data = $postBody;            
-            $hora = date('h:i a');
+            $hora = date('h:i a'); // ya no se usa: la hora la pone MySQL (NOW) para no depender del timezone de PHP
 
             $sql = "update porcion set stock='$data->stock_actual' where idporcion=$data->idporcion";
             $bd->xConsulta_NoReturn($sql);
@@ -205,7 +205,7 @@
             $idtipo_movimiento_stock = $data->movimiento == 'Aumenta' ? 1 : 2;
 
             $sql = "insert into porcion_historial(tipo_movimiento,idtipo_movimiento_stock,fecha_date,fecha,hora,cantidad,idusuario, idsede,idporcion,stock_total)
-                    values ('$data->movimiento',$idtipo_movimiento_stock, curdate(), curdate(), '$hora','$data->cantidad', $g_us,$g_idsede,$data->idporcion, $data->stock_total)";
+                    values ('$data->movimiento',$idtipo_movimiento_stock, curdate(), curdate(), DATE_FORMAT(NOW(), '%h:%i %p'),'$data->cantidad', $g_us,$g_idsede,$data->idporcion, $data->stock_total)";
             $bd->xConsulta($sql);
 
             // echo json_encode(array('respuesta' => 'ok'));
@@ -218,20 +218,31 @@
         case 11: // guardar modificacion de stock producto almacen
             $postBody = json_decode(file_get_contents('php://input'));
             $data = $postBody;            
-            $hora = date('h:i a');
+            $hora = date('h:i a'); // ya no se usa: la hora la pone MySQL (NOW) para no depender del timezone de PHP
 
             $sql = "update producto_stock set stock='$data->stock_actual' where idproducto_stock=$data->idproducto_stock";
             $bd->xConsulta_NoReturn($sql);
 
             $sql = "insert into producto_historial(tipo_movimiento,fecha,hora,cantidad,idusuario, idsede,idproducto,idalmacen)
-                    values ('$data->movimiento', curdate(), '$hora','$data->cantidad', $g_us,$g_idsede,$data->idproducto,$data->idalmacen)";
+                    values ('$data->movimiento', curdate(), DATE_FORMAT(NOW(), '%h:%i %p'),'$data->cantidad', $g_us,$g_idsede,$data->idproducto,$data->idalmacen)";
             $bd->xConsulta($sql);
             break;
         case 111; //load productos
             $postBody = json_decode(file_get_contents('php://input'));
             $pages = isset($postBody->pages) ? $postBody->pages :json_encode('{"limit":"10", "offset":"0"}');
             $sql="call procedure_producto_historial($postBody->idproducto, $postBody->idproducto_stock, $g_idsede, $postBody->idalmacen, $pages)";
-            $bd->xConsulta($sql);
+            // Un ajuste de inventario queda en DOS tablas por diseño: almacen_ie (el documento de
+            // entrada/salida) y producto_historial (la linea de kardex, la escribe el trigger
+            // stock_insert_almacen_i). El SP une ambas y lo pintaba dos veces, con lo que parecia
+            // que el stock se habia movido dos veces (+23995 y -23995). Se deja solo la fila de
+            // producto_historial, que es la unica que trae el stock resultante.
+            // Se filtra aqui y no en el SP: el SP lo comparten otros modulos y cambiarlo exige migracion.
+            $rowsHist = json_decode($bd->xConsulta3($sql));
+            $rowsHist = is_array($rowsHist) ? array_values(array_filter($rowsHist, function ($r) {
+                // 'detalle' es ai.motivo solo en la rama de almacen_ie; en distribuicion es 'A -> B' y en el resto ''
+                return !(isset($r->detalle) && strpos((string)$r->detalle, 'AJUSTE INVENTARIO #') === 0);
+            })) : array();
+            echo json_encode(array('success' => true, 'datos' => $rowsHist, 'error' => ''));
             break;
         case 112: //load producto familias
             $sql="select pf.idproducto_familia, pf.descripcion, COALESCE(count(pf.idproducto_familia), 0) cantidad_relacionados from producto_familia pf 
