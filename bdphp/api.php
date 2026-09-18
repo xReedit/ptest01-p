@@ -194,6 +194,9 @@ $routes = [
                 ['id' => 5, 'titulo' => 'Nueva función: Inventario',
                  'descripcion' => 'Cuenta tu stock real y cuadra las diferencias sin planillas. Crea un conteo por almacén (o de porciones), reparte las secciones entre varios encargados, ciérralo y un administrador aprueba: las diferencias se aplican solas al stock y quedan en el kardex. Incluye stock valorizado, kardex por producto y tendencia de mermas. Búscala en Logistica > "Inventario".',
                  'route' => null],
+                ['id' => 6, 'titulo' => 'Nueva función: Encuestas de satisfacción',
+                 'descripcion' => 'Descubre qué piensan tus clientes. Arma tu encuesta en un minuto con plantillas listas (satisfacción en el local, NPS post-venta, delivery o de un solo toque) y deja elegido en qué canal correrá cada una. Muy pronto tus clientes podrán responderlas desde una tablet, un QR, el comprobante o WhatsApp. Búscala en Administración > "Configurar Encuestas".',
+                 'route' => null],
             ];
 
             $sql_usuario = "SELECT last_version_changelog as d1 FROM usuario WHERE idusuario = $g_us";
