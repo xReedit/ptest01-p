@@ -11,6 +11,7 @@
 	header('Cache-Control: no-cache');
 	include "ManejoBD.php";
 	include "token.php";
+	include "push_mozo.php"; // push "pedido/plato listo" al mozo (zona de despacho)
 	$bd=new xManejoBD("restobar");
 
 	date_default_timezone_set('America/Lima');
@@ -3754,6 +3755,12 @@
 
 			$sql="CALL procedure_marcar_despachado_zona_2102(".$_POST['idp'].",".$_POST['id_pd'].",".$_POST['op'].",'".$_POST['td']."','".$_POST['valEstado']."',$g_idsede, $g_us)";
 			$bd->xConsulta($sql);
+			// op=0 es "Listo" (op=1 es "Retirar"): avisa por push al mozo que hizo el pedido
+			if (intval($_POST['op']) === 0) { pushMozoPedidoListo($g_idsede, $_POST['idp']); }
+			break;
+		case 2111:// zona despacho: un plato marcado como listo -> push al mozo del pedido
+			pushMozoPedidoListo($g_idsede, $_POST['idp'], $_POST['idpd']);
+			print 1;
 			break;
 		case 2103://ver pedidos despachados
 			// $sql="
@@ -4079,7 +4086,7 @@ function xDtUS($op_us){
 			// WHERE (cp.idorg=".$g_ido." AND cp.idsede=".$g_idsede.")"; s.logo64
 			$sql_us="
 			SELECT cp.var_size_font_tall_comanda, cp.ip_print, cp.num_copias, cp.pie_pagina, cp.pie_pagina_comprobante,cp.pie_pagina_precuenta, cp.logo, '' as logo64, s.nombre AS des_sede, s.eslogan, s.mesas, s.ciudad
-				,isprint_subtotales_comanda, isprint_copy_short, isprint_all_short, isprint_all_delivery, isprint_cpe_short
+				,isprint_subtotales_comanda, isprint_copy_short, isprint_all_short, isprint_all_delivery, isprint_cpe_short, isprint_subitems_vertical
 			FROM conf_print AS cp
             	INNER JOIN sede AS s ON cp.idsede = s.idsede
 			WHERE (cp.idorg=".$g_ido." AND cp.idsede=".$g_idsede.")";

@@ -583,9 +583,25 @@
             $postBody = json_decode(file_get_contents('php://input'));
             
             // Obtener datos del error
-            $external_id = $postBody->external_id;
-            $idsunat_errores = $postBody->idsunat_errores;
-            
+            $external_id = $bd->bd->real_escape_string($postBody->external_id);
+            $idsunat_errores = isset($postBody->idsunat_errores) ? (int)$postBody->idsunat_errores : 0;
+
+            // Alternativa: el POS manda 'codigo' y aca se resuelve el id. Lo usan
+            // los errores de transporte (code 'HTTP'), que no son numericos y por
+            // eso nunca pueden venir catalogados desde el cliente: se registran
+            // contra el centinela codigo=-1 (migracion 037).
+            if ($idsunat_errores === 0 && isset($postBody->codigo)) {
+                $codigo_cpe = (int)$postBody->codigo;
+                $idsunat_errores = (int)$bd->xDevolverUnDato(
+                    "SELECT idsunat_errores FROM sunat_errores WHERE codigo = $codigo_cpe LIMIT 1"
+                );
+            }
+
+            if ($idsunat_errores === 0) {
+                echo json_encode(array('success' => false, 'message' => 'idsunat_errores no resuelto'));
+                break;
+            }
+
             // Buscar el idce correspondiente al external_id
             $sql = "SELECT idce FROM ce WHERE external_id = '$external_id' AND idsede = $g_idsede LIMIT 1";
             $idce = $bd->xDevolverUnDato($sql);
