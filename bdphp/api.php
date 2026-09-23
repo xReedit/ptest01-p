@@ -109,12 +109,14 @@ $routes = [
             // cierre=0 es un cuadre que el cajero empezo y abandono (tambien vale la pena verlo).
             // registros/importe salen del vinculo que graba procedure_run_cierre (migracion 030):
             // los cierres anteriores a esa migracion devuelven 0 porque nunca se guardo el vinculo.
+            // FORCE INDEX: la mayoria de filas tiene el vinculo en NULL (anteriores a la 030) y el
+            // optimizador descarta el indice -> full scan sobre ~20M filas en prod (timeout 10 s).
             $sqlTotales = $hayVinculo
-                ? "(SELECT COUNT(*) FROM registro_pago rp
-                      WHERE rp.idusuario_bitacora_cierre = b.idusuario_bitacora_cierre
+                ? "(SELECT COUNT(*) FROM registro_pago rp FORCE INDEX (ix_rp_bitacora_cierre)
+                      WHERE rp.idsede = b.idsede AND rp.idusuario_bitacora_cierre = b.idusuario_bitacora_cierre
                         AND rp.estado IN (0,1)) AS registros,
-                   (SELECT COALESCE(SUM(rp.total), 0) FROM registro_pago rp
-                      WHERE rp.idusuario_bitacora_cierre = b.idusuario_bitacora_cierre
+                   (SELECT COALESCE(SUM(rp.total), 0) FROM registro_pago rp FORCE INDEX (ix_rp_bitacora_cierre)
+                      WHERE rp.idsede = b.idsede AND rp.idusuario_bitacora_cierre = b.idusuario_bitacora_cierre
                         AND rp.estado IN (0,1)) AS importe"
                 : "0 AS registros, 0 AS importe";
 
