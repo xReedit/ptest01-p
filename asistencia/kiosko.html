@@ -35,7 +35,7 @@
 		/* pantalla siempre encendida en un local: nada de seleccionar ni hacer zoom sin querer */
 		user-select: none; -webkit-user-select: none; -webkit-tap-highlight-color: transparent;
 	}
-	.pantalla { width: 100%; max-width: 860px; display: flex; gap: 40px; align-items: center; justify-content: center; flex-wrap: wrap; }
+	.pantalla { width: 100%; max-width: 1100px; display: flex; gap: 40px; align-items: center; justify-content: center; flex-wrap: wrap; }
 
 	.reloj { text-align: center; }
 	.hora { font-size: clamp(64px, 14vw, 132px); font-weight: 700; line-height: 1; font-variant-numeric: tabular-nums; }
@@ -43,7 +43,8 @@
 	.titulo { margin-top: 22px; font-size: clamp(15px, 2.2vw, 19px); color: #cbd5e1; }
 
 	.qr-caja { background: #fff; padding: 18px; border-radius: 16px; }
-	#qr { display: block; width: clamp(200px, 44vw, 280px); height: auto; }
+	/* Grande y con bordes nitidos: la camara lee mal un QR chico o suavizado en pantalla */
+	#qr { display: block; width: clamp(240px, min(62vh, 46vw), 480px); height: auto; image-rendering: pixelated; }
 
 	/* Barra que se vacia: se ve de lejos cuanto le queda al codigo */
 	.barra { margin-top: 12px; height: 6px; border-radius: 3px; background: #334155; overflow: hidden; }
@@ -174,7 +175,7 @@
 
 			var url = window.location.href.split('?')[0].replace(/kiosko\.html$/, '') +
 				'marcar.php?k=' + r.datos.idkiosko + '&c=' + r.datos.codigo;
-			new QRious({ element: document.getElementById('qr'), value: url, size: 320, level: 'M' });
+			new QRious({ element: document.getElementById('qr'), value: url, size: 640, level: 'L' }); // L: menos modulos, mas grandes (en pantalla no hay dano que corregir)
 
 			ventana = r.datos.ventana || 15;
 			restantes = r.datos.segundos || ventana;
