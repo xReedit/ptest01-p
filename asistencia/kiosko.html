@@ -1,0 +1,301 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="robots" content="noindex,nofollow">
+<title>Marcar asistencia</title>
+<link rel="manifest" href="manifest.json">
+<meta name="theme-color" content="#0f172a">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="Asistencia">
+<!--
+	Pantalla de la puerta: reloj grande + QR que cambia cada 15 segundos.
+
+	Se vincula UNA vez abriendo esta pagina con ?t=<token> (el enlace que da el
+	panel). El token queda en localStorage y la URL se limpia enseguida, para
+	que no se lo lleve nadie mirando la barra de direcciones ni el historial.
+
+	El QR rotativo es lo que prueba PRESENCIA: sacarle foto y mandarla por
+	WhatsApp no sirve, cuando el otro la abre ya vencio.
+-->
+<script src="../js/qrious.js"></script>
+<style>
+	:root { color-scheme: light; }
+	* { box-sizing: border-box; }
+	html, body { height: 100%; }
+	body {
+		margin: 0;
+		padding: max(20px, env(safe-area-inset-top)) 20px max(20px, env(safe-area-inset-bottom));
+		display: flex; align-items: center; justify-content: center;
+		background: #0f172a; color: #e2e8f0;
+		font: 16px/1.4 -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Arial, sans-serif;
+		/* pantalla siempre encendida en un local: nada de seleccionar ni hacer zoom sin querer */
+		user-select: none; -webkit-user-select: none; -webkit-tap-highlight-color: transparent;
+	}
+	.pantalla { width: 100%; max-width: 860px; display: flex; gap: 40px; align-items: center; justify-content: center; flex-wrap: wrap; }
+
+	.reloj { text-align: center; }
+	.hora { font-size: clamp(64px, 14vw, 132px); font-weight: 700; line-height: 1; font-variant-numeric: tabular-nums; }
+	.fecha { margin-top: 10px; font-size: clamp(15px, 2.4vw, 21px); color: #94a3b8; text-transform: capitalize; }
+	.titulo { margin-top: 22px; font-size: clamp(15px, 2.2vw, 19px); color: #cbd5e1; }
+
+	.qr-caja { background: #fff; padding: 18px; border-radius: 16px; }
+	#qr { display: block; width: clamp(200px, 44vw, 280px); height: auto; }
+
+	/* Barra que se vacia: se ve de lejos cuanto le queda al codigo */
+	.barra { margin-top: 12px; height: 6px; border-radius: 3px; background: #334155; overflow: hidden; }
+	.barra i { display: block; height: 100%; background: #22c55e; width: 100%; transition: width 1s linear; }
+
+	.pie { margin-top: 10px; text-align: center; font-size: 13px; color: #94a3b8; }
+
+	/* Marca manual: visible pero sin competir con el QR, que es lo que la gente
+	   tiene que mirar. Area de toque generosa, se usa con el dedo. */
+	.manual { margin-top: 16px; text-align: center; }
+	.manual a {
+		display: inline-block; padding: 11px 20px;
+		border: 1px solid #334155; border-radius: 8px;
+		background: #1e293b; color: #e2e8f0;
+		font-size: 14px; font-weight: 600; text-decoration: none;
+	}
+	.manual a:active { background: #334155; }
+	.manual-nota { margin-top: 6px; font-size: 11.5px; color: #64748b; }
+
+	/* Instalar como app: discreto, y desaparece apenas se instala o se descarta */
+	.instalar { margin-top: 14px; text-align: center; }
+	.instalar button {
+		border: 1px solid #334155; background: #1e293b; color: #e2e8f0;
+		padding: 9px 16px; border-radius: 8px; font-size: 13px; cursor: pointer;
+	}
+	.instalar button:active { background: #334155; }
+	.instalar .descartar { border: 0; background: none; color: #64748b; font-size: 12px; padding: 6px; }
+	.ayuda-ios {
+		margin-top: 12px; padding: 12px 14px; max-width: 320px;
+		background: #1e293b; border: 1px solid #334155; border-radius: 8px;
+		font-size: 12.5px; color: #cbd5e1; text-align: left; line-height: 1.5;
+	}
+	.alerta { max-width: 520px; text-align: center; background: #7f1d1d; color: #fee2e2; padding: 20px 24px; border-radius: 12px; font-size: 16px; }
+	[hidden] { display: none !important; }
+</style>
+</head>
+<body>
+
+<div class="pantalla" id="pantalla" hidden>
+	<div class="reloj">
+		<div class="hora" id="hora">--:--</div>
+		<div class="fecha" id="fecha"></div>
+		<div class="titulo">Escanea el codigo con tu celular<br>para marcar entrada o salida</div>
+	</div>
+	<div>
+		<div class="qr-caja"><canvas id="qr"></canvas></div>
+		<div class="barra"><i id="barra"></i></div>
+		<div class="pie" id="pie">El codigo cambia cada 15 segundos</div>
+
+		<!-- Solo se ve si el marcador tiene habilitada la marca manual desde
+		     Control de Asistencia. Igual pide usuario y clave del sistema. -->
+		<div class="manual" id="manual" hidden>
+			<a href="manual.php">&#9997; Marcar a mano</a>
+			<div class="manual-nota">Para quien no tiene celular activado</div>
+		</div>
+
+		<div class="instalar" id="instalar" hidden>
+			<button type="button" id="btn_instalar">&#11015; Instalar como aplicacion</button>
+			<div><button type="button" class="descartar" id="btn_descartar">Ahora no</button></div>
+		</div>
+		<div class="ayuda-ios" id="ayuda_ios" hidden></div>
+	</div>
+</div>
+
+<div class="alerta" id="alerta" hidden></div>
+
+<script>
+(function () {
+	'use strict';
+
+	var LLAVE = 'asis_kiosko_token';
+	var DIAS = ['domingo', 'lunes', 'martes', 'miercoles', 'jueves', 'viernes', 'sabado'];
+	var MESES = ['enero', 'febrero', 'marzo', 'abril', 'mayo', 'junio', 'julio', 'agosto', 'septiembre', 'octubre', 'noviembre', 'diciembre'];
+
+	var token = null;
+	var restantes = 0;
+	var ventana = 30;
+
+	function alertar(txt) {
+		document.getElementById('pantalla').hidden = true;
+		var a = document.getElementById('alerta');
+		a.textContent = txt;
+		a.hidden = false;
+	}
+
+	// --- vinculacion -------------------------------------------------------
+	// El token llega una sola vez por la URL. Se guarda y se borra de la barra
+	// de direcciones en el acto (replaceState no deja entrada en el historial).
+	function tomarToken() {
+		var m = /[?&]t=([0-9a-f]{64})/.exec(window.location.search);
+		if (m) {
+			try { localStorage.setItem(LLAVE, m[1]); } catch (e) {}
+			history.replaceState(null, '', window.location.pathname);
+			return m[1];
+		}
+		try { return localStorage.getItem(LLAVE); } catch (e) { return null; }
+	}
+
+	// --- reloj -------------------------------------------------------------
+	function pintarReloj() {
+		var d = new Date();
+		var hh = ('0' + d.getHours()).slice(-2), mm = ('0' + d.getMinutes()).slice(-2);
+		document.getElementById('hora').textContent = hh + ':' + mm;
+		document.getElementById('fecha').textContent =
+			DIAS[d.getDay()] + ', ' + d.getDate() + ' de ' + MESES[d.getMonth()];
+	}
+
+	// --- codigo ------------------------------------------------------------
+	function pedirCodigo() {
+		var x = new XMLHttpRequest();
+		x.open('POST', 'codigo.php', true);
+		x.setRequestHeader('Content-Type', 'application/json');
+		x.timeout = 10000;
+
+		x.onload = function () {
+			var r = null;
+			try { r = JSON.parse(x.responseText); } catch (e) {}
+
+			if (!r || !r.success) {
+				// Un token revocado no se arregla solo: hay que volver a vincular.
+				if (r && r.error) { alertar(r.error); }
+				else { document.getElementById('pie').textContent = 'Sin conexion. Reintentando...'; }
+				return;
+			}
+
+			document.getElementById('pantalla').hidden = false;
+			document.getElementById('alerta').hidden = true;
+
+			var url = window.location.href.split('?')[0].replace(/kiosko\.html$/, '') +
+				'marcar.php?k=' + r.datos.idkiosko + '&c=' + r.datos.codigo;
+			new QRious({ element: document.getElementById('qr'), value: url, size: 320, level: 'M' });
+
+			ventana = r.datos.ventana || 15;
+			restantes = r.datos.segundos || ventana;
+			document.getElementById('pie').textContent = 'El codigo cambia cada ' + ventana + ' segundos';
+
+			// Se relee en cada ciclo: encender o apagar la marca manual desde el
+			// panel se refleja aca sin que nadie toque la tablet.
+			document.getElementById('manual').hidden = !r.datos.permite_manual;
+
+			pintarBarra();
+		};
+		x.ontimeout = x.onerror = function () {
+			document.getElementById('pie').textContent = 'Sin conexion. Reintentando...';
+		};
+		x.send(JSON.stringify({ kiosko_token: token }));
+	}
+
+	function pintarBarra() {
+		var pct = Math.max(0, Math.min(100, (restantes / ventana) * 100));
+		document.getElementById('barra').style.width = pct + '%';
+	}
+
+	// Un tick por segundo mueve el reloj y la barra; el codigo se pide solo
+	// cuando la ventana se agota, no cada segundo.
+	function tick() {
+		pintarReloj();
+		if (restantes > 0) { restantes--; pintarBarra(); }
+		if (restantes <= 0) { pedirCodigo(); }
+	}
+
+	token = tomarToken();
+	if (!token) {
+		alertar('Esta pantalla no esta vinculada. Desde el POS entra a Control de Asistencia, crea una pantalla y abre el enlace que te da.');
+		return;
+	}
+
+	pintarReloj();
+	pedirCodigo();
+	setInterval(tick, 1000);
+
+	// La tablet vuelve del bloqueo o el local reabre: refrescar en el acto en
+	// vez de esperar a que el contador llegue a cero.
+	document.addEventListener('visibilitychange', function () {
+		if (!document.hidden) { pintarReloj(); pedirCodigo(); }
+	});
+
+	// --- instalar como aplicacion -----------------------------------------
+	// El objetivo es que el de cocina prenda la tablet y toque un icono, sin
+	// acordarse de ninguna direccion. Instalada, la app arranca en kiosko.html
+	// y el token lo saca de localStorage, que es del mismo origen.
+	//
+	// Requiere HTTPS (o localhost): por HTTP el navegador no instala nada. En
+	// produccion todas las sedes van por HTTPS, en la red local no va a salir.
+	var instalable = null;
+
+	// Sin HTTPS ningun navegador instala nada, y no hay evento que avisarlo:
+	// simplemente no pasa nada. Decirlo evita la pregunta "por que no me sale
+	// el boton" cuando se prueba en la red local por IP.
+	if (!window.isSecureContext) {
+		var aviso = document.getElementById('ayuda_ios');
+		aviso.innerHTML = 'Para dejar esto como aplicacion hace falta <b>HTTPS</b>. ' +
+			'Esta pantalla se abrio por HTTP (' + location.protocol + '//' + location.host + '), ' +
+			'asi que el navegador no ofrece instalarla. Abriendola por la direccion segura del local, el boton aparece solo.';
+		aviso.hidden = false;
+		return;
+	}
+
+	if ('serviceWorker' in navigator) {
+		navigator.serviceWorker.register('sw.js').catch(function () {
+			// Sin service worker no hay boton de instalar, pero el marcador
+			// funciona igual: no es motivo para romper la pantalla.
+		});
+	}
+
+	// Chrome, Edge y Android avisan cuando la pagina cumple los requisitos.
+	window.addEventListener('beforeinstallprompt', function (e) {
+		e.preventDefault();
+		instalable = e;
+		if (localStorage.getItem('asis_no_instalar') !== '1') {
+			document.getElementById('instalar').hidden = false;
+		}
+	});
+
+	document.getElementById('btn_instalar').addEventListener('click', function () {
+		if (!instalable) { return; }
+		instalable.prompt();
+		instalable.userChoice.then(function () {
+			instalable = null;
+			document.getElementById('instalar').hidden = true;
+		});
+	});
+
+	document.getElementById('btn_descartar').addEventListener('click', function () {
+		try { localStorage.setItem('asis_no_instalar', '1'); } catch (e) {}
+		document.getElementById('instalar').hidden = true;
+	});
+
+	window.addEventListener('appinstalled', function () {
+		document.getElementById('instalar').hidden = true;
+		document.getElementById('ayuda_ios').hidden = true;
+	});
+
+	// Safari (iPhone / iPad / Mac) no tiene beforeinstallprompt: la instalacion
+	// es manual y lo unico que se puede hacer es explicar los dos toques.
+	(function ayudaSafari() {
+		var ua = navigator.userAgent;
+		var esIOS = /iPad|iPhone|iPod/.test(ua) || (/Macintosh/.test(ua) && 'ontouchend' in document);
+		var esSafari = /^((?!chrome|android|crios|fxios|edg).)*safari/i.test(ua);
+		var yaInstalada = window.navigator.standalone === true ||
+			window.matchMedia('(display-mode: fullscreen)').matches;
+
+		if (!(esIOS || esSafari) || yaInstalada) { return; }
+		if (localStorage.getItem('asis_no_instalar') === '1') { return; }
+
+		var caja = document.getElementById('ayuda_ios');
+		caja.innerHTML = esIOS
+			? 'Para dejarlo como app: toca <b>Compartir</b> (el cuadrito con la flecha) y luego <b>Anadir a pantalla de inicio</b>.'
+			: 'Para dejarlo como app: menu <b>Archivo</b> &rarr; <b>Anadir al Dock</b>.';
+		caja.hidden = false;
+	})();
+})();
+</script>
+</body>
+</html>
