@@ -153,6 +153,9 @@
 		font-size: 15px; font-weight: 600; text-decoration: none;
 	}
 	.boton:active { background: #1e7e34; }
+	/* La opcion que necesita a un tercero va en gris: se ve que es la segunda. */
+	.boton-gris { background: #6c757d; }
+	.boton-gris:active { background: #545b62; }
 
 	.entrada .icono, .salida .icono { color: #28a745; }
 	.entrada .hora { color: #198754; }
@@ -255,7 +258,11 @@
 	<div class="titulo"><?php echo asisEsc($titulo); ?></div>
 	<p class="detalle"><?php echo asisEsc($mensaje); ?></p>
 	<?php if ($habilitable) { ?>
-		<a class="boton" href="habilitar.php">Soy el administrador: habilitar hoy</a>
+		<!-- Primero la salida que NO necesita a nadie mas: si vino a cubrir a un
+		     companero, lo dice aqui y ya puede trabajar. Habilitar a mano queda
+		     como segunda opcion, para el resto de los casos. -->
+		<a class="boton" href="cambio-turno.php">Vine a cubrir a un companero</a>
+		<a class="boton boton-gris" href="habilitar.php">Soy el administrador: habilitar hoy</a>
 		<p class="nota">Despues de habilitarlo, vuelve a escanear el QR.</p>
 	<?php } ?>
 <?php } ?>

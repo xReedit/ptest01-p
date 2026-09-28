@@ -59,6 +59,9 @@
             // echo $buildSql;
             if ( $buildSql!= '' ) {
                 $bd->xMultiConsulta($buildSql);
+                // costeo de recetas: el precio de compra cambio -> recalcula costo de platos y alertas
+                require_once __DIR__ . '/costeo_recalculo.php';
+                costeoRecalcularSeguro($bd, $g_idsede, 'compra');
             }
             break;
 
@@ -154,6 +157,10 @@
             // colocar en carta_lista cantidad SP del item
             $sql = "update carta_lista set cantidad = 'SP' where iditem = ".$item['iditem'].";";
             $bd->xConsulta_NoReturn($sql);
+
+            // costeo de recetas: la receta cambio -> recalcula costo de platos y alertas
+            require_once __DIR__ . '/costeo_recalculo.php';
+            costeoRecalcularSeguro($bd, $g_idsede, 'receta');
 
             echo 'ok';
             break;

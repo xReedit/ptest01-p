@@ -11,6 +11,7 @@ use function PHPSTORM_META\sql_injection_subst;
 	header('Content-Type: text/event-stream');
 	header('Cache-Control: no-cache');
 	include "ManejoBD.php";
+	require_once __DIR__ . '/_supervisor.php'; // "Usuario autorizado" validado en el servidor
 	$bd=new xManejoBD("restobar");
 	//header("Cache-Control: no-cache,no-store");
 	// header("Access-Control-Allow-Origin: *");
@@ -37,17 +38,32 @@ use function PHPSTORM_META\sql_injection_subst;
         // procedure_get_promciones, ya con filtros de fecha/hora/día.
         case 'change-tipo-pago-registro-pago':
             $postBody = json_decode(file_get_contents('php://input'));
+            // 2026-09: el admin que autoriza se valida en el servidor; cada valor debe ser un numero
+            // (si uno no lo es, esa sentencia no se ejecuta, como antes cuando fallaba el SQL)
+            $pb = function ($k) use ($postBody) { return is_object($postBody) && isset($postBody->$k) ? xSqlNum($postBody->$k) : null; };
+            if (!xSupValido($bd, is_object($postBody) && isset($postBody->idusuario_admin) ? $postBody->idusuario_admin : '', 'Pe1', $g_idsede)) {
+                echo json_encode(array('success' => false, 'message' => 'Autorizacion no valida'));
+                break;
+            }
+            $admin = $pb('idusuario_admin'); $tpAntes = $pb('idtipo_pago_before'); $tpDespues = $pb('idtipo_pago_after');
+            $importe = $pb('importe'); $idrp = $pb('idregistro_pago'); $idrpd = $pb('idregistro_pago_detalle'); $idpr = $pb('idpermiso_remoto');
+            if ($tpAntes !== null && $tpDespues !== null && $importe !== null && $idrp !== null && $idrpd !== null) {
             $sql = "insert into cambios_tipo_pago (idusuario_admin, idusuario_solicita, fecha, hora, idsede, idtipo_pago_before, idtipo_pago_after, importe, idregistro_pago, idregistro_pago_detalle)
-                    values ($postBody->idusuario_admin, $g_us, curdate(), curtime(), $g_idsede, $postBody->idtipo_pago_before, $postBody->idtipo_pago_after, $postBody->importe, $postBody->idregistro_pago, $postBody->idregistro_pago_detalle)";
+                    values ($admin, $g_us, curdate(), curtime(), $g_idsede, $tpAntes, $tpDespues, $importe, $idrp, $idrpd)";
             $bd->xConsulta_NoReturn($sql);
+            }
 
             // actualiza la tabla permiso_remoto como ejecutado
-            $sql = "update permiso_remoto set ejecutado = '1' where idpermiso_remoto = $postBody->idpermiso_remoto";    
+            if ($idpr !== null) {
+            $sql = "update permiso_remoto set ejecutado = '1' where idpermiso_remoto = $idpr";
             $bd->xConsulta_NoReturn($sql);
+            }
 
             // cambia el tipo de pago en registro_pago_detalle
-            $sql = "update registro_pago_detalle set idtipo_pago = $postBody->idtipo_pago_after, permission_change = '0' where idregistro_pago_detalle = $postBody->idregistro_pago_detalle";    
+            if ($tpDespues !== null && $idrpd !== null) {
+            $sql = "update registro_pago_detalle set idtipo_pago = $tpDespues, permission_change = '0' where idregistro_pago_detalle = $idrpd";
             $bd->xConsulta_NoReturn($sql);
+            }
 
             // reponder ok
             echo json_encode(array('success' => true, 'message' => 'ok'));

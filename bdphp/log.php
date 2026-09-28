@@ -12,6 +12,7 @@
 	include "ManejoBD.php";
 	include "token.php";
 	include "push_mozo.php"; // push "pedido/plato listo" al mozo (zona de despacho)
+	require_once __DIR__ . '/_supervisor.php'; // "Usuario autorizado" validado en el servidor
 	$bd=new xManejoBD("restobar");
 
 	date_default_timezone_set('America/Lima');
@@ -245,8 +246,21 @@
 			return true;
 			break;
 		case -102://verificar usuario
-			$sql="select idusuario, acc, CONCAT(per,'Rol',rol) as per from usuario where (idorg=".$g_ido.") and usuario='".$_POST['u']."' and pass='".$_POST['p']."' and estado=0";
-			$bd->xConsulta($sql);
+			// consulta parametrizada (antes se pegaba u/p al SQL: inyeccion). Misma respuesta que xConsulta:
+			// valores como texto, sin devolver la sentencia (llevaba la clave).
+			$rows = array(); $pasa = true; $error = '';
+			try {
+				$bd->prepare("select idusuario, acc, CONCAT(per,'Rol',rol) as per from usuario where (idorg=?) and usuario=? and pass=? and estado=0");
+				$bd->execute(array((int)$g_ido, isset($_POST['u']) ? (string)$_POST['u'] : '', isset($_POST['p']) ? (string)$_POST['p'] : ''));
+				foreach ($bd->fetchAll() as $r) {
+					$rows[] = (object)array_map(function ($v) { return $v === null ? null : (string)$v; }, $r);
+					if (isset($_SESSION['idusuario'])) { xSupRegistrar($r['idusuario'], $r['per']); }
+				}
+			} catch (Exception $e) {
+				error_log('log.php op=-102: ' . $e->getMessage());
+				$pasa = false; $error = 'No se pudo verificar el usuario';
+			}
+			print json_encode(array("success" => $pasa, "datos" => $rows, "sentencia" => "", "error" => $error, "info" => $bd->bd->info));
 			break;
 		case -101:// devolver datos de session
 			$sql="select '".$g_ido."' as ido,  '".$g_idsede."' as idse, '".$_SESSION['idusuario']."' as idu, '".$_SESSION['acc']."' as acc, '".$_SESSION['nomU']."' as nomU, '".$_SESSION['cargoU']."' as cargoU, '".$_SESSION['nomUs']."' as nomUs";
@@ -276,9 +290,14 @@
 								//si $dataUs -1 no hay datos de session, se termino la session // problemas con celulares // se corto la conexion evalua data del cliente
 								//la data del cliente esta llena comprueba si es un array valido
 								if($dataUs=="-1"){ //si se perdio la conexion
+									$json_data=base64_decode($data_cliente);
+									$obj = (array)json_decode($json_data);
+									if (!xSnapshotEsDeLaSesion($obj)) {
+										// datos del cliente distintos a los de la sesion (validada con usuario/clave):
+										// no se copian a la sesion; se devuelve el snapshot correcto y el cliente lo guarda
+										$rpt = encode_dataUS();
+									} else
 									try{ //evalua data del cliente
-										$json_data=base64_decode($data_cliente);
-										$obj = (array)json_decode($json_data);
 										$_SESSION['ido']=$obj["us"]->ido;
 										$_SESSION['idsede']=$obj["us"]->idsede;
 										$_SESSION['idusuario']=$obj["us"]->idus;
@@ -363,13 +382,9 @@
 					$_u = $_sys_id[1];
 					$_p = base64_decode($_sys_id[2]);
 
-					$idOrg = $_sys_id[3];
-					$idSede = $_sys_id[4];
-
-					//230721
-					$_SESSION['ido']=$idOrg;
-					$_SESSION['idsede']=$idSede;
-
+					$idOrg = isset($_sys_id[3]) ? $_sys_id[3] : '';
+					$idSede = isset($_sys_id[4]) ? $_sys_id[4] : '';
+					// (230721 escribia aqui la sesion con org/sede del cliente ANTES de validar la clave: quitado)
 				}
 				
 				// print $_u." -> ".$_p;
@@ -380,6 +395,10 @@
 						if ( !$reconex ) { // si no es reconexion chapa los datos del result query
 							$idOrg=$obj[0]->idorg;
 							$idSede=$obj[0]->idsede;
+						} else {
+							// reconexion: se respeta la sede que tenia (cambio de sede del admin / contador)
+							// solo si ese usuario puede estar ahi; si no, la suya propia
+							list($idOrg, $idSede) = xSedeReconexPermitida($bd, $obj[0], $idOrg, $idSede);
 						}
 
 						$_SESSION['ido']=$idOrg;
@@ -416,8 +435,15 @@
 				echo json_encode(array('success' => false, 'error' => 'ERR_FORBIDDEN: solo rol admin'));
 				exit;
 			}
+			$_sedeDest = xSedeDeOrg($bd, isset($_POST['i']) ? $_POST['i'] : 0, isset($_SESSION['ido']) ? $_SESSION['ido'] : 0);
+			if ($_sedeDest === null) {
+				http_response_code(403);
+				header('Content-Type: application/json');
+				echo json_encode(array('success' => false, 'error' => 'ERR_FORBIDDEN: sede de otra organizacion'));
+				exit;
+			}
 			if (!empty($_u = $_POST['o'])) {$_SESSION['idorg'] = $_POST['o'];}
-			$_SESSION['idsede'] = $_POST['i'];
+			$_SESSION['idsede'] = $_sedeDest;
 			break;
 		case -1002: // obtener sede y rol antes de cargar componentes
 			echo $_SESSION['idsede'].','.$_SESSION['rol'];
@@ -1544,79 +1570,82 @@
 		case 3042://aumentar stock item anulado // anula de 1 en 1
 			// no aumenta porque borramos el procedimiento almacenado
 			// 19102018 -- estara en la pagina pedido borrados - para restablecer o no stock
-			$arrIE=$_POST['xarr'];
-			$motivo_anular= isset($_POST['xMotivo']) ? $_POST['xMotivo'] : '';
-			$isRecuperarStock = isset($_POST['xisRecuperarStock']) ? $_POST['xisRecuperarStock'] : '0';
+			// 2026-09: el supervisor (u) se valida en el servidor y los valores se limpian antes de ir al SQL.
+			// Si un valor no es un numero, la sentencia que lo usa no se ejecuta (antes fallaba con error de SQL).
+			$u_sup = isset($_POST['u']) ? $_POST['u'] : '';
+			if (!xSupValido($bd, $u_sup, 'Pe1', $g_idsede)) {
+				echo json_encode(array('success' => false, 'error' => 'Autorizacion no valida'));
+				break;
+			}
+			$u_sup = xSqlNum($u_sup);
+			$arrIE = isset($_POST['xarr']) && is_array($_POST['xarr']) ? $_POST['xarr'] : array();
+			$campo = function ($k) use ($arrIE) { return isset($arrIE[$k]) ? $arrIE[$k] : ''; };
+			$motivo_anular = xSqlTxt($bd, isset($_POST['xMotivo']) ? $_POST['xMotivo'] : '');
+			$isRecuperarStock = xSqlTxt($bd, isset($_POST['xisRecuperarStock']) ? $_POST['xisRecuperarStock'] : '0');
 
-			$tabla_procede=$arrIE['procede'];
-			$idpedido_detalle=$arrIE['idpedido_detalle'];
-			$idpedido=$arrIE['idpedido'];
+			$tabla_procede = xSqlNum($campo('procede'));
+			$idpedido_detalle = xSqlNum($campo('idpedido_detalle'));
+			$idpedido = xSqlNum($campo('idpedido'));
 			// $iditem=$arrIE['idprocede'];
-			$iditem=$arrIE['iditem'];
-			$idcarta_lista=$arrIE['idcarta_lista'];
-			$precio_total_item=$arrIE['precio_total'];
-			$precio_unitario_item=$arrIE['precio_unitario'];			
+			$iditem = xSqlNum($campo('iditem'));
+			$idcarta_lista = xSqlNum($campo('idcarta_lista'));
+			$precio_total_item = $campo('precio_total');
+			$precio_unitario_item = xSqlNum($campo('precio_unitario'));
+			$ses_us = xSqlNum($_SESSION['idusuario']);
 
 			$sql_pedido='';
 			$sql_pedido_detalle='';
 
 			//registra pedido borrado
 			$fecha_hora = date("Y-m-d H:i:s");
-			$sqlpedido_borrado="insert into pedido_borrados (idpedido,idpedido_detalle,iditem,idcarta_lista,idusuario,idusuario_permiso,importe,fecha,hora,procede_tabla, fecha_cierre, cantidad, flag_recupera_stock, fecha_hora) 
-											values(".$idpedido.",".$idpedido_detalle.",".$iditem.",".$idcarta_lista.",".$_POST["u"].",".$_SESSION['idusuario'].",".$precio_unitario_item.",'".$fecha_now."','".$hora_now."',".$tabla_procede.", '', 1,'".$isRecuperarStock."', '".$fecha_hora."'); ";
+			if ($idpedido !== null && $idpedido_detalle !== null && $iditem !== null && $idcarta_lista !== null && $u_sup !== null
+				&& $ses_us !== null && $precio_unitario_item !== null && $tabla_procede !== null) {
+				$sqlpedido_borrado="insert into pedido_borrados (idpedido,idpedido_detalle,iditem,idcarta_lista,idusuario,idusuario_permiso,importe,fecha,hora,procede_tabla, fecha_cierre, cantidad, flag_recupera_stock, fecha_hora)
+											values(".$idpedido.",".$idpedido_detalle.",".$iditem.",".$idcarta_lista.",".$u_sup.",".$ses_us.",".$precio_unitario_item.",'".$fecha_now."','".$hora_now."',".$tabla_procede.", '', 1,'".$isRecuperarStock."', '".$fecha_hora."'); ";
 
-			$lastIdPedidoBorrado = $bd->xConsulta_UltimoId($sqlpedido_borrado);
+				$lastIdPedidoBorrado = $bd->xConsulta_UltimoId($sqlpedido_borrado);
 
-			if ( $isRecuperarStock == '1' ) { // si se recupera stock 160822 -- por el tigger
-				$sql_recuperar = "update pedido_borrados set estado=2 where idpedido_borrados = $lastIdPedidoBorrado";
-				$bd->xConsulta_NoReturn($sql_recuperar);
+				if ( $isRecuperarStock == '1' && is_numeric($lastIdPedidoBorrado) ) { // si se recupera stock 160822 -- por el tigger
+					$sql_recuperar = "update pedido_borrados set estado=2 where idpedido_borrados = $lastIdPedidoBorrado";
+					$bd->xConsulta_NoReturn($sql_recuperar);
+				}
 			}
 
-			//descuenta en pedido_detalle
-			$campo_precio='';
-			if($precio_total_item>0){//si es cero solo descuenta en pedido detalle
-				$campo_precio=', ptotal=format(ptotal-punitario,2)';
-			//descuneta importe en pedido
-			// $sql_pedido="update pedido set total=format(total-".$precio_unitario_item.",2),estado=if(total<=0,3,0) where idpedido=".$idpedido."; update pedido_subtotales set importe=format(importe-".$precio_unitario_item.",2) where idpedido=".$idpedido." and descripcion='TOTAL'; ";
-			// $sql_pedido = "update pedido set total=format(REPLACE(total, ',', '')-" . $precio_unitario_item . ",2),estado=if(total<=0,3,0) where idpedido=" . $idpedido . "; update pedido_subtotales set importe=format(REPLACE(importe, ',', '')-" . $precio_unitario_item . ",2) where idpedido=" . $idpedido . " and descripcion='TOTAL'; ";
-			//descuenta en subtotal
-
+			// multiconsulta: como antes, se corta en la primera sentencia que no se puede armar
+			$sql_ejecuta = '';
+			$sigue = $precio_unitario_item !== null;
+			if($sigue && $precio_total_item>0){//si es cero solo descuenta en pedido detalle
+				if ($idpedido === null) { $sigue = false; } else {
 				// Descuenta importe en pedido y actualiza estado
 				$sql_pedido = "
-					UPDATE pedido 
-					SET total = ROUND(CAST(REPLACE(total, ',', '') AS DECIMAL(10, 2)) - $precio_unitario_item, 2), 
+					UPDATE pedido
+					SET total = ROUND(CAST(REPLACE(total, ',', '') AS DECIMAL(10, 2)) - $precio_unitario_item, 2),
 						estado = IF(total<=0,3,0)
 					WHERE idpedido = $idpedido;
 
-					UPDATE pedido_subtotales 
-					SET importe = ROUND(CAST(REPLACE(importe, ',', '') AS DECIMAL(10, 2)) - $precio_unitario_item, 2) 
+					UPDATE pedido_subtotales
+					SET importe = ROUND(CAST(REPLACE(importe, ',', '') AS DECIMAL(10, 2)) - $precio_unitario_item, 2)
 					WHERE idpedido = $idpedido AND descripcion = 'TOTAL';
 				";
+				$sql_ejecuta .= $sql_pedido;
+				}
 			}
 
-		// $sql_pedido_detalle= "update pedido_detalle set cantidad=cantidad-1, ptotal=format(REPLACE(ptotal, ',', '')-".$precio_unitario_item.",2), estado=if(cantidad<=0,1,0), modificado=1, motivo_borrado='".$motivo_anular."' where idpedido_detalle=".$idpedido_detalle."; ";
-
 			// Descuenta en pedido_detalle
+			if ($sigue && $idpedido_detalle !== null) {
 			$sql_pedido_detalle = "
-				UPDATE pedido_detalle 
-				SET cantidad = cantidad - 1, 
-					ptotal = ROUND(CAST(REPLACE(ptotal, ',', '') AS DECIMAL(10, 2)) - $precio_unitario_item, 2), 
-					estado = IF(cantidad <= 0, 1, 0), 
-					modificado = 1, 
-					motivo_borrado = '$motivo_anular' 
+				UPDATE pedido_detalle
+				SET cantidad = cantidad - 1,
+					ptotal = ROUND(CAST(REPLACE(ptotal, ',', '') AS DECIMAL(10, 2)) - $precio_unitario_item, 2),
+					estado = IF(cantidad <= 0, 1, 0),
+					modificado = 1,
+					motivo_borrado = '$motivo_anular'
 				WHERE idpedido_detalle = $idpedido_detalle;
 			";
+				$sql_ejecuta .= $sql_pedido_detalle;
+			}
 
-			//descuenta
-			//ejecutar
-			//$sql_ejecuta=$sql_pedido.$sql_pedido_detalle.$sql_porcion.$sq_carta_lista.$sql_almacen;
-			$sql_ejecuta=$sql_pedido.$sql_pedido_detalle; //.$sqlpedido_borrado; //.$sql_porcion.$sq_carta_lista.$sql_almacen;
-			// print $sql_ejecuta;
 			$bd->xMultiConsulta($sql_ejecuta);
-
-
-
-			// echo $sql_recuperar;
 
 			break;
 		case 305:	//load pedido desde mi pedido
@@ -2213,19 +2242,27 @@
 			$bd->xConsulta($sql);
 			break;
 		case 5011://anular pedidos
+			// 2026-09: el supervisor (u) se valida en el servidor; ids, listas y textos se limpian antes del SQL.
+			// Si un valor no sirve, la sentencia que lo usa no se ejecuta (antes fallaba con error de SQL).
+			if (!xSupValido($bd, isset($_POST['u']) ? $_POST['u'] : '', 'Pe1', $g_idsede)) {
+				echo json_encode(array('ok' => false, 'error' => 'Autorizacion no valida'));
+				break;
+			}
+			$u_sup = xSqlNum($_POST['u']);
+			$ses_us = xSqlNum($_SESSION['idusuario']);
 			//armar sql item anular devolver stock
-			$xarray_pe_anular=$_POST['ArrayPeAnular'];
+			$xarray_pe_anular = isset($_POST['ArrayPeAnular']) ? $_POST['ArrayPeAnular'] : '';
 			$sql_change_de='';
 			$sql_historial_rp='';
 			$sqlpedido_borrado='';
 			$sql_todos='';
 			$sql_pdt='';
 			$id_pedidos_anular='';
-			$motivo_anular=$_POST['xMotivo'];
-			$isRecuperarStock = isset($_POST['xisRecuperarStock']) ? $_POST['xisRecuperarStock'] : '0';
+			$motivo_anular = xSqlTxt($bd, isset($_POST['xMotivo']) ? $_POST['xMotivo'] : '');
+			$isRecuperarStock = xSqlTxt($bd, isset($_POST['xisRecuperarStock']) ? $_POST['xisRecuperarStock'] : '0');
 			$numPedidosRegistro = isset($_POST['numpedidos']) ? $_POST['numpedidos'] : '0';
 			$idregistro_pago = isset($_POST['idregistro_pago']) ? $_POST['idregistro_pago'] : '0';
-			$idpedidosDetalles = isset($_POST['idpedidosDetalles']) ? $_POST['idpedidosDetalles'] : '0';
+			$idpedidosDetalles = xSqlIdList(isset($_POST['idpedidosDetalles']) ? $_POST['idpedidosDetalles'] : '0');
 
 
 			//$count_filas_item=count($xarray_pe_anular);
@@ -2249,19 +2286,24 @@
 				// 	$bd->xConsulta_NoReturn($sql_todos);
 				// }
 
-				$id_pedidos_anular=$_POST['xPedidos'];
+				$id_pedidos_anular = xSqlIdList(isset($_POST['xPedidos']) ? $_POST['xPedidos'] : '');
+				if ($id_pedidos_anular !== null) {
 				$sql_todos="update pedido set estado=3, motivo_anular='".$motivo_anular."' where idpedido in (".$id_pedidos_anular."); ";
 				$bd->xConsulta_NoReturn($sql_todos);
+				}
 
 			}else{//si solo estan algunos pedidos seleccionados
-				$id_pedidos_anular=$xarray_pe_anular[0]['idpedidos'];
-				$motivo_anular=$xarray_pe_anular[0]['m_a'];
+				$fila0 = is_array($xarray_pe_anular) && isset($xarray_pe_anular[0]) && is_array($xarray_pe_anular[0]) ? $xarray_pe_anular[0] : array();
+				$id_pedidos_anular = xSqlIdList(isset($fila0['idpedidos']) ? $fila0['idpedidos'] : '');
+				$motivo_anular = xSqlTxt($bd, isset($fila0['m_a']) ? $fila0['m_a'] : '');
 
 				if ( isset($_POST['viene_historial']) ) {
+					if ($idpedidosDetalles !== null) {
 					$sql_pdt="update pedido_detalle set estado=1, borrado=1 where idpedido_detalle in (".$idpedidosDetalles.")";
 					$bd->xConsulta_NoReturn($sql_pdt);
+					}
 
-				} else {
+				} else if ($id_pedidos_anular !== null) {
 					// and pagado=0 si ya pago no elimina
 					$sql_pdt="update pedido_detalle set estado=1, borrado=1 where idpedido in (".$id_pedidos_anular.") and pagado=0;";
 					$bd->xConsulta_NoReturn($sql_pdt);
@@ -2271,7 +2313,7 @@
 				// $id_pedidos_anular = rtrim($id_pedidos_anular, ",");
 				// $id_pedidos_anular = $id_pedidos_anular.',';
 				// estado = 4 anulado al final, algunos item cobrados
-				$list_id_pedidos_anular = explode(",", $id_pedidos_anular);
+				$list_id_pedidos_anular = $id_pedidos_anular === null ? array() : explode(",", $id_pedidos_anular);
 				foreach ($list_id_pedidos_anular as $arrIdP) {
 					if ( $arrIdP !== '' ) {
 
@@ -2308,25 +2350,29 @@
 				// 	update pedido set estado=3, motivo_anular='".$motivo_anular."' where idpedido in (".$id_pedidos_anular.");";
 			}
 
-			$condicion_pdb="idpedido IN (".$id_pedidos_anular.") and pagado=0";//si no viene de registro elimina todo los item que no esten pagados // desde control de pedido
+			$condicion_pdb = $id_pedidos_anular === null ? null : "idpedido IN (".$id_pedidos_anular.") and pagado=0";//si no viene de registro elimina todo los item que no esten pagados // desde control de pedido
 			if(isset($_POST['viene_historial'])){
-				$idregistro_pago_desde_h=$_POST['viene_historial'];
+				$idregistro_pago_desde_h = xSqlNum($_POST['viene_historial']);
 				//si viene de historial_registro_pago quiere decir que se eliminara una cobranza por lo tanto los datos lo guardara tambien en registro_pago
-				$condicion_pdb="idregistro_pago=".$idregistro_pago_desde_h;//todos los item que correspondan a este iregistropago
-				$sql_historial_rp="update registro_pago set estado=1, motivo_anular='".$motivo_anular."', idusuario_permiso=".$_POST['u']." where idregistro_pago=".$idregistro_pago_desde_h."; ";
+				$condicion_pdb = $idregistro_pago_desde_h === null ? null : "idregistro_pago=".$idregistro_pago_desde_h;//todos los item que correspondan a este iregistropago
+				if ($idregistro_pago_desde_h !== null) {
+				$sql_historial_rp="update registro_pago set estado=1, motivo_anular='".$motivo_anular."', idusuario_permiso=".$u_sup." where idregistro_pago=".$idregistro_pago_desde_h."; ";
 				$bd->xConsulta_NoReturn($sql_historial_rp);
+				}
 			}
 
 			$fecha_now = date('Y-m-d H:i:s');
 			//registrar en pedidos_borrados.// en este caso los sub item se borran de los pedidos seleccionados
-			$sqlpedido_borrado="insert into pedido_borrados (idpedido,idpedido_detalle,iditem,idcarta_lista,idusuario,idusuario_permiso,importe,fecha,hora,procede_tabla, cantidad, flag_recupera_stock, fecha_hora, fecha_cierre) 
-													SELECT idpedido,idpedido_detalle,iditem,idcarta_lista,".$_SESSION["idusuario"].",".$_POST['u'].",IF(ptotal*1=0,ptotal_r,ptotal),'".$fecha_now."','".$hora_now. "', procede_tabla, if(cantidad = 0, cantidad_r, cantidad) cantidad, '".$isRecuperarStock. "', '".$fecha_now."', '' 
+			if ($condicion_pdb !== null && $ses_us !== null) {
+			$sqlpedido_borrado="insert into pedido_borrados (idpedido,idpedido_detalle,iditem,idcarta_lista,idusuario,idusuario_permiso,importe,fecha,hora,procede_tabla, cantidad, flag_recupera_stock, fecha_hora, fecha_cierre)
+													SELECT idpedido,idpedido_detalle,iditem,idcarta_lista,".$ses_us.",".$u_sup.",IF(ptotal*1=0,ptotal_r,ptotal),'".$fecha_now."','".$hora_now. "', procede_tabla, if(cantidad = 0, cantidad_r, cantidad) cantidad, '".$isRecuperarStock. "', '".$fecha_now."', ''
 													FROM pedido_detalle WHERE ".$condicion_pdb."; ";
 
 			$bd->xConsulta_NoReturn($sqlpedido_borrado);
-			
-			
-			if ( $isRecuperarStock == '1' ) { // si se recupera stock 160822
+			}
+
+
+						if ( $isRecuperarStock == '1' && $id_pedidos_anular !== null ) { // si se recupera stock 160822
 				$sql_recuperar = "update pedido_borrados set estado=2 where idpedido in ($id_pedidos_anular)";
 				$bd->xConsulta_NoReturn($sql_recuperar);
 			}
@@ -2430,13 +2476,34 @@
 			break;
 		case 70111: // verificar cuadre
 			$idus = $_SESSION['idusuario'];
-			$arrItem = json_encode($_POST['item']);
+			$item = isset($_POST['item']) && is_array($_POST['item']) ? $_POST['item'] : array();
+			// supervisor (salta el limite de intentos y muestra el monto): solo si se autorizo de verdad; si no, como sin supervisor
+			if (isset($item['idusuario_supervisor']) && (string)$item['idusuario_supervisor'] !== '0'
+				&& !xSupValido($bd, $item['idusuario_supervisor'], 'Rol1', $g_idsede)) {
+				$item['idusuario_supervisor'] = '0';
+			}
+			$arrItem = xSqlTxt($bd, json_encode($item));
 			$sql = "call procedure_cierre_bitacora($g_ido,$g_idsede,$idus,'".$arrItem."')";
 			$bd->xConsulta($sql);
 			break;
-		case 7011101: // verificar cuadre permiso remoto
-			$arrItem = json_encode($_POST['item']);
-			$idus = $_POST['item']['idusuario_solicita'];
+		case 7011101: // verificar cuadre permiso remoto (lo hace el admin desde su pantalla)
+			$item = isset($_POST['item']) && is_array($_POST['item']) ? $_POST['item'] : array();
+			$idus = xSqlNum(isset($item['idusuario_solicita']) ? $item['idusuario_solicita'] : '');
+			$esAdmin = isset($_SESSION['rol']) && (int)$_SESSION['rol'] === 1
+				&& isset($item['idusuario_supervisor']) && (string)$item['idusuario_supervisor'] === (string)$_SESSION['idusuario'];
+			$delaOrg = false;
+			if ($idus !== null) {
+				$st = $bd->bd->prepare("SELECT 1 FROM usuario WHERE idusuario = ? AND idorg = ?");
+				$a = (int)$idus; $o = (int)$g_ido;
+				$st->bind_param('ii', $a, $o);
+				$st->execute();
+				$delaOrg = (bool)$st->get_result()->fetch_row();
+			}
+			if (!$esAdmin || !$delaOrg) {
+				echo json_encode(array('success' => false, 'datos' => array(), 'sentencia' => '', 'error' => 'Autorizacion no valida', 'info' => null));
+				break;
+			}
+			$arrItem = xSqlTxt($bd, json_encode($item));
 			$sql = "call procedure_cierre_bitacora($g_ido,$g_idsede,$idus,'".$arrItem."')";
 			$bd->xConsulta($sql);
 			break;
@@ -3168,7 +3235,8 @@
 			// 	ORDER BY s.descripcion,i.descripcion
 			// ";
 
-			// costo = suma de TODOS los ingredientes (misma formula que el detalle op=1702)
+			// costo = suma de TODOS los ingredientes con el costo vivo (misma fuente que el detalle op=1702 y
+			// que Rentabilidad de carta): vistas v_costeo_* de migraciones/costeo-recetas/001_costeo_vivo.sql
 			$sql = "SELECT i.iditem, concat(IFNULL(s.descripcion,'----'),' | ',i.descripcion) AS descripcion, i.precio,
 					format(IFNULL(ri.costo_receta,0),2) AS costo,
 					format(i.precio - IFNULL(ri.costo_receta,0),2) as rentabilidad,
@@ -3178,13 +3246,10 @@
 					left JOIN carta_lista AS cl using(iditem)
 					inner JOIN seccion AS s using(idseccion)
 					left join (
-						SELECT ii.iditem, count(*) as total_ingredientes,
-							SUM(COALESCE(IF(ii.viene_de=2, p.costo_conversion * ii.cantidad_show, ii.costo),0)) as costo_receta
-						FROM item_ingrediente ii
-							left join producto_stock ps on ii.idproducto_stock = ps.idproducto_stock
-							left join producto p on p.idproducto = ps.idproducto
-						WHERE ii.estado=0
-						GROUP BY ii.iditem
+						SELECT c.iditem, count(*) as total_ingredientes, SUM(c.costo) as costo_receta
+						FROM v_costeo_ingrediente c
+							inner join item i2 on i2.iditem = c.iditem and i2.idsede = ".(int)$g_idsede."
+						GROUP BY c.iditem
 					) ri on i.iditem = ri.iditem
 				WHERE (i.idsede=".$g_idsede.") and i.estado=0
 				group by i.iditem
@@ -3193,22 +3258,25 @@
 			break;
 		case 1701://listado de porciones para ingredientes
 			$sql="
-			SELECT p.idporcion AS value, p.descripcion AS label, ifnull(format(pr.precio_unitario*p.peso,2),0) AS precio_unitario
+			SELECT p.idporcion AS value, p.descripcion AS label,
+				IF(vp.idporcion IS NOT NULL, ROUND(vp.costo_porcion, 2), ifnull(format(pr.precio_unitario*p.peso,2),0)) AS precio_unitario
 			FROM porcion AS p
 				left join (SELECT p1.idproducto, p1.precio_unitario FROM producto AS p1 WHERE p1.estado=0 AND (p1.idorg=".$g_ido." AND p1.idsede=".$g_idsede.")) AS pr ON pr.idproducto=p.idproducto_de
+				left join v_costeo_porcion vp ON vp.idporcion = p.idporcion
 			WHERE (p.idorg=".$g_ido." AND p.idsede=".$g_idsede.") and  p.estado=0
-			ORDER BY descripcion
+			ORDER BY p.descripcion
 			";
 			$bd->xConsulta($sql);
 			break;
 		case 1702://load detalles de ingredientes
 			// $sql= "SELECT iditem_ingrediente,iditem,descripcion,cantidad,costo, idporcion, necesario, idproducto_stock, viene_de, und_medida FROM item_ingrediente WHERE iditem=".$_POST['i']." AND estado=0 order by iditem_ingrediente";
+			// costo vivo por ingrediente (v_costeo_ingrediente, migraciones/costeo-recetas/001)
 			$sql= "SELECT ii.iditem_ingrediente,ii.iditem,ii.descripcion,ii.cantidad,ii.cantidad_show, ii.idporcion, ii.necesario, ii.idproducto_stock, IFNULL(ii.idsubreceta, 0) as idsubreceta, ii.viene_de, ii.und_medida,
-						if (viene_de=2, p.costo_conversion * ii.cantidad_show, ii.costo) costo
-					FROM item_ingrediente ii 
-					left join producto_stock ps on ii.idproducto_stock = ps.idproducto_stock 
-					left join producto  p on p.idproducto = ps.idproducto 
-					WHERE ii.iditem=".$_POST['i']." AND ii.estado=0 order by ii.iditem_ingrediente";
+						ROUND(IFNULL(c.costo, ii.costo), 4) costo
+					FROM item_ingrediente ii
+					inner join item it on it.iditem = ii.iditem and it.idorg = ".(int)$g_ido."
+					left join v_costeo_ingrediente c on c.iditem_ingrediente = ii.iditem_ingrediente
+					WHERE ii.iditem=".(int)$_POST['i']." AND ii.estado=0 order by ii.iditem_ingrediente";
 			$bd->xConsulta($sql);
 			break;
 		///productos y porciones
@@ -3997,6 +4065,55 @@
 			break;
 	}
 
+
+// ---- sesion: que org/sede puede tener un usuario (reconexion, -1112, -1001) ----
+// Devuelve el idsede (texto) si la sede pertenece a la org, o null.
+function xSedeDeOrg($bd, $idsede, $idorg) {
+	$st = $bd->bd->prepare("SELECT idsede FROM sede WHERE idsede = ? AND idorg = ?");
+	if (!$st) { return null; }
+	$a = (int)$idsede; $b = (int)$idorg;
+	$st->bind_param('ii', $a, $b);
+	$st->execute();
+	$r = $st->get_result();
+	$row = $r ? $r->fetch_row() : null;
+	return $row ? (string)$row[0] : null;
+}
+// Contador: org/sede asignada en us_cpc_sedes
+function xContadorTieneSede($bd, $idusuario, $idorg, $idsede) {
+	$st = $bd->bd->prepare("SELECT 1 FROM us_cpc c JOIN us_cpc_sedes s ON s.idus_cpc = c.idus_cpc
+		WHERE c.idusuario = ? AND s.idorg = ? AND s.idsede = ? AND s.estado = 0 LIMIT 1");
+	if (!$st) { return false; }
+	$u = (int)$idusuario; $o = (int)$idorg; $s = (int)$idsede;
+	$st->bind_param('iii', $u, $o, $s);
+	$st->execute();
+	$r = $st->get_result();
+	return $r && $r->fetch_row() ? true : false;
+}
+// Reconexion: la org/sede que pide el cliente vale si es la suya, si es admin y la sede es de su org,
+// o si es contador y la tiene asignada. Si no, la suya (igual que un login normal).
+function xSedeReconexPermitida($bd, $u, $idOrg, $idSede) {
+	$propia = array((string)$u->idorg, (string)$u->idsede);
+	if ((string)$idOrg === $propia[0] && (string)$idSede === $propia[1]) { return $propia; }
+	if ((int)$u->rol === 1 && (string)$idOrg === $propia[0] && xSedeDeOrg($bd, $idSede, $idOrg) !== null) {
+		return array((string)$idOrg, (string)(int)$idSede);
+	}
+	if (strtoupper((string)$u->cargo) === 'CONTADOR' && xContadorTieneSede($bd, $u->idusuario, $idOrg, $idSede)) {
+		return array((string)(int)$idOrg, (string)(int)$idSede);
+	}
+	return $propia;
+}
+// -1112: el snapshot del cliente solo se acepta si es de este mismo usuario, org, sede y permisos
+function xSnapshotEsDeLaSesion($obj) {
+	if (!isset($obj['us']) || !is_object($obj['us'])) { return false; }
+	$us = $obj['us'];
+	$igual = function ($a, $b) { return (string)$a === (string)$b; };
+	return isset($us->idus, $us->ido, $us->idsede, $us->acc)
+		&& $igual($us->idus, isset($_SESSION['idusuario']) ? $_SESSION['idusuario'] : '')
+		&& $igual($us->ido, isset($_SESSION['ido']) ? $_SESSION['ido'] : '')
+		&& $igual($us->idsede, isset($_SESSION['idsede']) ? $_SESSION['idsede'] : '')
+		&& $igual($us->acc, isset($_SESSION['acc']) ? $_SESSION['acc'] : '')
+		&& $igual(isset($us->rol) ? $us->rol : '', isset($_SESSION['rol']) ? $_SESSION['rol'] : '');
+}
 
 function encode_dataUS(){
 	$data = [

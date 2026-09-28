@@ -482,6 +482,14 @@
 				jsonOut(true, asisApi('/calendario/excepcion/' . $id . '/eliminar', $ficha));
 				break;
 
+			// Vacia el contador de intentos del marcador. Util cuando el limite
+			// quedo corto y esta rechazando a gente que quiere irse: subir el
+			// numero en la configuracion no alcanza, el minuto en curso ya se
+			// lleno.
+			case 'limites-reiniciar':
+				jsonOut(true, asisApi('/limites/reiniciar', $ficha));
+				break;
+
 			// --- Ausencias: por que alguien no esta marcando -----------------
 			case 'ausencias-alertas':
 				jsonOut(true, asisApi('/ausencias/alertas', $ficha));
@@ -535,7 +543,8 @@
 					'feriado_abre'         => !empty($entrada['feriado_abre']),
 					'feriado_recargo_pct'  => isset($entrada['feriado_recargo_pct']) ? $entrada['feriado_recargo_pct'] : 0,
 					'descanso_trabajado'   => isset($entrada['descanso_trabajado']) ? $entrada['descanso_trabajado'] : 'PERMISO',
-					'descanso_recargo_pct' => isset($entrada['descanso_recargo_pct']) ? $entrada['descanso_recargo_pct'] : 100
+					'descanso_recargo_pct' => isset($entrada['descanso_recargo_pct']) ? $entrada['descanso_recargo_pct'] : 100,
+					'marcador_personas'    => isset($entrada['marcador_personas']) ? $entrada['marcador_personas'] : null
 				))));
 				break;
 

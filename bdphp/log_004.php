@@ -205,9 +205,16 @@
 			$rpt = $bd->xDevolverUnDato($sql);
 			print $rpt;
 			break;
-		case 40102: // cambiar las variables de sesion
-			$_SESSION['ido'] = $_POST['ido'];
-			$_SESSION['idsede'] = $_POST['ids'];
+		case 40102: // cambiar las variables de sesion (contador: solo a una org/sede asignada en us_cpc_sedes)
+			$_st = $bd->bd->prepare("SELECT s.idorg, s.idsede FROM us_cpc c JOIN us_cpc_sedes s ON s.idus_cpc = c.idus_cpc
+				WHERE c.idusuario = ? AND s.idorg = ? AND s.idsede = ? AND s.estado = 0 LIMIT 1");
+			$_u = (int)$g_idusuario; $_o = (int)(isset($_POST['ido']) ? $_POST['ido'] : 0); $_s = (int)(isset($_POST['ids']) ? $_POST['ids'] : 0);
+			$_st->bind_param('iii', $_u, $_o, $_s);
+			$_st->execute();
+			$_row = $_st->get_result()->fetch_row();
+			if (!$_row) { print '0'; break; }
+			$_SESSION['ido'] = (string)$_row[0];
+			$_SESSION['idsede'] = (string)$_row[1];
 			print '1';
 			break;
 		case 402:// num usuario contador

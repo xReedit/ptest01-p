@@ -50,6 +50,19 @@ class SecurityGuard {
         if (empty($referer) || strpos($referer, $host) === false) {
             self::bloquear(403, 'ERR_FORBIDDEN: Invalid request origin');
         }
+
+        // 2026-09 (paginas falsas / CSRF): antes bastaba que el texto del host apareciera en cualquier
+        // parte del referer ("https://sitio-malo.com/?mi-host" pasaba). Ahora el HOST del referer debe
+        // ser el mismo servidor (o un subdominio suyo), sin importar el puerto. Solo puede rechazar
+        // casos que la regla anterior aceptaba; esos se anotan en el log de PHP para poder revisarlos.
+        $hostSolo = strtolower(preg_replace('/:\d+$/', '', $host));
+        $refHost = strtolower((string)parse_url($referer, PHP_URL_HOST));
+        $mismo = $hostSolo !== '' && $refHost !== ''
+            && ($refHost === $hostSolo || substr($refHost, -strlen('.' . $hostSolo)) === '.' . $hostSolo);
+        if (!$mismo) {
+            error_log('SecurityGuard: referer de otro sitio bloqueado: ' . substr($referer, 0, 200) . ' (host ' . $host . ')');
+            self::bloquear(403, 'ERR_FORBIDDEN: Invalid request origin');
+        }
     }
     
     /**
