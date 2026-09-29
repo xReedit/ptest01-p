@@ -667,16 +667,40 @@
             $postBody = json_decode($data);
 
 
-            // Generar un ID único
-            $uniqueId = uniqid();
+            // Antes era substr(uniqid(), 0, 10), que es la hora en hexadecimal:
+            // dos cajeros del mismo segundo se pisaban, y cualquiera podia
+            // adivinar el link de otro local -- este endpoint no pide clave.
+            $shortUniqueId = substr(bin2hex(random_bytes(8)), 0, 10);
 
-            // Truncar el ID a 6 caracteres
-            $shortUniqueId = substr($uniqueId, 0, 10);
+            // Con `prepare`, NO interpolado. El motivo lo escribe una persona
+            // y un apostrofe rompia el INSERT; peor todavia, `xConsulta_NoReturn`
+            // no mira si la consulta fallo, asi que el POS respondia `success`
+            // y le entregaba al cajero un link que no existia en ningun lado.
+            $guardado = false;
+            try {
+                $bd->prepare("insert into permiso_remoto(idsede, idusuario_solicita, idusuario_admin, fecha, hora, data, link)
+                    values (?, ?, ?, curdate(), curtime(), ?, ?)");
+                $bd->execute(array(
+                    (int)$g_idsede,
+                    (int)$g_us,
+                    (int)$postBody->idusuario_admin,
+                    $data,
+                    $shortUniqueId
+                ));
+                $guardado = $bd->lastInsertId() > 0;
+            } catch (Exception $e) {
+                error_log('permiso remoto, no se pudo guardar: ' . $e->getMessage());
+                $guardado = false;
+            }
 
-            $sql="insert into permiso_remoto(idsede, idusuario_solicita, idusuario_admin, fecha, hora, data, link) 
-                values ($g_idsede, $g_us, $postBody->idusuario_admin, curdate(), curtime(), '$data', '$shortUniqueId')";  
-            $bd->xConsulta_NoReturn($sql);     
-            
+            if (!$guardado) {
+                echo json_encode(array(
+                    'success' => false,
+                    'message' => 'No se pudo registrar la solicitud. Intentalo de nuevo.'
+                ));
+                break;
+            }
+
             echo json_encode(array('success' => true, 'link' => $shortUniqueId));
             break;
         case 4001: // trae la lista de solicitudes atendidas
