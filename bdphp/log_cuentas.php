@@ -110,6 +110,24 @@
 					LIMIT 500", array($g_ido, $g_idsede, CTA_TIPO_PAGO_CREDITO, $ver === 'pendientes' ? 0 : 1, $idprov, $idprov));
 				jsonOut(true, $r);
 			}
+			// Historial de pagos hechos a proveedores (todas las compras), el mas reciente primero
+			case 'pagar-pagos': {
+				$b = leerBody();
+				$idprov = isset($b['idproveedor']) ? (int)$b['idproveedor'] : 0;
+				$r = filas($bd, "SELECT pc.idcompra_pago_cuenta, pc.idcompra, pc.fecha, DATE_FORMAT(pc.fecha_hora, '%d/%m/%Y %H:%i') AS fecha_hora,
+						(pc.importe + 0) AS importe, IFNULL(tp.descripcion, '') AS tipo_pago, IFNULL(u.usuario, '') AS usuario, IFNULL(pc.nota, '') AS nota,
+						c.f_compra, c.comprobante, c.idproveedor, IFNULL(p.descripcion, '') AS proveedor, IFNULL(p.dni, '') AS ruc
+					FROM compra_pago_cuenta pc
+					JOIN compra c ON c.idcompra = pc.idcompra
+					LEFT JOIN proveedor p ON p.idproveedor = c.idproveedor
+					LEFT JOIN tipo_pago tp ON tp.idtipo_pago = pc.idtipo_pago
+					LEFT JOIN usuario u ON u.idusuario = pc.idusuario
+					WHERE c.idorg = ? AND c.idsede = ? AND c.idtipo_pago = ? AND c.estado = 0 AND IFNULL(pc.estado, 0) = 0
+					  AND (? = 0 OR c.idproveedor = ?)
+					ORDER BY pc.idcompra_pago_cuenta DESC
+					LIMIT 500", array($g_ido, $g_idsede, CTA_TIPO_PAGO_CREDITO, $idprov, $idprov));
+				jsonOut(true, $r);
+			}
 			case 'pagar-detalle': {
 				$b = leerBody();
 				$c = compraCredito($bd, isset($b['idcompra']) ? (int)$b['idcompra'] : 0, $g_idsede);
@@ -155,6 +173,22 @@
 					WHERE rp.idsede = ? AND rp.estado = 0 AND rpd.idtipo_pago = ? AND IFNULL(rpd.estado, 0) = 0 AND rp.idcliente > 0
 					GROUP BY rp.idcliente" . ($ver === 'deben' ? " HAVING debe > 0.009" : "") . "
 					ORDER BY debe DESC, cliente", array($g_idsede, CTA_TIPO_PAGO_CREDITO));
+				jsonOut(true, $r);
+			}
+			// Historial de cobros a clientes de los ultimos 2 meses, el mas reciente primero
+			case 'cobrar-cobros': {
+				$r = filas($bd, "SELECT d.idcliente_paga_credito_detalle AS idcobro, cc.idcliente, d.fecha_hora, (d.importe + 0) AS importe,
+						IFNULL(tp.descripcion, '') AS tipo_pago, IFNULL(u.usuario, '') AS usuario,
+						IFNULL(c.nombres, '(cliente eliminado)') AS cliente, IFNULL(c.ruc, '') AS doc, IFNULL(c.telefono, '') AS telefono
+					FROM cliente_paga_credito_detalle d
+					JOIN cliente_paga_credito cc ON cc.idcliente_paga_credito = d.idcliente_paga_credito
+					LEFT JOIN cliente c ON c.idcliente = cc.idcliente
+					LEFT JOIN tipo_pago tp ON tp.idtipo_pago = d.idtipo_pago
+					LEFT JOIN usuario u ON u.idusuario = d.idusuario
+					WHERE cc.idsede = ? AND IFNULL(d.estado, '0') = '0'
+					  AND STR_TO_DATE(LEFT(d.fecha_hora, 10), '%Y-%m-%d') >= CURDATE() - INTERVAL 2 MONTH
+					ORDER BY d.idcliente_paga_credito_detalle DESC
+					LIMIT 500", array($g_idsede));
 				jsonOut(true, $r);
 			}
 			case 'cobrar-detalle': {
