@@ -29,6 +29,13 @@
 	$fecha_now = date("d/m/Y");
 	$hora_now = date("H:i:s");
 
+	// Ops que el guard deja pasar sin revisar la sesion: si hay una sesion abierta de una sede
+	// bloqueada o dada de baja, se corta aqui tambien (423 -> el cliente vuelve al login).
+	if (isset($_SESSION['idusuario'], $_SESSION['idsede']) && in_array((int)$_GET['op'], array(-1112, -104, 102), true)) {
+		require_once __DIR__ . '/_sede_estado.php';
+		if (!xSedeHabilitada($_SESSION['idsede'], $bd->bd)) { xSedeBloqueadaSalir(); }
+	}
+
 	switch($_GET['op'])
 	{
 		case 102://verificar log
@@ -389,7 +396,8 @@
 				
 				// print $_u." -> ".$_p;
 
-				if($bd->loguear_us($_u,$_p,$result) == 1){
+				$_rptLogin = $bd->loguear_us($_u,$_p,$result);
+				if($_rptLogin == 1){
 						$obj = json_decode($result);
 
 						if ( !$reconex ) { // si no es reconexion chapa los datos del result query
@@ -422,7 +430,10 @@
 						//session_start();
 						echo 1;
 					}else{
-						echo 0;
+						// sede bloqueada o dada de baja: la sesion anterior NO sigue viva
+						// (un 0 en reconexion puede ser un corte de BD: ahi no se cierra la sesion, como antes)
+						if ($_rptLogin == 2) { $_SESSION = array(); session_destroy(); }
+						echo $_rptLogin == 2 ? 2 : 0; // 2 = sede bloqueada o dada de baja ("Servicio suspendido")
 					}
 			//};
 			break;
@@ -440,6 +451,13 @@
 				http_response_code(403);
 				header('Content-Type: application/json');
 				echo json_encode(array('success' => false, 'error' => 'ERR_FORBIDDEN: sede de otra organizacion'));
+				exit;
+			}
+			require_once __DIR__ . '/_sede_estado.php';
+			if (!xSedeHabilitadaBD($bd->bd, $_sedeDest)) { // no se puede pasar a una sede bloqueada o dada de baja
+				http_response_code(423);
+				header('Content-Type: application/json');
+				echo json_encode(array('success' => false, 'error' => 'ERR_SEDE_BLOQUEADA', 'code' => 423, 'mensaje' => SEDE_BLOQUEADA_MSJ));
 				exit;
 			}
 			if (!empty($_u = $_POST['o'])) {$_SESSION['idorg'] = $_POST['o'];}
@@ -3593,6 +3611,9 @@
 			// 	group by rp.idregistro_pago
 			// 	order by rp.idregistro_pago desc";
 
+			// solo lee la sesion (ya copiada en $g_*): soltar el candado para que esta consulta
+			// pesada no deje colgadas las demas peticiones del usuario (p. ej. op=-108 del router)
+			session_write_close();
 			//100521
 			$sql = "call procedure_registro_pagos_20001($g_idsede, '$fecha', $g_us)";
 				
@@ -3611,6 +3632,7 @@
 		case 2000101:// historial de ventas -detallado
 			$pagination = $_POST['pagination'];
 			$fecha = $pagination['pageFecha'];
+			session_write_close(); // ver op 20001
 			$sql = "call procedure_reporte_ventas_diario($g_idsede, '$fecha', $g_us)";
 			$bd->xConsulta($sql);
 			break;
@@ -4093,6 +4115,9 @@ function xContadorTieneSede($bd, $idusuario, $idorg, $idsede) {
 // o si es contador y la tiene asignada. Si no, la suya (igual que un login normal).
 function xSedeReconexPermitida($bd, $u, $idOrg, $idSede) {
 	$propia = array((string)$u->idorg, (string)$u->idsede);
+	// la sede pedida debe estar habilitada (no bloqueada ni de baja); si no, vuelve a la suya (ya validada en el login)
+	require_once __DIR__ . '/_sede_estado.php';
+	if (!xSedeHabilitadaBD($bd->bd, $idSede)) { return $propia; }
 	if ((string)$idOrg === $propia[0] && (string)$idSede === $propia[1]) { return $propia; }
 	if ((int)$u->rol === 1 && (string)$idOrg === $propia[0] && xSedeDeOrg($bd, $idSede, $idOrg) !== null) {
 		return array((string)$idOrg, (string)(int)$idSede);

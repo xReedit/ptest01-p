@@ -76,6 +76,12 @@ class SecurityGuard {
         if (!isset($_SESSION['idusuario']) || !isset($_SESSION['idsede'])) {
             self::bloquear(401, 'ERR_UNAUTHORIZED: Authentication required');
         }
+
+        // Sede bloqueada o dada de baja: se corta la sesión (se revisa como máximo cada 60 s).
+        require_once __DIR__ . '/_sede_estado.php';
+        if (!xSedeHabilitada($_SESSION['idsede'])) {
+            xSedeBloqueadaSalir();
+        }
     }
     
     /**

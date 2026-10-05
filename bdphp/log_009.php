@@ -714,6 +714,8 @@
             $listAreas = $postBody->listAreas;
             
             try {
+                // las areas se re-insertan (idarea_mesa cambia): se arrastran las reglas de impresora por titulo
+                $reglasPorTitulo = xReglasImpresoraPorTitulo($bd, $g_idsede, '');
                 $sql = "UPDATE area_mesa set estado='1' WHERE idsede = $g_idsede";
                 $bd->xConsulta_NoReturn($sql);
                 
@@ -721,12 +723,13 @@
                 $sql = "UPDATE sede SET mesas_alfanumerica = '0' WHERE idsede = $g_idsede";
                 $bd->xConsulta_NoReturn($sql);
     
-                $bd->prepare("INSERT INTO area_mesa(idsede, idorg, descripcion, idimpresora_precuenta, titulo, num_mesa_ini, num_mesa_fin) VALUES ($g_idsede, $g_ido, '', 0, ?, ?, ?)");
+                $bd->prepare("INSERT INTO area_mesa(idsede, idorg, descripcion, idimpresora_precuenta, titulo, num_mesa_ini, num_mesa_fin, reglas_impresora) VALUES ($g_idsede, $g_ido, '', 0, ?, ?, ?, ?)");
                 foreach ($listAreas as $item) {                    
                     $bd->execute([
                         $item->titulo,
                         $item->desde,
-                        $item->hasta
+                        $item->hasta,
+                        isset($reglasPorTitulo[$item->titulo]) ? $reglasPorTitulo[$item->titulo] : ''
                     ]);                
                 }
 
@@ -748,10 +751,10 @@
             
             if ($es_alfanumerica) {
                 // Cargar áreas alfanuméricas
-                $sql="select idarea_mesa, titulo, REPLACE(titulo, ' ', '') AS title, descripcion, num_mesa_ini as desde, num_mesa_fin as hasta, prefijo_mesa as prefijo, idimpresora_precuenta from area_mesa where idsede = $g_idsede and estado = 0 and tipo_mesa = 'alfanumerica'";
+                $sql="select idarea_mesa, titulo, REPLACE(titulo, ' ', '') AS title, descripcion, num_mesa_ini as desde, num_mesa_fin as hasta, prefijo_mesa as prefijo, idimpresora_precuenta, reglas_impresora from area_mesa where idsede = $g_idsede and estado = 0 and tipo_mesa = 'alfanumerica'";
             } else {
                 // Cargar áreas numéricas
-                $sql="select idarea_mesa, titulo, REPLACE(titulo, ' ', '') AS title, descripcion, num_mesa_ini as desde, num_mesa_fin as hasta, idimpresora_precuenta from area_mesa where idsede = $g_idsede and estado = 0 and (tipo_mesa IS NULL OR tipo_mesa = '' OR tipo_mesa = 'numerica')";
+                $sql="select idarea_mesa, titulo, REPLACE(titulo, ' ', '') AS title, descripcion, num_mesa_ini as desde, num_mesa_fin as hasta, idimpresora_precuenta, reglas_impresora from area_mesa where idsede = $g_idsede and estado = 0 and (tipo_mesa IS NULL OR tipo_mesa = '' OR tipo_mesa = 'numerica')";
             }
             $bd->xConsulta($sql);
             break;
@@ -761,6 +764,7 @@
             
             try {
                 // Marcar como eliminadas las áreas alfanuméricas existentes
+                $reglasPorTitulo = xReglasImpresoraPorTitulo($bd, $g_idsede, 'alfanumerica');
                 $sql = "UPDATE area_mesa set estado='1' WHERE idsede = $g_idsede AND tipo_mesa = 'alfanumerica'";
                 $bd->xConsulta_NoReturn($sql);
                 
@@ -769,13 +773,14 @@
                 $bd->xConsulta_NoReturn($sql);
                 
                 // Insertar nuevas áreas alfanuméricas
-                $bd->prepare("INSERT INTO area_mesa(idsede, idorg, descripcion, idimpresora_precuenta, titulo, num_mesa_ini, num_mesa_fin, tipo_mesa, prefijo_mesa) VALUES ($g_idsede, $g_ido, '', 0, ?, ?, ?, 'alfanumerica', ?)");
+                $bd->prepare("INSERT INTO area_mesa(idsede, idorg, descripcion, idimpresora_precuenta, titulo, num_mesa_ini, num_mesa_fin, tipo_mesa, prefijo_mesa, reglas_impresora) VALUES ($g_idsede, $g_ido, '', 0, ?, ?, ?, 'alfanumerica', ?, ?)");
                 foreach ($listAreas as $item) {                    
                     $bd->execute([
                         $item->titulo,
                         $item->desde,
                         $item->hasta,
-                        $item->prefijo
+                        $item->prefijo,
+                        isset($reglasPorTitulo[$item->titulo]) ? $reglasPorTitulo[$item->titulo] : ''
                     ]);                
                 }
 
@@ -790,9 +795,34 @@
             
             break;
         case 5101: // load areas alfanumericas
-            $sql="select idarea_mesa, titulo, REPLACE(titulo, ' ', '') AS title, descripcion, num_mesa_ini as desde, num_mesa_fin as hasta, prefijo_mesa as prefijo, idimpresora_precuenta from area_mesa where idsede = $g_idsede and estado = 0 and tipo_mesa = 'alfanumerica'";
+            $sql="select idarea_mesa, titulo, REPLACE(titulo, ' ', '') AS title, descripcion, num_mesa_ini as desde, num_mesa_fin as hasta, prefijo_mesa as prefijo, idimpresora_precuenta, reglas_impresora from area_mesa where idsede = $g_idsede and estado = 0 and tipo_mesa = 'alfanumerica'";
             $bd->xConsulta($sql);
             break;        
+        case 52: // guardar reglas de impresora por area. body: listReglas [{idarea_mesa, reglas:[{o,d}]}]
+            $postBody = json_decode(file_get_contents('php://input'));
+            $listReglas = isset($postBody->listReglas) && is_array($postBody->listReglas) ? $postBody->listReglas : array();
+            try {
+                $bd->prepare("UPDATE area_mesa SET reglas_impresora = ? WHERE idarea_mesa = ? AND idsede = $g_idsede AND estado = 0");
+                foreach ($listReglas as $item) {
+                    // op 50/51 re-insertan las areas: un idarea_mesa viejo ya no esta vigente
+                    if (intval($bd->xDevolverUnDato("SELECT COUNT(*) FROM area_mesa WHERE idarea_mesa = ".intval($item->idarea_mesa)." AND idsede = $g_idsede AND estado = 0")) === 0) {
+                        echo json_encode(array('success' => false, 'error' => 'area_no_vigente'));
+                        exit;
+                    }
+                    $reglas = array();
+                    foreach ((isset($item->reglas) && is_array($item->reglas) ? $item->reglas : array()) as $r) {
+                        $o = intval($r->o); $d = intval($r->d);
+                        if ($o > 0 && $d > 0 && $o !== $d) { $reglas[] = array('o' => $o, 'd' => $d); }
+                    }
+                    $bd->execute([count($reglas) ? json_encode($reglas) : '', intval($item->idarea_mesa)]);
+                }
+                $bd->xCommit();
+                echo json_encode(array('success' => true));
+            }
+            catch (Exception $e) {
+                echo json_encode(array('success' => false, 'error' => $e->getMessage()));
+            }
+            break;
         case 60: // cupones
             $postBody = json_decode(file_get_contents('php://input'));
 
@@ -1290,4 +1320,13 @@
             $bd->xConsulta($sql);
             break;
     }
+
+// reglas de impresora vigentes por titulo de area (para arrastrarlas cuando op 50/51 re-insertan las areas)
+function xReglasImpresoraPorTitulo($bd, $idsede, $tipo_mesa) {
+	$filtroTipo = $tipo_mesa === 'alfanumerica' ? " AND tipo_mesa = 'alfanumerica'" : "";
+	$rows = json_decode($bd->xConsulta3("SELECT titulo, reglas_impresora FROM area_mesa WHERE idsede = ".intval($idsede)." AND estado = 0 AND reglas_impresora <> ''".$filtroTipo));
+	$map = array();
+	foreach (($rows ?: array()) as $r) { $map[$r->titulo] = $r->reglas_impresora; }
+	return $map;
+}
 ?>    
