@@ -26,6 +26,7 @@ class SecurityGuard {
                 if (session_status() === PHP_SESSION_NONE) {
                     session_start();
                 }
+                self::soltarSesionSiSoloLee();
                 return; // Permitir sin verificar nada
             }
         }
@@ -36,6 +37,28 @@ class SecurityGuard {
         // 2. Verificar que el usuario esté autenticado (si se requiere)
         if ($verificarSesion) {
             self::verificarSesion();
+        }
+        self::soltarSesionSiSoloLee();
+    }
+
+    /**
+     * PHP bloquea la sesion mientras dura la peticion: si una consulta tarda, TODAS las demas
+     * peticiones del mismo usuario (otras pestañas, el router, la caja) esperan en fila.
+     * Estos archivos solo LEEN $_SESSION (sigue disponible en memoria tras cerrarla), asi que
+     * se suelta el candado apenas se valida el acceso. NO agregar aqui un archivo que escriba
+     * $_SESSION (log.php, log_004, log_compras, log_cuentas, log_pos_op): lo escrito se perderia.
+     */
+    private static function soltarSesionSiSoloLee() {
+        static $soloLeen = array(
+            'log_001.php', 'log_002.php', 'log_003.php', 'log_005.php', 'log_007.php', 'log_008.php',
+            'log_009.php', 'log_010.php', 'log_011.php', 'log_100.php', 'log_asistencia.php',
+            'log_carta_export.php', 'log_chart.php', 'log_componentes.php', 'log_costeo.php',
+            'log_encuesta.php', 'log_inventario.php', 'log_run.php', 'log_soap.php',
+            'log_subrecetas.php', 'log_suscripcion.php', 'log_tracker.php'
+        );
+        if (session_status() === PHP_SESSION_ACTIVE
+            && in_array(basename($_SERVER['SCRIPT_FILENAME'] ?? ''), $soloLeen, true)) {
+            session_write_close();
         }
     }
     
@@ -77,7 +100,7 @@ class SecurityGuard {
             self::bloquear(401, 'ERR_UNAUTHORIZED: Authentication required');
         }
 
-        // Sede bloqueada o dada de baja: se corta la sesión (se revisa como máximo cada 60 s).
+        // Sede bloqueada o dada de baja: se corta la sesión (se revisa como máximo cada hora, ver SEDE_BLOQUEADA_TTL).
         require_once __DIR__ . '/_sede_estado.php';
         if (!xSedeHabilitada($_SESSION['idsede'])) {
             xSedeBloqueadaSalir();

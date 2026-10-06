@@ -6,7 +6,7 @@
 if (!function_exists('xSedeHabilitada')) {
 
 define('SEDE_BLOQUEADA_MSJ', 'Servicio suspendido para esta sede. Comunícate con Papaya.');
-define('SEDE_BLOQUEADA_TTL', 60); // segundos que se recuerda el resultado en la sesión
+define('SEDE_BLOQUEADA_TTL', 3600); // segundos que se recuerda el resultado en la sesión (1 h: +400 sedes / +1600 usuarios)
 
 // $mysqli: conexión mysqli ya abierta (p. ej. $bd->bd). Sin conexión se abre la de siempre (ManejoBD).
 function xSedeHabilitadaBD($mysqli, $idsede) {
