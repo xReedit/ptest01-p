@@ -47,6 +47,13 @@ use function PHPSTORM_META\sql_injection_subst;
             }
             $admin = $pb('idusuario_admin'); $tpAntes = $pb('idtipo_pago_before'); $tpDespues = $pb('idtipo_pago_after');
             $importe = $pb('importe'); $idrp = $pb('idregistro_pago'); $idrpd = $pb('idregistro_pago_detalle'); $idpr = $pb('idpermiso_remoto');
+            // cargo a habitacion (17): el cargo vive en el folio del hotel; cambiar la forma de pago aqui lo desincroniza.
+            // Para corregirlo se anula el pago (anula tambien el cargo en el hotel) y se cobra de nuevo.
+            $tpActual = $idrpd !== null ? $bd->xDevolverUnDato("select idtipo_pago from registro_pago_detalle where idregistro_pago_detalle = $idrpd") : null;
+            if ((string)$tpDespues === '17' || (string)$tpActual === '17') {
+                echo json_encode(array('success' => false, 'message' => 'El cargo a habitacion no se puede cambiar de forma de pago: anula el pago y vuelve a cobrarlo.'));
+                break;
+            }
             if ($tpAntes !== null && $tpDespues !== null && $importe !== null && $idrp !== null && $idrpd !== null) {
             $sql = "insert into cambios_tipo_pago (idusuario_admin, idusuario_solicita, fecha, hora, idsede, idtipo_pago_before, idtipo_pago_after, importe, idregistro_pago, idregistro_pago_detalle)
                     values ($admin, $g_us, curdate(), curtime(), $g_idsede, $tpAntes, $tpDespues, $importe, $idrp, $idrpd)";

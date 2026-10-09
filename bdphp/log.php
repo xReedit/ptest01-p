@@ -2376,6 +2376,10 @@
 				if ($idregistro_pago_desde_h !== null) {
 				$sql_historial_rp="update registro_pago set estado=1, motivo_anular='".$motivo_anular."', idusuario_permiso=".$u_sup." where idregistro_pago=".$idregistro_pago_desde_h."; ";
 				$bd->xConsulta_NoReturn($sql_historial_rp);
+				// cargo a habitacion (forma de pago 17): anula tambien el cargo en el hotel. Best-effort: si el
+				// huesped ya hizo checkout (FOLIO_CERRADO) el pago se anula igual y se avisa para resolverlo en recepcion.
+				require_once __DIR__ . '/hotel_cargo.lib.php';
+				$rpt_hotel_anular = hotelAnularPorRegistroPago($bd, $g_idsede, $idregistro_pago_desde_h, isset($_POST['xMotivo']) ? $_POST['xMotivo'] : 'Pago anulado en el POS');
 				}
 			}
 
@@ -2397,6 +2401,7 @@
 			
 			// $bd->xMultiConsulta($sql_todos.$sql_change_de.$sql_historial_rp);
 			// echo json_encode(array('ok' => $isRecuperarStock, 'sql_recuperar' => $sql_recuperar, 'sqlpedido_borrado' => $sqlpedido_borrado));
+			if (!empty($rpt_hotel_anular)) { echo json_encode(array('ok' => true, 'hotel' => $rpt_hotel_anular)); break; }
 			echo json_encode(array('ok' => true));
 
 
@@ -2753,6 +2758,17 @@
 					INNER JOIN cliente AS c using(idcliente)
 				WHERE (rp.idorg=".$g_ido." AND rp.idsede=".$g_idsede." AND rp.idusuario=".$_SESSION['idusuario'].") AND rpd.idtipo_pago=3 AND (rp.estado=0 AND rpd.estado=0) AND rp.cierre=0
 				GROUP BY rp.idcliente
+			";
+			$bd->xConsulta($sql);
+			break;
+		case 70201:// cargos a habitacion (forma de pago 17): no es efectivo, va al folio del hotel. Igual que 702 pero por habitacion
+			$sql="
+				SELECT CONCAT('HAB. ', IFNULL(rph.habitacion, '?'), ' - ', IFNULL(rph.huesped, '')) AS descripcion, '' as t1, count(rpd.idregistro_pago) as t2, format(sum(rpd.importe),2) AS t3
+					FROM registro_pago AS rp
+					INNER JOIN registro_pago_detalle AS rpd using(idregistro_pago)
+					LEFT JOIN registro_pago_hotel AS rph ON rph.idregistro_pago = rp.idregistro_pago AND rph.idsede = rp.idsede AND rph.estado = 'CARGADO'
+				WHERE (rp.idorg=".$g_ido." AND rp.idsede=".$g_idsede." AND rp.idusuario=".$_SESSION['idusuario'].") AND rpd.idtipo_pago=17 AND (rp.estado=0 AND rpd.estado=0) AND rp.cierre=0
+				GROUP BY rph.habitacion, rph.huesped
 			";
 			$bd->xConsulta($sql);
 			break;
@@ -3915,7 +3931,9 @@
 			$bd->xConsulta($sql);
 			break;	
 		case 2109:// despachar todos los pedidos
-			$sql="update pedido set despachado=1 where (idorg=".$g_ido." and idsede=".$g_idsede.") and despachado=0";
+			// sin idorg: idsede ya lo implica y asi usa pedido_sede_despachado_IDX (migracion 069)
+			// en vez de recorrer todos los pedidos de la sede con pedido_idorg_IDX (54 s bloqueando la sede).
+			$sql="update pedido set despachado=1 where idsede=".$g_idsede." and despachado=0";
 			$bd->xConsulta($sql);
 			break;
 		case 2110:// importe costo adicional

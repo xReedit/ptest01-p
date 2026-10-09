@@ -272,10 +272,13 @@
             $items = json_decode(json_encode($_POST["items"]));
             $mozo_num_personas = in_array((string)$items->mozo_num_personas, array('0','1','2'), true) ? (string)$items->mozo_num_personas : '1';
             $mozo_aviso_plato_listo = (string)$items->mozo_aviso_plato_listo === '0' ? '0' : '1'; // push al mozo desde zona de despacho (migracion 022)
+            // pedido por confirmar de la carta QR (migracion 069, migraciones/pendientes-prod)
+            $pwa_requiere_confirmacion = isset($items->pwa_requiere_confirmacion) && (string)$items->pwa_requiere_confirmacion === '1' ? '1' : '0';
+            $pwa_confirmacion_exige_pago = $pwa_requiere_confirmacion === '1' && isset($items->pwa_confirmacion_exige_pago) && (string)$items->pwa_confirmacion_exige_pago === '1' ? '1' : '0';
             // insertar o actualizar segun la columna idsede 
-            $sql = "insert into sede_opciones (idsede, switch2, num_intentos_cierre, update_stock_after, hora_cierre_dia, mozo_num_personas, mozo_aviso_plato_listo)
-                    values ($g_idsede, $items->switch2, $items->num_intentos_cierre, $items->update_stock_after, '$items->hora_cierre', '$mozo_num_personas', '$mozo_aviso_plato_listo')
-                    on duplicate key update switch2 = $items->switch2, num_intentos_cierre = $items->num_intentos_cierre, update_stock_after = $items->update_stock_after, hora_cierre_dia = '$items->hora_cierre', mozo_num_personas = '$mozo_num_personas', mozo_aviso_plato_listo = '$mozo_aviso_plato_listo'";
+            $sql = "insert into sede_opciones (idsede, switch2, num_intentos_cierre, update_stock_after, hora_cierre_dia, mozo_num_personas, mozo_aviso_plato_listo, pwa_requiere_confirmacion, pwa_confirmacion_exige_pago)
+                    values ($g_idsede, $items->switch2, $items->num_intentos_cierre, $items->update_stock_after, '$items->hora_cierre', '$mozo_num_personas', '$mozo_aviso_plato_listo', '$pwa_requiere_confirmacion', '$pwa_confirmacion_exige_pago')
+                    on duplicate key update switch2 = $items->switch2, num_intentos_cierre = $items->num_intentos_cierre, update_stock_after = $items->update_stock_after, hora_cierre_dia = '$items->hora_cierre', mozo_num_personas = '$mozo_num_personas', mozo_aviso_plato_listo = '$mozo_aviso_plato_listo', pwa_requiere_confirmacion = '$pwa_requiere_confirmacion', pwa_confirmacion_exige_pago = '$pwa_confirmacion_exige_pago'";
             
             $bd->xConsulta($sql);
             break;
