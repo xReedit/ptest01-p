@@ -76,7 +76,7 @@
 					'tipos_pago' => filas($bd, "SELECT idtipo_pago, descripcion FROM tipo_pago WHERE estado = 0 AND visible = '0' ORDER BY idtipo_pago"),
 					'proveedores' => filas($bd, "SELECT idproveedor, descripcion, dni, telefono FROM proveedor WHERE idorg = ? AND idsede = ? AND estado = 0 ORDER BY descripcion", array($g_ido, $g_idsede)),
 					'familias' => filas($bd, "SELECT idproducto_familia, descripcion FROM producto_familia WHERE idorg = ? AND idsede = ? AND estado = 0 ORDER BY descripcion", array($g_ido, $g_idsede)),
-					'unidades' => filas($bd, "SELECT idunidad_medida, unidad, abreviatura FROM unidad_medida WHERE estado = 0 ORDER BY unidad"),
+					'unidades' => filas($bd, "SELECT idunidad_medida, unidad, abreviatura FROM unidad_medida WHERE estado = 0 AND (idorg IS NULL OR idorg = ?) ORDER BY unidad", array($g_ido)),
 					'credito' => COMPRA_TIPO_PAGO_CREDITO
 				));
 			}
@@ -119,7 +119,7 @@
 				$und = isset($b['idunidad_kardex']) ? (int)$b['idunidad_kardex'] : 0;
 				if ($nombre === '') { jsonOut(false, null, 'Escribe el nombre del producto'); }
 				if ($famNombre === '') { jsonOut(false, null, 'Escribe la familia del producto'); }
-				if ($und > 0 && !filas($bd, "SELECT idunidad_medida FROM unidad_medida WHERE idunidad_medida = ? AND estado = 0", array($und))) {
+				if ($und > 0 && !filas($bd, "SELECT idunidad_medida FROM unidad_medida WHERE idunidad_medida = ? AND estado = 0 AND (idorg IS NULL OR idorg = ?)", array($und, $g_ido))) {
 					jsonOut(false, null, 'Unidad no valida');
 				}
 				$ex = filas($bd, "SELECT idproducto FROM producto WHERE idorg = ? AND idsede = ? AND estado = 0 AND UPPER(descripcion) = ? LIMIT 1",

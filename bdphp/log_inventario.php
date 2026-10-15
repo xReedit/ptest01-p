@@ -6,6 +6,7 @@
 	header('Content-Type: application/json;charset=utf-8');
 	header('Cache-Control: no-cache');
 	include "ManejoBD.php";
+	require_once __DIR__ . '/_mermas.php';
 	$bd = new xManejoBD("restobar");
 
 	$op = isset($_GET['op']) ? $_GET['op'] : (isset($_POST['op']) ? $_POST['op'] : null);
@@ -42,6 +43,10 @@
 	}
 	function esAdmin() {
 		return (int)(isset($_SESSION['rol']) ? $_SESSION['rol'] : 0) === 1;
+	}
+	// Mermas bajan stock: administrador o usuario con la opcion Inventario (B7). acc a veces viene sin coma final.
+	function puedeMermas() {
+		return esAdmin() || strpos(',' . str_replace(' ', '', isset($_SESSION['acc']) ? (string)$_SESSION['acc'] : '') . ',', ',B7,') !== false;
 	}
 	function conteoDeSede($bd, $id, $idsede) {
 		$r = filas($bd, "SELECT * FROM inventario_conteo WHERE idinventario_conteo = ? AND idsede = ?", array($id, $idsede));
@@ -274,18 +279,18 @@
 				$b = leerBody();
 				$idalmacen = isset($b['idalmacen']) ? (int)$b['idalmacen'] : 0;
 				if ($idalmacen > 0) {
+					// ultima compra por producto: subconsulta por idx_php_costeo (idproducto, estado, id) hacia atras, 1 fila.
+					// (antes: derivada MAX(id) GROUP BY sobre TODA la tabla, de todas las orgs, en cada llamada)
+					$ultCompra = "(SELECT CAST(php.precio AS DECIMAL(14,4)) FROM producto_historial_precio php WHERE php.idproducto = p.idproducto AND php.estado = 0 ORDER BY php.idproducto_historial_precio DESC LIMIT 1)";
 					$filasR = filas($bd, "SELECT p.idproducto AS idp, p.descripcion, pf.descripcion AS familia, um.abreviatura AS unidad,
 							ps.stock, IFNULL(CAST(p.stock_minimo AS DECIMAL(14,4)), 0) AS stock_minimo,
-							CASE WHEN IFNULL(ps.costo_promedio,0) > 0 THEN ps.costo_promedio WHEN IFNULL(c.compra,0) > 0 THEN c.compra ELSE IFNULL(CAST(p.precio AS DECIMAL(14,4)), 0) END AS costo_unit,
-							CASE WHEN IFNULL(ps.costo_promedio,0) > 0 THEN 'promedio' WHEN IFNULL(c.compra,0) > 0 THEN 'compra' WHEN IFNULL(CAST(p.precio AS DECIMAL(14,4)), 0) > 0 THEN 'precio' ELSE 'ninguno' END AS costo_origen
+							CASE WHEN IFNULL(ps.costo_promedio,0) > 0 THEN ps.costo_promedio WHEN IFNULL($ultCompra,0) > 0 THEN $ultCompra ELSE IFNULL(CAST(p.precio AS DECIMAL(14,4)), 0) END AS costo_unit,
+							CASE WHEN IFNULL(ps.costo_promedio,0) > 0 THEN 'promedio' WHEN IFNULL($ultCompra,0) > 0 THEN 'compra' WHEN IFNULL(CAST(p.precio AS DECIMAL(14,4)), 0) > 0 THEN 'precio' ELSE 'ninguno' END AS costo_origen
 						FROM producto p
 						JOIN producto_stock ps ON ps.idproducto = p.idproducto AND ps.idalmacen = ? AND ps.estado = 0
 						JOIN almacen a ON a.idalmacen = ps.idalmacen AND a.idsede = ?
 						LEFT JOIN producto_familia pf ON pf.idproducto_familia = p.idproducto_familia
 						LEFT JOIN unidad_medida um ON um.idunidad_medida = p.idunidad_kardex
-						LEFT JOIN (SELECT php.idproducto, CAST(php.precio AS DECIMAL(14,4)) AS compra FROM producto_historial_precio php
-									JOIN (SELECT idproducto, MAX(idproducto_historial_precio) AS mx FROM producto_historial_precio WHERE estado = 0 GROUP BY idproducto) u ON u.mx = php.idproducto_historial_precio
-									WHERE php.estado = 0) c ON c.idproducto = p.idproducto
 						WHERE p.idsede = ? AND p.estado = 0
 						ORDER BY pf.descripcion, p.descripcion", array($idalmacen, $g_idsede, $g_idsede));
 				} else {
@@ -343,7 +348,10 @@
 				$desde = (isset($b['desde']) && is_scalar($b['desde']) && preg_match('/^\d{4}-\d{2}-\d{2}$/', (string)$b['desde'])) ? (string)$b['desde'] : date('Y-m-d', strtotime('-30 days'));
 				$hasta = (isset($b['hasta']) && is_scalar($b['hasta']) && preg_match('/^\d{4}-\d{2}-\d{2}$/', (string)$b['hasta'])) ? (string)$b['hasta'] : date('Y-m-d');
 				if ($idp <= 0) { jsonOut(false, null, 'Selecciona un producto o porcion.'); }
-				// ponytail: fecha es char en el legacy con dos formatos ('Y-m-d' y 'Y-m-d H:i:s'); LEFT(fecha,10) cubre ambos.
+				// rango de texto sin funciones sobre la columna (fecha 'Y-m-d' o 'Y-m-d H:i:s', fecha_hora 'Y-m-d H:i:s'):
+				// [desde, hasta+1 dia) cubre ambos formatos y deja usar indices (almacen_ie ix_aie_sede_fecha, migracion 072)
+				$hastaSig = date('Y-m-d', strtotime($hasta . ' +1 day'));
+				// ponytail: fecha es char en el legacy con dos formatos ('Y-m-d' y 'Y-m-d H:i:s'); el rango de texto cubre ambos.
 				// Clave de orden intradia: hora es texto libre ('11:59 pm', '13:07:28', 'POR DIA'), asi que ordenar
 				// por la cadena pone 12:09 am encima de 11:59 pm. Se normaliza a TIME probando 12h, luego 24h y,
 				// si no, la hora embebida en fecha; lo que no parsea cae a 00:00:00 (ultimo del dia en DESC).
@@ -363,7 +371,7 @@
 							CAST(h.stock_total AS DECIMAL(14,4)) AS stock_total, " . $sqlOrden . "
 						FROM producto_historial h LEFT JOIN usuario u ON u.idusuario = h.idusuario
 						WHERE h.idproducto = ? AND h.idsede = ? AND (h.idalmacen = ? OR h.idalmacen IS NULL OR h.idalmacen = 0)
-						  AND IFNULL(h.estado,'0') <> '1' AND LEFT(h.fecha,10) BETWEEN ? AND ?
+						  AND IFNULL(h.estado,'0') <> '1' AND h.fecha >= ? AND h.fecha < ?
 						UNION ALL
 						SELECT LEFT(ie.fecha_hora,10), ie.hora, CONCAT(IF(ie.tipo='1','ENTRADA ','SALIDA '), IFNULL(m.motivo,'')), ABS(CAST(d.cantidad AS DECIMAL(14,4))),
 							u.nombres, CONCAT('almacen_ie ', ie.idalmacen_ie, ' ', IFNULL(ie.motivo,'')),
@@ -371,7 +379,7 @@
 						FROM almacen_ie_detalle d JOIN almacen_ie ie ON ie.idalmacen_ie = d.idalmacen_ie
 						LEFT JOIN almacen_motivo_es m ON m.idalmacen_motivo_es = ie.idproducto_motivo_es
 						LEFT JOIN usuario u ON u.idusuario = ie.idusuario
-						WHERE d.procede = 0 AND d.idp = ? AND ie.idalmacen = ? AND ie.idsede = ? AND LEFT(ie.fecha_hora,10) BETWEEN ? AND ?
+						WHERE d.procede = 0 AND d.idp = ? AND ie.idalmacen = ? AND ie.idsede = ? AND ie.fecha_hora >= ? AND ie.fecha_hora < ?
 						  AND ie.motivo NOT LIKE 'AJUSTE INVENTARIO #%' -- ya estan en producto_historial; evitar doble conteo
 						UNION ALL
 						-- Las compras NO pasan por producto_historial ni por almacen_ie: el stock lo sube
@@ -398,14 +406,14 @@
 						LEFT JOIN almacen a2 ON a2.idalmacen = di.idalmacen_a
 						WHERE dd.idproducto = ? AND (di.idalmacen_a = ? OR di.idalmacen_de = ?)
 						  AND DATE_FORMAT(STR_TO_DATE(di.fecha, '%d/%m/%Y %H:%i:%s'), '%Y-%m-%d') BETWEEN ? AND ?
-						ORDER BY fecha DESC, orden DESC", array($idp, $g_idsede, $idalmacen, $desde, $hasta, (string)$idp, $idalmacen, $g_idsede, $desde, $hasta, $idp, $idalmacen, $desde, $hasta, $idalmacen, $idp, $idalmacen, $idalmacen, $desde, $hasta));
+						ORDER BY fecha DESC, orden DESC", array($idp, $g_idsede, $idalmacen, $desde, $hastaSig, (string)$idp, $idalmacen, $g_idsede, $desde, $hastaSig, $idp, $idalmacen, $desde, $hasta, $idalmacen, $idp, $idalmacen, $idalmacen, $desde, $hasta));
 				} else {
 					$act = filas($bd, "SELECT stock FROM porcion WHERE idporcion = ? AND idsede = ? LIMIT 1", array($idp, $g_idsede));
 					$mov = filas($bd, "SELECT LEFT(h.fecha,10) AS fecha, h.hora, h.tipo_movimiento AS tipo, CAST(h.cantidad AS DECIMAL(14,4)) AS cantidad,
 							u.nombres AS usuario, IF(h.idpedido > 0, CONCAT('pedido ', h.idpedido), '') AS referencia,
 							CAST(h.stock_total AS DECIMAL(14,4)) AS stock_total, " . $sqlOrden . "
 						FROM porcion_historial h LEFT JOIN usuario u ON u.idusuario = h.idusuario
-						WHERE h.idporcion = ? AND h.idsede = ? AND IFNULL(h.estado,'0') <> '1' AND LEFT(h.fecha,10) BETWEEN ? AND ?
+						WHERE h.idporcion = ? AND h.idsede = ? AND IFNULL(h.estado,'0') <> '1' AND h.fecha >= ? AND h.fecha < ?
 						UNION ALL
 						SELECT LEFT(ie.fecha_hora,10), ie.hora, CONCAT(IF(ie.tipo='1','ENTRADA ','SALIDA '), IFNULL(m.motivo,'')), ABS(CAST(d.cantidad AS DECIMAL(14,4))),
 							u.nombres, CONCAT('almacen_ie ', ie.idalmacen_ie, ' ', IFNULL(ie.motivo,'')),
@@ -413,9 +421,9 @@
 						FROM almacen_ie_detalle d JOIN almacen_ie ie ON ie.idalmacen_ie = d.idalmacen_ie
 						LEFT JOIN almacen_motivo_es m ON m.idalmacen_motivo_es = ie.idproducto_motivo_es
 						LEFT JOIN usuario u ON u.idusuario = ie.idusuario
-						WHERE d.procede = 1 AND d.idp = ? AND ie.idsede = ? AND LEFT(ie.fecha_hora,10) BETWEEN ? AND ?
+						WHERE d.procede = 1 AND d.idp = ? AND ie.idsede = ? AND ie.fecha_hora >= ? AND ie.fecha_hora < ?
 						  AND ie.motivo NOT LIKE 'AJUSTE INVENTARIO #%' -- ya estan en porcion_historial; evitar doble conteo
-						ORDER BY fecha DESC, orden DESC", array($idp, $g_idsede, $desde, $hasta, (string)$idp, $g_idsede, $desde, $hasta));
+						ORDER BY fecha DESC, orden DESC", array($idp, $g_idsede, $desde, $hastaSig, (string)$idp, $g_idsede, $desde, $hastaSig));
 				}
 				// signo por nombre del movimiento (el legacy guarda cantidades sin signo)
 				$entradas = array('aumenta', 'entrada', 'compra', 'recupera', 'venta devolucion', 'prod_entrada', 'recepcion solicitud', 'ajuste inventario +', 'ingreso x distribucion');
@@ -465,11 +473,38 @@
 				jsonOut(true, array('conteos' => $conteos, 'ranking' => $ranking));
 			}
 			break;
+			// ---- mermas (bdphp/_mermas.php, migracion 071)
+			case 'merma-datos': {
+				if (!puedeMermas()) { jsonOut(false, null, 'No tienes permiso de Inventario. Solicitalo al administrador.'); }
+				$b = leerBody();
+				$alms = mm_almacenes($bd, $g_idsede);
+				$ids = array_map('intval', array_column($alms, 'idalmacen'));
+				$idalm = isset($b['idalmacen']) && in_array((int)$b['idalmacen'], $ids, true) ? (int)$b['idalmacen'] : ($ids ? $ids[0] : 0);
+				jsonOut(true, array('almacenes' => $alms, 'idalmacen' => $idalm, 'motivos' => MM_MOTIVOS,
+					'productos' => $idalm ? mm_productos($bd, $g_idsede, $idalm) : array()));
+			}
+			break;
+			case 'merma-registrar': {
+				if (!puedeMermas()) { jsonOut(false, null, 'No tienes permiso de Inventario. Solicitalo al administrador.'); }
+				$b = leerBody();
+				jsonOut(true, mm_registrar($bd, $g_ido, $g_idsede, $g_us, isset($b['idalmacen']) ? (int)$b['idalmacen'] : 0, $b));
+			}
+			break;
+			case 'perdidas': {
+				$b = leerBody();
+				$per = isset($b['periodo']) && in_array($b['periodo'], MM_PERIODOS, true) ? $b['periodo'] : 'mes';
+				$f = mm_perdidas($bd, $g_ido, $g_idsede, mm_rango($per));
+				$res = mm_resumen($f);
+				jsonOut(true, array('filas' => array_slice($f, 0, 1000), 'motivos' => $res ? $res[0]['motivos'] : array(),
+					'total' => $res ? $res[0]['total'] : 0, 'nombres' => MM_MOTIVOS + array('conteo' => 'FALTÓ EN CONTEO')));
+			}
+			break;
 			default:
 				jsonOut(false, null, 'Operacion no reconocida');
 				break;
 		}
 	} catch (Exception $e) {
+		if ($e instanceof MermaError) { jsonOut(false, null, $e->getMessage()); }
 		if (strpos($e->getMessage(), 'CANTIDAD_INVALIDA') !== false) {
 			$partes = explode('|', $e->getMessage());
 			jsonOut(false, null, 'Cantidad invalida: debe ser un numero entre 0 y ' . (isset($partes[1]) ? $partes[1] : '1000000000') . '.');

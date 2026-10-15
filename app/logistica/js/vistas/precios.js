@@ -1,0 +1,31 @@
+import{api as n}from"../api.js?v=20261015g";import{esc as p,aviso as l,tarjeta as r,volver as i,fecha as c}from"../ui.js?v=20261015g";import{vigente as d,turnoActual as m}from"../router.js?v=20261015g";const u=a=>"S/ "+Number(a).toLocaleString("es-PE",{minimumFractionDigits:2,maximumFractionDigits:2}),v=[["subieron","Lo que subió de precio"],["mas_barato","Lo que otro vende más barato"],["todos","Todos los productos comprados"]];let b="subieron",h=0;function $(a,s){var e;return null===a.cambio_pct?'<span class="inv-muted">primera compra</span>':0===a.cambio_pct?'<span class="inv-muted">igual</span>':`<span class="inv-estado ${(e=0<a.cambio_pct)?a.cambio_pct>=s?"lg-sube":"borrador":"aprobado"}">${e?"▲":"▼"} ${Math.abs(a.cambio_pct)}%</span>
+		<span class="inv-sub">antes ${u(a.anterior.precio)} (${p(c(a.anterior.fecha))})</span>`}const g=(a,s)=>s?Math.round(a/s*100)+"%":"";async function a(a,s,e){a.innerHTML='<div id="pr_cal"></div><div id="pr_precios"></div>';var t,[o]=await Promise.all([n("precios.php?op=proveedores"),async function s(e,a){const t=await n("precios.php?op=lista&filtro="+b);if(void 0!==a&&!d(a))return;e.innerHTML=r({titulo:"Precios de proveedores",ayuda:`Compara cada compra con la anterior del mismo proveedor. Subidas de ${t.alerta_pct}% o más salen en rojo. Clic en un producto para ver su historial.`,cuerpo:`<div class="inv-toolbar">
+				<div class="inv-field"><span class="inv-label">Mostrar</span><select class="inv-select" id="pr_filtro">
+					${v.map(([a,s])=>`<option value="${a}" ${a===b?"selected":""}>${s}</option>`).join("")}</select></div>
+				<span class="inv-sep"></span>
+				${t.subieron?`<span class="lg-valor"><b class="inv-neg">${t.subieron}</b> producto(s) subieron ${t.alerta_pct}% o más</span>`:""}
+			</div>
+			${t.productos.length?`<div class="inv-table-wrap"><table class="inv-table">
+				<thead><tr><th>Producto</th><th style="text-align:right">Última compra</th><th>Cambio</th><th>Más barato en otro proveedor</th><th></th></tr></thead>
+				<tbody>${t.productos.map(a=>`<tr style="cursor:pointer" data-hist="${a.idproducto}">
+					<td><b>${p(a.descripcion)}</b><span class="inv-sub">${a.proveedores} proveedor(es)</span></td>
+					<td style="text-align:right"><b>${u(a.ultimo.precio)}</b><span class="inv-sub">${p(a.ultimo.proveedor)} · ${p(c(a.ultimo.fecha))}</span></td>
+					<td>${$(a,t.alerta_pct)}</td>
+					<td>${a.mejor_otro?`<b class="inv-pos">${u(a.mejor_otro.precio)}</b> <span class="inv-sub">${p(a.mejor_otro.proveedor)} · ${p(c(a.mejor_otro.fecha))}</span>`:'<span class="inv-muted">—</span>'}</td>
+					<td class="inv-acciones"><span class="inv-link"><i class="fa fa-line-chart"></i>Historial</span></td></tr>`).join("")}
+				</tbody></table></div>`:`<p class="inv-empty"><i class="fa fa-check-circle"></i>${"subieron"===b?"Nada subió de precio en la última compra.":"mas_barato"===b?"Nadie lo vende más barato que tu proveedor actual.":"Aún no hay compras registradas."}</p>`}
+			<div id="pr_hist"></div>`});e.querySelector("#pr_filtro").addEventListener("change",a=>{b=a.target.value,s(e,m()).catch(a=>l(a.message,"error"))});e.querySelector(".xContentCard").addEventListener("click",a=>{const s=a.target.closest("[data-hist]");s&&y(e,Number(s.dataset.hist))})}(a.querySelector("#pr_precios"),e)]);d(e)&&(a.querySelector("#pr_cal").innerHTML=r({titulo:"Cómo cumplen tus proveedores",ayuda:`Últimos ${(t=o).dias} días. <b>A tiempo</b>: llegó hasta la fecha que pusiste en la orden. <b>Completo</b>: llegó todo lo pedido.
+			<b>Precio</b>: productos que subieron ${t.alerta_pct}% o más frente a su compra anterior. Los que fallan salen primero.`,acciones:i(),cuerpo:t.proveedores.length?`<div class="inv-table-wrap"><table class="inv-table">
+			<thead><tr><th>Proveedor</th><th>Nota</th><th>A tiempo</th><th>Llegó completo</th><th>Precio</th><th style="text-align:right">Comprado</th></tr></thead>
+			<tbody>${t.proveedores.map(a=>{var s=null===a.estrellas?"":4<=a.estrellas?"aprobado":3<=a.estrellas?"borrador":"lg-sube",e=a.a_tiempo+a.tarde;return`<tr>
+		<td><b>${p(a.proveedor)}</b><span class="inv-sub">${a.ordenes} orden(es)</span>
+			${a.problemas.length?`<details><summary class="inv-link" style="cursor:pointer">Ver ${a.problemas.length} problema(s)</summary><ul style="margin:6px 0 0;padding-left:18px">
+				${a.problemas.map(a=>`<li>Orden N° ${a.idorden} (${p(c(a.fecha))}): ${p(a.texto)}</li>`).join("")}</ul></details>`:""}</td>
+		<td>${null===a.estrellas?'<span class="inv-muted">Sin datos aún</span>':`<span class="inv-estado ${s}">★ ${String(a.estrellas).replace(".",",")} ${p(a.etiqueta)}</span>`}</td>
+		<td>${e?`<b>${g(a.a_tiempo,e)}</b><span class="inv-sub">${a.a_tiempo} de ${e}${a.tarde?` · ${Math.round(a.dias_tarde/a.tarde*10)/10} día(s) tarde en promedio`:""}</span>`:'<span class="inv-muted">—</span>'}</td>
+		<td>${a.items?`<b>${g(a.completos,a.items)}</b><span class="inv-sub">${a.completos} de ${a.items} producto(s)</span>`:'<span class="inv-muted">—</span>'}</td>
+		<td>${a.productos?`<b class="${a.subieron?"inv-neg":""}">${a.subieron} de ${a.productos}</b><span class="inv-sub">subieron ${t.alerta_pct}% o más</span>`:'<span class="inv-muted">—</span>'}</td>
+		<td style="text-align:right">${u(a.comprado)}</td></tr>`}).join("")}</tbody></table></div>`:`<p class="inv-empty">Aún no hay órdenes de compra en los últimos ${t.dias} días.</p>`}))}async function y(s,a){const e=s.querySelector("#pr_hist"),t=m(),o=++h;s=()=>o===h&&d(t)&&e.isConnected;let r;try{r=await n("precios.php?op=historial&id="+a)}catch(a){return void(s()&&l(a.message,"error"))}if(s()){const i=Math.max(...r.compras.map(a=>a.precio),.01);e.innerHTML=`<div class="inv-toolbar" style="display:block;margin-top:14px">
+		<p class="inv-titulo-sec" style="margin:0 0 8px"><i class="fa fa-line-chart"></i> ${p(r.producto.descripcion)}: últimas compras</p>
+		${r.compras.map(a=>`<div class="lg-barra"><span>${p(c(a.fecha))}</span><span>${p(a.proveedor)}</span>
+			<i style="width:${Math.max(4,a.precio/i*100)}%"></i><b>${u(a.precio)}</b></div>`).join("")}</div>`,e.scrollIntoView({behavior:"smooth",block:"nearest"})}}export{a as render};

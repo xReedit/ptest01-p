@@ -1,0 +1,18 @@
+import{api as r}from"../api.js?v=20261015g";import{esc as d,aviso as c,tarjeta as s,volver as i,fecha as p}from"../ui.js?v=20261015g";import{vigente as m,turnoActual as v}from"../router.js?v=20261015g";const h=t=>"S/ "+Number(t).toLocaleString("es-PE",{minimumFractionDigits:2,maximumFractionDigits:2}),o=[["mes","Este mes"],["7","Últimos 7 días"],["30","Últimos 30 días"],["mes_ant","Mes pasado"]];let g="mes",u=0;async function b(l,a,t){const n=await r("mermas.php?op=reporte&periodo="+g);if(void 0===t||m(t)){const e=Object.keys(n.motivos);l.innerHTML=s({titulo:"Mermas y pérdidas",ayuda:"Cuánto se pierde en cada local y por qué. Suma las mermas, las salidas por deterioro de la pantalla de almacén y lo que faltó en los conteos.",acciones:'<a class="btn btn-sm btn-success" href="#" data-ir="mermas"><i class="fa fa-plus"></i>Registrar merma de la central</a> '+i(),cuerpo:`<div class="inv-toolbar">
+				<div class="inv-field"><span class="inv-label">Periodo</span><select class="inv-select" id="pd_per">
+					${o.map(([t,a])=>`<option value="${t}" ${t===g?"selected":""}>${a}</option>`).join("")}</select></div>
+				<span class="inv-sep"></span>
+				<span class="lg-valor">Total perdido: <b class="inv-neg">${h(n.total)}</b></span>
+			</div>
+			${n.sedes.length?`<div class="inv-table-wrap"><table class="inv-table">
+				<thead><tr><th>Sede</th>${e.map(t=>`<th style="text-align:right">${d(n.motivos[t])}</th>`).join("")}<th style="text-align:right">Total</th></tr></thead>
+				<tbody>${n.sedes.map(a=>`<tr style="cursor:pointer" data-sede="${a.idsede}">
+					<td><b>${d(a.sede)}</b> <span class="inv-link" style="font-size:12px"><i class="fa fa-list"></i>ver</span></td>
+					${e.map(t=>{return`<td style="text-align:right">${t=a.motivos[t],t?h(t):'<span class="inv-muted">—</span>'}</td>`}).join("")}
+					<td style="text-align:right"><b class="inv-neg">${h(a.total)}</b></td></tr>`).join("")}</tbody></table></div>`:'<p class="inv-empty"><i class="fa fa-check-circle"></i>No hay pérdidas registradas en este periodo.</p>'}
+			<div id="pd_det"></div>`}),l.querySelector("#pd_per").addEventListener("change",t=>{g=t.target.value,b(l,a,v()).catch(t=>c(t.message,"error"))}),l.querySelector(".xContentCard").addEventListener("click",async a=>{a=a.target.closest("[data-sede]");if(a){const s=l.querySelector("#pd_det"),i=v(),o=++u;var e=()=>o===u&&m(i)&&s.isConnected;let t;try{t=await r(`mermas.php?op=detalle&idsede=${a.dataset.sede}&periodo=`+g)}catch(t){return void(e()&&c(t.message,"error"))}e()&&(s.innerHTML=`<p class="inv-titulo-sec" style="margin-top:16px">${d(a.querySelector("b").textContent)}: detalle</p>
+			`+(t.filas.length?`<div class="inv-table-wrap"><table class="inv-table">
+				<thead><tr><th>Cuándo</th><th>Producto</th><th style="text-align:right">Cantidad</th><th>Motivo</th><th>Quién</th><th style="text-align:right">Valor</th></tr></thead>
+				<tbody>${t.filas.map(t=>{return`<tr><td>${d(p(t.fecha))}</td><td>${d(t.producto)}</td><td style="text-align:right">${a=t.cantidad,Number(a).toLocaleString("es-PE",{maximumFractionDigits:2})} ${d(t.unidad)}</td>
+					<td>${d(n.motivos[t.motivo]||t.motivo)}${"almacen"===t.origen?' <span class="inv-tag">almacén</span>':""}${t.nota?`<span class="inv-sub">${d(t.nota)}</span>`:""}</td><td>${d(t.usuario||"")}</td>
+					<td style="text-align:right">${h(t.valor)}</td></tr>`;var a}).join("")}</tbody></table></div>`:'<p class="inv-empty">Sin detalle.</p>'),s.scrollIntoView({behavior:"smooth",block:"start"}))}})}}export{b as render};

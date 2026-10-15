@@ -7,9 +7,12 @@
  */
 
 require_once __DIR__ . '/../SecurityGuard.php';
-SecurityGuard::verificarAcceso();
+// LOG_SIN_SESION: solo resumen_auto.php, que antes valida su clave (lo llama el reloj, no un navegador)
+if (!defined('LOG_SIN_SESION')) { SecurityGuard::verificarAcceso(); }
 
 header('Content-Type: application/json;charset=utf-8');
+
+date_default_timezone_set('America/Lima');   // igual que log.php: date()/strtotime() con la hora de Peru
 
 include __DIR__ . '/../ManejoBD.php';
 $bd = new xManejoBD('restobar');
@@ -26,6 +29,8 @@ if (isset($_POST['op'])) {
 $g_ido    = isset($_SESSION['ido']) ? intval($_SESSION['ido']) : 0;
 $g_idsede = isset($_SESSION['idsede']) ? intval($_SESSION['idsede']) : 0;
 $g_us     = isset($_SESSION['idusuario']) ? intval($_SESSION['idusuario']) : 0;
+// Solo se lee la sesion: soltar el candado para que una llamada lenta (IA, WhatsApp) no congele las otras pestanas.
+if (session_status() === PHP_SESSION_ACTIVE) { session_write_close(); }
 
 function abast_json($data) {
     echo json_encode($data, JSON_UNESCAPED_UNICODE);

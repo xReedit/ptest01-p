@@ -24,6 +24,8 @@ if (isset($_POST['op'])) {
 $g_ido  = $_SESSION['ido'];
 $g_idsede = $_SESSION['idsede'];
 $g_us   = $_SESSION['idusuario'];
+// solo lee la sesion: soltar el candado para no dejar en fila las demas peticiones del usuario
+if (session_status() === PHP_SESSION_ACTIVE) { session_write_close(); }
 
 function prod_json($data) {
     echo json_encode($data, JSON_UNESCAPED_UNICODE);

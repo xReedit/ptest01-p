@@ -1,4 +1,6 @@
 <?php
+// Retirado (2026-10-15): ninguna pantalla lo usa y no validaba la empresa. Reemplazado por recepcion_oc.php / ordenes.php.
+http_response_code(410); exit;
 /**
  * Órdenes de Compra (ABASTECIMIENTO).
  * La OC es la INTENCIÓN enviada al proveedor. El stock NO entra aquí (entra por

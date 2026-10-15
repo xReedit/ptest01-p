@@ -288,7 +288,8 @@
             $bd->xConsulta($sql);            
             break;
         case 23: // unidades de medida
-            $sql = "select * from unidad_medida where estado = 0";
+            // maestra (idorg NULL) + las propias de la org (migracion logistica/004)
+            $sql = "select * from unidad_medida where estado = 0 and (idorg is null or idorg = " . (int)$g_ido . ")";
             $bd->xConsulta($sql);
             break;
         case 24: // tipos de precio visible

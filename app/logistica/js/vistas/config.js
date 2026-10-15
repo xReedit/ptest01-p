@@ -1,0 +1,41 @@
+import{api as d}from"../api.js?v=20261015g";import{esc as l,aviso as p,tarjeta as u,volver as s}from"../ui.js?v=20261015g";import{ir as t,vigente as v}from"../router.js?v=20261015g";import{tarjetaAuto as o,activarAuto as n}from"./resumen_auto.js?v=20261015g";async function e(r,e,i){const c=await d("catalogo.php?op=config");if(v(i)){const a=c.org?Number(c.org.idsede_central):0;r.innerHTML=u({titulo:"Configurar Logística",ayuda:"Elige la sede donde está el almacén central: su catálogo será el de toda la empresa.",acciones:s()+'<button class="btn btn-sm btn-success" id="cf_guardar"><i class="fa fa-check"></i>Guardar</button>',cuerpo:`
+			<div class="inv-toolbar">
+				<div class="inv-field"><span class="inv-label">Sede central</span><select class="inv-select" id="cf_central">
+					<option value="">— elegir —</option>
+					${c.sedes.map(e=>`<option value="${e.idsede}" ${Number(e.idsede)===a?"selected":""}>${l(e.nombre)}</option>`).join("")}
+				</select></div>
+				<div class="inv-field"><span class="inv-label">Un pedido cubre</span><input class="inv-input" id="cf_dias" type="number" min="1" max="60" style="width:70px" value="${c.org?Number(c.org.dias_cobertura):4}"></div>
+				<span class="inv-ayuda">días (por defecto)</span>
+				<div class="inv-field"><span class="inv-label">Órdenes que se aprueban solas hasta S/</span>
+					<input class="inv-input" id="cf_umbral" type="number" min="0" step="1" style="width:120px"
+						value="${c.org?Number(c.org.umbral_aprobacion_oc):0}" title="0 = todas las órdenes de compra necesitan aprobación"></div>
+				<div class="inv-field"><span class="inv-label">Avisar vencimientos con (días)</span>
+					<input class="inv-input" id="cf_vence" type="number" min="1" max="365" style="width:90px" value="${c.org?Number(c.org.dias_alerta_vencimiento):30}"></div>
+				<span class="inv-sep"></span>
+				<p class="inv-ayuda">Marca las sedes que piden y reciben mercadería de la central.</p>
+			</div>
+			<div class="inv-table-wrap"><table class="inv-table">
+				<thead><tr><th>Participa</th><th>Sede</th><th>Almacén donde recibe</th><th>Un pedido cubre (días)</th><th>WhatsApp del encargado</th></tr></thead>
+				<tbody>${c.sedes.map(a=>{return`
+					<tr data-sede="${a.idsede}">
+						<td><input type="checkbox" class="cf_activo" ${1===Number(a.activo)?"checked":""}></td>
+						<td>${l(a.nombre)}</td>
+						<td><select class="inv-select cf_alm">
+							<option value="0">— elegir —</option>
+							${s=a.idsede,c.almacenes.filter(e=>Number(e.idsede)===Number(s)).map(e=>`<option value="${e.idalmacen}" ${Number(e.idalmacen)===Number(a.idalmacen_principal)?"selected":""}>${l(e.descripcion)}</option>`).join("")}
+						</select></td>
+						<td><input class="inv-input cf_dias" type="number" min="1" max="60" style="width:80px"
+							value="${null===a.dias_cobertura?"":Number(a.dias_cobertura)}" placeholder="igual">
+							<span class="inv-sub">Vacío = el de la empresa. Más días si la sede pide poco, menos si pide seguido.</span></td>
+						<td><input class="inv-input cf_tel" inputmode="tel" maxlength="15" style="width:130px" value="${l(a.telefono_whatsapp||"")}" placeholder="987654321">
+							<span class="inv-sub">Le avisa cuando su mercadería sale.</span></td>
+					</tr>`;var s}).join("")}
+				</tbody>
+			</table></div>`}),c.org&&(d("resumen.php?op=auto_cfg").then(e=>{var a;v(i)&&((a=document.createElement("div")).innerHTML=o(e),r.appendChild(a),n(a))}).catch(e=>p(e.message,"error")),d("conteo.php?op=cfg").then(e=>{if(v(i)){var a=r;var s=e;const c=document.createElement("div"),t=(c.innerHTML=u({titulo:"Conteo rápido diario (opcional)",ayuda:"Cada sede cuenta unos pocos productos al día, sin ver el stock del sistema. Así encuentras faltantes sin cerrar el local para hacer inventario.",cuerpo:`<div class="inv-form-row"><label style="font-weight:600;cursor:pointer;font-size:14px"><input type="checkbox" id="cr_on" ${s.activo?"checked":""}> Sí, que las sedes cuenten todos los días</label></div>
+			<div class="inv-form-row"><span class="inv-label">Productos por día</span>
+				<select class="inv-input" id="cr_cant" style="width:110px">${[3,5,8,10,15,20].map(e=>`<option value="${e}" ${e===s.cantidad?"selected":""}>${e}</option>`).join("")}</select></div>
+			<p class="inv-sub">Primero salen los productos que no se contaron en 30 días y los de más valor. Lo que no cuadre lo ves en <b>Conteos de las sedes</b>.</p>`}),a.appendChild(c),c.querySelector("#cr_on")),o=c.querySelector("#cr_cant"),n=async()=>{try{await d("conteo.php?op=guardar_cfg",{activo:t.checked,cantidad:Number(o.value)}),p(t.checked?`Listo: cada sede contará ${o.value} productos al día.`:"Conteo rápido apagado.")}catch(e){p(e.message,"error")}};[t,o].forEach(e=>e.addEventListener("change",n))}}).catch(e=>p(e.message,"error")),d("bandeja.php?op=repo_cfg").then(e=>{if(v(i)){var a=r;const s=document.createElement("div"),c=(s.innerHTML=u({titulo:"Reposición automática (opcional)",ayuda:"Cuando un producto de una sede llega a su stock mínimo, el sistema arma solo el pedido y lo pone en tu Bandeja. Tú solo lo apruebas.",cuerpo:`<div class="inv-form-row"><label style="font-weight:600;cursor:pointer;font-size:14px"><input type="checkbox" id="rp_on" ${e.activo?"checked":""}> Sí, armar pedidos solos</label></div>
+			<p class="inv-sub">Solo funciona con los productos que tienen <b>stock mínimo</b> puesto en la sede. La sede ve el pedido en <b>Mis pedidos</b> y puede cancelarlo antes de que lo abras.</p>`}),a.appendChild(s),s.querySelector("#rp_on"));c.addEventListener("change",async()=>{try{await d("bandeja.php?op=repo_guardar",{activo:c.checked}),p(c.checked?"Listo: los pedidos automáticos aparecerán en tu Bandeja.":"Reposición automática apagada.")}catch(e){p(e.message,"error"),c.checked=!c.checked}})}}).catch(e=>p(e.message,"error")),d("produccion.php?op=cfg").then(e=>{if(v(i)){var a=r;var s=e;const c=document.createElement("div"),t=(c.innerHTML=u({titulo:"Producción (opcional)",ayuda:"Para cadenas que producen lo que venden (helados, panes, salsas). Lo que tiene receta en la planta se manda a producir desde la Bandeja y sale de la planta a cada sede.",cuerpo:`<div class="inv-form-row"><label style="font-weight:600;cursor:pointer;font-size:14px"><input type="checkbox" id="pc_on" ${s.activa?"checked":""}> Sí, usamos producción</label></div>
+			<div class="inv-form-row"><span class="inv-label">¿En qué sede está la planta de producción?</span>
+				<select class="inv-select" id="pc_planta" style="width:auto">${s.sedes.map(e=>`<option value="${e.idsede}" ${e.idsede===s.idsede_planta?"selected":""}>${l(e.nombre)}${e.idsede===s.idsede_central?" (la central)":""}</option>`).join("")}</select></div>
+			<p class="inv-sub">Lo que se produce en la planta son sus <b>recetas</b> (se crean en <b>Producción</b>). Los demás locales también pueden tener sus propias recetas, por ejemplo mayonesa o ají de la casa, y producir para sí mismos.</p>`}),a.appendChild(c),c.querySelector("#pc_on")),o=c.querySelector("#pc_planta"),n=async()=>{try{await d("produccion.php?op=guardar_cfg",{activa:t.checked,idsede_planta:Number(o.value)}),p(t.checked?"Producción activada. Crea las recetas en Producción.":"Producción apagada.")}catch(e){p(e.message,"error")}};t.addEventListener("change",n),o.addEventListener("change",n)}}).catch(e=>p(e.message,"error"))),r.querySelector("#cf_guardar").addEventListener("click",async e=>{var e=e.currentTarget,a=Number(r.querySelector("#cf_central").value);if(a){var s=[...r.querySelectorAll("tr[data-sede]")].map(e=>({idsede:Number(e.dataset.sede),activo:e.querySelector(".cf_activo").checked,idalmacen_principal:Number(e.querySelector(".cf_alm").value),dias_cobertura:e.querySelector(".cf_dias").value,telefono_whatsapp:e.querySelector(".cf_tel").value}));e.disabled=!0;try{await d("catalogo.php?op=activar",{idsede_central:a,sedes:s,dias_cobertura:Number(r.querySelector("#cf_dias").value)||4,umbral_aprobacion_oc:Number(r.querySelector("#cf_umbral").value)||0,dias_alerta_vencimiento:Number(r.querySelector("#cf_vence").value)||30}),p("Configuración guardada."),t("catalogo")}catch(e){p(e.message,"error")}finally{e.disabled=!1}}else p("Elige la sede central.","error")})}}export{e as render};

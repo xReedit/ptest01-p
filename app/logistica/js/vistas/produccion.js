@@ -1,0 +1,111 @@
+import{api as E}from"../api.js?v=20261015g";import{esc as N,aviso as L,tarjeta as c,volver as o,confirmar as j,autocompletar as n,nuevoToken as C,leerNum as A}from"../ui.js?v=20261015g";import{vigente as l,turnoActual as s}from"../router.js?v=20261015g";const P=e=>Number(Number(e||0).toFixed(3)).toLocaleString("es-PE",{maximumFractionDigits:3}),M=e=>"S/ "+Number(e||0).toFixed(2),R=e=>{var a=new Date;return a.setDate(a.getDate()+Number(e)),a.toISOString().slice(0,10)};let p=0;async function i(e,a,t){var s=await E("produccion.php?op=inicio"+(p?"&sede="+p:""));if(void 0===t||l(t)){var q=e;var w=a;var k=s;const i=k.central&&1<k.sedes.length?`<select class="inv-select" id="pr_sede" style="width:auto" title="Ver la producción de otra sede">${k.sedes.map(e=>`<option value="${e.idsede}" ${e.idsede===k.idsede?"selected":""}>${N(e.nombre)}${e.idsede===k.planta.idsede?" (planta)":""}</option>`).join("")}</select>`:"",n=k.es_planta?"Aquí se produce para todas las sedes. <b>Piden las sedes</b> es lo que la Bandeja mandó a producir; después se despacha en <b>Envíos</b>.":`Recetas de <b>${N(k.sede)}</b>. Al producir se descuentan los insumos y entra lo producido a su almacén.`,r=k.recetas.map(e=>{var a=D(e),t=a.filter(e=>0<e.pedir&&e.idcentral);return`<tr>
+			<td><b>${N(e.descripcion)}</b>${e.nota?`<span class="inv-sub">${N(e.nota)}</span>`:""}
+				${a.length?`<span class="inv-sub inv-neg"><i class="fa fa-exclamation-triangle"></i> No alcanza: ${a.map(e=>N(e.descripcion)+(e.pedido?` <span class="inv-muted">(ya pedido ${P(e.pedido)})</span>`:"")).join(", ")}</span>
+					`+(t.length?`<button class="btn btn-sm btn-light" data-insumos="${e.idreceta}" style="margin-top:4px">
+						<i class="fa fa-shopping-cart"></i>${k.idsede===k.idsede_central?"Comprar lo que falta":"Pedir a la central lo que falta"}</button>`:""):""}</td>
+			<td class="inv-num">${P(e.stock)} <span class="inv-muted">${N(e.unidad||"und")}</span></td>
+			${k.es_planta?`<td class="inv-num">${e.pendiente?`<b>${P(e.pendiente)}</b>`:'<span class="inv-muted">—</span>'}</td>
+				<td class="inv-num">${e.sugerido?`<b class="inv-neg">${P(e.sugerido)}</b>`:e.pendiente?'<span class="inv-pos"><i class="fa fa-check"></i> alcanza</span>':'<span class="inv-muted">—</span>'}</td>`:""}
+			<td class="inv-num">${e.costo_unidad?M(e.costo_unidad):'<span class="inv-muted">—</span>'}</td>
+			<td style="text-align:right;white-space:nowrap">${k.es_planta&&0<Number(e.stock)?`<button class="btn btn-sm btn-light" data-repartir="${e.idreceta}" title="Mandar lo producido a las sedes (sale por Envíos)"><i class="fa fa-truck"></i>Repartir a las sedes</button> `:""}
+				<button class="btn btn-sm btn-success" data-producir="${e.idreceta}"><i class="fa fa-flask"></i>Producir</button></td></tr>`}).join(""),d=(q.innerHTML='<div class="pr-raiz">'+c({titulo:"Producción · "+k.sede,ayuda:n,acciones:i+o(),cuerpo:k.recetas.length?`<div class="inv-table-wrap"><table class="inv-table">
+				<thead><tr><th>Producto</th><th class="inv-num">Hay</th>${k.es_planta?'<th class="inv-num">Piden las sedes</th><th class="inv-num">Falta producir</th>':""}
+					<th class="inv-num">Costo x unidad</th><th></th></tr></thead>
+				<tbody>${r}</tbody></table></div>`:'<p class="inv-empty"><i class="fa fa-flask"></i>Aún no hay recetas en esta sede. Crea la primera abajo.</p>'})+c({titulo:"Recetas",ayuda:"Qué insumos lleva cada producto y cuánto sale. Todo con productos de esta sede.",acciones:'<button class="btn btn-sm btn-success" id="pr_nueva"><i class="fa fa-plus"></i>Nueva receta</button>',cuerpo:k.recetas.length?`<div class="inv-table-wrap"><table class="inv-table">
+				<thead><tr><th>Sale</th><th>Lleva</th><th>Dura</th><th></th></tr></thead>
+				<tbody>${k.recetas.map(e=>`<tr>
+					<td><b>${P(e.rinde)} ${N(e.unidad||"und")}</b> de ${N(e.descripcion)}</td>
+					<td class="inv-sub" style="display:table-cell">${e.insumos.map(e=>`${P(e.cantidad)} ${N(e.unidad||"und")} `+N(e.descripcion)).join(" · ")}</td>
+					<td>${e.vence_dias?e.vence_dias+" día(s)":'<span class="inv-muted">no vence</span>'}</td>
+					<td style="text-align:right;white-space:nowrap"><button class="btn btn-sm btn-light" data-editar="${e.idreceta}"><i class="fa fa-pencil"></i>Editar</button>
+						<span class="inv-link inv-link-rojo" data-baja="${e.idreceta}" style="margin-left:8px"><i class="fa fa-trash"></i>Quitar</span></td></tr>`).join("")}
+				</tbody></table></div>`:'<p class="inv-empty">Ej: <b>5 L de mayonesa de la casa</b> = 2 L de aceite + 30 huevos + 0.2 L de limón.</p>'})+c({titulo:"Lo producido",ayuda:"Las últimas 30 veces que se produjo en esta sede.",cuerpo:k.historial.length?`<div class="inv-table-wrap"><table class="inv-table">
+				<thead><tr><th>Fecha</th><th>Producto</th><th class="inv-num">Salió</th><th class="inv-num">Costo</th><th>Vence</th><th>Quién</th></tr></thead>
+				<tbody>${k.historial.map(e=>{var a=Number(e.salio)-Number(e.esperada);return`<tr><td>${N(e.fecha)}</td><td>${N(e.descripcion)}${e.nota?`<span class="inv-sub">${N(e.nota)}</span>`:""}</td>
+						<td class="inv-num"><b>${P(e.salio)}</b> ${N(e.unidad||"und")}${1e-4<Math.abs(a)?`<span class="inv-sub ${a<0?"inv-neg":"inv-pos"}">esperado ${P(e.esperada)}</span>`:""}</td>
+						<td class="inv-num">${M(e.costo)}</td><td>${N(e.vence||"—")}</td><td>${N(e.quien||"")}</td></tr>`}).join("")}</tbody></table></div>`:'<p class="inv-empty"><i class="fa fa-inbox"></i>Todavía no se produjo nada aquí.</p>'})+"</div>",q.querySelector("#pr_sede"));d&&d.addEventListener("change",()=>{p=Number(d.value),T(q,w)});q.querySelector("#pr_nueva").addEventListener("click",()=>H(q,w,k,null)),q.querySelector(".pr-raiz").addEventListener("click",async e=>{const a=e.target.closest("[data-repartir]");if(a)!async function(n,r,d,c,e){let o;e.classList.add("lg-cargando"),e.disabled=!0;try{o=await E(`produccion.php?op=repartir_info&sede=${d.idsede}&idreceta=`+c.idreceta)}catch(e){return!L(e.message,"error")}finally{e.classList.remove("lg-cargando"),e.disabled=!1}const l=C("rp"),a=N(o.unidad||"und"),p=z(`
+		<div class="xdlg-head"><h3><i class="fa fa-truck" style="margin-right:6px"></i>Repartir ${N(o.producto)}</h3></div>
+		<div class="xdlg-body" style="font-size:13px">
+			<p class="inv-ayuda" style="margin:0 0 8px">Hay <b>${P(o.stock)} ${a}</b>${o.comprometido?`, ${P(o.comprometido)} ya esperan salir (pedidos)`:""}:
+				hay <b>${P(o.libre)} ${a}</b> disponibles para repartir. Pasa a <b>Envíos</b>; cada sede lo cuenta en <b>Recibir mercadería</b> y entra a su almacén.</p>
+			<table class="inv-table"><thead><tr><th>Sede</th><th class="inv-num">Tiene</th><th>Mandar</th></tr></thead>
+				<tbody>${o.sedes.map(e=>`<tr data-rs="${e.idsede}"><td>${N(e.nombre)}${e.tiene?"":'<span class="inv-sub inv-neg">no lo tiene en su catálogo</span>'}</td>
+					<td class="inv-num">${e.tiene?P(e.stock):"—"}</td>
+					<td style="white-space:nowrap"><input class="inv-input rp-cant" type="number" min="0" step="any" inputmode="decimal" style="width:90px" ${e.tiene?"":"disabled"}> <span class="inv-muted">${a}</span></td></tr>`).join("")}</tbody></table>
+			<p style="margin:8px 0 0;display:flex;gap:10px;align-items:center;flex-wrap:wrap">
+				<span class="inv-link" id="rp_parejo"><i class="fa fa-balance-scale"></i>Repartir parejo</span>
+				<span class="inv-ayuda" id="rp_total"></span></p>
+		</div>
+		<div class="xdlg-foot">
+			<button class="btn btn-sm btn-light" data-cerrar><i class="fa fa-times"></i>Cancelar</button>
+			<button class="btn btn-sm btn-success" id="rp_ok"><i class="fa fa-check"></i>Mandar a Envíos</button>
+		</div>`),t=[...p.querySelectorAll(".rp-cant:not([disabled])")],u=()=>t.reduce((e,a)=>e+(A(a)||0),0),s=()=>{var e=u();p.querySelector("#rp_total").innerHTML=`Repartes <b class="${e>o.libre+1e-4?"inv-neg":""}">${P(e)}</b> de ${P(o.libre)} `+a};t.forEach(e=>e.addEventListener("input",s)),p.querySelector("#rp_parejo").addEventListener("click",()=>{var e=t.length;if(e){const a=Math.floor(o.libre/e*100)/100;t.forEach(e=>{e.value=a||""}),s()}}),s(),p.querySelector("#rp_ok").addEventListener("click",async a=>{var a=a.currentTarget,e=[];for(const i of p.querySelectorAll("[data-rs]")){var t=i.querySelector(".rp-cant");if(!t.disabled){t=A(t);if(null===t||t<0)return void L("Revisa las cantidades.","error");0<t&&e.push({idsede:Number(i.dataset.rs),cantidad:t})}}if(e.length)if(u()>o.libre+1e-4)L(`Solo puedes repartir ${P(o.libre)} ${o.unidad||"und"}.`,"error");else{a.disabled=!0;try{var s=await E("produccion.php?op=repartir",{sede:d.idsede,idreceta:c.idreceta,items:e,token:l});p.close(),L(`Listo: ${P(s.total)} ${o.unidad||"und"} de ${s.producto} para ${s.sedes} sede(s). Despáchalo en Envíos a las sedes.`),T(n,r)}catch(e){L(e.message,"error"),a.disabled=!1}}else L("Pon cuánto va a cada sede.","error")})}(q,w,k,k.recetas.find(e=>e.idreceta===Number(a.dataset.repartir)),a);else{const t=e.target.closest("[data-insumos]");if(t){var n=q,r=w,d=k,c=k.recetas.find(e=>e.idreceta===Number(t.dataset.insumos));const s=d.idsede===d.idsede_central,v=C("pi"),i=D(c),m=z(`
+		<div class="xdlg-head"><h3><i class="fa fa-shopping-cart" style="margin-right:6px"></i>${s?"Comprar":"Pedir a la central"} para ${N(c.descripcion)}</h3></div>
+		<div class="xdlg-body" style="font-size:13px">
+			<p class="inv-ayuda" style="margin:0 0 8px">Para producir <b>${P(c.sugerido||c.rinde)} ${N(c.unidad||"und")}</b>.
+				${s?"Va a <b>Órdenes de compra → Por comprar</b>, agrupado por proveedor.":"Se arma un pedido a la central: allí deciden si sale de su almacén o se compra."}</p>
+			<table class="inv-table"><thead><tr><th>Insumo</th><th class="inv-num">Hay</th><th class="inv-num">Falta</th><th>${s?"Comprar":"Pedir"}</th></tr></thead>
+				<tbody>${i.map(e=>`<tr data-pi="${e.idproducto}">
+					<td>${N(e.descripcion)}${e.pedido?`<span class="inv-sub">ya pedido ${P(e.pedido)}</span>`:""}
+						${e.idcentral?"":'<span class="inv-sub inv-neg">no está en el catálogo: cómpralo en Compras</span>'}</td>
+					<td class="inv-num">${P(e.stock)}</td><td class="inv-num">${P(e.falta)}</td>
+					<td style="white-space:nowrap"><input class="inv-input pi-cant" type="number" min="0" step="any" inputmode="decimal" style="width:90px"
+						value="${e.idcentral&&e.pedir?e.pedir:""}" ${e.idcentral?"":"disabled"}> <span class="inv-muted">${N(e.unidad||"und")}</span></td></tr>`).join("")}</tbody></table>
+		</div>
+		<div class="xdlg-foot">
+			<button class="btn btn-sm btn-light" data-cerrar><i class="fa fa-times"></i>Cancelar</button>
+			<button class="btn btn-sm btn-success" id="pi_ok"><i class="fa fa-check"></i>${s?"Mandar a comprar":"Enviar pedido"}</button>
+		</div>`);m.querySelector("#pi_ok").addEventListener("click",async a=>{var a=a.currentTarget,e=[];for(const i of m.querySelectorAll("[data-pi]")){var t=i.querySelector(".pi-cant");if(!t.disabled){t=A(t);if(null===t||t<0)return void L("Revisa las cantidades.","error");0<t&&e.push({idproducto:Number(i.dataset.pi),cantidad:t})}}if(e.length){a.disabled=!0;try{var s=await E("produccion.php?op=pedir_insumos",{sede:d.idsede,idreceta:c.idreceta,items:e,token:v});m.close(),L("compra"===s.donde?`Listo: ${s.productos} insumo(s) en Órdenes de compra → Por comprar.`:`Listo: pedido N° ${s.idsolicitud} enviado a la central.`),T(n,r)}catch(e){L(e.message,"error"),a.disabled=!1}}else L("Pon la cantidad en al menos un insumo.","error")})}else{const b=e.target.closest("[data-producir]");if(b){var o=q,l=w,p=k,u=k.recetas.find(e=>e.idreceta===Number(b.dataset.producir));const h=C("pr"),y=u.sugerido||u.rinde,f=z(`
+		<div class="xdlg-head"><h3><i class="fa fa-flask" style="margin-right:6px"></i>Producir ${N(u.descripcion)}</h3></div>
+		<div class="xdlg-body" style="font-size:13px">
+			<div class="inv-form-row"><span class="inv-label">¿Cuánto vas a producir?</span>
+				<input class="inv-input" id="pd_cant" type="number" min="0" step="any" inputmode="decimal" style="width:110px" value="${Number(Number(y).toFixed(3))}">
+				<span class="inv-muted">${N(u.unidad||"und")}</span>
+				${u.sugerido?`<span class="inv-sub">Piden las sedes ${P(u.pendiente)} y hay ${P(u.stock)}.</span>`:""}</div>
+			<span class="inv-label">Se usa <span class="inv-muted">— si usaste otra cantidad, cámbiala</span></span>
+			<table class="inv-table"><thead><tr><th>Insumo</th><th class="inv-num">Usa</th><th class="inv-num">Hay</th></tr></thead>
+				<tbody>${u.insumos.map(e=>`<tr data-ins="${e.idproducto}"><td>${N(e.descripcion)}</td>
+					<td class="inv-num" style="white-space:nowrap"><input class="inv-input pd-usa" type="number" min="0" step="any" inputmode="decimal" style="width:90px">
+						<span class="inv-muted">${N(e.unidad||"und")}</span></td>
+					<td class="inv-num pd-hay" data-hay="${Number(e.stock)}">${P(e.stock)}</td></tr>`).join("")}</tbody></table>
+			<div class="inv-form-row" style="display:flex;gap:16px;flex-wrap:wrap;margin-top:10px">
+				<div><span class="inv-label">¿Cuánto salió de verdad?</span>
+					<input class="inv-input" id="pd_salio" type="number" min="0" step="any" inputmode="decimal" style="width:110px"> <span class="inv-muted">${N(u.unidad||"und")}</span></div>
+				<div><span class="inv-label">Vence</span>
+					<input class="inv-input" id="pd_vence" type="date" min="${R(0)}" style="width:160px" value="${u.vence_dias?R(u.vence_dias):""}"></div>
+			</div>
+			<div class="inv-form-row"><span class="inv-label">Nota (opcional)</span>
+				<input class="inv-input" id="pd_nota" maxlength="255" style="width:100%" placeholder="Ej: salió más espesa, faltó limón"></div>
+			<p class="inv-ayuda" id="pd_costo" style="margin:6px 0 0"></p>
+		</div>
+		<div class="xdlg-foot">
+			<button class="btn btn-sm btn-light" data-cerrar><i class="fa fa-times"></i>Cancelar</button>
+			<button class="btn btn-sm btn-success" id="pd_ok"><i class="fa fa-check"></i>Producir</button>
+		</div>`),$=e=>f.querySelector(e);let e=!1;const g=()=>{const a=A($("#pd_cant"))||0;u.insumos.forEach(e=>{f.querySelector(`[data-ins="${e.idproducto}"] .pd-usa`).value=Number((Number(e.cantidad)*a/u.rinde).toFixed(3))}),e||($("#pd_salio").value=a||""),_()},_=()=>{let s=0;u.insumos.forEach(e=>{var a=f.querySelector(`[data-ins="${e.idproducto}"]`),t=A(a.querySelector(".pd-usa"))||0;a.querySelector(".pd-hay").classList.toggle("inv-neg",t>Number(e.stock)+1e-4),s+=t*Number(e.costo||0)});var e=A($("#pd_salio"))||0;$("#pd_costo").innerHTML=0<s?`Costo aprox.: <b>${M(s)}</b>`+(0<e?` · <b>${M(s/e)}</b> por `+N(u.unidad||"unidad"):""):""};$("#pd_cant").addEventListener("input",g),$("#pd_salio").addEventListener("input",()=>{e=!0,_()}),f.querySelectorAll(".pd-usa").forEach(e=>e.addEventListener("input",_)),g(),$("#pd_ok").addEventListener("click",async a=>{var a=a.currentTarget,e=A($("#pd_cant"),!0),t=A($("#pd_salio"),!0);if(!e||e<=0)L("Escribe cuánto vas a producir.","error");else if(!t||t<=0)L("Escribe cuánto salió de verdad.","error");else{var s=[];for(const r of f.querySelectorAll("[data-ins]")){var i=A(r.querySelector(".pd-usa"));if(null===i||i<0)return void L("Revisa las cantidades de los insumos.","error");s.push({idproducto:Number(r.dataset.ins),cantidad:i})}if(f.querySelector(".pd-hay.inv-neg"))L("No alcanza un insumo (en rojo). Produce menos o primero pide el insumo.","error");else{a.disabled=!0;try{var n=await E("produccion.php?op=producir",{sede:p.idsede,idreceta:u.idreceta,cantidad:e,salio:t,insumos:s,vencimiento:$("#pd_vence").value,nota:$("#pd_nota").value,token:h});f.close(),L(`Listo: entraron ${P(n.salio)} ${u.unidad||"und"} de ${n.producto}${n.vence?" (vence "+n.vence+")":""}.`+(p.es_planta&&u.pendiente?" Ya puedes despacharlo en Envíos.":"")),T(o,l)}catch(e){L(e.message,"error"),a.disabled=!1}}}})}else{const x=e.target.closest("[data-editar]");if(x)H(q,w,k,k.recetas.find(e=>e.idreceta===Number(x.dataset.editar)));else{const S=e.target.closest("[data-baja]");if(S){e=k.recetas.find(e=>e.idreceta===Number(S.dataset.baja));if(await j({titulo:`¿Quitar la receta de ${e.descripcion}?`,boton:"Sí, quitar",textoHtml:'<p style="margin:0">Ya no aparecerá para producir. Lo producido antes no cambia.</p>'}))try{await E("produccion.php?op=baja_receta",{sede:k.idsede,idreceta:e.idreceta}),L("Receta quitada."),T(q,w)}catch(e){L(e.message,"error")}}}}}}})}}function T(e,a){const t=e.querySelector(".pr-raiz");t&&t.classList.add("lg-recargando"),i(e,a,s()).catch(e=>{L(e.message,"error"),t&&t.classList.remove("lg-recargando")})}function D(s){const i=s.sugerido||s.rinde;return s.insumos.map(e=>{var a=Number(e.cantidad)*i/s.rinde,t=Math.max(0,a-Number(e.stock));return{...e,usa:a,falta:t,pedir:Math.max(0,Number((t-Number(e.pedido||0)).toFixed(3)))}}).filter(e=>1e-4<e.falta)}function z(e){const a=document.createElement("dialog");return a.className="lg-dlg lg-app",a.innerHTML=e,document.body.appendChild(a),a.addEventListener("close",()=>a.remove()),a.querySelectorAll("[data-cerrar]").forEach(e=>e.addEventListener("click",()=>a.close())),a.showModal(),a}function H(l,p,u,v){const i=u.productos.map(e=>({texto:e.descripcion,valor:String(e.idproducto)}));var e='<option value="0">UND (unidad)</option>'+u.unidades.map(e=>`<option value="${e.idunidad_medida}">${N(e.unidad)}${e.abreviatura&&e.abreviatura!==e.unidad?" ("+N(e.abreviatura)+")":""}</option>`).join("");const a=(e={})=>`<tr class="pr-ins">
+		<td><input class="inv-input pr-ins-prod" style="width:100%" placeholder="Escribe el insumo" value="${N(e.descripcion||"")}" data-valor="${e.idproducto||""}"></td>
+		<td style="white-space:nowrap"><input class="inv-input pr-ins-cant" type="number" min="0" step="any" inputmode="decimal" style="width:90px" value="${e.cantidad?Number(e.cantidad):""}">
+			<span class="inv-muted pr-ins-u">${N(e.unidad||"")}</span></td>
+		<td><span class="inv-link inv-link-rojo pr-ins-x" title="Quitar"><i class="fa fa-times"></i></span></td></tr>`,m=z(`
+		<div class="xdlg-head"><h3><i class="fa fa-flask" style="margin-right:6px"></i>${v?"Editar receta":"Nueva receta"} · ${N(u.sede)}</h3></div>
+		<div class="xdlg-body" style="font-size:13px">
+			<div class="inv-form-row"><span class="inv-label">¿Qué producto sale?</span>
+				<input class="inv-input" id="rc_prod" style="width:100%" placeholder="Ej: MAYONESA DE LA CASA" value="${N(v?v.descripcion:"")}" data-valor="${v?v.idproducto:""}">
+				<p class="inv-sub" id="rc_nuevo" hidden style="margin:4px 0 0"><i class="fa fa-plus-circle"></i> No existe: se creará <b></b>${u.es_planta?" en el catálogo y se enviará a todas las sedes para que puedan pedirlo":" en "+N(u.sede)}.</p></div>
+			<div class="inv-form-row" style="display:flex;gap:16px;flex-wrap:wrap">
+				<div><span class="inv-label">Con esta receta salen</span>
+					<input class="inv-input" id="rc_rinde" type="number" min="0" step="any" inputmode="decimal" style="width:100px" value="${v?Number(v.rinde):""}">
+					<b id="rc_u">${N(v?v.unidad||"UND":"")}</b>
+					<select class="inv-select" id="rc_unidad" hidden style="width:auto" title="Unidad de medida de lo que sale">${e}</select></div>
+				<div><span class="inv-label">Dura (días) <span class="inv-muted">— vacío si no vence</span></span>
+					<input class="inv-input" id="rc_vence" type="number" min="1" step="1" style="width:100px" value="${v&&v.vence_dias?v.vence_dias:""}"></div>
+			</div>
+			<span class="inv-label">Lleva estos insumos</span>
+			<table class="inv-table"><tbody id="rc_ins">${(v?v.insumos:[{}]).map(a).join("")}</tbody></table>
+			<span class="inv-link" id="rc_mas" style="display:inline-block;margin:6px 0 10px"><i class="fa fa-plus"></i>Agregar insumo</span>
+			<div class="inv-form-row"><span class="inv-label">Nota (opcional)</span>
+				<input class="inv-input" id="rc_nota" maxlength="255" style="width:100%" placeholder="Ej: batir 5 minutos, guardar en frío" value="${N(v&&v.nota?v.nota:"")}"></div>
+		</div>
+		<div class="xdlg-foot">
+			<button class="btn btn-sm btn-light" data-cerrar><i class="fa fa-times"></i>Cancelar</button>
+			<button class="btn btn-sm btn-success" id="rc_guardar"><i class="fa fa-check"></i>Guardar receta</button>
+		</div>`),t=s=>{n(s,i),s.addEventListener("input",()=>{var a,e,t=i.find(e=>e.texto===s.value);s.dataset.valor=t?t.valor:"",("rc_prod"===s.id?m.querySelector("#rc_u"):s.closest("tr").querySelector(".pr-ins-u")).textContent=t&&(a=t.valor,e=u.productos.find(e=>e.idproducto===Number(a)))?e.unidad||"UND":"","rc_prod"===s.id&&(e=!t&&""!==s.value.trim(),m.querySelector("#rc_nuevo").hidden=!e,m.querySelector("#rc_nuevo b").textContent=s.value.trim().toUpperCase(),m.querySelector("#rc_unidad").hidden=!e)})};t(m.querySelector("#rc_prod")),m.querySelectorAll(".pr-ins-prod").forEach(t),m.querySelector("#rc_mas").addEventListener("click",()=>{m.querySelector("#rc_ins").insertAdjacentHTML("beforeend",a());var e=m.querySelector("#rc_ins tr:last-child .pr-ins-prod");t(e),e.focus()}),m.querySelector("#rc_ins").addEventListener("click",e=>{e.target.closest(".pr-ins-x")&&e.target.closest("tr").remove()}),m.querySelector("#rc_guardar").addEventListener("click",async a=>{var a=a.currentTarget,e=Number(m.querySelector("#rc_prod").dataset.valor),t=m.querySelector("#rc_prod").value.trim();if(e||t){var s=e?null:{descripcion:t,idunidad_kardex:Number(m.querySelector("#rc_unidad").value)},i=A(m.querySelector("#rc_rinde"),!0);if(!i||i<=0)L("Escribe cuánto sale con esta receta.","error");else{var n=[];for(const o of m.querySelectorAll(".pr-ins")){var r=o.querySelector(".pr-ins-prod");if(r.value.trim()||o.querySelector(".pr-ins-cant").value){if(!r.dataset.valor)return L(`Elige "${r.value||"el insumo"}" de la lista.`,"error"),void r.focus();var d=A(o.querySelector(".pr-ins-cant"),!0);if(!d||d<=0)return void L(`Escribe la cantidad de ${r.value}.`,"error");n.push({idproducto:Number(r.dataset.valor),cantidad:d})}}if(n.length){a.disabled=!0;try{var c=await E("produccion.php?op=guardar_receta",{sede:u.idsede,idreceta:v?v.idreceta:0,idproducto:e,nuevo:s,rinde:i,vence_dias:m.querySelector("#rc_vence").value,nota:m.querySelector("#rc_nota").value,insumos:n});m.close(),L(c.creado?`Receta guardada. Se creó ${t.toUpperCase()}.`:"Receta guardada."),T(l,p)}catch(e){L(e.message,"error"),a.disabled=!1}}else L("Agrega al menos un insumo.","error")}}else L("Escribe qué producto sale.","error")})}export{i as render};

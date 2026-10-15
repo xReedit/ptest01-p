@@ -1,4 +1,6 @@
 <?php
+// Retirado (2026-10-15): ninguna pantalla lo usa y no validaba la empresa. Reemplazado por recepcion_oc.php / ordenes.php.
+http_response_code(410); exit;
 /**
  * Recepción de mercadería (ABASTECIMIENTO).
  * Registra lo que REALMENTE llegó (puede diferir de la OC: cantidad distinta,
