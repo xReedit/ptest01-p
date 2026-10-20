@@ -4080,6 +4080,59 @@
 			// respuesta: "<ERP_URL>|<token>" — el JS del menú hace split('|') para el redirect.
 			print ERP_URL . '|' . $erp_b64 . '.' . $erp_sigb;
 			break;
+		case -4003: // SSO token -> papaya-vision (servidor Go de Camaras IA). Mismo formato que -4002.
+			@require_once __DIR__ . '/../private/vision_secrets.php';
+			if (!defined('VISION_SHARED_SECRET') || !defined('VISION_URL')) {
+				http_response_code(500);
+				print 'vision_secrets_missing';
+				break;
+			}
+			if (empty($_SESSION['idusuario']) || empty($_SESSION['idsede'])) {
+				http_response_code(401);
+				print 'no_session';
+				break;
+			}
+			// Permiso del usuario: opcion "Cámaras IA" (codigo E2 en us_home_opciones, migracion 076).
+			// acc es "A1,C6,E2," (a veces con ",," o espacios): con comas a los lados E2 no casa con un E20.
+			$vis_acc = ',' . str_replace(' ', '', isset($_SESSION['acc']) ? (string)$_SESSION['acc'] : '') . ',';
+			if (strpos($vis_acc, ',E2,') === false) {
+				http_response_code(403);
+				print 'sin_permiso';
+				break;
+			}
+			// Gate opt-in: Camaras IA se activa por organizacion desde el panel Adm Sedes
+			// (tabla org_modulo, modulo 'camaras_ia'). Sin fila activa no se emite token.
+			// Falla en cerrado si la tabla aun no existe.
+			$vis_idorg = (int)($_SESSION['ido'] ?? 0);
+			$vis_activo = $bd->xDevolverUnDato(
+				"SELECT 1 FROM org_modulo WHERE idorg = $vis_idorg AND modulo = 'camaras_ia' AND activo = 1 LIMIT 1"
+			);
+			if (!$vis_activo) {
+				http_response_code(403);
+				print 'modulo_no_activo';
+				break;
+			}
+			$now = time();
+			$vis_payload = [
+				'idorg'     => $vis_idorg,
+				'idsede'    => (int)$_SESSION['idsede'],
+				'idusuario' => (int)$_SESSION['idusuario'],
+				'rol'       => (string)($_SESSION['rol'] ?? ''),
+				'nombre'    => (string)($_SESSION['nomU'] ?? ($_SESSION['unom'] ?? '')),
+				'iat'       => $now,
+				'exp'       => $now + 120, // 2 min — token de handoff de un solo uso (nonce)
+				'nonce'     => bin2hex(random_bytes(16))
+			];
+			// Un nombre con UTF-8 invalido no debe romper el token: se reemplaza el byte
+			// malo (PHP >= 7.2). En PHP viejo la constante no existe y se usa solo UNESCAPED.
+			$vis_json = json_encode($vis_payload, JSON_UNESCAPED_UNICODE | (defined('JSON_INVALID_UTF8_SUBSTITUTE') ? JSON_INVALID_UTF8_SUBSTITUTE : 0));
+			$vis_b64  = rtrim(strtr(base64_encode($vis_json), '+/', '-_'), '=');
+			$vis_sig  = hash_hmac('sha256', $vis_b64, VISION_SHARED_SECRET, true);
+			$vis_sigb = rtrim(strtr(base64_encode($vis_sig), '+/', '-_'), '=');
+			// respuesta: "<VISION_URL>|<token>" — el modulo Camaras IA hace split('|') y canjea
+			// el token en <VISION_URL>/api/v1/sso/canje.
+			print VISION_URL . '|' . $vis_b64 . '.' . $vis_sigb;
+			break;
 		case -4100: // feature flag por sede para la UI v3
 			if (empty($_SESSION['idsede'])) {
 				http_response_code(401);

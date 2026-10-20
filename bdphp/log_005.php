@@ -1474,7 +1474,12 @@
 					break;
 			}
 
-			$sql = "SELECT pd.cantidad_r cantidad, pd.punitario, pd.ptotal_r total, 0 procede, i.descripcion des_item
+			// cortesia (migraciones 078/079): la linea regalada sale aparte como "<item> (CORTESIA)" con importe 0.
+			// lado 0 = lo vendido (cantidad_r menos lo regalado; ptotal_r ya viene sin lo regalado), lado 1 = lo regalado.
+			// Una linea cobrada en parte y regalada el resto (5 alitas: 3 cobradas, 2 cortesia) da las dos filas.
+			$sql = "SELECT IF(x.lado = 1, pc.cantidad, pd.cantidad_r - IFNULL(pc.cantidad, 0)) cantidad, pd.punitario
+						, IF(x.lado = 1, 0, pd.ptotal_r) total, 0 procede
+						, IF(x.lado = 1, CONCAT(i.descripcion, ' (CORTESIA)'), i.descripcion) des_item
 					,'CARTA' des_procede
 					, s.descripcion des_seccion
 					, u.usuario, u.nombres 
@@ -1483,9 +1488,14 @@
 					INNER join seccion s on s.idseccion = pd.idseccion 
 					inner join item i on i.iditem = pd.iditem 
 					left join usuario u on u.idusuario  = p.idusuario 
+					left join pedido_cortesia pc on pc.idpedido_detalle = pd.idpedido_detalle and pc.activa = 1
+					inner join (select 0 lado union all select 1) x on x.lado = 0 or pc.idpedido_cortesia is not null
 				where p.idsede = $idsede and pd.estado = 0 and $fecha
+					and not (x.lado = 0 and pc.idpedido_cortesia is not null and pd.cantidad_r - pc.cantidad <= 0)
 				UNION ALL
-				SELECT pd.cantidad_r cantidad, pd.punitario, pd.ptotal_r total, 1 procede, i.descripcion des_item
+				SELECT IF(x.lado = 1, pc.cantidad, pd.cantidad_r - IFNULL(pc.cantidad, 0)) cantidad, pd.punitario
+						, IF(x.lado = 1, 0, pd.ptotal_r) total, 1 procede
+						, IF(x.lado = 1, CONCAT(i.descripcion, ' (CORTESIA)'), i.descripcion) des_item
 					,'BODEGA' des_procede
 					, s.descripcion des_seccion
 					, u.usuario, u.nombres 
@@ -1494,7 +1504,10 @@
 					inner join producto_familia s on s.idproducto_familia = pd.idseccion 
 					inner join producto i on i.idproducto = pd.iditem 
 					left join usuario u on u.idusuario  = p.idusuario 
-				where p.idsede = $idsede and pd.estado = 0 and $fecha ";
+					left join pedido_cortesia pc on pc.idpedido_detalle = pd.idpedido_detalle and pc.activa = 1
+					inner join (select 0 lado union all select 1) x on x.lado = 0 or pc.idpedido_cortesia is not null
+				where p.idsede = $idsede and pd.estado = 0 and $fecha
+					and not (x.lado = 0 and pc.idpedido_cortesia is not null and pd.cantidad_r - pc.cantidad <= 0) ";
 
 			$bd->xConsulta($sql);
 			break;

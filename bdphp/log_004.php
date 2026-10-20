@@ -21,7 +21,7 @@
 
 	// Modulos ERP que el panel puede prender/apagar. Lista cerrada: nadie inserta
 	// nombres arbitrarios en org_modulo.
-	$ERP_MODULOS = array('erp', 'catalogo_maestro');
+	$ERP_MODULOS = array('erp', 'catalogo_maestro', 'camaras_ia');
 
 	// Solo el panel "Adm Sedes" (permiso C3) toca modulos de OTRA organizacion.
 	// El X-Requested-With lo pone jQuery solo en peticiones del propio sitio; al

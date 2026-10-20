@@ -120,7 +120,8 @@
             $ce_anulado = array_key_exists('anulado', $obj) ? $obj['anulado'] : 0; 
             $estado_api = array_key_exists('estado_api', $obj) ? $obj['estado_api'] : 0;
             $estado_sunat = array_key_exists('estado_sunat', $obj) ? $obj['estado_sunat'] : 0;
-            $msj = array_key_exists('msj', $obj) ? $obj['msj'] : '';
+            // addslashes: las descripciones de SUNAT traen comillas y rompian el UPDATE
+            $msj = array_key_exists('msj', $obj) ? addslashes($obj['msj']) : '';
             $external_id = array_key_exists('external_id', $obj) ? $obj['external_id'] : '';
             $pdf = array_key_exists('pdf', $obj) ? $obj['pdf'] : 'NULL';
             $xml = array_key_exists('xml', $obj) ? $obj['xml'] : 'NULL';

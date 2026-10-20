@@ -275,10 +275,12 @@
             // pedido por confirmar de la carta QR (migracion 069, migraciones/pendientes-prod)
             $pwa_requiere_confirmacion = isset($items->pwa_requiere_confirmacion) && (string)$items->pwa_requiere_confirmacion === '1' ? '1' : '0';
             $pwa_confirmacion_exige_pago = $pwa_requiere_confirmacion === '1' && isset($items->pwa_confirmacion_exige_pago) && (string)$items->pwa_confirmacion_exige_pago === '1' ? '1' : '0';
+            // cortesias por item (migracion 078, migraciones/pendientes-prod): sin dato = desactivado
+            $permite_cortesia = isset($items->permite_cortesia) && (string)$items->permite_cortesia === '1' ? '1' : '0';
             // insertar o actualizar segun la columna idsede 
-            $sql = "insert into sede_opciones (idsede, switch2, num_intentos_cierre, update_stock_after, hora_cierre_dia, mozo_num_personas, mozo_aviso_plato_listo, pwa_requiere_confirmacion, pwa_confirmacion_exige_pago)
-                    values ($g_idsede, $items->switch2, $items->num_intentos_cierre, $items->update_stock_after, '$items->hora_cierre', '$mozo_num_personas', '$mozo_aviso_plato_listo', '$pwa_requiere_confirmacion', '$pwa_confirmacion_exige_pago')
-                    on duplicate key update switch2 = $items->switch2, num_intentos_cierre = $items->num_intentos_cierre, update_stock_after = $items->update_stock_after, hora_cierre_dia = '$items->hora_cierre', mozo_num_personas = '$mozo_num_personas', mozo_aviso_plato_listo = '$mozo_aviso_plato_listo', pwa_requiere_confirmacion = '$pwa_requiere_confirmacion', pwa_confirmacion_exige_pago = '$pwa_confirmacion_exige_pago'";
+            $sql = "insert into sede_opciones (idsede, switch2, num_intentos_cierre, update_stock_after, hora_cierre_dia, mozo_num_personas, mozo_aviso_plato_listo, pwa_requiere_confirmacion, pwa_confirmacion_exige_pago, permite_cortesia)
+                    values ($g_idsede, $items->switch2, $items->num_intentos_cierre, $items->update_stock_after, '$items->hora_cierre', '$mozo_num_personas', '$mozo_aviso_plato_listo', '$pwa_requiere_confirmacion', '$pwa_confirmacion_exige_pago', '$permite_cortesia')
+                    on duplicate key update switch2 = $items->switch2, num_intentos_cierre = $items->num_intentos_cierre, update_stock_after = $items->update_stock_after, hora_cierre_dia = '$items->hora_cierre', mozo_num_personas = '$mozo_num_personas', mozo_aviso_plato_listo = '$mozo_aviso_plato_listo', pwa_requiere_confirmacion = '$pwa_requiere_confirmacion', pwa_confirmacion_exige_pago = '$pwa_confirmacion_exige_pago', permite_cortesia = '$permite_cortesia'";
             
             $bd->xConsulta($sql);
             break;

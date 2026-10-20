@@ -1,0 +1,18 @@
+import{esc as i,tarjeta as o,aviso as c,confirmar as t}from"../ui.js?v=20261020a";import{vigente as l,recargar as d}from"../router.js?v=20261020a";const r=a=>String(a).padStart(2,"0");function s(a,e=Date.now()){var s;return a.conectado?{texto:"Conectado",clase:"ok"}:(a=a.ultimo_reporte?Date.parse(a.ultimo_reporte):NaN,Number.isFinite(a)?(a=new Date(a),s=r(a.getHours())+":"+r(a.getMinutes()),{texto:a.toDateString()===new Date(e).toDateString()?"Sin conexión desde "+s:`Sin conexión desde el ${r(a.getDate())}/${r(a.getMonth()+1)} a las `+s,clase:"mal"}):{texto:"Todavía no se conecta",clase:"mal"})}const u=a=>/^https?:\/\//.test(a||""),n="La PC deja de mirar las cámaras. Para usarla otra vez hay que vincularla con un código nuevo.";function m(a){var e=s(a);return`<div class="cm-motor">
+		<i class="fa fa-desktop"></i>
+		<div class="cm-motor-txt">
+			<h4>${i(a.hostname||"PC del local")}</h4>
+			<p>${a.version?"Versión "+i(a.version):"Versión sin dato"}</p>
+		</div>
+		<span class="cm-estado ${e.clase}">${i(e.texto)}</span>
+		<button class="btn btn-sm btn-light" type="button" data-acc="desvincular" data-id="${i(a.id)}"><i class="fa fa-chain-broken"></i>Desvincular</button>
+	</div>`}function p(a){return`
+	<p class="cm-vacio"><i class="fa fa-desktop"></i>Todavía no hay ninguna PC vinculada</p>
+	<p class="cm-sub">Para empezar:</p>
+	<ol class="cm-pasos">
+		<li>En una PC del local que quede prendida y esté en la misma red que el grabador de las cámaras, ${u(a)?"toca <b>Descargar programa</b> e instálalo.":"instala el programa Papaya Cámaras IA. Pide el programa de instalación a soporte de Papaya."}</li>
+		<li>Al terminar, el programa te muestra un código de 6 números.</li>
+		<li>Toca <b>Vincular</b> y escribe ese código.</li>
+	</ol>`}async function b(a,e,s=a=>t({titulo:`¿Desvincular ${a.hostname||"la PC del local"}?`,textoHtml:i(n),boton:"Sí, desvincular"})){if(!await s(e))return null;try{return await a.del("motores/"+encodeURIComponent(e.id)),{ok:!0}}catch(a){return{ok:!1,texto:a.message}}}async function a(a,{api:s},t){a.innerHTML='<p class="inv-empty"><i class="fa fa-spinner fa-spin"></i>Cargando…</p>';var e,r=await s.get("estado");if(l(t)){const n=r.motores||[];a.innerHTML=o({titulo:"Cámaras IA",ayuda:"Las cámaras que ya tienes en el local miran las mesas y te avisan cuáles están ocupadas.",acciones:`<a class="btn btn-sm btn-light" href="#" data-ir="" title="Ver el estado de nuevo"><i class="fa fa-refresh"></i>Actualizar</a>
+			${e=r.instalador_url,u(e)?`<a class="btn btn-sm btn-light" href="${i(e)}" target="_blank" rel="noopener"><i class="fa fa-download"></i>Descargar programa</a>`:""}<a class="btn btn-sm btn-success" href="#" data-ir="vincular"><i class="fa fa-link"></i>Vincular</a>`+(n.length?'<a class="btn btn-sm btn-primary" href="#" data-ir="equipos"><i class="fa fa-video-camera"></i>Grabadores y cámaras</a>':""),cuerpo:n.length?`<p class="cm-sub">PC del local</p><div class="cm-motores">${n.map(m).join("")}</div><p class="inv-ayuda cm-nota cm-siguiente"><i class="fa fa-arrow-right"></i> Siguiente paso: toca <b>Grabadores y cámaras</b>
+	para conectar el grabador de las cámaras y elegir cuáles miran las mesas.</p>`:p(r.instalador_url)}),a.querySelector(".inv-card").addEventListener("click",async a=>{const e=a.target.closest('[data-acc="desvincular"]');var a=e&&n.find(a=>String(a.id)===e.dataset.id);a&&!e.disabled&&(e.disabled=!0,a=await b(s,a),l(t))&&(e.disabled=!1,a)&&(a.ok?(c("Listo, la PC quedó desvinculada","ok"),d()):c(a.texto,"error"))})}}export{s as estadoMotor,p as pasos,b as desvincular,a as render};

@@ -52,6 +52,8 @@
 			"SELECT idarea_mesa, TRIM(titulo) AS titulo, num_mesa_ini AS desde, num_mesa_fin AS hasta, IFNULL(prefijo_mesa, '') AS prefijo
 			 FROM area_mesa WHERE idsede = ? AND estado = '0' AND $filtroTipo ORDER BY idarea_mesa", array($idsede));
 		return array(
+			// la sede de la sesion PHP: Camaras IA (app/camaras/js/vistas/mesas.js) la compara con la suya
+			'idsede' => (int)$idsede,
 			'mesas' => $sede ? (int)$sede[0]['mesas'] : 0,
 			'alfanumerica' => $alfa,
 			'areas' => $areas
