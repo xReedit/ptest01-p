@@ -90,11 +90,14 @@ function log_org($bd, $idorg) {
 }
 
 /** Administrador (rol 1) o usuario con la opcion Centro Logístico (B15). */
-function log_requiere_permiso($bd, $idusuario) {
+function log_tiene_permiso($bd, $idusuario) {
     $u = log_filas($bd, "SELECT rol, acc FROM usuario WHERE idusuario = ?", array((int)$idusuario));
     // acc a veces viene sin coma final ('...,B15'): se envuelve en comas para comparar exacto
-    $ok = $u && ((int)$u[0]['rol'] === 1 || strpos(',' . (string)$u[0]['acc'] . ',', ',B15,') !== false);
-    if (!$ok) { throw new ErrorUsuario('No tienes permiso para modificar el catálogo.'); }
+    return $u && ((int)$u[0]['rol'] === 1 || strpos(',' . (string)$u[0]['acc'] . ',', ',B15,') !== false);
+}
+
+function log_requiere_permiso($bd, $idusuario) {
+    if (!log_tiene_permiso($bd, $idusuario)) { throw new ErrorUsuario('No tienes permiso para modificar el catálogo.'); }
 }
 
 /** Corta si la org no tiene logistica, la sesion no esta en la sede central o el usuario no tiene permiso. */
@@ -102,7 +105,14 @@ function log_requiere_central($bd, $idorg, $idsede, $idusuario) {
     $org = log_org($bd, $idorg);
     if (!$org) { throw new ErrorUsuario('Tu empresa aún no tiene Logística activada.'); }
     if ((int)$org['idsede_central'] !== (int)$idsede) {
-        throw new ErrorUsuario('Esto se hace desde la sede central.');
+        // nombra las dos sedes y la salida: solo el admin (rol 1) puede cambiar de sede desde la barra de arriba
+        $nom = array_column(log_filas($bd, "SELECT idsede, nombre FROM sede WHERE idsede IN (?, ?)",
+            array((int)$idsede, (int)$org['idsede_central'])), 'nombre', 'idsede');
+        $u = log_filas($bd, "SELECT rol FROM usuario WHERE idusuario = ?", array((int)$idusuario));
+        $aqui = isset($nom[(int)$idsede]) ? $nom[(int)$idsede] : 'otra sede';
+        $central = isset($nom[(int)$org['idsede_central']]) ? $nom[(int)$org['idsede_central']] : 'la central';
+        throw new ErrorUsuario("Estás en $aqui. Esto se hace desde la sede central, $central: "
+            . ($u && (int)$u[0]['rol'] === 1 ? 'toca el nombre de la sede, arriba, y elígela.' : 'entra con un usuario de esa sede.'));
     }
     log_requiere_permiso($bd, $idusuario);
     return $org;

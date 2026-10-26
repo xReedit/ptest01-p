@@ -8,7 +8,7 @@
 require_once __DIR__ . '/_logistica.php';
 
 log_responder(function () use ($bd, $g_ido, $g_idsede, $g_us) {
-    $fila = log_filas($bd, "SELECT u.nombres AS usuario, s.nombre AS sede
+    $fila = log_filas($bd, "SELECT u.nombres AS usuario, u.rol, s.nombre AS sede
             FROM usuario u LEFT JOIN sede s ON s.idsede = ? WHERE u.idusuario = ? LIMIT 1", array($g_idsede, $g_us));
     $org = log_org($bd, $g_ido);
     if (!$org) { $rol = 'sin_activar'; }
@@ -22,8 +22,13 @@ log_responder(function () use ($bd, $g_ido, $g_idsede, $g_us) {
     // bienvenida (empresa sin configurar): una sede o cadena cambia la explicacion. sede es chica (~600 filas)
     $sedes = $rol === 'sin_activar'
         ? array_column(log_filas($bd, "SELECT nombre FROM sede WHERE idorg = ? AND estado = 0 ORDER BY nombre LIMIT 60", array($g_ido)), 'nombre') : array();
+    // fuera de la central: a donde ir (el inicio ofrece pasar a ella)
+    $central = $org && $rol !== 'central'
+        ? log_filas($bd, "SELECT idsede, nombre FROM sede WHERE idsede = ?", array((int)$org['idsede_central'])) : array();
     return array(
         'sedes_empresa' => $sedes,
+        'es_admin' => $fila && (int)$fila[0]['rol'] === 1,
+        'central' => $central ? array('idsede' => (int)$central[0]['idsede'], 'nombre' => $central[0]['nombre']) : null,
         'idorg' => $g_ido, 'idsede' => $g_idsede, 'idusuario' => $g_us,
         'usuario' => $fila ? $fila[0]['usuario'] : '', 'sede' => $fila ? $fila[0]['sede'] : '',
         'rol_logistica' => $rol,

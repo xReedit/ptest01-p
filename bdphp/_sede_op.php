@@ -59,6 +59,22 @@ if (!defined('SEDE_OP_HELPER_LOADED')) {
             return array($sess_org, $sess_sede, false);
         }
 
+        // Sede bloqueada o de baja: se rechaza aqui (403) y la sesion sigue viva. Si pasara, el guard
+        // del archivo incluido la veria como sede de sesion y haria session_destroy + 423 (call center al login).
+        require_once __DIR__ . '/_sede_estado.php';
+        if (!xSedeHabilitadaBD($bd->bd, $req_sede)) {
+            return array($sess_org, $sess_sede, false);
+        }
+
+        // No admin: la sede pedida tiene que estar en sus "sedes que atiende" (casa + usuario_sede_atiende).
+        if ($rol !== 1) {
+            require_once __DIR__ . '/_sedes_atiende.php';
+            $idu = isset($_SESSION['idusuario']) ? (int)$_SESSION['idusuario'] : 0;
+            if (!in_array($req_sede, xSedesAtiendeUsuario($bd, $idu), true)) {
+                return array($sess_org, $sess_sede, false);
+            }
+        }
+
         return array($sess_org, $req_sede, true);
     }
 
@@ -100,7 +116,8 @@ if (!defined('SEDE_OP_HELPER_LOADED')) {
         if ($existe) {
             return;
         }
-        $bd->xConsulta(
+        // xConsulta2: sin imprimir (xConsulta imprimia un JSON antes de la respuesta del destino).
+        $bd->xConsulta2(
             "INSERT INTO log_venta_otra_sede " .
             "(idusuario, idorg, idsede_origen, idsede_op, fecha_hora, fecha) " .
             "VALUES (" . $idu . ", " . (int)$idorg . ", " . $orig . ", " . $idsede_op .

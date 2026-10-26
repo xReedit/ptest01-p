@@ -12,7 +12,7 @@
  * cuando hay override activo en la pestaña.
  *
  * Parametros esperados (POST):
- *   _op_dest  : 'log' | 'log_001' | 'log_componentes' | 'log_010'
+ *   _op_dest  : uno de $destinos_validos (mas abajo)
  *   _op_org   : id de organizacion (debe ser la del usuario)
  *   _op_sede  : id de sede destino (debe ser de la misma org y estar activa)
  *   op        : (opcional) si el archivo destino usa $_GET['op'], se copia
@@ -35,8 +35,9 @@ require_once __DIR__ . '/_sede_op.php';
 $GLOBALS['__op_sede_raw_body'] = null;
 if (empty($_POST['_op_dest'])) {
     $ct = isset($_SERVER['CONTENT_TYPE']) ? $_SERVER['CONTENT_TYPE'] : '';
-    if (stripos($ct, 'application/json') !== false) {
-        $raw = file_get_contents('php://input');
+    $raw = file_get_contents('php://input');
+    // JSON con su content-type, o JSON en texto mandado por $.ajax (set-codigo-localizador de log_010)
+    if (stripos($ct, 'application/json') !== false || ($raw && $raw[0] === '{')) {
         if ($raw) {
             $GLOBALS['__op_sede_raw_body'] = $raw;
             $j = json_decode($raw, true);
@@ -78,7 +79,9 @@ $_SESSION['idsede'] = $op_sede;
 // Destino: archivo PHP existente que se reutiliza tal cual.
 $dest = isset($_POST['_op_dest']) ? $_POST['_op_dest']
        : (isset($_GET['_op_dest']) ? $_GET['_op_dest'] : '');
-$destinos_validos = array('log', 'log_001', 'log_componentes', 'log_010');
+// log_002 comprobante electronico, log_003 cola de impresion (comanda), log_009 cupones/areas/mesas,
+// log_encuesta url del ticket: sin ellos esos datos salian con la sede del call center.
+$destinos_validos = array('log', 'log_001', 'log_componentes', 'log_010', 'log_002', 'log_003', 'log_009', 'log_encuesta');
 
 if (!in_array($dest, $destinos_validos, true)) {
     http_response_code(400);

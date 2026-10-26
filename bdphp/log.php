@@ -2676,8 +2676,8 @@
 			//UPDATE pedido AS p INNER JOIN registro_pago AS rp ON p.idregistro_pago=rp.idregistro_pago SET p.cierre=1 WHERE (p.idorg=".$g_ido." AND p.idsede=".$g_idsede.") and (p.cierre=0 AND rp.idusuario=".$_POST['i'].");
 			$sql="
 				UPDATE ie_caja SET cierre=1 WHERE idusuario=".$_POST['i']." AND cierre=0 and (idorg=".$g_ido." AND idsede=".$g_idsede.");
-				UPDATE registro_pago SET cierre=1, fecha_cierre='".$hora_now."' WHERE idusuario=".$_POST['i']." and cierre=0 and (idorg=".$g_ido." AND idsede=".$g_idsede.");
-				UPDATE pedido AS p INNER JOIN registro_pago AS rp ON p.idregistro_pago=rp.idregistro_pago SET p.cierre=1 WHERE (rp.idorg=".$g_ido." AND rp.idsede=".$g_idsede.") AND rp.idusuario=".$_SESSION['idusuario']." AND p.cierre=0 ;
+				UPDATE registro_pago SET cierre=1, fecha_cierre='".$hora_now."' WHERE idusuario=".$_POST['i']." and cierre=0 and ".xFiltroSedeCaja('', $g_ido, $g_idsede).";
+				UPDATE pedido AS p INNER JOIN registro_pago AS rp ON p.idregistro_pago=rp.idregistro_pago SET p.cierre=1 WHERE ".xFiltroSedeCaja('rp', $g_ido, $g_idsede)." AND rp.idusuario=".$_SESSION['idusuario']." AND p.cierre=0 ;
 				UPDATE pedido SET cierre=1 WHERE estado=3 AND (idorg=".$g_ido." AND idsede=".$g_idsede.");
 				update pedido_borrados set fecha_cierre=now() where fecha_cierre='' and idusuario=".$_SESSION['idusuario'].";
 				DELETE FROM print_server_detalle WHERE (idorg=".$g_ido." and idsede=".$g_idsede.") and (impreso=1 or estado=1 or error=1);
@@ -2756,7 +2756,7 @@
 					INNER JOIN registro_pago_detalle AS rpd using(idregistro_pago)
 					INNER JOIN tipo_pago AS tp using(idtipo_pago)
 					INNER JOIN cliente AS c using(idcliente)
-				WHERE (rp.idorg=".$g_ido." AND rp.idsede=".$g_idsede." AND rp.idusuario=".$_SESSION['idusuario'].") AND rpd.idtipo_pago=3 AND (rp.estado=0 AND rpd.estado=0) AND rp.cierre=0
+				WHERE ".xFiltroSedeCaja('rp', $g_ido, $g_idsede)." AND rp.idusuario=".$_SESSION['idusuario']." AND rpd.idtipo_pago=3 AND (rp.estado=0 AND rpd.estado=0) AND rp.cierre=0
 				GROUP BY rp.idcliente
 			";
 			$bd->xConsulta($sql);
@@ -2767,7 +2767,7 @@
 					FROM registro_pago AS rp
 					INNER JOIN registro_pago_detalle AS rpd using(idregistro_pago)
 					LEFT JOIN registro_pago_hotel AS rph ON rph.idregistro_pago = rp.idregistro_pago AND rph.idsede = rp.idsede AND rph.estado = 'CARGADO'
-				WHERE (rp.idorg=".$g_ido." AND rp.idsede=".$g_idsede." AND rp.idusuario=".$_SESSION['idusuario'].") AND rpd.idtipo_pago=17 AND (rp.estado=0 AND rpd.estado=0) AND rp.cierre=0
+				WHERE ".xFiltroSedeCaja('rp', $g_ido, $g_idsede)." AND rp.idusuario=".$_SESSION['idusuario']." AND rpd.idtipo_pago=17 AND (rp.estado=0 AND rpd.estado=0) AND rp.cierre=0
 				GROUP BY rph.habitacion, rph.huesped
 			";
 			$bd->xConsulta($sql);
@@ -2784,7 +2784,7 @@
 			SELECT tpc.descripcion,'' as t1, count(rp.idregistro_pago) AS t2, format(sum(rp.total),2) AS t3
 				FROM registro_pago AS rp
 				INNER JOIN tipo_consumo AS tpc using(idtipo_consumo)
-			WHERE (rp.idorg=".$g_ido." AND rp.idsede=".$g_idsede." AND rp.idusuario=".$_SESSION['idusuario'].") AND rp.cierre=0 AND rp.estado=0
+			WHERE ".xFiltroSedeCaja('rp', $g_ido, $g_idsede)." AND rp.idusuario=".$_SESSION['idusuario']." AND rp.cierre=0 AND rp.estado=0
 			GROUP BY rp.idtipo_consumo
 			";
 			$bd->xConsulta($sql);
@@ -4161,6 +4161,19 @@
 
 // ---- sesion: que org/sede puede tener un usuario (reconexion, -1112, -1001) ----
 // Devuelve el idsede (texto) si la sede pertenece a la org, o null.
+// Filtro de sede de los pagos de la caja del usuario (cierre 70012 y reportes 702/70201/703).
+// Call center (permiso A27): sus pagos previos quedan con la sede del pedido (otra sede de la org);
+// se cierran con SU caja, igual que ya los suma el resumen (op 7, que filtra solo por idusuario).
+// El resto de usuarios sigue con org+sede, sin cambios.
+function xFiltroSedeCaja($alias, $ido, $idsede) {
+	$p = $alias ? $alias.'.' : '';
+	$acc = isset($_SESSION['acc']) ? $_SESSION['acc'] : '';
+	if (preg_match('/(^|,)\s*A27\s*(,|$)/', $acc)) {
+		return $p."idorg=".(int)$ido;
+	}
+	return "(".$p."idorg=".(int)$ido." AND ".$p."idsede=".(int)$idsede.")";
+}
+
 function xSedeDeOrg($bd, $idsede, $idorg) {
 	$st = $bd->bd->prepare("SELECT idsede FROM sede WHERE idsede = ? AND idorg = ?");
 	if (!$st) { return null; }

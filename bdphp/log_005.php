@@ -569,8 +569,20 @@
 			break;
 		
 		case 13: // load repartidor sede
-			$sql = "select * from repartidor where idsede_suscrito =".$g_idsede." and estado = 0 order by nombre";
-			$bd->xConsulta($sql);
+			// casa = sede de sesion o la atiende (repartidor_sede_atiende). Misma respuesta que xConsulta (valores como texto).
+			$rows = array(); $pasa = true; $error = '';
+			try {
+				$bd->prepare("select r.* from repartidor r where r.estado = 0 and (r.idsede_suscrito = ?
+					or exists (select 1 from repartidor_sede_atiende rs where rs.idrepartidor = r.idrepartidor and rs.idsede = ?)) order by r.nombre");
+				$bd->execute(array((int)$g_idsede, (int)$g_idsede));
+				foreach ($bd->fetchAll() as $r) {
+					$rows[] = (object)array_map(function ($v) { return $v === null ? null : (string)$v; }, $r);
+				}
+			} catch (Exception $e) {
+				error_log('log_005.php op=13: ' . $e->getMessage());
+				$pasa = false; $error = 'No se pudo cargar los repartidores';
+			}
+			print json_encode(array("success" => $pasa, "datos" => $rows, "sentencia" => "", "error" => $error, "info" => $bd->bd->info));
 			break;
 		
 		case 1301:// asignar repartidor

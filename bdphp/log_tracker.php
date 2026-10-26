@@ -136,6 +136,15 @@
 	if ($g_idsede === 0) { jsonOut(false, null, 'Tu sesion expiro, vuelve a entrar.'); }
 	if (!tieneAccesoModulo()) { jsonOut(false, null, 'No tienes permiso para ver el tracker de delivery.'); }
 
+	// Sedes de la vista (plan/REPARTIDOR-MULTISEDE-PLAN.md T5): el call center (A27) ve las sedes que
+	// atiende; cualquier otro usuario, solo la sede de la sesion, como siempre. Se usan en estado,
+	// recorrido y asignar. Si la lista sale vacia (casa bloqueada, por ejemplo) queda la de la sesion.
+	require_once __DIR__ . '/_sedes_atiende.php';
+	$g_callcenter = xEsCallCenter();
+	$g_sedes = $g_callcenter ? xSedesAtiendeUsuario($bd, $g_idusuario) : array();
+	if (!$g_sedes) { $g_sedes = array($g_idsede); }
+	$g_marcaSedes = str_repeat('?,', count($g_sedes) - 1) . '?';
+
 	try {
 		switch ($op) {
 
@@ -156,7 +165,10 @@
 						r.nombre, r.apellido, r.telefono,
 						r.online, r.ocupado, r.socketid, r.idsede_suscrito,
 						r.position_now, r.position_now_fecha,
-						(r.idsede_suscrito = p.idsede) AS es_propio,
+						p.idsede, s.nombre AS sede_nombre,
+						-- propio = atiende la sede del pedido: su casa o una de su lista
+						(r.idsede_suscrito = p.idsede OR EXISTS (SELECT 1 FROM repartidor_sede_atiende rsa
+							WHERE rsa.idrepartidor = r.idrepartidor AND rsa.idsede = p.idsede)) AS es_propio,
 						(COALESCE(r.fcm_token,'') <> '' OR COALESCE(r.pwa_code_verification,'') <> ''
 						   OR r.position_now IS NOT NULL) AS tiene_app,
 						(SELECT MIN(e.fecha) FROM repartidor_pedido_entregado e
@@ -174,18 +186,26 @@
 						CASE WHEN JSON_VALID(p.json_datos_delivery) THEN JSON_UNQUOTE(JSON_EXTRACT(p.json_datos_delivery,
 							'$.p_header.arrDatosDelivery.direccionEnvioSelected.referencia')) END AS dest_referencia,
 						CASE WHEN JSON_VALID(p.json_datos_delivery) THEN JSON_UNQUOTE(JSON_EXTRACT(p.json_datos_delivery,
-							'$.p_header.arrDatosDelivery.nombre')) END AS cliente
+							'$.p_header.arrDatosDelivery.nombre')) END AS cliente,
+						-- como va mi pedido: el call center busca al cliente por telefono y lee el paso del repartidor
+						CASE WHEN JSON_VALID(p.json_datos_delivery) THEN COALESCE(
+							NULLIF(JSON_UNQUOTE(JSON_EXTRACT(p.json_datos_delivery, '$.p_header.arrDatosDelivery.telefono')), 'null'),
+							JSON_UNQUOTE(JSON_EXTRACT(p.json_datos_delivery, '$.p_header.arrDatosDelivery.direccionEnvioSelected.telefono'))) END AS cliente_telefono,
+						ptle.time_line
 					FROM pedido p
+					JOIN sede s ON s.idsede = p.idsede
 					LEFT JOIN repartidor r ON r.idrepartidor = p.idrepartidor
-					WHERE p.idsede = ?
+					LEFT JOIN pedido_time_line_entrega ptle ON ptle.idpedido = p.idpedido
+					WHERE p.idsede IN ($g_marcaSedes)
 					  AND p.pwa_is_delivery = 1
 					  AND p.estado != 3
 					  AND p.fecha_hora >= CURDATE()
 					  AND p.fecha_hora < CURDATE() + INTERVAL 1 DAY
-					ORDER BY p.fecha_hora", array($g_idsede));
+					ORDER BY p.fecha_hora", $g_sedes);
 
-				// Los propios de la sede van aparte: la consulta de arriba parte de `pedido`, asi que un
+				// Los propios de la vista van aparte: la consulta de arriba parte de `pedido`, asi que un
 				// repartidor sin pedidos hoy no apareceria, y es justo el que esta libre para asignarle uno.
+				// Propio = su casa o su lista cae en alguna sede de la vista.
 				$propios = filas($bd, "
 					SELECT r.idrepartidor, r.nombre, r.apellido, r.telefono,
 						   r.online, r.ocupado, r.socketid, r.idsede_suscrito,
@@ -193,8 +213,38 @@
 						   (COALESCE(r.fcm_token,'') <> '' OR COALESCE(r.pwa_code_verification,'') <> ''
 						      OR r.position_now IS NOT NULL) AS tiene_app
 					  FROM repartidor r
-					 WHERE r.idsede_suscrito = ? AND r.estado = 0
-					 ORDER BY r.nombre", array($g_idsede));
+					 WHERE r.estado = 0
+					   AND (r.idsede_suscrito IN ($g_marcaSedes)
+							OR EXISTS (SELECT 1 FROM repartidor_sede_atiende rsa
+										WHERE rsa.idrepartidor = r.idrepartidor AND rsa.idsede IN ($g_marcaSedes)))
+					 ORDER BY r.nombre", array_merge($g_sedes, $g_sedes));
+				$propios = $propios ? $propios : array();
+
+				// sedes_atiende de cada propio (casa ∪ lista ∩ operables), en una sola consulta: la pantalla
+				// del call center filtra con esto a quien se le puede asignar cada pedido
+				if ($propios) {
+					$idsRep = array_map(function ($x) { return (int)$x['idrepartidor']; }, $propios);
+					$lista = filas($bd, "SELECT idrepartidor, idsede FROM repartidor_sede_atiende
+										  WHERE idrepartidor IN (" . str_repeat('?,', count($idsRep) - 1) . "?)", $idsRep);
+					$extra = array();
+					foreach ($lista as $l) { $extra[(int)$l['idrepartidor']][] = (int)$l['idsede']; }
+					$orgS = filas($bd, "SELECT idorg FROM sede WHERE idsede = ?", array($g_idsede));
+					$operables = array();
+					if ($orgS) { foreach (xSedesOperablesOrg($bd, $orgS[0]['idorg']) as $so) { $operables[$so['idsede']] = true; } }
+					$operables[$g_idsede] = true;   // la sede de la sesion siempre cuenta, como hoy
+					foreach ($propios as &$pr) {
+						$ids = isset($extra[(int)$pr['idrepartidor']]) ? $extra[(int)$pr['idrepartidor']] : array();
+						$ids[] = (int)$pr['idsede_suscrito'];
+						$ok = array();
+						foreach ($ids as $i) { if ($i > 0 && isset($operables[$i])) { $ok[$i] = $i; } }
+						$pr['sedes_atiende'] = implode(',', array_values($ok));
+					}
+					unset($pr);
+				}
+
+				// las sedes de la vista con su ubicacion: en modo sede, solo la de la sesion
+				$sedesVista = filas($bd, "SELECT idsede, nombre, latitude, longitude FROM sede
+										   WHERE idsede IN ($g_marcaSedes) ORDER BY nombre", $g_sedes);
 
 				// Los metodos que acepta la sede, para que el cajero pueda corregir el que declaro el
 				// repartidor: es normal que cobre en efectivo y termine yapeando el total del turno.
@@ -209,11 +259,106 @@
 							OR FIND_IN_SET(tp.idtipo_pago, s.metodo_pago_aceptados))
 					 ORDER BY tp.orden, tp.idtipo_pago", array($g_idsede));
 
+				// notas de seguimiento de hoy (migracion 082): "cliente llamo 2 veces", "reclamo demora"...
+				$notas = filas($bd, "
+					SELECT n.idpedido, n.nota, DATE_FORMAT(n.fecha, '%H:%i') AS hora,
+						   COALESCE(NULLIF(TRIM(u.nombres), ''), u.usuario) AS usuario
+					  FROM pedido_seguimiento_nota n
+					  LEFT JOIN usuario u ON u.idusuario = n.idusuario
+					 WHERE n.idsede IN ($g_marcaSedes) AND n.fecha >= CURDATE()
+					 ORDER BY n.id", $g_sedes);
+
 				jsonOut(true, array(
+					'modo'     => $g_callcenter ? 'callcenter' : 'sede',
 					'sede'     => isset($sede[0]) ? $sede[0] : null,
+					'sedes'    => $sedesVista ? $sedesVista : array(),
 					'filas'    => $rows ? $rows : array(),
-					'propios'  => $propios ? $propios : array(),
-					'metodos'  => $metodos ? $metodos : array()
+					'propios'  => $propios,
+					'metodos'  => $metodos ? $metodos : array(),
+					'notas'    => $notas ? $notas : array()
+				));
+				break;
+
+			// nota de seguimiento de un pedido de la vista (sede o call center)
+			case 'nota':
+				$body = leerBody();
+				$idpedido = (int)(isset($body['idpedido']) ? $body['idpedido'] : 0);
+				$nota = trim(isset($body['nota']) ? (string)$body['nota'] : '');
+				if (!$idpedido || $nota === '') { jsonOut(false, null, 'Escribe la nota.'); }
+				$nota = mb_substr($nota, 0, 300, 'UTF-8');
+				$ped = filas($bd, "SELECT idsede FROM pedido
+									WHERE idpedido = ? AND idsede IN ($g_marcaSedes) AND pwa_is_delivery = 1",
+					array_merge(array($idpedido), $g_sedes));
+				if (!$ped) { jsonOut(false, null, 'Ese pedido no existe o no es de una sede que ves.'); }
+				ejecutar($bd, "INSERT INTO pedido_seguimiento_nota (idpedido, idsede, idusuario, nota, fecha) VALUES (?, ?, ?, ?, NOW())",
+					array($idpedido, (int)$ped[0]['idsede'], $g_idusuario, $nota));
+				jsonOut(true, array('idpedido' => $idpedido));
+				break;
+
+			// Cambiar el repartidor de un pedido que todavia no salio en camino (el que lo tiene se trabo o
+			// no contesta). Mismas reglas que asignar para el nuevo; el anterior queda libre si no lleva otro.
+			case 'reasignar':
+				$body = leerBody();
+				$idpedido = (int)(isset($body['idpedido']) ? $body['idpedido'] : 0);
+				$idrepartidor = (int)(isset($body['idrepartidor']) ? $body['idrepartidor'] : 0);
+				if (!$idpedido || !$idrepartidor) { jsonOut(false, null, 'Faltan datos para cambiar el repartidor.'); }
+
+				$ped = filas($bd, "SELECT p.idsede, COALESCE(p.idrepartidor,0) AS idrep, COALESCE(p.pwa_delivery_status,'0') AS st,
+										  t.time_line
+									 FROM pedido p
+									 LEFT JOIN pedido_time_line_entrega t ON t.idpedido = p.idpedido
+									WHERE p.idpedido = ? AND p.idsede IN ($g_marcaSedes) AND p.pwa_is_delivery = 1 AND p.estado != 3",
+					array_merge(array($idpedido), $g_sedes));
+				if (!$ped) { jsonOut(false, null, 'Ese pedido no existe o no es de una sede que ves.'); }
+				$anterior = (int)$ped[0]['idrep'];
+				if (!$anterior) { jsonOut(false, null, 'Ese pedido no tiene repartidor. Usa Asignar.'); }
+				if (in_array($ped[0]['st'], array('4', '5'), true)) { jsonOut(false, null, 'Ese pedido ya fue entregado o liberado.'); }
+				$tl = json_decode((string)$ped[0]['time_line'], true);
+				if (is_array($tl) && (int)(isset($tl['paso']) ? $tl['paso'] : 0) >= 2) {
+					jsonOut(false, null, 'El pedido ya salio en camino: lo tiene el repartidor y no se puede cambiar.');
+				}
+				if ($anterior === $idrepartidor) { jsonOut(false, null, 'Ese repartidor ya tiene el pedido.'); }
+				$sedePed = (int)$ped[0]['idsede'];
+
+				$rep = filas($bd, "SELECT nombre, apellido, COALESCE(idsede_suscrito,0) AS casa
+									 FROM repartidor WHERE idrepartidor = ? AND estado = 0", array($idrepartidor));
+				$casaRep = $rep ? (int)$rep[0]['casa'] : 0;
+				if (!$rep || ($casaRep > 0 && $casaRep !== $sedePed && !xRepartidorAtiendeSede($bd, $idrepartidor, $sedePed))) {
+					jsonOut(false, null, 'Ese repartidor no esta disponible para esta sede.');
+				}
+
+				$bd->bd->begin_transaction();
+				try {
+					// solo si sigue con el anterior: dos terminales cambiandolo a la vez no se pisan
+					$n = ejecutar($bd, "UPDATE pedido SET idrepartidor = ?, pwa_estado = 'R' WHERE idpedido = ? AND idrepartidor = ?",
+						array($idrepartidor, $idpedido, $anterior));
+					if ($n === 0) { throw new Exception('carrera'); }
+					// el avance (llego al local) era del anterior: el nuevo empieza de cero
+					ejecutar($bd, "DELETE FROM pedido_time_line_entrega WHERE idpedido = ?", array($idpedido));
+					// el anterior queda libre si ya no lleva nada (mismo criterio que la entrega v2)
+					ejecutar($bd, "UPDATE repartidor
+									  SET ocupado = 0, pedido_por_aceptar = NULL, pedido_paso_va = 0, flag_paso_pedido = 0, solicita_liberar_pedido = 0
+									WHERE idrepartidor = ? AND NOT EXISTS (
+										SELECT 1 FROM pedido p WHERE p.idrepartidor = ? AND p.estado != 3
+										   AND COALESCE(p.pwa_delivery_status,'0') NOT IN ('4','5')
+										   AND p.fecha_hora >= NOW() - INTERVAL 2 DAY)",
+						array($anterior, $anterior));
+					$det = json_encode(array('de' => $anterior, 'a' => $idrepartidor, 'idusuario' => $g_idusuario));
+					ejecutar($bd, "INSERT INTO repartidor_evento_log (idrepartidor, idpedido, evento, canal, detalle) VALUES
+									(?, ?, 'reasignado_quitado', 'tracker', ?), (?, ?, 'reasignado_tracker', 'tracker', ?)",
+						array($anterior, $idpedido, $det, $idrepartidor, $idpedido, $det));
+					$bd->bd->commit();
+				} catch (Exception $e) {
+					$bd->bd->rollback();
+					if ($e->getMessage() === 'carrera') { jsonOut(false, null, 'Otro terminal acaba de cambiar ese pedido. Actualiza la pantalla.'); }
+					throw $e;
+				}
+
+				jsonOut(true, array(
+					'idpedido' => $idpedido,
+					'idrepartidor' => $idrepartidor,
+					'anterior' => $anterior,
+					'nombre' => trim($rep[0]['nombre'] . ' ' . $rep[0]['apellido'])
 				));
 				break;
 
@@ -262,8 +407,9 @@
 				if ($idpedido <= 0) { jsonOut(false, null, 'Falta el pedido.'); }
 
 				// el idsede del WHERE es la autorizacion: una sede no puede pedir el recorrido de otra
+				// (el call center, solo de las sedes que atiende)
 				$fila = filas($bd, "
-					SELECT p.idpedido, p.correlativo_dia, p.numpedido, p.fecha_hora,
+					SELECT p.idpedido, p.idsede, p.correlativo_dia, p.numpedido, p.fecha_hora,
 						   r.nombre, r.apellido,
 						   CASE WHEN JSON_VALID(p.json_datos_delivery) THEN JSON_UNQUOTE(JSON_EXTRACT(
 							   p.json_datos_delivery, '$.p_header.arrDatosDelivery.direccionEnvioSelected.latitude')) END AS dest_lat,
@@ -281,7 +427,7 @@
 					  FROM pedido p
 					  LEFT JOIN repartidor r ON r.idrepartidor = p.idrepartidor
 					  LEFT JOIN repartidor_recorrido rr ON rr.idpedido = p.idpedido
-					 WHERE p.idpedido = ? AND p.idsede = ?", array($idpedido, $g_idsede));
+					 WHERE p.idpedido = ? AND p.idsede IN ($g_marcaSedes)", array_merge(array($idpedido), $g_sedes));
 
 				if (!$fila) { jsonOut(false, null, 'Ese pedido no es de esta sede.'); }
 				$f = $fila[0];
@@ -307,7 +453,7 @@
 				}
 
 				$sedeR = filas($bd, "SELECT nombre, latitude, longitude FROM sede WHERE idsede = ?",
-					array($g_idsede));
+					array((int)$f['idsede']));
 
 				jsonOut(true, array(
 					'idpedido'      => (int)$f['idpedido'],
@@ -340,6 +486,8 @@
 			//
 			// Los montos los calcula el servidor: del cliente solo se aceptan los pedidos y los metodos.
 			case 'rendir':
+				// la rendicion la recibe cada sede; el call center solo ve y asigna
+				if ($g_callcenter) { jsonOut(false, null, 'El call center no recibe rendiciones.'); }
 				$body = leerBody();
 				$idrepartidor = (int)(isset($body['idrepartidor']) ? $body['idrepartidor'] : 0);
 				$modo = (isset($body['modo']) && $body['modo'] === 'mano') ? 'mano' : 'pedido';
@@ -379,7 +527,8 @@
 					SELECT p.idpedido, p.idorg, p.idcliente, p.idtipo_consumo,
 						   CAST(REPLACE(p.total_r, ',', '') AS DECIMAL(12,2)) AS cobro,
 						   CAST(REPLACE(p.total, ',', '') AS DECIMAL(12,2)) AS comida,
-						   (r.idsede_suscrito = p.idsede) AS es_propio,
+						   (r.idsede_suscrito = p.idsede OR EXISTS (SELECT 1 FROM repartidor_sede_atiende rsa
+								WHERE rsa.idrepartidor = r.idrepartidor AND rsa.idsede = p.idsede)) AS es_propio,
 						   CASE WHEN JSON_VALID(p.json_datos_delivery) THEN JSON_UNQUOTE(JSON_EXTRACT(
 							   p.json_datos_delivery, '$.p_header.arrDatosDelivery.costoTotalDelivery')) END AS costo_delivery
 					  FROM pedido p
@@ -485,21 +634,28 @@
 				$idrepartidor = (int)(isset($body['idrepartidor']) ? $body['idrepartidor'] : 0);
 				if (!$idpedido || !$idrepartidor) { jsonOut(false, null, 'Faltan datos para asignar.'); }
 
-				// el pedido tiene que ser de ESTA sede: si no, cualquiera podria asignar pedidos ajenos
-				$ped = filas($bd, "SELECT idpedido, COALESCE(idrepartidor,0) AS idrep
+				// el pedido tiene que ser de una sede de la vista: si no, cualquiera podria asignar pedidos ajenos
+				$ped = filas($bd, "SELECT idpedido, idsede, COALESCE(idrepartidor,0) AS idrep
 									 FROM pedido
-									WHERE idpedido = ? AND idsede = ? AND pwa_is_delivery = 1 AND estado != 3",
-					array($idpedido, $g_idsede));
-				if (!$ped) { jsonOut(false, null, 'Ese pedido no existe o no es de esta sede.'); }
+									WHERE idpedido = ? AND idsede IN ($g_marcaSedes) AND pwa_is_delivery = 1 AND estado != 3",
+					array_merge(array($idpedido), $g_sedes));
+				if (!$ped) {
+					jsonOut(false, null, $g_callcenter ? 'Ese pedido no existe o no es de una sede que atiendes.'
+						: 'Ese pedido no existe o no es de esta sede.');
+				}
 				if ((int)$ped[0]['idrep'] > 0) { jsonOut(false, null, 'Ese pedido ya tiene repartidor.'); }
+				$sedePed = (int)$ped[0]['idsede'];
 
-				// propio de la sede, o de la red (global). Nunca el propio de otro local.
-				$rep = filas($bd, "SELECT idrepartidor, nombre, apellido, telefono
+				// de la red (global), o que atienda LA SEDE DEL PEDIDO (su casa o su lista).
+				// Nunca el propio de otro local.
+				$rep = filas($bd, "SELECT idrepartidor, nombre, apellido, telefono, COALESCE(idsede_suscrito,0) AS casa
 									 FROM repartidor
-									WHERE idrepartidor = ? AND estado = 0
-									  AND (idsede_suscrito = ? OR COALESCE(idsede_suscrito,0) = 0)",
-					array($idrepartidor, $g_idsede));
-				if (!$rep) { jsonOut(false, null, 'Ese repartidor no esta disponible para esta sede.'); }
+									WHERE idrepartidor = ? AND estado = 0",
+					array($idrepartidor));
+				$casaRep = $rep ? (int)$rep[0]['casa'] : 0;
+				if (!$rep || ($casaRep > 0 && $casaRep !== $sedePed && !xRepartidorAtiendeSede($bd, $idrepartidor, $sedePed))) {
+					jsonOut(false, null, 'Ese repartidor no esta disponible para esta sede.');
+				}
 
 				// la condicion del WHERE es la que evita que dos terminales asignen el mismo pedido:
 				// el segundo no afecta ninguna fila y se entera aqui, no cuando el repartidor reclame

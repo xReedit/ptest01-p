@@ -21,7 +21,21 @@
     switch($_GET['op'])
 	{
         case 1:// load sedes
-            $sql = "select idorg, idsede, nombre, ciudad, direccion from sede where idorg = $g_ido and estado=0 order by nombre";
+            $sql = "select s.idorg, s.idsede, s.nombre, s.ciudad, s.direccion, s.latitude, s.longitude from sede s where s.idorg = $g_ido and s.estado=0";
+            // POS call center (x-comp-pos-sede): sin sedes bloqueadas ni dadas de baja (misma regla que _sede_estado.php).
+            // Reportes y configuracion no mandan el parametro y siguen viendo todas.
+            if (isset($_POST['solo_operables']) && $_POST['solo_operables'] === '1') {
+                $sql .= " and not exists (select 1 from sede_estado se
+                            where se.idsede_estado = (select max(x.idsede_estado) from sede_estado x where x.idsede = s.idsede)
+                              and (ifnull(se.is_bloqueado, '0') <> '0' or ifnull(se.is_baja, '0') <> '0'))";
+                // Call center (A27) no admin: solo las sedes que atiende (casa + usuario_sede_atiende).
+                require_once __DIR__ . '/_sedes_atiende.php';
+                if (xEsCallCenter() && (!isset($_SESSION['rol']) || (int)$_SESSION['rol'] !== 1)) {
+                    $lista = array_map('intval', xSedesAtiendeUsuario($bd, $g_idusuario));
+                    $sql .= " and s.idsede in (" . ($lista ? implode(',', $lista) : '0') . ")";
+                }
+            }
+            $sql .= " order by s.nombre";
             $bd->xConsulta($sql);
             break;
         case 1001:// load all sedes

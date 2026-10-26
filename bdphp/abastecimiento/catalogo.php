@@ -24,8 +24,12 @@ case 'config':
 
 case 'activar':
     log_responder(function () use ($bd, $ido, $us) {
-        $rol = log_filas($bd, "SELECT rol FROM usuario WHERE idusuario = ?", array($us));
-        if (!$rol || (int)$rol[0]['rol'] !== 1) { throw new ErrorUsuario('Solo un administrador puede configurar Logística.'); }
+        if (!log_tiene_permiso($bd, $us)) {
+            // dice a quien pedirselo: "administrador" de cargo no siempre es rol 1
+            $adm = log_filas($bd, "SELECT nombres FROM usuario WHERE idorg = ? AND rol = 1 AND estado = 0 ORDER BY idusuario LIMIT 3", array($ido));
+            throw new ErrorUsuario('Solo un administrador o quien tenga el permiso Centro Logístico puede configurarlo.'
+                . ($adm ? ' Pídeselo a: ' . implode(', ', array_column($adm, 'nombres')) . '.' : ''));
+        }
         $b = log_body();
         $central = isset($b['idsede_central']) ? (int)$b['idsede_central'] : 0;
         $sedes = isset($b['sedes']) && is_array($b['sedes']) ? $b['sedes'] : array();
