@@ -199,6 +199,9 @@ $routes = [
                 ['id' => 6, 'titulo' => 'Nueva función: Encuestas de satisfacción',
                  'descripcion' => 'Descubre qué piensan tus clientes. Arma tu encuesta en un minuto con plantillas listas (satisfacción en el local, NPS post-venta, delivery o de un solo toque) y deja elegido en qué canal correrá cada una. Muy pronto tus clientes podrán responderlas desde una tablet, un QR, el comprobante o WhatsApp. Búscala en Administración > "Configurar Encuestas".',
                  'route' => null],
+                ['id' => 7, 'titulo' => 'Nueva función: Diseña tu Salón 3D',
+                 'descripcion' => 'Arma tu local en 3D con tus mesas, barra y plantas, y mira desde caja qué mesa está ocupada, cuál pide la cuenta, quién llama al personal o pide por QR, con el salón en movimiento. Búscala en Administración > "Diseña tu Salón 3D".',
+                 'route' => null],
             ];
 
             $sql_usuario = "SELECT last_version_changelog as d1 FROM usuario WHERE idusuario = $g_us";

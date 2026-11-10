@@ -669,10 +669,13 @@
 			$bd->xConsulta($sql);
 			break;
 		case 1605: // cmabiar meta
-				$idsede = $_POST['idsede'];				
-				$meta = $_POST['meta'];
-				$new = $_POST['new'];
+				$idsede = intval($_POST['idsede']);
+				$meta = floatval($_POST['meta']);
 				$idsede = $idsede == 0 ? $g_idsede : $idsede;
+
+				// la sede elegida debe ser de la misma organización
+				$esDeLaOrg = $bd->xDevolverUnDato("select count(*) from sede where idorg = ".intval($g_ido)." and idsede = $idsede");
+				if ( $esDeLaOrg == 0 ) { break; }
 
 				$meta_m = $meta * 30;
 				$meta_y = $meta_m * 12;
@@ -688,7 +691,7 @@
 				}
 				
 				if ( $new == "1" ) {
-					$sql = "insert into sede_meta(idorg, idsede, diaria, mensual, anual, fecha) values ($g_ido, $g_idsede,'$meta', '$meta_m', '$meta_y', CURDATE())";
+					$sql = "insert into sede_meta(idorg, idsede, diaria, mensual, anual, fecha) values ($g_ido, $idsede,'$meta', '$meta_m', '$meta_y', CURDATE())";
 				} else {					
 					$sql="update sede_meta set diaria='$meta', mensual='$meta_m', anual='$meta_y' where idsede = $idsede";
 				}

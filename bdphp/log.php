@@ -3629,7 +3629,7 @@
 
 			// solo lee la sesion (ya copiada en $g_*): soltar el candado para que esta consulta
 			// pesada no deje colgadas las demas peticiones del usuario (p. ej. op=-108 del router)
-			session_write_close();
+			if (empty($GLOBALS['__op_sede_snapshot'])) { session_write_close(); } // por el proxy no: grabaria la sede temporal en la sesion
 			//100521
 			$sql = "call procedure_registro_pagos_20001($g_idsede, '$fecha', $g_us)";
 				
@@ -3648,7 +3648,7 @@
 		case 2000101:// historial de ventas -detallado
 			$pagination = $_POST['pagination'];
 			$fecha = $pagination['pageFecha'];
-			session_write_close(); // ver op 20001
+			if (empty($GLOBALS['__op_sede_snapshot'])) { session_write_close(); } // ver op 20001
 			$sql = "call procedure_reporte_ventas_diario($g_idsede, '$fecha', $g_us)";
 			$bd->xConsulta($sql);
 			break;

@@ -243,7 +243,7 @@
 				}
 
 				// las sedes de la vista con su ubicacion: en modo sede, solo la de la sesion
-				$sedesVista = filas($bd, "SELECT idsede, nombre, latitude, longitude FROM sede
+				$sedesVista = filas($bd, "SELECT idsede, nombre, ciudad, direccion, latitude, longitude FROM sede
 										   WHERE idsede IN ($g_marcaSedes) ORDER BY nombre", $g_sedes);
 
 				// Los metodos que acepta la sede, para que el cajero pueda corregir el que declaro el
@@ -384,8 +384,14 @@
 					|| ($lat == 0 && $lng == 0)) {
 					jsonOut(false, null, 'Esas coordenadas no son validas.');
 				}
+				// call center: tambien las sedes que atiende. Sin idsede, la de la sesion, como siempre.
+				$idsedeUb = $g_idsede;
+				if (!empty($body['idsede'])) {
+					$idsedeUb = (int)$body['idsede'];
+					if (!in_array($idsedeUb, array_map('intval', $g_sedes), true)) { jsonOut(false, null, 'No atiendes esa sede.'); }
+				}
 				ejecutar($bd, "UPDATE sede SET latitude = ?, longitude = ? WHERE idsede = ?",
-					array($lat, $lng, $g_idsede));
+					array($lat, $lng, $idsedeUb));
 				jsonOut(true, array('latitude' => $lat, 'longitude' => $lng));
 				break;
 

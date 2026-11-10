@@ -106,6 +106,73 @@
 				}
 				jsonOut(true, leerLista($bd, $per, $g_ido));
 
+			// Call center: cliente ya registrado en alguna de las sedes que atiende, con sus direcciones ubicadas.
+			case 'buscar-cliente':
+				if (!xEsCallCenter()) { jsonOut(false, null, 'No tienes permiso.'); }
+				$q = trim(isset($b['q']) ? (string)$b['q'] : '');
+				$tel = preg_replace('/[\s+\-]/', '', $q);
+				$esTel = $tel !== '' && ctype_digit($tel);
+				$txt = $esTel ? $tel : $q;
+				$sedes = xSedesAtiendeUsuario($bd, isset($_SESSION['idusuario']) ? (int)$_SESSION['idusuario'] : 0);
+				if (strlen($txt) < 3 || !$sedes) { jsonOut(true, array('clientes' => array())); }
+				$like = '%' . addcslashes($txt, '%_\\') . '%';
+				// STRAIGHT_JOIN: parte de las sedes (idx_cs_sede_cliente), no del total de clientes
+				$bd->prepare("SELECT c.idcliente, c.nombres, COALESCE(NULLIF(MAX(cs.telefono), ''), c.telefono) AS telefono
+					FROM cliente_sede cs STRAIGHT_JOIN cliente c ON c.idcliente = cs.idcliente
+					WHERE cs.idsede IN (" . implode(',', array_fill(0, count($sedes), '?')) . ") AND c.estado = 0 AND c.nombres <> ''
+					  AND " . ($esTel ? "(cs.telefono LIKE ? OR c.telefono LIKE ?)" : "c.nombres LIKE ?") . "
+					GROUP BY c.idcliente ORDER BY c.nombres LIMIT 10");
+				$bd->execute(array_merge($sedes, $esTel ? array($like, $like) : array($like)));
+				$clientes = $bd->fetchAll();
+				if (!$clientes) { jsonOut(true, array('clientes' => array())); }
+
+				$ids = array_map(function ($c) { return (int)$c['idcliente']; }, $clientes);
+				$bd->prepare("SELECT idcliente_pwa_direccion, idcliente, titulo, direccion, latitude, longitude FROM cliente_pwa_direccion
+					WHERE idcliente IN (" . implode(',', array_fill(0, count($ids), '?')) . ")
+					  AND estado = 0 AND latitude <> 0 AND longitude <> 0 ORDER BY idcliente_pwa_direccion DESC");
+				$bd->execute($ids);
+				$porCliente = array();
+				foreach ($bd->fetchAll() as $d) {
+					// cada pedido puede repetir el mismo punto: se deja el mas reciente
+					$clave = round($d['latitude'], 4) . ',' . round($d['longitude'], 4);
+					if (!isset($porCliente[(int)$d['idcliente']][$clave])) { $porCliente[(int)$d['idcliente']][$clave] = $d; }
+				}
+				foreach ($clientes as &$c) {
+					$dirs = isset($porCliente[(int)$c['idcliente']]) ? array_values($porCliente[(int)$c['idcliente']]) : array();
+					$c['direcciones'] = array_slice($dirs, 0, 50);
+				}
+				unset($c);
+				jsonOut(true, array('clientes' => $clientes));
+
+			// Call center: direccion nueva de un cliente de las sedes que atiende (mismas columnas que procedure_registra_nueva_direccion_cliente).
+			case 'agregar-direccion-cliente':
+				if (!xEsCallCenter()) { jsonOut(false, null, 'No tienes permiso.'); }
+				$idcli = isset($b['idcliente']) ? (int)$b['idcliente'] : 0;
+				$lat = isset($b['latitude']) ? (float)$b['latitude'] : 0;
+				$lng = isset($b['longitude']) ? (float)$b['longitude'] : 0;
+				$dirTxt = trim(isset($b['direccion']) ? (string)$b['direccion'] : '');
+				if ($idcli <= 0 || $dirTxt === '' || ($lat == 0 && $lng == 0) || abs($lat) > 90 || abs($lng) > 180) {
+					jsonOut(false, null, 'Esa direccion no es valida.');
+				}
+				$sedes = xSedesAtiendeUsuario($bd, isset($_SESSION['idusuario']) ? (int)$_SESSION['idusuario'] : 0);
+				$esDeSus = $sedes ? uno($bd, "SELECT 1 AS ok FROM cliente_sede WHERE idcliente = ? AND idsede IN ("
+					. implode(',', array_fill(0, count($sedes), '?')) . ") LIMIT 1", array_merge(array($idcli), $sedes)) : null;
+				if (!$esDeSus) { jsonOut(false, null, 'Ese cliente no es de las sedes que atiendes.'); }
+
+				$campos = "idcliente_pwa_direccion, titulo, direccion, latitude, longitude";
+				$ya = uno($bd, "SELECT $campos FROM cliente_pwa_direccion
+					WHERE idcliente = ? AND estado = 0 AND ABS(latitude - ?) < 0.0001 AND ABS(longitude - ?) < 0.0001 LIMIT 1", array($idcli, $lat, $lng));
+				if ($ya) { jsonOut(true, $ya); }
+
+				$txt200 = function ($k) use ($b) { return mb_substr(trim(isset($b[$k]) ? (string)$b[$k] : ''), 0, 150, 'UTF-8'); };
+				$bd->prepare("INSERT INTO cliente_pwa_direccion
+					(idcliente, direccion, referencia, is_georreferencial, is_from_cliente, ciudad, departamento, pais, titulo, latitude, longitude, codigo, provincia)
+					VALUES (?, ?, '', 1, 0, ?, ?, ?, 'Otro', ?, ?, ?, ?)");
+				$bd->execute(array($idcli, mb_substr($dirTxt, 0, 200, 'UTF-8'), $txt200('ciudad'), $txt200('departamento'), $txt200('pais'),
+					$lat, $lng, mb_substr($txt200('codigo'), 0, 50, 'UTF-8'), $txt200('provincia')));
+				if ($bd->stmt->errno) { throw new Exception($bd->stmt->error); }
+				jsonOut(true, uno($bd, "SELECT $campos FROM cliente_pwa_direccion WHERE idcliente_pwa_direccion = ?", array((int)$bd->lastInsertId())));
+
 			default:
 				jsonOut(false, null, 'Operacion no valida.');
 		}
