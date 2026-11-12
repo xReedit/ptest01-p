@@ -1,11 +1,84 @@
-import{DataTexture,Matrix4,RepeatWrapping,Vector2,Vector3}from"../../../build/three.module.js";const GTAOShader={name:"GTAOShader",defines:{PERSPECTIVE_CAMERA:1,SAMPLES:16,NORMAL_VECTOR_TYPE:1,DEPTH_SWIZZLING:"x",SCREEN_SPACE_RADIUS:0,SCREEN_SPACE_RADIUS_SCALE:100,SCENE_CLIP_BOX:0},uniforms:{tNormal:{value:null},tDepth:{value:null},tNoise:{value:null},resolution:{value:new Vector2},cameraNear:{value:null},cameraFar:{value:null},cameraProjectionMatrix:{value:new Matrix4},cameraProjectionMatrixInverse:{value:new Matrix4},cameraWorldMatrix:{value:new Matrix4},radius:{value:.25},distanceExponent:{value:1},thickness:{value:1},distanceFallOff:{value:1},scale:{value:1},sceneBoxMin:{value:new Vector3(-1,-1,-1)},sceneBoxMax:{value:new Vector3(1,1,1)}},vertexShader:`
+import {
+	DataTexture,
+	Matrix4,
+	RepeatWrapping,
+	Vector2,
+	Vector3,
+} from '../../../build/three.module.js';
+
+/**
+ * References:
+ * - implemented algorithm - GTAO
+ *   - https://iryoku.com/downloads/Practical-Realtime-Strategies-for-Accurate-Indirect-Occlusion.pdf
+ *   - https://github.com/Patapom/GodComplex/blob/master/Tests/TestHBIL/2018%20Mayaux%20-%20Horizon-Based%20Indirect%20Lighting%20(HBIL).pdf
+ *
+ * - other AO algorithms that are not implemented here:
+ *   - Screen Space Ambient Occlusion (SSAO), see also SSAOShader.js
+ *	 - http://john-chapman-graphics.blogspot.com/2013/01/ssao-tutorial.html
+ *	 - https://learnopengl.com/Advanced-Lighting/SSAO
+ *	 - https://creativecoding.soe.ucsc.edu/courses/cmpm164/_schedule/AmbientOcclusion.pdf
+ *	 - https://drive.google.com/file/d/1SyagcEVplIm2KkRD3WQYSO9O0Iyi1hfy/edit
+ *   - Scalable Ambient Occlusion (SAO), see also SAOShader.js
+ *	 - https://casual-effects.com/research/McGuire2012SAO/index.html
+ *	   - https://research.nvidia.com/sites/default/files/pubs/2012-06_Scalable-Ambient-Obscurance/McGuire12SAO.pdf
+ *   - N8HO
+ *	 - https://github.com/N8python/n8ao
+ *   - Horizon Based Ambient Occlusion (HBAO)
+ *	 - http://citeseerx.ist.psu.edu/viewdoc/download?doi=10.1.1.577.2286&rep=rep1&type=pdf
+ *	 - https://www.derschmale.com/2013/12/20/an-alternative-implementation-for-hbao-2/
+ *
+ * - further reading
+ * 	 - https://ceur-ws.org/Vol-3027/paper5.pdf
+ *   - https://www.comp.nus.edu.sg/~lowkl/publications/mssao_visual_computer_2012.pdf
+ *   - https://web.ics.purdue.edu/~tmcgraw/papers/mcgraw-ao-2008.pdf
+ *   - https://www.activision.com/cdn/research/Practical_Real_Time_Strategies_for_Accurate_Indirect_Occlusion_NEW%20VERSION_COLOR.pdf
+ *   - https://citeseerx.ist.psu.edu/viewdoc/download?doi=10.1.1.390.2463&rep=rep1&type=pdf
+ *   - https://www.intel.com/content/www/us/en/developer/articles/technical/adaptive-screen-space-ambient-occlusion.html
+ */
+
+const GTAOShader = {
+
+	name: 'GTAOShader',
+
+	defines: {
+		PERSPECTIVE_CAMERA: 1,
+		SAMPLES: 16,
+		NORMAL_VECTOR_TYPE: 1,
+		DEPTH_SWIZZLING: 'x',
+		SCREEN_SPACE_RADIUS: 0,
+		SCREEN_SPACE_RADIUS_SCALE: 100.0,
+		SCENE_CLIP_BOX: 0,
+	},
+
+	uniforms: {
+		tNormal: { value: null },
+		tDepth: { value: null },
+		tNoise: { value: null },
+		resolution: { value: new Vector2() },
+		cameraNear: { value: null },
+		cameraFar: { value: null },
+		cameraProjectionMatrix: { value: new Matrix4() },
+		cameraProjectionMatrixInverse: { value: new Matrix4() },
+		cameraWorldMatrix: { value: new Matrix4() },
+		radius: { value: 0.25 },
+		distanceExponent: { value: 1. },
+		thickness: { value: 1. },
+		distanceFallOff: { value: 1. },
+		scale: { value: 1. },
+		sceneBoxMin: { value: new Vector3( - 1, - 1, - 1 ) },
+		sceneBoxMax: { value: new Vector3( 1, 1, 1 ) },
+	},
+
+	vertexShader: /* glsl */`
 
 		varying vec2 vUv;
 
 		void main() {
 			vUv = uv;
 			gl_Position = projectionMatrix * modelViewMatrix * vec4( position, 1.0 );
-		}`,fragmentShader:`
+		}`,
+
+	fragmentShader: /* glsl */`
 		varying vec2 vUv;
 		uniform highp sampler2D tNormal;
 		uniform highp sampler2D tDepth;
@@ -181,13 +254,33 @@ import{DataTexture,Matrix4,RepeatWrapping,Vector2,Vector3}from"../../../build/th
 			ao = pow(ao, scale);
 
 			gl_FragColor = FRAGMENT_OUTPUT;
-		}`},GTAODepthShader={name:"GTAODepthShader",defines:{PERSPECTIVE_CAMERA:1},uniforms:{tDepth:{value:null},cameraNear:{value:null},cameraFar:{value:null}},vertexShader:`
+		}`
+
+};
+
+const GTAODepthShader = {
+
+	name: 'GTAODepthShader',
+
+	defines: {
+		PERSPECTIVE_CAMERA: 1
+	},
+
+	uniforms: {
+		tDepth: { value: null },
+		cameraNear: { value: null },
+		cameraFar: { value: null },
+	},
+
+	vertexShader: /* glsl */`
 		varying vec2 vUv;
 
 		void main() {
 			vUv = uv;
 			gl_Position = projectionMatrix * modelViewMatrix * vec4( position, 1.0 );
-		}`,fragmentShader:`
+		}`,
+
+	fragmentShader: /* glsl */`
 		uniform sampler2D tDepth;
 		uniform float cameraNear;
 		uniform float cameraFar;
@@ -209,13 +302,28 @@ import{DataTexture,Matrix4,RepeatWrapping,Vector2,Vector3}from"../../../build/th
 			float depth = getLinearDepth( vUv );
 			gl_FragColor = vec4( vec3( 1.0 - depth ), 1.0 );
 
-		}`},GTAOBlendShader={name:"GTAOBlendShader",uniforms:{tDiffuse:{value:null},intensity:{value:1}},vertexShader:`
+		}`
+
+};
+
+const GTAOBlendShader = {
+
+	name: 'GTAOBlendShader',
+
+	uniforms: {
+		tDiffuse: { value: null },
+		intensity: { value: 1.0 }
+	},
+
+	vertexShader: /* glsl */`
 		varying vec2 vUv;
 
 		void main() {
 			vUv = uv;
 			gl_Position = projectionMatrix * modelViewMatrix * vec4( position, 1.0 );
-		}`,fragmentShader:`
+		}`,
+
+	fragmentShader: /* glsl */`
 		uniform float intensity;
 		uniform sampler2D tDiffuse;
 		varying vec2 vUv;
@@ -223,4 +331,94 @@ import{DataTexture,Matrix4,RepeatWrapping,Vector2,Vector3}from"../../../build/th
 		void main() {
 			vec4 texel = texture2D( tDiffuse, vUv );
 			gl_FragColor = vec4(mix(vec3(1.), texel.rgb, intensity), texel.a);
-		}`};function generateMagicSquareNoise(e=5){var e=Math.floor(e)%2==0?Math.floor(e)+1:Math.floor(e),o=generateMagicSquare(e),a=o.length,t=new Uint8Array(4*a);for(let e=0;e<a;++e){var i=o[e],i=2*Math.PI*i/a,i=new Vector3(Math.cos(i),Math.sin(i),0).normalize();t[4*e]=255*(.5*i.x+.5),t[4*e+1]=255*(.5*i.y+.5),t[4*e+2]=127,t[4*e+3]=255}e=new DataTexture(t,e,e);return e.wrapS=RepeatWrapping,e.wrapT=RepeatWrapping,e.needsUpdate=!0,e}function generateMagicSquare(e){var o=Math.floor(e)%2==0?Math.floor(e)+1:Math.floor(e),a=o*o,t=Array(a).fill(0);let i=Math.floor(o/2),r=o-1;for(let e=1;e<=a;)-1===i&&r===o?(r=o-2,i=0):(r===o&&(r=0),i<0&&(i=o-1)),0!==t[i*o+r]?(r-=2,i++):(t[i*o+r]=e++,r++,i--);return t}export{generateMagicSquareNoise,GTAOShader,GTAODepthShader,GTAOBlendShader};
+		}`
+
+};
+
+
+function generateMagicSquareNoise( size = 5 ) {
+
+	const noiseSize = Math.floor( size ) % 2 === 0 ? Math.floor( size ) + 1 : Math.floor( size );
+	const magicSquare = generateMagicSquare( noiseSize );
+	const noiseSquareSize = magicSquare.length;
+	const data = new Uint8Array( noiseSquareSize * 4 );
+
+	for ( let inx = 0; inx < noiseSquareSize; ++ inx ) {
+
+		const iAng = magicSquare[ inx ];
+		const angle = ( 2 * Math.PI * iAng ) / noiseSquareSize;
+		const randomVec = new Vector3(
+			Math.cos( angle ),
+			Math.sin( angle ),
+			0
+		).normalize();
+		data[ inx * 4 ] = ( randomVec.x * 0.5 + 0.5 ) * 255;
+		data[ inx * 4 + 1 ] = ( randomVec.y * 0.5 + 0.5 ) * 255;
+		data[ inx * 4 + 2 ] = 127;
+		data[ inx * 4 + 3 ] = 255;
+
+	}
+
+	const noiseTexture = new DataTexture( data, noiseSize, noiseSize );
+	noiseTexture.wrapS = RepeatWrapping;
+	noiseTexture.wrapT = RepeatWrapping;
+	noiseTexture.needsUpdate = true;
+
+	return noiseTexture;
+
+}
+
+function generateMagicSquare( size ) {
+
+	const noiseSize = Math.floor( size ) % 2 === 0 ? Math.floor( size ) + 1 : Math.floor( size );
+	const noiseSquareSize = noiseSize * noiseSize;
+	const magicSquare = Array( noiseSquareSize ).fill( 0 );
+	let i = Math.floor( noiseSize / 2 );
+	let j = noiseSize - 1;
+
+	for ( let num = 1; num <= noiseSquareSize; ) {
+
+		if ( i === - 1 && j === noiseSize ) {
+
+			j = noiseSize - 2;
+			i = 0;
+
+		} else {
+
+			if ( j === noiseSize ) {
+
+				j = 0;
+
+			}
+
+			if ( i < 0 ) {
+
+				i = noiseSize - 1;
+
+			}
+
+		}
+
+		if ( magicSquare[ i * noiseSize + j ] !== 0 ) {
+
+			j -= 2;
+			i ++;
+			continue;
+
+		} else {
+
+			magicSquare[ i * noiseSize + j ] = num ++;
+
+		}
+
+		j ++;
+		i --;
+
+	}
+
+	return magicSquare;
+
+}
+
+
+export { generateMagicSquareNoise, GTAOShader, GTAODepthShader, GTAOBlendShader };

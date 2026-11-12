@@ -1,11 +1,50 @@
-import{Matrix4,Vector2,Vector3}from"../../../build/three.module.js";const PoissonDenoiseShader={name:"PoissonDenoiseShader",defines:{SAMPLES:16,SAMPLE_VECTORS:generatePdSamplePointInitializer(16,2,1),NORMAL_VECTOR_TYPE:1,DEPTH_VALUE_SOURCE:0},uniforms:{tDiffuse:{value:null},tNormal:{value:null},tDepth:{value:null},tNoise:{value:null},resolution:{value:new Vector2},cameraProjectionMatrixInverse:{value:new Matrix4},lumaPhi:{value:5},depthPhi:{value:5},normalPhi:{value:5},radius:{value:4},index:{value:0}},vertexShader:`
+import {
+	Matrix4,
+	Vector2,
+	Vector3,
+} from '../../../build/three.module.js';
+
+/**
+ * References:
+ * https://openaccess.thecvf.com/content/WACV2021/papers/Khademi_Self-Supervised_Poisson-Gaussian_Denoising_WACV_2021_paper.pdf
+ * https://arxiv.org/pdf/2206.01856.pdf
+ */
+
+const PoissonDenoiseShader = {
+
+	name: 'PoissonDenoiseShader',
+
+	defines: {
+		'SAMPLES': 16,
+		'SAMPLE_VECTORS': generatePdSamplePointInitializer( 16, 2, 1 ),
+		'NORMAL_VECTOR_TYPE': 1,
+		'DEPTH_VALUE_SOURCE': 0,
+	},
+
+	uniforms: {
+		'tDiffuse': { value: null },
+		'tNormal': { value: null },
+		'tDepth': { value: null },
+		'tNoise': { value: null },
+		'resolution': { value: new Vector2() },
+		'cameraProjectionMatrixInverse': { value: new Matrix4() },
+		'lumaPhi': { value: 5. },
+		'depthPhi': { value: 5. },
+		'normalPhi': { value: 5. },
+		'radius': { value: 4. },
+		'index': { value: 0 }
+	},
+
+	vertexShader: /* glsl */`
 
 		varying vec2 vUv;
 
 		void main() {
 			vUv = uv;
 			gl_Position = projectionMatrix * modelViewMatrix * vec4( position, 1.0 );
-		}`,fragmentShader:`
+		}`,
+
+	fragmentShader: /* glsl */`
 
 		varying vec2 vUv;
 
@@ -143,4 +182,45 @@ import{Matrix4,Vector2,Vector3}from"../../../build/three.module.js";const Poisso
 				denoised /= totalWeight;
 			}
 			gl_FragColor = FRAGMENT_OUTPUT;
-		}`};function generatePdSamplePointInitializer(t,e,i){var o=generateDenoiseSamples(t,e,i);let a="vec3[SAMPLES](";for(let e=0;e<t;e++){var n=o[e];a+=`vec3(${n.x}, ${n.y}, ${n.z})`+(e<t-1?",":")")}return a}function generateDenoiseSamples(t,i,o){var a=[];for(let e=0;e<t;e++){var n=2*Math.PI*i*e/t,r=Math.pow(e/(t-1),o);a.push(new Vector3(Math.cos(n),Math.sin(n),r))}return a}export{generatePdSamplePointInitializer,PoissonDenoiseShader};
+		}`
+
+};
+
+function generatePdSamplePointInitializer( samples, rings, radiusExponent ) {
+
+	const poissonDisk = generateDenoiseSamples(
+		samples,
+		rings,
+		radiusExponent,
+	);
+
+	let glslCode = 'vec3[SAMPLES](';
+
+	for ( let i = 0; i < samples; i ++ ) {
+
+		const sample = poissonDisk[ i ];
+		glslCode += `vec3(${sample.x}, ${sample.y}, ${sample.z})${( i < samples - 1 ) ? ',' : ')'}`;
+
+	}
+
+	return glslCode;
+
+}
+
+function generateDenoiseSamples( numSamples, numRings, radiusExponent ) {
+
+	const samples = [];
+
+	for ( let i = 0; i < numSamples; i ++ ) {
+
+		const angle = 2 * Math.PI * numRings * i / numSamples;
+		const radius = Math.pow( i / ( numSamples - 1 ), radiusExponent );
+		samples.push( new Vector3( Math.cos( angle ), Math.sin( angle ), radius ) );
+
+	}
+
+	return samples;
+
+}
+
+export { generatePdSamplePointInitializer, PoissonDenoiseShader };

@@ -239,7 +239,8 @@
 		switch ($op) {
 			case 'hay': {
 				// Para mostrar/ocultar la opcion del menu. Sin permiso de caja: no se muestra (no es error).
-				if (!$tienePermiso) { cmOut(true, array('mostrar' => false, 'pendientes' => 0)); }
+				// cobradores=false: sin permiso la respuesta no cambia en la sesion, el front deja de preguntar.
+				if (!$tienePermiso) { cmOut(true, array('mostrar' => false, 'pendientes' => 0, 'cobradores' => false)); }
 				$n = cmFilas($bd, "SELECT COUNT(DISTINCT rp.idregistro_pago) AS n
 					FROM pedido_por_confirmar ppc
 					JOIN pedido p ON p.idpedido = ppc.idpedido
@@ -255,7 +256,10 @@
 					$hoy = cmFilas($bd, "SELECT 1 AS x FROM mozo_rendicion WHERE idsede = ? AND fecha_hora >= CURDATE() LIMIT 1", array($g_idsede));
 					$mostrar = !empty($hoy);
 				}
-				cmOut(true, array('mostrar' => $mostrar, 'pendientes' => $pend));
+				// ¿Algun usuario activo de la sede puede cobrar desde la app de mesero (permiso Pe9 "App Mesero caja")?
+				// Sin ninguno no pueden aparecer cobros nuevos: el front deja de preguntar cada minuto.
+				$cob = cmFilas($bd, "SELECT 1 AS x FROM usuario WHERE idorg = ? AND idsede = ? AND estado = 0 AND FIND_IN_SET('Pe9', per) LIMIT 1", array($g_ido, $g_idsede));
+				cmOut(true, array('mostrar' => $mostrar, 'pendientes' => $pend, 'cobradores' => !empty($cob)));
 			}
 		}
 
