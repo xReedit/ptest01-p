@@ -44,8 +44,16 @@ function xSedeHabilitada($idsede, $mysqli = null) {
 // Corta la sesión y responde 423 (el cliente lleva al login con el mensaje).
 function xSedeBloqueadaSalir() {
 	if (session_status() === PHP_SESSION_ACTIVE) {
+		$ido = isset($_SESSION['ido']) ? (int)$_SESSION['ido'] : 0;
+		$idsede = isset($_SESSION['idsede']) ? (int)$_SESSION['idsede'] : 0;
 		$_SESSION = array();
 		session_destroy();
+		// Sesion nueva SOLO con la org para la pantalla "suspendido" del login (log_suscripcion.php?op=suspendido).
+		if ($ido > 0 && !headers_sent()) {
+			session_start();
+			session_regenerate_id(true);
+			$_SESSION['sus_suspendido'] = array('ido' => $ido, 'idsede' => $idsede, 'ts' => time());
+		}
 	}
 	http_response_code(423);
 	header('Content-Type: application/json');

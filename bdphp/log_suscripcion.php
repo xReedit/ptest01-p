@@ -3,14 +3,37 @@
 	// mozos y cajeros no ven nada. Lee lo que gestiona la consola en la misma BD (sus_*, con_config).
 	// Si la consola no esta desplegada (faltan tablas) responde "inactivo" y el POS sigue como antes.
 	require_once __DIR__ . '/SecurityGuard.php';
-	SecurityGuard::verificarAcceso();
+	$op = isset($_GET['op']) ? $_GET['op'] : null;
+	if ($op === 'suspendido') {
+		// Pantalla "servicio suspendido" del login: no hay sesion del POS, solo la org que dejo log.php
+		// despues de validar usuario y clave ($_SESSION['sus_suspendido']).
+		// Freno a pedidos en masa: sin ese permiso (o vencido, 30 min) se responde ANTES de abrir la BD,
+		// y con permiso se atiende como maximo 1 consulta cada 3 s (la pantalla consulta cada 10 s).
+		if (session_status() === PHP_SESSION_NONE) { session_start(); }
+		$sus = isset($_SESSION['sus_suspendido']) ? $_SESSION['sus_suspendido'] : null;
+		$ahora = time();
+		if (!$sus || $ahora - (int)$sus['ts'] > 1800) {
+			session_write_close();
+			header('Content-Type: application/json;charset=utf-8');
+			exit(json_encode(array('success' => true, 'datos' => array('activa' => false), 'error' => '')));
+		}
+		if (isset($sus['ult']) && $ahora - (int)$sus['ult'] < 3) {
+			session_write_close();
+			http_response_code(429);
+			header('Content-Type: application/json;charset=utf-8');
+			exit(json_encode(array('success' => false, 'datos' => null, 'error' => 'Espera unos segundos')));
+		}
+		$_SESSION['sus_suspendido']['ult'] = $ahora;
+		session_write_close();
+	} else {
+		SecurityGuard::verificarAcceso();
+	}
 	header('Content-Type: application/json;charset=utf-8');
 	header('Cache-Control: no-cache');
 	date_default_timezone_set('America/Lima');
 	include "ManejoBD.php";
 	$bd = new xManejoBD("restobar");
 
-	$op = isset($_GET['op']) ? $_GET['op'] : null;
 	$g_ido = (int)(isset($_SESSION['ido']) ? $_SESSION['ido'] : 0);
 
 	function jsonOut($ok, $datos = null, $error = '') {
@@ -50,15 +73,12 @@
 		return $f[0]['token_portal'];
 	}
 
-	switch ($op) {
-		case 'estado':
-			$inactivo = array('activa' => false, 'esAdmin' => esAdmin());
-			if (!esAdmin() || $g_ido <= 0) { jsonOut(true, $inactivo); }
-			try {
+	/** Estado de pago de la org para el aviso. null = cobranza de la consola apagada o sin URL. */
+	function estadoOrg($bd, $g_ido) {
 				$cfg = config($bd);
-				if (!isset($cfg['cobranza_consola_activa']) || $cfg['cobranza_consola_activa'] !== '1') { jsonOut(true, $inactivo); }
+				if (!isset($cfg['cobranza_consola_activa']) || $cfg['cobranza_consola_activa'] !== '1') { return null; }
 				$urlBase = isset($cfg['consola_url']) ? rtrim($cfg['consola_url'], '/') : '';
-				if (!preg_match('#^https?://#', $urlBase)) { jsonOut(true, $inactivo); }
+				if (!preg_match('#^https?://#', $urlBase)) { return null; }
 
 				// "Pagado hasta" de la org = el menor de sus sedes activas (misma regla que la consola).
 				// Solo orgs con al menos una sede en PRODUCCION (las de PRUEBAS no se cobran).
@@ -71,7 +91,7 @@
 					WHERE s.idorg = ? AND s.estado = 0 AND IFNULL(se.is_baja, '0') = '0'", array($g_ido));
 				$link = $urlBase . '/p/' . tokenPortal($bd, $g_ido);
 				$base = array('activa' => true, 'esAdmin' => true, 'link' => $link, 'nivel' => 'ninguno');
-				if (!count($s) || !$s[0]['pagado_hasta'] || (int)$s[0]['en_produccion'] === 0) { jsonOut(true, $base); }
+				if (!count($s) || !$s[0]['pagado_hasta'] || (int)$s[0]['en_produccion'] === 0) { return $base; }
 
 				$pagadoHasta = $s[0]['pagado_hasta'];
 				$dias = (int)filas($bd, "SELECT DATEDIFF(?, CURDATE()) AS d", array($pagadoHasta))[0]['d']; // >0 faltan, <0 vencido
@@ -103,7 +123,7 @@
 					$fechaBloqueo = filas($bd, "SELECT DATE_ADD(?, INTERVAL ? DAY) AS f", array($pagadoHasta, $diasBloqueo + 1))[0]['f'];
 				}
 
-				jsonOut(true, array_merge($base, array(
+				return array_merge($base, array(
 					'nivel' => $nivel,
 					'pagadoHasta' => $pagadoHasta,
 					'dias' => $dias,
@@ -113,10 +133,42 @@
 					'fechaBloqueo' => $fechaBloqueo,
 					// Cargo por reconexion si el servicio llega a suspenderse (0 = sin cargo): se avisa ANTES.
 					'reconexion' => isset($cfg['reconexion_monto']) ? (float)$cfg['reconexion_monto'] : 0
-				)));
+				));
+	}
+
+	switch ($op) {
+		case 'estado':
+			$inactivo = array('activa' => false, 'esAdmin' => esAdmin());
+			if (!esAdmin() || $g_ido <= 0) { jsonOut(true, $inactivo); }
+			try {
+				$d = estadoOrg($bd, $g_ido);
+				jsonOut(true, $d ? $d : $inactivo);
 			} catch (Exception $e) {
 				// Consola no desplegada (tablas sus_*/con_config ausentes) u otro error: el POS sigue como antes.
 				jsonOut(true, $inactivo);
+			}
+			break;
+
+		case 'suspendido':
+			// Cualquier usuario de la org (el mozo que llega primero copia el link y se lo pasa al dueño).
+			// Vale 30 min desde el login rechazado.
+			$sus = isset($_SESSION['sus_suspendido']) ? $_SESSION['sus_suspendido'] : null;
+			if (!$sus || time() - (int)$sus['ts'] > 1800) { jsonOut(true, array('activa' => false)); }
+			try {
+				$d = estadoOrg($bd, (int)$sus['ido']);
+				if (!$d) { jsonOut(true, array('activa' => false)); }
+				// La pantalla consulta esto cada pocos segundos: apenas se registra el pago, deja entrar.
+				require_once __DIR__ . '/_sede_estado.php';
+				// Solo lo que usa la pantalla. "bloqueado" es informativo: el login vuelve a validarlo en el servidor.
+				jsonOut(true, array(
+					'activa' => true,
+					'link' => $d['link'],
+					'pagadoHasta' => isset($d['pagadoHasta']) ? $d['pagadoHasta'] : null,
+					'reconexion' => isset($d['reconexion']) ? $d['reconexion'] : 0,
+					'bloqueado' => !xSedeHabilitadaBD($bd->bd, isset($sus['idsede']) ? (int)$sus['idsede'] : 0)
+				));
+			} catch (Exception $e) {
+				jsonOut(true, array('activa' => false));
 			}
 			break;
 

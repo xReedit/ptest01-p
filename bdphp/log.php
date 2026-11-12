@@ -432,7 +432,18 @@
 					}else{
 						// sede bloqueada o dada de baja: la sesion anterior NO sigue viva
 						// (un 0 en reconexion puede ser un corte de BD: ahi no se cierra la sesion, como antes)
-						if ($_rptLogin == 2) { $_SESSION = array(); session_destroy(); }
+						if ($_rptLogin == 2) {
+							$_SESSION = array();
+							session_destroy();
+							// Sesion nueva SOLO con la org: log_suscripcion.php?op=suspendido arma la pantalla de pago.
+							// La clave ya se valido; no da acceso a nada del POS (no hay ido/idusuario).
+							$sus = json_decode($result);
+							if ($sus && isset($sus[0]->idorg)) {
+								session_start();
+								session_regenerate_id(true);
+								$_SESSION['sus_suspendido'] = array('ido' => (int)$sus[0]->idorg, 'idsede' => (int)$sus[0]->idsede, 'ts' => time());
+							}
+						}
 						echo $_rptLogin == 2 ? 2 : 0; // 2 = sede bloqueada o dada de baja ("Servicio suspendido")
 					}
 			//};

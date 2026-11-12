@@ -204,6 +204,13 @@
                 $bd->xConsulta_NoReturn($sql_bl);
             }
             break;
+        case '204': // 2026-11: graba el external_id recuperado del API (xSoapSunat_RecuperarExternalId); nunca pisa uno existente
+            $obj = $_POST['data'];
+            $external_id = isset($obj['external_id']) ? $obj['external_id'] : '';
+            if ( !preg_match('/^[a-f0-9-]{36}$/i', $external_id) ) { break; }
+            $sql = "update ce set external_id='".$external_id."' where idce=".intval($obj['idce'])." and idsede=".intval($g_idsede)." and IFNULL(external_id,'')=''";
+            $bd->xConsulta_NoReturn($sql);
+            break;
         case '3': // consulta de boletas que fueron registradas pero no aceptadas(por cualquier motivo), devuelve fechas no aceptadas
             $sql = "SELECT * from ce where (idorg=".$_SESSION['ido']." and idsede=".$_SESSION['idsede'].") and str_to_date(fecha, '%d/%m/%Y') between DATE_SUB( CURDATE() , INTERVAL $dias_consulta DAY ) AND CURDATE() and estado_api=0 and (estado_sunat != 0 or msj='Registrado') and anulado=0";            
             $bd->xConsulta($sql);
