@@ -3805,12 +3805,13 @@
 			$bd->xConsulta($sql);
 			break;
 		case 2101://cargar ultimo(s) pedido(s)
-			$num_pedidos_cola=$_POST['num_pedidos_cola'];
+			// 085: van dentro del CALL: numeros y listas "1,2,3" solamente (antes, inyeccion SQL)
+			$num_pedidos_cola=(int)$_POST['num_pedidos_cola'];
 			$arr_filtro=$_POST['arr_filtro'];
 			
-			$lastIdPedido = $_POST['id'];
-			$idSeccion = $arr_filtro['idseccion'];
-			$idTipoConsumo = $arr_filtro['tipo_consumo'];
+			$lastIdPedido = (int)$_POST['id'];
+			$idSeccion = preg_replace('/[^0-9,]/', '', (string)$arr_filtro['idseccion']);
+			$idTipoConsumo = preg_replace('/[^0-9,]/', '', (string)$arr_filtro['tipo_consumo']);
 
 			// $sql="CALL procedure_update_zona_d_2101(".$lastIdPedido.",".$num_pedidos_cola.",'".$idTipoConsumo."','".$idSeccion."',".$g_ido.",".$g_idsede.");";
 

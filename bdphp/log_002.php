@@ -14,6 +14,7 @@
 	header('Content-Type: text/event-stream');
 	header('Cache-Control: no-cache');
 	include "ManejoBD.php";
+	require_once __DIR__ . '/_ce_fechas.php'; // 085: filtros de fecha con indice
 	$bd=new xManejoBD("restobar");
 
 	date_default_timezone_set('America/Lima');
@@ -212,7 +213,7 @@
             $bd->xConsulta_NoReturn($sql);
             break;
         case '3': // consulta de boletas que fueron registradas pero no aceptadas(por cualquier motivo), devuelve fechas no aceptadas
-            $sql = "SELECT * from ce where (idorg=".$_SESSION['ido']." and idsede=".$_SESSION['idsede'].") and str_to_date(fecha, '%d/%m/%Y') between DATE_SUB( CURDATE() , INTERVAL $dias_consulta DAY ) AND CURDATE() and estado_api=0 and (estado_sunat != 0 or msj='Registrado') and anulado=0";            
+            $sql = "SELECT * from ce where (idorg=".$_SESSION['ido']." and idsede=".$_SESSION['idsede'].") and fecha IN (".ceFechasUltimosDias($dias_consulta).") and estado_api=0 and (estado_sunat != 0 or msj='Registrado') and anulado=0";            
             $bd->xConsulta($sql);
             break;
         case '301': // lista documentos no registrados - documnentos que no fueron enviados al servicio api por algun error de conexion
@@ -226,11 +227,11 @@
             // $bd->xConsulta_NoReturn($sql);
 
             // $sql = "SELECT * from ce where (idorg=".$_SESSION['ido']." and idsede=".$_SESSION['idsede'].") and estado_api = 1 and anulado=0";
-            $sql = "SELECT * from ce where idsede = ".$_SESSION['idsede']." and str_to_date(fecha, '%d/%m/%Y') between DATE_SUB( CURDATE() , INTERVAL $dias_consulta DAY ) AND CURDATE() and estado_api = 1 and anulado=0";
+            $sql = "SELECT * from ce where idsede = ".$_SESSION['idsede']." and fecha IN (".ceFechasUltimosDias($dias_consulta).") and estado_api = 1 and anulado=0";
             $bd->xConsulta($sql);
             break;
         case '3011': // facturas// lista documentos no registrados en suant - documnentos que no fueron enviados a sunat por algun error de conexion
-            $sql = "SELECT * from ce where (idsede=".$_SESSION['idsede'].") and str_to_date(fecha, '%d/%m/%Y') between DATE_SUB( CURDATE() , INTERVAL $dias_consulta DAY ) AND CURDATE() and estado_api = 0 and (estado_sunat != 0 or msj='Registrado') and anulado=0";
+            $sql = "SELECT * from ce where (idsede=".$_SESSION['idsede'].") and fecha IN (".ceFechasUltimosDias($dias_consulta).") and estado_api = 0 and (estado_sunat != 0 or msj='Registrado') and anulado=0";
 
             // facturas y boletas, a las boletas revisa si esta sin registrar y las registra
             // $sql = "SELECT tcs.idtipo_comprobante, ce.* from ce
@@ -243,7 +244,7 @@
             $bd->xConsulta($sql);
             break;
         case '302':// resumen de boletas: consulta fecha de boletas no enviadas 
-            $sql="SELECT fecha from ce where (idorg=".$_SESSION['ido']." and idsede=".$_SESSION['idsede'].") and str_to_date(fecha, '%d/%m/%Y') between DATE_SUB( CURDATE() , INTERVAL $dias_consulta DAY ) AND CURDATE() and (estado_sunat != 0 or msj='Registrado') and (estado=0 and anulado=0) GROUP BY fecha";
+            $sql="SELECT fecha from ce where (idorg=".$_SESSION['ido']." and idsede=".$_SESSION['idsede'].") and fecha IN (".ceFechasUltimosDias($dias_consulta).") and (estado_sunat != 0 or msj='Registrado') and (estado=0 and anulado=0) GROUP BY fecha";
             $bd->xConsulta($sql);
             break;
         case '303': // lista de tickets de resumen boleta por confitmar aceptacion // que se generaron un dia anterior
@@ -281,7 +282,7 @@
             $pagination = $_POST['pagination'];
             $fecha = $pagination['pageFecha'];
             $fecha = $fecha === '' ? date('d/m/Y') : $fecha;
-            $filtroAplicarFecha = $fecha === '' ? '' : "(MONTH(STR_TO_DATE(c.fecha ,'%d/%m/%Y')) = MONTH(STR_TO_DATE('$fecha' ,'%d/%m/%Y')) and YEAR(STR_TO_DATE(c.fecha ,'%d/%m/%Y')) = YEAR(STR_TO_DATE('$fecha' ,'%d/%m/%Y')))";
+            $filtroAplicarFecha = $fecha === '' ? '' : "(c.fecha IN (".ceFechasMesDe($fecha)."))";
             $filtroFecha = $fecha === '' ? '' : " HAVING $filtroAplicarFecha";
             // $filtroFechaCount = $fecha === '' ? '' : " and (c.fecha = '".$fecha."')";
             $filtroFechaCount = $fecha === '' ? '' : " and $filtroAplicarFecha";
@@ -318,7 +319,7 @@
         case '601': // reporte export excel
             $pagination = $_POST['pagination'];
             $fecha = $pagination['pageFecha'];            
-            $filtroAplicarFecha = $fecha === '' ? '' : "(MONTH(STR_TO_DATE(c.fecha ,'%d/%m/%Y')) = MONTH(STR_TO_DATE('$fecha' ,'%d/%m/%Y')) and YEAR(STR_TO_DATE(c.fecha ,'%d/%m/%Y')) = YEAR(STR_TO_DATE('$fecha' ,'%d/%m/%Y')))";
+            $filtroAplicarFecha = $fecha === '' ? '' : "(c.fecha IN (".ceFechasMesDe($fecha)."))";
             $filtroFecha = $fecha === '' ? '' : " HAVING $filtroAplicarFecha";
             // $filtroAplicarFecha = $fecha === '' ? '' : " and (MONTH(STR_TO_DATE(c.fecha ,'%d/%m/%Y')) = MONTH(STR_TO_DATE('$fecha' ,'%d/%m/%Y')) and YEAR(STR_TO_DATE(c.fecha ,'%d/%m/%Y')) = YEAR(STR_TO_DATE('$fecha' ,'%d/%m/%Y')))";           
             $filtro = $pagination['pageFilter'] === '' ? '' : " and CONCAT(c.hora,tp.descripcion,c.numero,c.nomcliente,c.fecha,(
@@ -349,7 +350,7 @@
             if ($fecha === '') {
                 $fecha = date('d/m/Y');
             }
-            $filtroAplicarFecha = $fecha === '' ? '' : " and (MONTH(STR_TO_DATE(c.fecha ,'%d/%m/%Y')) = MONTH(STR_TO_DATE('$fecha' ,'%d/%m/%Y')) and YEAR(STR_TO_DATE(c.fecha ,'%d/%m/%Y')) = YEAR(STR_TO_DATE('$fecha' ,'%d/%m/%Y')))";
+            $filtroAplicarFecha = $fecha === '' ? '' : " and (c.fecha IN (".ceFechasMesDe($fecha)."))";
             $sql="SELECT tp.descripcion as nom_comprobante, count(c.idtipo_comprobante_serie) cantidad, format(SUM(CAST(REPLACE(total, ',', '') AS DECIMAL(10, 2))), 2) total
                 from ce as c
                     inner join tipo_comprobante_serie as tps on tps.idtipo_comprobante_serie=c.idtipo_comprobante_serie

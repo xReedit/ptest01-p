@@ -11,6 +11,8 @@ $bd=new xManejoBD("restobar");
 
 $g_ido = isset($_SESSION['ido']) ? $_SESSION['ido'] : 0;
 $g_idsede = isset($_SESSION['idsede']) ? $_SESSION['idsede'] : 0;
+// tp / ids son listas de ids ("1,2,3") que van dentro del SQL: solo digitos y comas (antes, inyeccion SQL).
+function xListaIds($v) { return preg_replace('/[^0-9,]/', '', (string)$v); }
 switch($_GET['op'])
 	{
 		case 1://verifica si existe o se añado algun pedido para actualiza, monitor de pedidos
@@ -23,8 +25,8 @@ switch($_GET['op'])
 			// ob_end_clean();
 			break;		
 		case 2: //	verifica si existe pedido nuevo || zona de despacho
-			$tipo_consumo=$_GET["tp"];
-			$idseccion=$_GET["ids"];
+			$tipo_consumo=xListaIds($_GET["tp"]);
+			$idseccion=xListaIds($_GET["ids"]);
 
 			// $sql = "
 			// SELECT max(p.idpedido) 
@@ -43,8 +45,8 @@ switch($_GET['op'])
 			flush();
 			break;
 		case 201: // fom socket	verifica si existe pedido nuevo || zona de despacho
-			$tipo_consumo=$_GET["tp"];
-			$idseccion=$_GET["ids"];
+			$tipo_consumo=xListaIds($_GET["tp"]);
+			$idseccion=xListaIds($_GET["ids"]);
 
 			$sql="CALL procedure_run_zona_d_2('".$tipo_consumo."','".$idseccion."',".$g_ido.",".$g_idsede.");";
 			$numero_pedidos_actual_2=$bd->xDevolverUnDato($sql);

@@ -13,6 +13,7 @@
 	header('Cache-Control: no-cache');
 	include "ManejoBD.php";
 	include "token.php";
+	require_once __DIR__ . '/_ce_fechas.php';
 	$bd=new xManejoBD("restobar");
 
 	date_default_timezone_set('America/Lima');
@@ -1780,10 +1781,12 @@
 			switch ($rango) {
 				case 'fecha':
 					// $fecha = $fecha == 0 ? " STR_TO_DATE(ce.fecha, '%d/%m/%Y') = CURDATE()" : " STR_TO_DATE(ce.fecha, '%d/%m/%Y') = STR_TO_DATE('$fecha', '%d/%m/%Y')";
-					$fecha = " STR_TO_DATE(ce.fecha, '%d/%m/%Y') = CURDATE()";
+					// 085: comparar el texto (usa idx_ce_sede_fecha) en vez de STR_TO_DATE sobre cada comprobante
+					$fecha = " ce.fecha = DATE_FORMAT(CURDATE(), '%d/%m/%Y')";
 					break;				
 				case 'semana':
-					$fecha = "STR_TO_DATE(ce.fecha, '%d/%m/%Y') between date_sub(now(),INTERVAL 1 WEEK) and now()";
+					// antes: STR_TO_DATE(ce.fecha) between date_sub(now(), 1 WEEK) and now() = hoy y los 6 dias anteriores
+					$fecha = " ce.fecha IN (" . ceFechasUltimosDias(6) . ")";
 					break;
 				case 'mes':
 					// $fecha = $fecha == 0 ? 'now()' : "STR_TO_DATE('$fecha', '%d/%m/%Y')";
@@ -1796,7 +1799,7 @@
 					$last_day_month = date("Y-m-t", strtotime($first_day_month));
 
 					// $_sql = "select concat(min(rp.idce),',',max(rp.idce)) from ce rp where idsede=$idsede and STR_TO_DATE(rp.fecha, '%d/%m/%Y') BETWEEN cast('$first_day_month' as date) and LAST_DAY('$first_day_month')";
-					$_sql = "select concat(min(rp.idce),',',max(rp.idce)) from ce rp where idsede=$idsede and STR_TO_DATE(rp.fecha, '%d/%m/%Y') BETWEEN '$first_day_month' and '$last_day_month'";
+					$_sql = "select concat(min(rp.idce),',',max(rp.idce)) from ce rp where idsede=$idsede and rp.fecha IN (" . ceFechasEntre($first_day_month, $last_day_month) . ")";
 					$minMaxID = $bd->xDevolverUnDato($_sql);					
 					$minMaxID = explode(",", $minMaxID);
 					$lastIdRegistroPago = $minMaxID[1];
@@ -1813,7 +1816,7 @@
 						$date1 = $dates[0];
 						$date2 = $dates[1];
 
-						$_sql = "select concat(min(rp.idce),',',max(rp.idce)) from ce rp where idsede=$idsede and STR_TO_DATE(rp.fecha, '%d/%m/%Y') BETWEEN cast('$date1' as date) and cast('$date2' as date)";
+						$_sql = "select concat(min(rp.idce),',',max(rp.idce)) from ce rp where idsede=$idsede and rp.fecha IN (" . ceFechasEntre($date1, $date2) . ")";
 						$minMaxID = $bd->xDevolverUnDato($_sql);					
 						$minMaxID = explode(",", $minMaxID);
 						$lastIdRegistroPago = $minMaxID[1];
@@ -2035,7 +2038,7 @@
 							inner join usuario u on u.idusuario = rp.idusuario 
 						where rp.idsede = $g_idsede 
 							and rp.cierre=0 
-							and STR_TO_DATE(rp.fecha, '%d/%m/%Y') = CURDATE() 
+							and rp.fecha_hora >= CURDATE() and rp.fecha_hora < CURDATE() + INTERVAL 1 DAY -- 085: antes STR_TO_DATE(rp.fecha) = CURDATE() (sin indice)
 							and rp.idusuario!=$g_idusuario
 						GROUP by rp.idusuario";
 				$bd->xConsulta($sql);
