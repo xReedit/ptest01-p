@@ -52,6 +52,11 @@
 		$t = rtrim(rtrim(number_format((float)$n, $dec, '.', ''), '0'), '.');
 		return $t === '' || $t === '-0' ? '0' : $t;
 	}
+	// precio por unidad con todos los decimales que caben en el varchar(10) del legacy (S/ 22 / 750 ML = 0.02933333)
+	function numTxtCabe($n) {
+		for ($d = 8; $d > 0; $d--) { $t = numTxt($n, $d); if (strlen($t) <= 10) { return $t; } }
+		return numTxt($n, 0);
+	}
 	// 'YYYY-MM-DD' valida -> DateTime; si no, null
 	function fechaIso($s) {
 		if (!is_string($s) || !preg_match('/^\d{4}-\d{2}-\d{2}$/', $s)) { return null; }
@@ -62,6 +67,10 @@
 		return mb_substr(mb_strtoupper(trim((string)$s), 'UTF-8'), 0, $max, 'UTF-8');
 	}
 	class ErrorUsuario extends Exception {}
+	const COMPRA_ENVASES = array('CAJA', 'SACO', 'BOTELLA', 'BOLSA', 'PAQUETE', 'BIDON', 'BALDE', 'LATA', 'FARDO', 'GALONERA', 'FRASCO', 'DOCENA');
+	// Productos con "Cantidad x Presentacion" (recetas): recetas y costeo cuentan el stock por envase
+	// (factor_conversion = presentacion x unidad), asi que la compra entra por envase, sin convertir a LT/KG.
+	const SQL_PRESENTACION_RECETA = "IF(p.factor_conversion > 0 AND p.cantidad_presentacion > 0, p.cantidad_presentacion + 0, 0)";
 
 	if ($g_idsede <= 0 || $g_ido <= 0) { jsonOut(false, null, 'Sesion sin sede'); }
 	// Mismo permiso que la opcion Compras (B1)
@@ -80,6 +89,32 @@
 					'credito' => COMPRA_TIPO_PAGO_CREDITO
 				));
 			}
+			case 'producto-compra': {
+				// Ficha del producto (Almacen): ultimas 2 compras vigentes (precio por unidad del producto) y su unidad de compra.
+				// Con 'contenido' en el body tambien la guarda (0 = se compra directo en la unidad del producto).
+				$b = leerBody();
+				$idp = isset($b['idproducto']) ? (int)$b['idproducto'] : 0;
+				$p = filas($bd, "SELECT (p.compra_contenido + 0) AS contenido, IFNULL(p.compra_envase, '') AS envase, IFNULL(uk.abreviatura, '') AS und,
+						" . SQL_PRESENTACION_RECETA . " AS presentacion
+					FROM producto p LEFT JOIN unidad_medida uk ON uk.idunidad_medida = p.idunidad_kardex
+					WHERE p.idproducto = ? AND p.idorg = ? AND p.idsede = ?", array($idp, $g_ido, $g_idsede));
+				if (!$p) { throw new ErrorUsuario('Producto no encontrado'); }
+				if (array_key_exists('contenido', $b)) {
+					$c = (float)$b['contenido'];
+					$env = strtoupper(trim(isset($b['envase']) ? (string)$b['envase'] : ''));
+					if ($c < 0 || $c > 100000) { throw new ErrorUsuario('Contenido no valido'); }
+					if ($env !== '' && !in_array($env, COMPRA_ENVASES, true)) { throw new ErrorUsuario('Envase no valido'); }
+					if ($env !== '' && $c <= 0) { throw new ErrorUsuario('Escribe cuanto trae cada ' . strtolower($env)); }
+					ejecutar($bd, "UPDATE producto SET compra_contenido = ?, compra_envase = ? WHERE idproducto = ?",
+						array($c > 0 ? round($c, 4) : null, $env !== '' ? $env : null, $idp));
+					$p[0]['contenido'] = $c > 0 ? round($c, 4) : null;
+					$p[0]['envase'] = $env;
+				}
+				// idx_php_costeo (idproducto, estado, id)
+				$compras = filas($bd, "SELECT CAST(h.precio AS DECIMAL(14,6)) + 0 AS precio, h.fecha FROM producto_historial_precio h
+					WHERE h.idproducto = ? AND h.estado = 0 ORDER BY h.idproducto_historial_precio DESC LIMIT 2", array($idp));
+				jsonOut(true, array_merge($p[0], array('compras' => $compras)));
+			}
 			case 'productos': {
 				// Ultimo precio de compra real (producto_historial_precio vigente); si no hay, el precio_unitario guardado
 				$r = filas($bd, "SELECT p.idproducto, p.descripcion, IFNULL(pf.descripcion, '') AS familia,
@@ -88,7 +123,8 @@
 						  WHERE h.idproducto = p.idproducto AND h.estado = 0 ORDER BY h.idproducto_historial_precio DESC LIMIT 1) AS ultimo_precio,
 						(SELECT h.fecha FROM producto_historial_precio h
 						  WHERE h.idproducto = p.idproducto AND h.estado = 0 ORDER BY h.idproducto_historial_precio DESC LIMIT 1) AS ultima_fecha,
-						(p.precio_unitario + 0) AS precio_unitario
+						(p.precio_unitario + 0) AS precio_unitario, (p.compra_contenido + 0) AS contenido, IFNULL(p.compra_envase, '') AS envase,
+						" . SQL_PRESENTACION_RECETA . " AS presentacion
 					FROM producto p
 					LEFT JOIN producto_familia pf ON pf.idproducto_familia = p.idproducto_familia
 					LEFT JOIN unidad_medida uk ON uk.idunidad_medida = p.idunidad_kardex
@@ -200,7 +236,8 @@
 					WHERE c.idcompra = ? AND c.idsede = ?", array($id, $g_idsede));
 				if (!$c) { throw new ErrorUsuario('Compra no encontrada'); }
 				$items = filas($bd, "SELECT ci.idproducto, IFNULL(p.descripcion, '(producto eliminado)') AS descripcion,
-						IFNULL(uk.abreviatura, '') AS und, ci.cantidad, ci.punitario, ci.ptotal
+						IF(" . SQL_PRESENTACION_RECETA . " > 0, CONCAT('und de ', p.cantidad_presentacion + 0, ' ', IFNULL(uk.abreviatura, '')), IFNULL(uk.abreviatura, '')) AS und,
+						ci.cantidad, ci.punitario, ci.ptotal, (ci.unidades + 0) AS unidades
 					FROM compra_items ci
 					LEFT JOIN producto p ON p.idproducto = ci.idproducto
 					LEFT JOIN unidad_medida uk ON uk.idunidad_medida = p.idunidad_kardex
@@ -300,15 +337,21 @@
 			$idp = isset($it['idproducto']) ? (int)$it['idproducto'] : 0;
 			$cant = isset($it['cantidad']) ? (float)$it['cantidad'] : 0;
 			$pu = isset($it['precio_unitario']) ? (float)$it['precio_unitario'] : -1;
+			// compra por presentacion: unidades (botellas) y contenido de cada una (4 LT); cantidad = unidades x contenido
+			$und = isset($it['unidades']) ? (float)$it['unidades'] : 0;
+			$cont = isset($it['contenido']) ? (float)$it['contenido'] : 0;
+			if ($cont > 0 && $und > 0) { $cant = round($und * $cont, 4); } // lo que entra al almacen lo manda el servidor
 			$p = filas($bd, "SELECT descripcion FROM producto WHERE idproducto = ? AND idorg = ? AND idsede = ? AND estado = 0", array($idp, $ido, $idsede));
 			if (!$p) { throw new ErrorUsuario('Producto no encontrado (linea ' . ($i + 1) . ')'); }
 			$nom = $p[0]['descripcion'];
 			if ($cant <= 0 || $cant > 999999) { throw new ErrorUsuario('Cantidad no valida en ' . $nom); }
 			if ($pu < 0 || $pu > 999999) { throw new ErrorUsuario('Precio no valido en ' . $nom); }
+			if ($cont < 0 || $cont > 100000 || $und < 0 || $und > 999999 || ($cont > 0) !== ($und > 0)) { throw new ErrorUsuario('Contenido no valido en ' . $nom); }
 			$ptotal = round($cant * $pu, 2);
 			// columnas varchar(10) del legacy
 			if (strlen(number_format($ptotal, 2, '.', '')) > 10 || strlen(numTxt($cant, 4)) > 10) { throw new ErrorUsuario('Monto demasiado grande en ' . $nom); }
-			$lineas[] = array('idproducto' => $idp, 'cantidad' => numTxt($cant, 4), 'punitario' => numTxt($pu, 4), 'ptotal' => number_format($ptotal, 2, '.', ''));
+			$lineas[] = array('idproducto' => $idp, 'cantidad' => numTxt($cant, 4), 'punitario' => numTxtCabe($pu), 'ptotal' => number_format($ptotal, 2, '.', ''),
+				'unidades' => $und > 0 ? numTxt($und, 4) : null, 'contenido' => $cont > 0 ? round($cont, 4) : null);
 			$total += $ptotal;
 		}
 		$total = round($total, 2);
@@ -345,8 +388,10 @@
 
 			foreach ($v['lineas'] as $l) {
 				// el trigger stock_insert_add_compra suma el stock en el almacen de la compra
-				ejecutar($bd, "INSERT INTO compra_items (idcompra, idproducto, cantidad, punitario, ptotal) VALUES (?, ?, ?, ?, ?)",
-					array($idcompra, $l['idproducto'], $l['cantidad'], $l['punitario'], $l['ptotal']));
+				ejecutar($bd, "INSERT INTO compra_items (idcompra, idproducto, cantidad, punitario, ptotal, unidades) VALUES (?, ?, ?, ?, ?, ?)",
+					array($idcompra, $l['idproducto'], $l['cantidad'], $l['punitario'], $l['ptotal'], $l['unidades']));
+				// el producto recuerda su presentacion de compra (1 botella = 4 LT) para la proxima compra
+				if ($l['contenido'] !== null) { ejecutar($bd, "UPDATE producto SET compra_contenido = ? WHERE idproducto = ?", array($l['contenido'], $l['idproducto'])); }
 				ejecutar($bd, "INSERT INTO producto_historial_precio (idproducto, fecha, idorg, idsede, precio, idproveedor, idcompra)
 					VALUES (?, ?, ?, ?, ?, ?, ?)",
 					array($l['idproducto'], $fCompra, $ido, $idsede, $l['punitario'], $v['idproveedor'], $idcompra));
